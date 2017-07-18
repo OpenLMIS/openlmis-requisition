@@ -586,10 +586,6 @@ public class RequisitionController extends BaseController {
    * @param filterValue Value to be used to filter.
    * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
    *                    "all".
-   * @param sortBy      Fields used to sort: "emergency", "programName", "facilityCode" and/or
-   *                    "facilityName". If this parameter is empty/null, data will be sorted by
-   *                    emergency flag and program name.
-   * @param descending  Descending direction for sort.
    * @param pageable     Pageable object that allows client to optionally add "page" (page number)
    *                     and "size" (page size) query parameters to the request.
    * @return Page of approved requisitions.
@@ -600,8 +596,6 @@ public class RequisitionController extends BaseController {
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) String filterValue,
       @RequestParam(required = false) String filterBy,
-      @RequestParam(required = false) List<String> sortBy,
-      @RequestParam(required = false, defaultValue = "true") boolean descending,
       Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
@@ -611,7 +605,7 @@ public class RequisitionController extends BaseController {
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
     return requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue, filterBy, sortBy, descending, pageable, userManagedFacilities);
+            filterValue, filterBy, pageable, userManagedFacilities);
   }
 
   /**

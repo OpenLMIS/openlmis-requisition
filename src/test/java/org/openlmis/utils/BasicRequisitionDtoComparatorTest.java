@@ -21,8 +21,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +32,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicRequisitionDtoComparatorTest {
+
+  @Mock
+  private Pageable pageable;
 
   @Mock
   private ProgramDto program1;
@@ -55,7 +61,9 @@ public class BasicRequisitionDtoComparatorTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionIfComparatorDoesNotExist() throws Exception {
-    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator("abc");
+    when(pageable.getSort()).thenReturn(new Sort("abc"));
+
+    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
     comparator.compare(requisition1, requisition2);
   }
 
@@ -64,7 +72,9 @@ public class BasicRequisitionDtoComparatorTest {
     when(requisition1.getEmergency()).thenReturn(true);
     when(requisition2.getEmergency()).thenReturn(false);
 
-    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator("emergency");
+    when(pageable.getSort()).thenReturn(new Sort(new Sort.Order(DESC, "emergency")));
+
+    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
 
     assertThat(comparator.compare(requisition1, requisition2), is(greaterThan(0)));
     assertThat(comparator.compare(requisition2, requisition1), is(lessThan(0)));
@@ -80,10 +90,12 @@ public class BasicRequisitionDtoComparatorTest {
     when(program1.getName()).thenReturn("A");
     when(program2.getName()).thenReturn("D");
 
-
-    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(
-        Lists.newArrayList("emergency", "programName")
+    when(pageable.getSort()).thenReturn(
+        new Sort(new Sort.Order(DESC, "emergency"), new Sort.Order(ASC, "programName"))
     );
+
+
+    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
 
     assertThat(comparator.compare(requisition1, requisition2), is(greaterThan(0)));
     assertThat(comparator.compare(requisition2, requisition1), is(lessThan(0)));

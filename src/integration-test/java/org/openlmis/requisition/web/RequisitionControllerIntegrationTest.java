@@ -89,6 +89,7 @@ import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
@@ -1279,13 +1280,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     String filterValue = "Hospital";
     String filterBy = "facilityName";
-    String sortBy = "facilityCode";
+    String sortBy = "facilityCode,asc";
     int size = 10;
     int page = 0;
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(filterValue), eq(filterBy), anyListOf(String.class), eq(false), any(Pageable.class),
-        eq(managedFacilitiesIds)))
+        eq(filterValue), eq(filterBy), any(Pageable.class), eq(managedFacilitiesIds)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
     // when
@@ -1293,8 +1293,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", filterBy)
-        .queryParam("sortBy", sortBy)
-        .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("sort", sortBy)
         .queryParam("page", page)
         .queryParam("size", size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1332,11 +1331,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     int size = 10;
     int page = 0;
 
-    ArgumentCaptor<List> sortByCaptor = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<Pageable> sortByCaptor = ArgumentCaptor.forClass(Pageable.class);
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(filterValue), eq(filterBy), sortByCaptor.capture(), eq(false), any(Pageable.class),
-        eq(managedFacilitiesIds)))
+        eq(filterValue), eq(filterBy), sortByCaptor.capture(), eq(managedFacilitiesIds)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
     // when
@@ -1344,9 +1342,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", filterBy)
-        .queryParam("sortBy", Requisition.EMERGENCY)
-        .queryParam("sortBy", "facilityCode")
-        .queryParam("descending", Boolean.FALSE.toString())
+        .queryParam("sort", "emergency,desc")
+        .queryParam("sort", "facilityCode,asc")
         .queryParam("page", page)
         .queryParam("size", size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1360,10 +1357,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals(1, response.getContent().size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    List sortBy = sortByCaptor.getValue();
-    assertEquals(2, sortBy.size());
-    assertEquals(Requisition.EMERGENCY, sortBy.get(0));
-    assertEquals("facilityCode", sortBy.get(1));
+    Pageable pageable = sortByCaptor.getValue();
+    List<Sort.Order> orders = Lists.newArrayList(pageable.getSort());
+
+    assertEquals(2, orders.size());
+
+    assertEquals(Requisition.EMERGENCY, orders.get(0).getProperty());
+    assertEquals(Sort.Direction.DESC, orders.get(0).getDirection());
+
+    assertEquals("facilityCode", orders.get(1).getProperty());
+    assertEquals(Sort.Direction.ASC, orders.get(1).getDirection());
   }
 
   @Test
@@ -1371,7 +1374,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     mockConvertToOrderRightAndFulfillmentFacilities();
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), any(), any(), any(), eq(Collections.emptyList())))
+        any(), any(), any(), eq(Collections.emptyList())))
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
 
     // when
@@ -1400,7 +1403,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     requisition.setRequisition(generateBasicRequisition());
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), any(), any(), any(), eq(managedFacilitiesIds)))
+        any(), any(), any(), eq(managedFacilitiesIds)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
     // when

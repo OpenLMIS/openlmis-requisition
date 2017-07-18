@@ -36,11 +36,11 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -67,9 +67,9 @@ import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
-import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +82,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -498,8 +497,6 @@ public class RequisitionService {
    * @param filterValue Value to be used to filter.
    * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
    *                    "all".
-   * @param sortBy      Field used to sort: "programName", "facilityCode" or "facilityName".
-   * @param descending  Descending direction for sort.
    * @param pageable    Pageable object that allows to optionally add "page" (page number)
    *                     and "size" (page size) query parameters.
    * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
@@ -508,8 +505,6 @@ public class RequisitionService {
   public Page<RequisitionWithSupplyingDepotsDto>
       searchApprovedRequisitionsWithSortAndFilterAndPaging(String filterValue,
                                                            String filterBy,
-                                                           List<String> sortBy,
-                                                           Boolean descending,
                                                            Pageable pageable,
                                                            Collection<UUID> userManagedFacilities) {
     List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
@@ -518,10 +513,7 @@ public class RequisitionService {
     List<BasicRequisitionDto> requisitionDtosList =
         basicRequisitionDtoBuilder.build(requisitionsList);
 
-    requisitionDtosList.sort(new BasicRequisitionDtoComparator(sortBy));
-    if (descending) {
-      Collections.reverse(requisitionDtosList);
-    }
+    requisitionDtosList.sort(new BasicRequisitionDtoComparator(pageable));
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (BasicRequisitionDto requisition : requisitionDtosList) {
