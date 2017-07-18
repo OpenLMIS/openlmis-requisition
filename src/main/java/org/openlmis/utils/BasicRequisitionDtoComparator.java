@@ -17,6 +17,7 @@ package org.openlmis.utils;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -55,7 +56,7 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
 
     if (null == sort) {
       sort = new Sort(
-          new Sort.Order(ASC, "emergency"), new Sort.Order(ASC, "programName")
+          new Sort.Order(DESC, "emergency"), new Sort.Order(ASC, "programName")
       );
     }
 
