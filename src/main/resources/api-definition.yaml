@@ -49,6 +49,74 @@ schemas:
 
   - requisitionLineItemDto: !include schemas/requisitionLineItemDto.json
 
+  - approveRequisitionDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "ApproveRequisitionDto",
+          "description": "A single requisitionDto for batch approval",
+          "properties": {
+              "id": { "type": "string", "title": "id" },
+              "facility": { "type": "object", "$ref": "schemas/facilityDto.json", "title": "facility" },
+              "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
+              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/approveRequisitionLineItemDto" }, "uniqueItems": false }
+          },
+          "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
+      }
+
+  - approveRequisitionLineItemDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionLineItemDto",
+          "description": "A single requisitionLineItemDto",
+          "properties": {
+              "id": { "type": "string", "required": true, "title": "id" },
+              "orderable": { "type": "object", "$ref": "#/schemas/orderableDto", "required": true, "title": "orderable" },
+              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
+              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
+              "skipped": {"type": "boolean", "required": false, "title": "skipped" }
+          }
+      }
+
+  - approveRequisitionDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/approveRequisitionDto" }
+      }
+
+  - uuidArray: |
+      {
+          "type": "array",
+          "items": { "type": "string", "title": "id" }
+      }
+
+  - requisitionError: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionError",
+          "description": "A single requisition error",
+          "properties": {
+              "error": { "type": "object", "$ref": "#/schemas/localizedMessage" },
+              "requisitionId": { "type": "string", "title": "id" }
+          }
+      }
+
+  - requisitionErrorArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/requisitionError" }
+      }
+
+  - requisitionsProcessingStatus: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionsProcessingStatus",
+          "description": "An array of all requsitions that have been processed successfully and an array of errors.",
+          "properties": {
+              "requisitions": { "type": "object", "$ref": "#/schemas/approveRequisitionDtoArray" },
+              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" }
+          }
+      }
+
   - requisitionTemplate: !include schemas/requisitionTemplate.json
 
   - requisitionTemplateArray: |
@@ -579,6 +647,51 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+
+      /batch:
+          post:
+              is: [ secured ]
+              body:
+                  application/json:
+                      schema: uuidArray
+              description: Attempts to retrieve requisitions with UUIDs provided in the request body. It will ignore UUIDs for requisitions that do not exist or that the user does not have access to.
+              responses:
+                  "200":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
+      /batch/approve:
+          post:
+              is: [ secured ]
+              body:
+                  application/json:
+                      schema: uuidArray
+              description: Attempts to approve requisitions with UUIDs provided in the request body. It always processes all the requisitions and returns an array of requisitions that have been approved successfully and an array of error messages.
+              responses:
+                  "200":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
+                  "400":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
+      /batch/save:
+          put:
+              is: [ secured ]
+              body:
+                  application/json:
+                      schema: requisitionDtoArray
+              description: Saves requisitions with the UUIDs provided in the request body. It always processes all the requisitions and returns an array of requisitions that have been saved successfully and an array of error messages.
+              responses:
+                  "200":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
+                  "400":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
 
   /reports/templates/requisitions:
       displayName: Report Template
