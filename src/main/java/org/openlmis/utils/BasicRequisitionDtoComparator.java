@@ -78,7 +78,7 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
         );
       }
 
-      chain.addComparator(comparator, order.isAscending());
+      chain.addComparator(comparator, !order.isAscending());
     }
 
     return chain.compare(o1, o2);
