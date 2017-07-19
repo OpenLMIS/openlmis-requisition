@@ -16,47 +16,46 @@
 package org.openlmis.utils;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.dto.BasicProgramDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.List;
+
 @RunWith(MockitoJUnitRunner.class)
 public class BasicRequisitionDtoComparatorTest {
+  private static final String CODE = "code";
+  private static final String NAME = "name";
 
   @Mock
   private Pageable pageable;
 
-  @Mock
-  private ProgramDto program1;
-
-  @Mock
-  private ProgramDto program2;
-
-  @Mock
-  private BasicRequisitionDto requisition1;
-
-  @Mock
-  private BasicRequisitionDto requisition2;
+  private List<BasicRequisitionDto> requisitions;
 
   @Before
   public void setUp() throws Exception {
-    when(requisition1.getProgram()).thenReturn(program1);
-    when(requisition2.getProgram()).thenReturn(program2);
+    requisitions = Lists.newArrayList(
+        create(false, "A", "F1"), create(true, "C", "F2"),
+        create(true, "A", "F6"), create(false, "B", "F3"),
+        create(false, "C", "F5"), create(true, "B", "F4")
+    );
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -64,42 +63,100 @@ public class BasicRequisitionDtoComparatorTest {
     when(pageable.getSort()).thenReturn(new Sort("abc"));
 
     BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
-    comparator.compare(requisition1, requisition2);
+    comparator.compare(null, null);
   }
 
   @Test
-  public void shouldCompareBySingleField() throws Exception {
-    when(requisition1.getEmergency()).thenReturn(true);
-    when(requisition2.getEmergency()).thenReturn(false);
+  public void shouldCompareBySingleField() {
+    // given
+    Sort sort = new Sort(new Sort.Order(DESC, EMERGENCY));
 
-    when(pageable.getSort()).thenReturn(new Sort(new Sort.Order(DESC, "emergency")));
+    // when
+    sortBy(sort);
 
-    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
+    // then
+    assertThat(requisitions.get(0), hasProperty(EMERGENCY, equalTo(true)));
 
-    assertThat(comparator.compare(requisition1, requisition2), is(greaterThan(0)));
-    assertThat(comparator.compare(requisition2, requisition1), is(lessThan(0)));
-    assertThat(comparator.compare(requisition1, requisition1), is(equalTo(0)));
-    assertThat(comparator.compare(requisition2, requisition2), is(equalTo(0)));
+    assertThat(requisitions.get(1), hasProperty(EMERGENCY, equalTo(true)));
+
+    assertThat(requisitions.get(2), hasProperty(EMERGENCY, equalTo(true)));
+
+    assertThat(requisitions.get(3), hasProperty(EMERGENCY, equalTo(false)));
+
+    assertThat(requisitions.get(4), hasProperty(EMERGENCY, equalTo(false)));
+
+    assertThat(requisitions.get(5), hasProperty(EMERGENCY, equalTo(false)));
   }
 
   @Test
-  public void shouldCompareBySeveralFields() throws Exception {
-    when(requisition1.getEmergency()).thenReturn(true);
-    when(requisition2.getEmergency()).thenReturn(true);
+  public void shouldCompareBySeveralFields() {
+    // given
+    Sort sort = new Sort(new Sort.Order(DESC, "emergency"), new Sort.Order(ASC, "facilityCode"));
 
-    when(program1.getName()).thenReturn("A");
-    when(program2.getName()).thenReturn("D");
+    // when
+    sortBy(sort);
 
-    when(pageable.getSort()).thenReturn(
-        new Sort(new Sort.Order(DESC, "emergency"), new Sort.Order(ASC, "programName"))
-    );
+    assertThat(requisitions.get(0), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(0).getFacility(), hasProperty(CODE, equalTo("F2")));
 
+    assertThat(requisitions.get(1), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(1).getFacility(), hasProperty(CODE, equalTo("F4")));
 
-    BasicRequisitionDtoComparator comparator = new BasicRequisitionDtoComparator(pageable);
+    assertThat(requisitions.get(2), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(2).getFacility(), hasProperty(CODE, equalTo("F6")));
 
-    assertThat(comparator.compare(requisition1, requisition2), is(greaterThan(0)));
-    assertThat(comparator.compare(requisition2, requisition1), is(lessThan(0)));
-    assertThat(comparator.compare(requisition1, requisition1), is(equalTo(0)));
-    assertThat(comparator.compare(requisition2, requisition2), is(equalTo(0)));
+    assertThat(requisitions.get(3), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(3).getFacility(), hasProperty(CODE, equalTo("F1")));
+
+    assertThat(requisitions.get(4), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(4).getFacility(), hasProperty(CODE, equalTo("F3")));
+
+    assertThat(requisitions.get(5), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(5).getFacility(), hasProperty(CODE, equalTo("F5")));
   }
+
+  @Test
+  public void shouldCompareByDefaultSettings() {
+    // when
+    sortBy(null);
+
+    assertThat(requisitions.get(0), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(0).getProgram(), hasProperty(NAME, equalTo("A")));
+
+    assertThat(requisitions.get(1), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(1).getProgram(), hasProperty(NAME, equalTo("B")));
+
+    assertThat(requisitions.get(2), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(2).getProgram(), hasProperty(NAME, equalTo("C")));
+
+    assertThat(requisitions.get(3), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(3).getProgram(), hasProperty(NAME, equalTo("A")));
+
+    assertThat(requisitions.get(4), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(4).getProgram(), hasProperty(NAME, equalTo("B")));
+
+    assertThat(requisitions.get(5), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(5).getProgram(), hasProperty(NAME, equalTo("C")));
+  }
+
+  private BasicRequisitionDto create(boolean emergency, String programName, String facilityCode) {
+    MinimalFacilityDto facility = new MinimalFacilityDto();
+    facility.setCode(facilityCode);
+
+    BasicProgramDto program = new BasicProgramDto();
+    program.setName(programName);
+
+    BasicRequisitionDto requisition = new BasicRequisitionDto();
+    requisition.setEmergency(emergency);
+    requisition.setProgram(program);
+    requisition.setFacility(facility);
+
+    return requisition;
+  }
+
+  private void sortBy(Sort sort) {
+    when(pageable.getSort()).thenReturn(sort);
+    requisitions.sort(new BasicRequisitionDtoComparator(pageable));
+  }
+
 }
