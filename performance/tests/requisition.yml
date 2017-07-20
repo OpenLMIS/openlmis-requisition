@@ -13,7 +13,7 @@ scenarios:
         method: POST
         label: GetUserToken
         headers:
-          Authorization: Basic ${__base64Encode(${__P(basic-auth)})}
+          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
         body:
           grant_type: password
           username: ${__P(username)}
