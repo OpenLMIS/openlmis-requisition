@@ -32,9 +32,13 @@ import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -51,6 +55,12 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
 
   @Value("${auth.resourceId}")
   private String resourceId;
+
+  @Value("${cors.allowedOrigins}")
+  private String[] allowedOrigins;
+
+  @Value("${cors.allowedMethods}")
+  private String[] allowedMethods;
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
@@ -75,6 +85,7 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
     http.csrf().disable();
 
     http
+        .cors().and()
         .authorizeRequests()
         .antMatchers(
             "/requisition",
@@ -110,5 +121,21 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
     remoteTokenServices.setClientSecret(clientSecret);
     remoteTokenServices.setAccessTokenConverter(accessTokenConverter());
     return remoteTokenServices;
+  }
+
+  /**
+   * CorsConfigurationSource bean initializer.
+   * @return cors configuration
+   */
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    if (allowedOrigins.length > 0) {
+      CorsConfiguration configuration = new CorsConfiguration();
+      configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+      configuration.setAllowedMethods(Arrays.asList(allowedMethods));
+      source.registerCorsConfiguration("/**", configuration);
+    }
+    return source;
   }
 }
