@@ -90,6 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
@@ -204,7 +205,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     RequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -227,7 +228,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -247,7 +248,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -270,7 +271,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -295,7 +296,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -319,7 +320,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -343,7 +344,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -384,7 +385,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(PROCESSING_PERIOD, periodId)
         .queryParam(FACILITY, facilityId)
@@ -421,7 +422,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(REQUISITION_STATUS, submittedStatus)
         .queryParam(REQUISITION_STATUS, authorizedStatus)
         .when()
@@ -452,7 +453,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -480,7 +481,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -508,7 +509,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     BasicRequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -535,7 +536,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -562,7 +563,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -592,7 +593,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -619,7 +620,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -654,7 +655,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -678,7 +679,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -704,7 +705,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisitionId)
         .when()
@@ -734,7 +735,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -769,7 +770,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisition.getId())
         .when()
         .post(AUTHORIZATION_URL)
@@ -793,7 +794,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(AUTHORIZATION_URL)
@@ -817,7 +818,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(AUTHORIZATION_URL)
@@ -850,7 +851,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(AUTHORIZATION_URL)
@@ -880,7 +881,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     RequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(FACILITY, facilityId)
         .queryParam(SUGGESTED_PERIOD, periodId)
@@ -913,7 +914,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(FACILITY, facilityId)
         .queryParam(SUGGESTED_PERIOD, periodId)
@@ -937,7 +938,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(FACILITY, facilityId)
         .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
@@ -965,7 +966,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(FACILITY, facilityId)
         .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
@@ -999,7 +1000,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     BasicRequisitionDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(APPROVE_URL)
@@ -1026,7 +1027,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(APPROVE_URL)
@@ -1055,7 +1056,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(APPROVE_URL)
@@ -1083,7 +1084,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", requisitionId)
         .when()
         .post(APPROVE_URL)
@@ -1108,7 +1109,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(SUBMITTED_URL)
@@ -1137,7 +1138,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // when
     PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
     response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(SUBMITTED_URL)
@@ -1166,7 +1167,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(SUBMITTED_URL)
@@ -1191,7 +1192,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("programId", UUID.randomUUID())
         .queryParam("facilityId", UUID.randomUUID())
         .queryParam("emergency", false)
@@ -1219,7 +1220,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(REQ_FOR_APPROVAL_URL)
@@ -1244,7 +1245,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, program)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -1290,7 +1291,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", filterBy)
         .queryParam("sort", sortBy)
@@ -1339,7 +1340,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("filterValue", filterValue)
         .queryParam("filterBy", filterBy)
         .queryParam("sort", "emergency,desc")
@@ -1379,7 +1380,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1408,7 +1409,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1433,7 +1434,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(requisitions)
         .when()
@@ -1459,7 +1460,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(requisitions)
         .when()
@@ -1481,7 +1482,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()

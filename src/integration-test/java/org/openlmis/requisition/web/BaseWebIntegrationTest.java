@@ -77,7 +77,6 @@ public abstract class BaseWebIntegrationTest {
 
   protected static final String BASE_URL = System.getenv("BASE_URL");
   protected static final String CONTENT_TYPE = "Content-Type";
-  protected static final String ACCESS_TOKEN = "access_token";
   protected static final String APPLICATION_JSON = MediaType.APPLICATION_JSON_VALUE;
   protected static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
   protected static final String RAML_ASSERT_MESSAGE =
@@ -144,8 +143,8 @@ public abstract class BaseWebIntegrationTest {
     return any(UUID.class);
   }
 
-  protected String getToken() {
-    return UUID.randomUUID().toString();
+  protected String getTokenHeader() {
+    return "Bearer " + UUID.randomUUID().toString();
   }
 
   protected final Requisition generateRequisition() {

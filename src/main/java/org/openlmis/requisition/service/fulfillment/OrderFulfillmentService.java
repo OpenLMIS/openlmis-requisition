@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
+import static org.openlmis.utils.RequestHelper.createEntityWithAuthHeader;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
@@ -43,7 +43,8 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(OrderDto order) {
     try {
       String url = getServiceUrl() + getUrl();
-      HttpEntity<OrderDto> body = new HttpEntity<>(order);
+      HttpEntity<OrderDto> body = createEntityWithAuthHeader(order,
+              authService.obtainAccessToken());
       postNew(url, body);
     } catch (RestClientException ex) {
       throw new ValidationMessageException(
@@ -62,7 +63,8 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(List<OrderDto> orders) {
     try {
       String url = getServiceUrl() + getBatchUrl();
-      HttpEntity<List<OrderDto>> body = new HttpEntity<>(orders);
+      HttpEntity<List<OrderDto>> body = createEntityWithAuthHeader(orders,
+              authService.obtainAccessToken());
       postNew(url, body);
     } catch (RestClientException ex) {
       throw new ValidationMessageException(
@@ -98,11 +100,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   }
 
   private void postNew(String url, HttpEntity<?> body) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set(ACCESS_TOKEN, authService.obtainAccessToken());
-
-    restTemplate.postForEntity(createUri(url, parameters), body, Object.class);
+    restTemplate.postForEntity(createUri(url), body, Object.class);
   }
 
   protected String getBatchUrl() {

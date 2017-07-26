@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -27,13 +28,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 
@@ -41,9 +41,6 @@ import java.net.URI;
 import java.util.UUID;
 
 public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<OrderDto> {
-
-  @Captor
-  protected ArgumentCaptor<HttpEntity> entityCaptor;
 
   @Override
   protected BaseCommunicationService<OrderDto> getService() {
@@ -72,7 +69,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
         .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl();
 
     assertThat(uri.toString(), is(equalTo(url)));
 
@@ -81,6 +78,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
 
     assertThat(body, instanceOf(OrderDto.class));
     assertThat(((OrderDto) body).getId(), is(equalTo(order.getId())));
+    assertAuthHeader(entity);
   }
 
   @Test
@@ -98,7 +96,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
         .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getBatchUrl() + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getBatchUrl();
 
     assertThat(uri.toString(), is(equalTo(url)));
 
@@ -106,6 +104,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     Object body = entity.getBody();
 
     assertThat(body, is(asList(order, order2)));
+    assertAuthHeader(entity);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -129,8 +128,11 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     pod.setId(UUID.randomUUID());
 
     ResponseEntity<ProofOfDeliveryDto> response = mock(ResponseEntity.class);
-    when(restTemplate.getForEntity(any(URI.class), eq(ProofOfDeliveryDto.class)))
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(ProofOfDeliveryDto.class)))
         .thenReturn(response);
+
     when(response.getBody()).thenReturn(pod);
 
     // when
@@ -139,15 +141,19 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     ProofOfDeliveryDto actual = service.getProofOfDelivery(order.getId());
 
     // then
-    verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(ProofOfDeliveryDto.class)
+    verify(restTemplate).exchange(
+          uriCaptor.capture(), eq(HttpMethod.GET),
+          entityCaptor.capture(), eq(ProofOfDeliveryDto.class)
     );
 
     URI uri = uriCaptor.getValue();
     String url = service.getServiceUrl() + service.getUrl() + order.getId()
-        + "/proofOfDeliveries?" + ACCESS_TOKEN;
+        + "/proofOfDeliveries";
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(actual.getId(), is(equalTo(pod.getId())));
+
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    assertAuthHeader(entityCaptor.getValue());
   }
 }

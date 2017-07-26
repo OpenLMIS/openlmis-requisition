@@ -15,32 +15,65 @@
 
 package org.openlmis.utils;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 
 import java.net.URI;
 
 public class RequestHelperTest {
 
+  private static final String URL = "http://localhost";
+
   @Test
   public void shouldCreateUriWithoutParameters() throws Exception {
-    URI uri = RequestHelper.createUri("http://localhost", RequestParameters.init());
+    URI uri = RequestHelper.createUri(URL, RequestParameters.init());
+    assertThat(uri.getQuery(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldCreateUriWithNullParameters() throws Exception {
+    URI uri = RequestHelper.createUri(URL);
     assertThat(uri.getQuery(), is(nullValue()));
   }
 
   @Test
   public void shouldCreateUriWithParameters() throws Exception {
-    URI uri = RequestHelper.createUri("http://localhost", RequestParameters.init().set("a", "b"));
+    URI uri = RequestHelper.createUri(URL, RequestParameters.init().set("a", "b"));
     assertThat(uri.getQuery(), is("a=b"));
   }
 
   @Test
   public void shouldCreateUriWithIncorrectParameters() throws Exception {
-    URI uri = RequestHelper.createUri("http://localhost", RequestParameters.init().set("a", "b c"));
+    URI uri = RequestHelper.createUri(URL, RequestParameters.init().set("a", "b c"));
     assertThat(uri.getQuery(), is("a=b c"));
+  }
+
+  @Test
+  public void shouldCreateEntityWithAnAuthHeader() {
+    String body = "test";
+    String token = "token";
+
+    HttpEntity<String> entity = RequestHelper.createEntityWithAuthHeader(body, token);
+
+    assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
+            is(singletonList("Bearer " + token)));
+    assertThat(entity.getBody(), is(body));
+  }
+
+  @Test
+  public void shouldCreateEntityWithNoBody() {
+    String token = "token";
+
+    HttpEntity<String> entity = RequestHelper.createEntityWithAuthHeader(null, token);
+
+    assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
+            is(singletonList("Bearer " + token)));
   }
 }

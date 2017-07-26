@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -34,6 +35,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -44,8 +48,7 @@ import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseCommunicationServiceTest<T> {
-  private static final String TOKEN = UUID.randomUUID().toString();
-  protected static final String ACCESS_TOKEN = "access_token=" + TOKEN;
+  protected static final String TOKEN = UUID.randomUUID().toString();
 
   @Mock
   protected RestTemplate restTemplate;
@@ -55,6 +58,9 @@ public abstract class BaseCommunicationServiceTest<T> {
 
   @Captor
   protected ArgumentCaptor<URI> uriCaptor;
+
+  @Captor
+  protected ArgumentCaptor<HttpEntity> entityCaptor;
 
   @Before
   public void setUp() throws Exception {
@@ -76,22 +82,27 @@ public abstract class BaseCommunicationServiceTest<T> {
 
     // when
     when(response.getBody()).thenReturn(instance);
-    when(restTemplate.getForEntity(
-        any(URI.class), eq(service.getResultClass())
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+            eq(service.getResultClass())
     )).thenReturn(response);
 
     T found = service.findOne(id);
 
     // then
-    verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(service.getResultClass())
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+        entityCaptor.capture(), eq(service.getResultClass())
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(instance));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   @Test
@@ -101,22 +112,27 @@ public abstract class BaseCommunicationServiceTest<T> {
     UUID id = UUID.randomUUID();
 
     // when
-    when(restTemplate.getForEntity(
-        any(URI.class), eq(service.getResultClass())
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET),
+        any(HttpEntity.class), eq(service.getResultClass())
     )).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
     T found = service.findOne(id);
 
     // then
-    verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(service.getResultClass())
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+        entityCaptor.capture(), eq(service.getResultClass())
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(nullValue()));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   @Test(expected = DataRetrievalException.class)
@@ -126,8 +142,9 @@ public abstract class BaseCommunicationServiceTest<T> {
     UUID id = UUID.randomUUID();
 
     // when
-    when(restTemplate.getForEntity(
-        any(URI.class), eq(service.getResultClass())
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+            eq(service.getResultClass())
     )).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
     service.findOne(id);
@@ -143,6 +160,11 @@ public abstract class BaseCommunicationServiceTest<T> {
     service.setAuthService(authService);
 
     return service;
+  }
+
+  protected void assertAuthHeader(HttpEntity entity) {
+    assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
+            is(singletonList("Bearer " + TOKEN)));
   }
 
   private void mockAuth() {

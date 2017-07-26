@@ -34,6 +34,7 @@ import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
@@ -75,7 +76,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     JasperTemplateDto[] result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .when()
         .get(RESOURCE_URL)
@@ -99,7 +100,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
         .multiPart("file", requisitionReport.getFilename(), requisitionReport.getInputStream())
         .formParam("name", "name")
@@ -123,7 +124,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", template.getId())
         .when()
@@ -143,7 +144,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -164,7 +165,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     JasperTemplateDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", template.getId())
         .when()
@@ -185,7 +186,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -206,7 +207,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .pathParam(FORMAT_PARAM, "pdf")
@@ -258,7 +259,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", template.getId())
         .pathParam(FORMAT_PARAM, formatParam)
         .when()
