@@ -67,7 +67,7 @@ public final class RequestHelper {
    * @param <E> the type of the body for the request
    * @return the {@link HttpEntity} to use
    */
-  public static  <E> HttpEntity<E> createEntity(E payload, String token) {
+  public static  <E> HttpEntity<E> createEntity(String token, E payload) {
     if (payload == null) {
       return createEntity(token);
     } else {

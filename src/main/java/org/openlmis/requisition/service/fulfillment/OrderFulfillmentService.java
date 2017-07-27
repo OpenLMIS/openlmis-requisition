@@ -43,8 +43,8 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(OrderDto order) {
     try {
       String url = getServiceUrl() + getUrl();
-      HttpEntity<OrderDto> body = createEntity(order,
-              authService.obtainAccessToken());
+      HttpEntity<OrderDto> body = createEntity(authService.obtainAccessToken(),
+              order);
       postNew(url, body);
     } catch (RestClientException ex) {
       throw new ValidationMessageException(
@@ -63,8 +63,8 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(List<OrderDto> orders) {
     try {
       String url = getServiceUrl() + getBatchUrl();
-      HttpEntity<List<OrderDto>> body = createEntity(orders,
-              authService.obtainAccessToken());
+      HttpEntity<List<OrderDto>> body = createEntity(authService.obtainAccessToken(),
+              orders);
       postNew(url, body);
     } catch (RestClientException ex) {
       throw new ValidationMessageException(
