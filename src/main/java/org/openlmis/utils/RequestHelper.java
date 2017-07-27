@@ -67,7 +67,7 @@ public final class RequestHelper {
    * @param <E> the type of the body for the request
    * @return the {@link HttpEntity} to use
    */
-  public static  <E> HttpEntity<E> createEntity(String token, E payload) {
+  public static <E> HttpEntity<E> createEntity(String token, E payload) {
     if (payload == null) {
       return createEntity(token);
     } else {
@@ -80,11 +80,11 @@ public final class RequestHelper {
    * @param token the token to put into the authorization header
    * @return the {@link HttpEntity} to use
    */
-  public static  HttpEntity createEntity(String token) {
+  public static HttpEntity createEntity(String token) {
     return new HttpEntity(createHeadersWithAuth(token));
   }
 
-  private static  HttpHeaders createHeadersWithAuth(String token) {
+  private static HttpHeaders createHeadersWithAuth(String token) {
     HttpHeaders headers = new HttpHeaders();
     headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     return headers;
