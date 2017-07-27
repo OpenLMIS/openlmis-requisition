@@ -16,7 +16,6 @@
 package org.openlmis.requisition.service;
 
 import static org.openlmis.utils.RequestHelper.createEntity;
-import static org.openlmis.utils.RequestHelper.createEntity;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
