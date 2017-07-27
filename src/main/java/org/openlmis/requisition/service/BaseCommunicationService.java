@@ -15,14 +15,15 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.utils.RequestHelper.createAuthEntityNoBody;
-import static org.openlmis.utils.RequestHelper.createEntityWithAuthHeader;
+import static org.openlmis.utils.RequestHelper.createEntity;
+import static org.openlmis.utils.RequestHelper.createEntity;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.utils.DynamicPageTypeReference;
 import org.openlmis.utils.DynamicResultDtoTypeReference;
 import org.openlmis.utils.PageImplRepresentation;
+import org.openlmis.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,7 @@ public abstract class BaseCommunicationService<T> {
       return restTemplate.exchange(
               createUri(url, params),
               HttpMethod.GET,
-              createAuthEntityNoBody(authService.obtainAccessToken()),
+              createEntity(authService.obtainAccessToken()),
               type).getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
@@ -164,7 +165,7 @@ public abstract class BaseCommunicationService<T> {
       ResponseEntity<P[]> response = restTemplate.exchange(
               createUri(url, params),
               method,
-              createEntityWithAuthHeader(payload, authService.obtainAccessToken()),
+              RequestHelper.createEntity(payload, authService.obtainAccessToken()),
               type
       );
 
@@ -201,7 +202,7 @@ public abstract class BaseCommunicationService<T> {
       ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
               createUri(url, params),
               method,
-              createEntityWithAuthHeader(payload, authService.obtainAccessToken()),
+              RequestHelper.createEntity(payload, authService.obtainAccessToken()),
               new DynamicPageTypeReference<>(type)
       );
       return response.getBody();
@@ -221,7 +222,7 @@ public abstract class BaseCommunicationService<T> {
     ResponseEntity<ResultDto<P>> response = restTemplate.exchange(
         createUri(url, params),
         HttpMethod.GET,
-        createAuthEntityNoBody(authService.obtainAccessToken()),
+        createEntity(authService.obtainAccessToken()),
         new DynamicResultDtoTypeReference<>(type)
     );
 

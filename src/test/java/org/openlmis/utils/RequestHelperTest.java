@@ -60,7 +60,7 @@ public class RequestHelperTest {
     String body = "test";
     String token = "token";
 
-    HttpEntity<String> entity = RequestHelper.createEntityWithAuthHeader(body, token);
+    HttpEntity<String> entity = RequestHelper.createEntity(body, token);
 
     assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
             is(singletonList("Bearer " + token)));
@@ -71,7 +71,7 @@ public class RequestHelperTest {
   public void shouldCreateEntityWithNoBody() {
     String token = "token";
 
-    HttpEntity<String> entity = RequestHelper.createEntityWithAuthHeader(null, token);
+    HttpEntity<String> entity = RequestHelper.createEntity(null, token);
 
     assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
             is(singletonList("Bearer " + token)));

@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.openlmis.utils.RequestHelper.createEntityWithAuthHeader;
+import static org.openlmis.utils.RequestHelper.createEntity;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
@@ -43,7 +43,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(OrderDto order) {
     try {
       String url = getServiceUrl() + getUrl();
-      HttpEntity<OrderDto> body = createEntityWithAuthHeader(order,
+      HttpEntity<OrderDto> body = createEntity(order,
               authService.obtainAccessToken());
       postNew(url, body);
     } catch (RestClientException ex) {
@@ -63,7 +63,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(List<OrderDto> orders) {
     try {
       String url = getServiceUrl() + getBatchUrl();
-      HttpEntity<List<OrderDto>> body = createEntityWithAuthHeader(orders,
+      HttpEntity<List<OrderDto>> body = createEntity(orders,
               authService.obtainAccessToken());
       postNew(url, body);
     } catch (RestClientException ex) {

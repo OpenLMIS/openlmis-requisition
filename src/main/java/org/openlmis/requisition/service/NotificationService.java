@@ -60,7 +60,7 @@ public class NotificationService {
     try {
       restTemplate.postForObject(
               RequestHelper.createUri(url),
-              RequestHelper.createEntityWithAuthHeader(request,
+              RequestHelper.createEntity(request,
                       authService.obtainAccessToken()),
               Object.class);
     } catch (RestClientException ex) {
