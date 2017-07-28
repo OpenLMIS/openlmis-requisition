@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.dto;
 
-
 import org.openlmis.requisition.domain.JasperTemplateParameter;
 
 import java.util.List;
@@ -39,6 +38,8 @@ public class JasperTemplateParameterDto implements JasperTemplateParameter.Impor
   private String defaultValue;
   private String dataType;
   private String selectExpression;
+  private String selectMethod;
+  private String selectBody;
   private String selectProperty;
   private String displayProperty;
   private String description;
