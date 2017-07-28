@@ -31,7 +31,7 @@ import java.util.Map;
 
 @Service
 public class AuthService {
-  public static final String ACCESS_TOKEN = "access_token";
+  private static final String ACCESS_TOKEN = "access_token";
 
   @Value("${auth.server.clientId}")
   private String clientId;

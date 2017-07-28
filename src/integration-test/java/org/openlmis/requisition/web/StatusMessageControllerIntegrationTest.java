@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.http.HttpHeaders;
 
 public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -63,7 +64,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
 
     // when
     StatusMessageDto[] result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", requisition.getId())
         .when()
@@ -87,7 +88,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", requisition.getId())
         .when()

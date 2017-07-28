@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -44,6 +45,7 @@ import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.utils.DynamicPageTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
@@ -134,7 +136,7 @@ public class OrderFulfillmentServiceParameterizedTest
         .ok(new PageImpl<>(Lists.newArrayList(order)));
 
     // when
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(null),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
         any(DynamicPageTypeReference.class)))
         .thenReturn(response);
 
@@ -147,7 +149,7 @@ public class OrderFulfillmentServiceParameterizedTest
     assertThat(result.getContent().get(0).getId(), is(equalTo(order.getId())));
 
     verify(restTemplate, atLeastOnce()).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), eq(null),
+        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         any(DynamicPageTypeReference.class)
     );
 
@@ -159,6 +161,9 @@ public class OrderFulfillmentServiceParameterizedTest
     assertQueryParameter(parse, "program", program);
     assertQueryParameter(parse, "processingPeriod", processingPeriod);
     assertQueryParameter(parse, "status", status);
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   private void assertQueryParameter(List<NameValuePair> parse, String field, Object value) {

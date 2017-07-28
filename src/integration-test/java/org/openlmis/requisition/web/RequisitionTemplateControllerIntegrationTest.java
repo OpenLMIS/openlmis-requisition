@@ -35,6 +35,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
 
@@ -79,7 +80,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     RequisitionTemplate[] result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .when()
         .get(RESOURCE_URL)
@@ -103,7 +104,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .body(template)
         .when()
@@ -125,7 +126,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     RequisitionTemplate result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", template.getId())
         .when()
@@ -146,7 +147,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -172,7 +173,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     RequisitionTemplate result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", oldTemplate.getId())
         .body(newTemplate)
@@ -197,7 +198,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     RequisitionTemplate result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .body(template)
@@ -220,7 +221,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
@@ -240,7 +241,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -262,7 +263,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
@@ -287,7 +288,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplate result = restAssured.given()
         .queryParam("program", template.getProgramId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -308,7 +309,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     restAssured.given()
         .queryParam("program", UUID.randomUUID())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()

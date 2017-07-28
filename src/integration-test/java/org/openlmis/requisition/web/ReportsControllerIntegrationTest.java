@@ -50,6 +50,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.http.HttpHeaders;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -95,7 +96,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
         .when()
@@ -119,7 +120,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", requisition.getId())
         .when()

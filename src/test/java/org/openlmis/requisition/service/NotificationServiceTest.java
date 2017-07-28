@@ -15,7 +15,8 @@
 
 package org.openlmis.requisition.service;
 
-import static org.mockito.Matchers.any;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,11 +25,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.util.NotificationRequest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
@@ -65,8 +68,13 @@ public class NotificationServiceTest {
 
     notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT);
 
+    ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+
     verify(restTemplate).postForObject(eq(
-        new URI(BASE_URL + "/api/notification?access_token=" + ACCESS_TOKEN)),
-        any(NotificationRequest.class), eq(Object.class));
+        new URI(BASE_URL + "/api/notification")),
+        captor.capture(), eq(Object.class));
+
+    assertEquals(singletonList("Bearer " + ACCESS_TOKEN), captor.getValue().getHeaders()
+            .get(HttpHeaders.AUTHORIZATION));
   }
 }

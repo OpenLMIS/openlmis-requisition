@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.requisition.service.AuthService.ACCESS_TOKEN;
-
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.util.NotificationRequest;
 import org.openlmis.utils.RequestHelper;
@@ -55,16 +53,16 @@ public class NotificationService {
   boolean notify(UserDto user, String subject, String content) {
     String url = notificationUrl + "/api/notification";
 
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set(ACCESS_TOKEN, authService.obtainAccessToken());
-
     NotificationRequest request = new NotificationRequest(
         from, user.getEmail(), subject, content
     );
     
     try {
-      restTemplate.postForObject(RequestHelper.createUri(url, parameters), request, Object.class);
+      restTemplate.postForObject(
+              RequestHelper.createUri(url),
+              RequestHelper.createEntity(authService.obtainAccessToken(),
+                      request),
+              Object.class);
     } catch (RestClientException ex) {
       logger.error("Can not send notification ", ex);
       return false;
