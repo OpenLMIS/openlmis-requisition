@@ -30,7 +30,8 @@
     },
     "selectMethod": {
       "type": "string",
-      "title": "selectMethod"
+      "title": "selectMethod",
+      "description": "HTTP method to retrieve parameter data, if not given default value is GET"
     },
     "selectBody": {
       "type": "string",
