@@ -23,15 +23,15 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,14 +39,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -77,6 +77,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // given
     List<RequisitionTemplate> templates = Arrays.asList(generateTemplate(), generateTemplate());
     given(requisitionTemplateRepository.findAll()).willReturn(templates);
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     RequisitionTemplate[] result = restAssured.given()
@@ -101,6 +102,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // given
     RequisitionTemplate template = generateTemplate(false);
     mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     restAssured.given()
@@ -123,6 +125,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldGetChosenRequisitionTemplate() {
     // given
     RequisitionTemplate template = generateTemplate();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     RequisitionTemplate result = restAssured.given()
@@ -144,6 +147,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldNotGetNonExistentRequisitionTemplate() {
     // given
     given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     restAssured.given()
@@ -170,6 +174,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate newTemplate = generateTemplate(false);
     newTemplate.setNumberOfPeriodsToAverage(100);
     mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     RequisitionTemplate result = restAssured.given()
@@ -192,9 +197,11 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldCreateNewRequisitionTemplateIfDoesNotExist() {
     // given
-    RequisitionTemplate template = generateTemplate(false);
     given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
     mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
+
+    RequisitionTemplate template = generateTemplate(false);
 
     // when
     RequisitionTemplate result = restAssured.given()
@@ -218,6 +225,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldDeleteRequisitionTemplate() {
     // given
     RequisitionTemplate template = generateTemplate();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     restAssured.given()
@@ -238,6 +246,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldNotDeleteNonExistentRequisitionTemplate() {
     // given
     given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     restAssured.given()
@@ -260,6 +269,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate template = generateTemplate();
     List<Requisition> requisitions = Collections.singletonList(generateRequisition());
     given(requisitionRepository.findByTemplateId(template.getId())).willReturn(requisitions);
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     restAssured.given()
@@ -284,6 +294,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate template = generateTemplate();
     given(requisitionTemplateRepository.getTemplateForProgram(template.getProgramId()))
         .willReturn(template);
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     RequisitionTemplate result = restAssured.given()
@@ -303,8 +314,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldReturn403WhenUserHasNoRightsToSearchForRequisitionTemplates() {
     // given
-    PermissionMessageException exception = mockPermissionException(REQUISITION_TEMPLATES_MANAGE);
-    doThrow(exception).when(permissionService).canManageRequisitionTemplate();
+    doReturn(ValidationResult.noPermission("noAccess")).when(permissionService)
+        .canManageRequisitionTemplate();
 
     // when
     restAssured.given()

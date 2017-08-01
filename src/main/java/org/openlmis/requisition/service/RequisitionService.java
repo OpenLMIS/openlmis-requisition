@@ -15,8 +15,15 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
@@ -47,9 +54,11 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -65,7 +74,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
-import org.openlmis.requisition.web.PermissionMessageException;
+import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Message;
@@ -95,6 +104,9 @@ import java.util.stream.Collectors;
 public class RequisitionService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -146,6 +158,9 @@ public class RequisitionService {
 
   @Autowired
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+
+  @Autowired
+  private PermissionService permissionService;
 
   /**
    * Initiated given requisition if possible.
@@ -281,7 +296,7 @@ public class RequisitionService {
         for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
           item.skipLineItem(requisition.getTemplate());
         }
-        requisition.setStatus(RequisitionStatus.SKIPPED);
+        requisition.setStatus(SKIPPED);
         return requisitionRepository.save(requisition);
       }
     }
@@ -300,8 +315,7 @@ public class RequisitionService {
           requisitionId));
     } else if (requisition.isApprovable()) {
       UUID userId = authenticationHelper.getCurrentUser().getId();
-      checkIfCanApproveRequisition(requisition.getProgramId(),
-          requisition.getSupervisoryNodeId(), userId);
+      validateCanApproveRequisition(requisition, requisitionId, userId).throwExceptionIfHasErrors();
 
       LOGGER.debug("Requisition rejected: {}", requisitionId);
       Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
@@ -398,20 +412,77 @@ public class RequisitionService {
   }
 
   /**
-   * Checks if given user has permission to approve requisition, if not exception is thrown.
+   * Performs several validation checks to ensure that the given requisition can be approved.
+   * It makes sure that the user has got rights to approve the requisition, that the requisition
+   * exists and that it has got correct status to be eligible for approval.
    *
-   * @param programId         UUID of program that requisition is assigned to
-   * @param supervisoryNodeId UUID of supervisory node where requisition have to be approved
-   * @param userId            UUID of user that wants to approve requisition
+   * @param requisition the requisition to verify
+   * @param requisitionId requisition ID for which the request was made
+   * @param userId the UUID of the user approving the requisition
+   * @return ValidationResult instance containing the outcome of this validation
    */
-  public void checkIfCanApproveRequisition(UUID programId, UUID supervisoryNodeId, UUID userId) {
-    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+  public ValidationResult validateCanApproveRequisition(Requisition requisition, UUID requisitionId,
+                                                        UUID userId) {
 
-    if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
-        programId, supervisoryNodeId)) {
-      throw new PermissionMessageException(
-          new Message(MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION));
+    ValidationResult permissionCheck = permissionService.canApproveRequisition(requisitionId);
+    if (permissionCheck.hasErrors()) {
+      return permissionCheck;
     }
+
+    if (requisition == null) {
+      return ValidationResult.notFound(
+          MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId);
+    }
+
+    if (configurationSettingService.getSkipAuthorization() ? requisition.getStatus()
+        != RequisitionStatus.SUBMITTED : !requisition.isApprovable()) {
+      return ValidationResult.failedValidation(MessageKeys
+          .ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisition.getId());
+    }
+
+    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+    if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
+        requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
+      return ValidationResult.noPermission(
+          MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
+    }
+
+    return ValidationResult.success();
+  }
+
+  /**
+   * Performs several validation checks to ensure that the given requisition can be saved.
+   * It makes sure that the user has got rights to save the requisition, that the requisition
+   * exists and that it has got correct status to be eligible for saving.
+   *
+   * @param requisitionDto the requisition DTO to verify
+   * @param requisitionId the UUID for which the request was made
+   * @return ValidationResult instance containing the outcome of this validation
+   */
+  public ValidationResult validateCanSaveRequisition(RequisitionDto requisitionDto,
+                                                     UUID requisitionId) {
+    ValidationResult permissionCheck = permissionService.canUpdateRequisition(requisitionId);
+    if (permissionCheck.hasErrors()) {
+      return permissionCheck;
+    }
+
+    if (isNotTrue(isNull(requisitionDto.getId()))
+        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
+      return ValidationResult.failedValidation(ERROR_ID_MISMATCH);
+    }
+
+    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+    if (isNull(requisitionToUpdate)) {
+      return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
+    }
+
+    RequisitionStatus status = requisitionToUpdate.getStatus();
+    if (status == APPROVED || status == SKIPPED || status == RELEASED) {
+      return ValidationResult.failedValidation(ERROR_CANNOT_UPDATE_WITH_STATUS,
+          requisitionToUpdate.getStatus());
+    }
+
+    return ValidationResult.success();
   }
 
   /**
@@ -433,7 +504,7 @@ public class RequisitionService {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
 
-      if (RequisitionStatus.APPROVED == loadedRequisition.getStatus()) {
+      if (APPROVED == loadedRequisition.getStatus()) {
         loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
       } else {
         throw new ValidationMessageException(new Message(ERROR_REQUISITION_MUST_BE_APPROVED,

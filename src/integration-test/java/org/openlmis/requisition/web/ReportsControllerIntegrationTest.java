@@ -19,6 +19,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import org.joda.money.CurrencyUnit;
@@ -45,6 +46,7 @@ import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -85,6 +87,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     mockUserAuthenticated();
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class))).willReturn(
             Collections.emptyList());
+    doReturn(ValidationResult.success()).when(permissionService).canViewRequisition(anyUuid());
   }
 
   // GET /api/requisitions/{id}/print

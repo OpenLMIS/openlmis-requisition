@@ -80,7 +80,7 @@ public class JasperTemplateController extends BaseController {
   public void createJasperReportTemplate(
       @RequestPart("file") MultipartFile file, String name, String description)
       throws ReportingException {
-    permissionService.canEditReportTemplates();
+    permissionService.canEditReportTemplates().throwExceptionIfHasErrors();
 
     JasperTemplate jasperTemplateToUpdate = jasperTemplateRepository.findByName(name);
     if (jasperTemplateToUpdate == null) {
@@ -106,7 +106,7 @@ public class JasperTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Iterable<JasperTemplateDto> getAllTemplates() {
-    permissionService.canViewReports();
+    permissionService.canViewReports().throwExceptionIfHasErrors();
     Iterable<JasperTemplateDto> templates =
         JasperTemplateDto.newInstance(jasperTemplateRepository.findAll());
     return templates;
@@ -122,7 +122,7 @@ public class JasperTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public JasperTemplateDto getTemplate(@PathVariable("id") UUID templateId) {
-    permissionService.canViewReports();
+    permissionService.canViewReports().throwExceptionIfHasErrors();
     JasperTemplate jasperTemplate =
         jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
@@ -141,7 +141,7 @@ public class JasperTemplateController extends BaseController {
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteTemplate(@PathVariable("id") UUID templateId) {
-    permissionService.canEditReportTemplates();
+    permissionService.canEditReportTemplates().throwExceptionIfHasErrors();
     JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
     if (jasperTemplate == null) {
       throw new ContentNotFoundMessageException(new Message(
@@ -164,7 +164,7 @@ public class JasperTemplateController extends BaseController {
   public ModelAndView generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
-    permissionService.canViewReports();
+    permissionService.canViewReports().throwExceptionIfHasErrors();
 
     JasperTemplate template = jasperTemplateRepository.findOne(templateId);
     if (template == null) {

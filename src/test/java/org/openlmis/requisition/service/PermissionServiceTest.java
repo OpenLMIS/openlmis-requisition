@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,9 +32,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEM
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
@@ -44,10 +44,10 @@ import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.errorhandling.FailureType;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.springframework.security.core.Authentication;
@@ -55,6 +55,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,9 +63,6 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
 public class PermissionServiceTest {
-
-  @Rule
-  public final ExpectedException exception = ExpectedException.none();
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -168,41 +166,39 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canInitRequisition() throws Exception {
+  public void canInitRequisition() {
     hasRight(requisitionCreateRightId, true);
 
-    permissionService.canInitRequisition(programId, facilityId);
+    expectValidationSucceeds(permissionService.canInitRequisition(programId, facilityId));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
-  public void cannotInitRequisition() throws Exception {
-    expectException(REQUISITION_CREATE);
-
-    permissionService.canInitRequisition(programId, facilityId);
+  public void cannotInitRequisition() {
+    expectMissingPermission(permissionService.canInitRequisition(programId, facilityId),
+        REQUISITION_CREATE);
   }
 
   @Test
-  public void canUpdateRequisition() throws Exception {
+  public void canUpdateRequisition() {
     hasRight(requisitionCreateRightId, true);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionService.canUpdateRequisition(requisitionId);
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisitionId));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
   }
 
   @Test
-  public void cannotUpdateRequisition() throws Exception {
-    expectUpdateException(RequisitionStatus.INITIATED, REQUISITION_CREATE);
-
+  public void cannotUpdateRequisition() {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionService.canUpdateRequisition(requisitionId);
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisitionId),
+        RequisitionStatus.INITIATED, REQUISITION_CREATE);
   }
 
   @Test
@@ -216,14 +212,13 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotSubmitRequisition() throws Exception {
-    expectException(REQUISITION_CREATE);
-
-    permissionService.canSubmitRequisition(requisitionId);
+  public void cannotSubmitRequisition() {
+    expectMissingPermission(permissionService.canSubmitRequisition(requisitionId),
+        REQUISITION_CREATE);
   }
 
   @Test
-  public void canApproveRequisition() throws Exception {
+  public void canApproveRequisition() {
     hasRight(requisitionApproveRightId, true);
 
     permissionService.canApproveRequisition(requisitionId);
@@ -233,14 +228,13 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotApproveRequisition() throws Exception {
-    expectException(REQUISITION_APPROVE);
-
-    permissionService.canApproveRequisition(requisitionId);
+  public void cannotApproveRequisition() {
+    expectMissingPermission(permissionService.canApproveRequisition(requisitionId),
+        REQUISITION_APPROVE);
   }
 
   @Test
-  public void canAuthorizeRequisition() throws Exception {
+  public void canAuthorizeRequisition() {
     hasRight(requisitionAuthorizeRightId, true);
 
     permissionService.canAuthorizeRequisition(requisitionId);
@@ -250,10 +244,9 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotAuthorizeRequisition() throws Exception {
-    expectException(REQUISITION_AUTHORIZE);
-
-    permissionService.canAuthorizeRequisition(requisitionId);
+  public void cannotAuthorizeRequisition() {
+    expectMissingPermission(permissionService.canAuthorizeRequisition(requisitionId),
+        REQUISITION_AUTHORIZE);
   }
 
   @Test
@@ -273,8 +266,8 @@ public class PermissionServiceTest {
     hasRight(requisitionDeleteRightId, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    expectException(REQUISITION_CREATE);
-    permissionService.canDeleteRequisition(requisitionId);
+    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+        REQUISITION_CREATE);
   }
 
   @Test
@@ -294,25 +287,24 @@ public class PermissionServiceTest {
     hasRight(requisitionDeleteRightId, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
-    expectException(REQUISITION_AUTHORIZE);
-    permissionService.canDeleteRequisition(requisitionId);
+    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+        REQUISITION_AUTHORIZE);
   }
 
   @Test
   public void cannotDeleteRequisitionWhenHasNoDeleteRight() {
-    expectException(REQUISITION_DELETE);
-
-    permissionService.canDeleteRequisition(requisitionId);
+    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+        REQUISITION_DELETE);
   }
 
   @Test
   public void shouldThrowContentNotFoundMessageExceptionRequisitionWhenIsNotInRepository() {
     when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
 
-    exception.expect(ContentNotFoundMessageException.class);
-    exception.expectMessage(ERROR_REQUISITION_NOT_FOUND + ": " + requisitionId);
-
-    permissionService.canDeleteRequisition(requisitionId);
+    ValidationResult result = permissionService.canDeleteRequisition(requisitionId);
+    assertEquals(FailureType.NOT_FOUND, result.getError().getType());
+    assertEquals(new Message(ERROR_REQUISITION_NOT_FOUND, requisitionId),
+        result.getError().getMessage());
   }
 
   @Test
@@ -327,9 +319,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotViewRequisition() throws Exception {
-    expectException(REQUISITION_VIEW);
-
-    permissionService.canViewRequisition(requisitionId);
+    expectMissingPermission(permissionService.canViewRequisition(requisitionId), REQUISITION_VIEW);
   }
 
   @Test
@@ -344,9 +334,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotConvertToOrder() throws Exception {
-    expectException(ORDERS_EDIT);
-
-    permissionService.canConvertToOrder(convertToOrderDtos);
+    expectMissingPermission(permissionService.canConvertToOrder(convertToOrderDtos), ORDERS_EDIT);
   }
 
   @Test
@@ -361,9 +349,8 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotManageRequisitionTemplate() throws Exception {
-    expectException(REQUISITION_TEMPLATES_MANAGE);
-
-    permissionService.canManageRequisitionTemplate();
+    expectMissingPermission(permissionService.canManageRequisitionTemplate(),
+        REQUISITION_TEMPLATES_MANAGE);
   }
 
   @Test
@@ -400,15 +387,23 @@ public class PermissionServiceTest {
     ).thenReturn(resultDto);
   }
 
-  private void expectException(String rightName) {
-    exception.expect(PermissionMessageException.class);
-    exception.expectMessage(ERROR_NO_FOLLOWING_PERMISSION + ": " + rightName);
+  private void expectValidationSucceeds(ValidationResult validationResult) {
+    assertTrue(validationResult.isSuccess());
   }
 
-  private void expectUpdateException(RequisitionStatus status, String rightName) {
-    exception.expect(PermissionMessageException.class);
-    exception.expectMessage(new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
-        status.toString(), rightName).toString());
+  private void expectMissingPermission(ValidationResult result, String rightName) {
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
+    assertEquals(new Message(ERROR_NO_FOLLOWING_PERMISSION, rightName),
+        result.getError().getMessage());
+  }
+
+  private void expectMissingPermissionToUpdate(ValidationResult result, RequisitionStatus status,
+                                               String rightName) {
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
+    assertEquals(new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
+        status.toString(), rightName), result.getError().getMessage());
   }
 
   private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {

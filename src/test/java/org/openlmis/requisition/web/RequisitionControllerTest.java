@@ -24,11 +24,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +51,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -68,6 +71,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.validation.Errors;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -186,6 +190,9 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldReturnCurrentPeriodForEmergency() throws Exception {
+    when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
+        .thenReturn(ValidationResult.success());
+
     Collection<ProcessingPeriodDto> periods =
         requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true);
 
@@ -208,6 +215,9 @@ public class RequisitionControllerTest {
     UserDto submitter = mock(UserDto.class);
     when(submitter.getId()).thenReturn(UUID.randomUUID());
 
+    when(permissionService.canSubmitRequisition(uuid1))
+        .thenReturn(ValidationResult.success());
+
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
     when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
@@ -221,6 +231,8 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotSubmitInvalidRequisition() {
+    when(permissionService.canSubmitRequisition(uuid1))
+        .thenReturn(ValidationResult.success());
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
       errors.reject("requisitionLineItems",
@@ -246,6 +258,12 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid2)).thenReturn(initiatedRequsition);
 
+    when(requisitionService.validateCanSaveRequisition(any(RequisitionDto.class), any(UUID.class)))
+        .thenReturn(ValidationResult.failedValidation("IdsMismatch"));
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
     requisitionController.updateRequisition(requisitionDto, uuid2);
   }
 
@@ -262,6 +280,11 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
+
+    when(requisitionService.validateCanSaveRequisition(requisitionDto, uuid1))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
 
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
@@ -282,6 +305,10 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
     when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
     when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(requisitionService.validateCanSaveRequisition(any(RequisitionDto.class), any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
 
     doAnswer(invocation -> {
       Errors errors = (Errors) invocation.getArguments()[1];
@@ -293,6 +320,8 @@ public class RequisitionControllerTest {
     assertThatThrownBy(() -> requisitionController.updateRequisition(requisitionDto, uuid1))
         .isInstanceOf(BindingResultException.class);
 
+    verify(requisitionService).validateCanSaveRequisition(
+        any(RequisitionDto.class), any(UUID.class));
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 
@@ -316,11 +345,15 @@ public class RequisitionControllerTest {
     UserDto approver = mock(UserDto.class);
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(ValidationResult.success());
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
-        any(UUID.class),
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
         any(UUID.class),
         any(UUID.class));
 
@@ -334,11 +367,15 @@ public class RequisitionControllerTest {
     UserDto approver = mock(UserDto.class);
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(ValidationResult.success());
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
-        any(UUID.class),
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
         any(UUID.class),
         any(UUID.class));
 
@@ -354,8 +391,8 @@ public class RequisitionControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
     PermissionMessageException exception = mock(PermissionMessageException.class);
-    doThrow(exception).when(requisitionService).checkIfCanApproveRequisition(
-        any(UUID.class),
+    doThrow(exception).when(requisitionService).validateCanApproveRequisition(
+        any(Requisition.class),
         any(UUID.class),
         any(UUID.class));
 
@@ -364,6 +401,9 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
+    when(permissionService.canApproveRequisition(authorizedRequsition.getId()))
+        .thenReturn(ValidationResult.success());
+
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).reject(authorizedRequsition.getId());
@@ -371,7 +411,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotRejectRequisitionWhenUserCanNotApproveRequisition() {
-    doThrow(PermissionMessageException.class)
+    doReturn(ValidationResult.noPermission("notAuthorized"))
         .when(permissionService).canApproveRequisition(uuid4);
 
     assertThatThrownBy(() -> requisitionController.rejectRequisition(uuid4))
@@ -382,6 +422,8 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldCallRequisitionStatusNotifierWhenReject() {
+    when(permissionService.canApproveRequisition(authorizedRequsition.getId()))
+        .thenReturn(ValidationResult.success());
     when(requisitionService.reject(authorizedRequsition.getId())).thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
@@ -391,14 +433,18 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldProcessStatusChangeWhenApprovingRequisition() throws Exception {
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(ValidationResult.success());
     UserDto approver = mock(UserDto.class);
     when(approver.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(approver);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).checkIfCanApproveRequisition(
-        any(UUID.class),
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
         any(UUID.class),
         any(UUID.class));
 
@@ -407,6 +453,8 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() throws Exception {
+    when(permissionService.canAuthorizeRequisition(submittedRequsition.getId()))
+        .thenReturn(ValidationResult.success());
     UserDto submitter = mock(UserDto.class);
     when(submitter.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
@@ -480,7 +528,7 @@ public class RequisitionControllerTest {
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
-    verifyZeroInteractions(requisitionService);
+    verifyNoMoreInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyList());
     verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
   }

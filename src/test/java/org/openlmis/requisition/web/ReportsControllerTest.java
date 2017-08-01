@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -70,6 +71,9 @@ public class ReportsControllerTest {
   @Test(expected = ContentNotFoundMessageException.class)
   public void shouldNotPrintRequisitionIfTRequisitionDoesNotExist()
       throws JasperReportViewException {
+    //given
+    when(permissionService.canViewRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.notFound("requisition.not.found"));
     // when
     reportsController.print(mock(HttpServletRequest.class), UUID.randomUUID());
   }
@@ -84,6 +88,8 @@ public class ReportsControllerTest {
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
     when(jasperReportsViewService.getRequisitionJasperReportView(
         any(Requisition.class), any(HttpServletRequest.class))).thenReturn(view);
+    when(permissionService.canViewRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
 
     // when
     ModelAndView result = reportsController.print(request, UUID.randomUUID());
