@@ -53,7 +53,7 @@ public class StatusMessageController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public List<StatusMessageDto> getAllRequisitionStatusMessages(@PathVariable("id") UUID id) {
-    permissionService.canViewRequisition(id);
+    permissionService.canViewRequisition(id).throwExceptionIfHasErrors();
     List<StatusMessage> statusMessages = statusMessageRepository.findByRequisitionId(id);
     return exportToDtos(statusMessages);
   }

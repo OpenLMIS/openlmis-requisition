@@ -19,7 +19,7 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
 import org.junit.Before;
@@ -28,15 +28,16 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-import org.springframework.http.HttpHeaders;
 
 public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -61,6 +62,8 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
 
     List<StatusMessage> messages = Collections.singletonList(message);
     given(statusMessageRepository.findByRequisitionId(requisition.getId())).willReturn(messages);
+    doReturn(ValidationResult.success()).when(
+        permissionService).canViewRequisition(requisition.getId());
 
     // when
     StatusMessageDto[] result = restAssured.given()
@@ -83,7 +86,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
   public void shouldReturn403WhenUserHasNoRightsToViewRequisitionOfStatusMessage() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    doThrow(mockPermissionException(REQUISITION_VIEW))
+    doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, REQUISITION_VIEW))
         .when(permissionService).canViewRequisition(requisition.getId());
 
     // when

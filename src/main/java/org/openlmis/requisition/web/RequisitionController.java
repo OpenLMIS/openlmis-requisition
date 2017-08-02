@@ -15,13 +15,8 @@
 
 package org.openlmis.requisition.web;
 
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -87,6 +82,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -201,7 +197,7 @@ public class RequisitionController extends BaseController {
           new Message(MessageKeys.ERROR_PROGRAM_NOT_FOUND, programId));
     }
 
-    permissionService.canInitRequisition(programId, facilityId);
+    permissionService.canInitRequisition(programId, facilityId).throwExceptionIfHasErrors();
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
     Requisition newRequisition = requisitionService
@@ -229,7 +225,7 @@ public class RequisitionController extends BaseController {
           new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
     }
 
-    permissionService.canInitOrAuthorizeRequisition(program, facility);
+    permissionService.canInitOrAuthorizeRequisition(program, facility).throwExceptionIfHasErrors();
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, program);
 
@@ -245,7 +241,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canSubmitRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisitionId).throwExceptionIfHasErrors();
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new ContentNotFoundMessageException(
@@ -259,9 +255,6 @@ public class RequisitionController extends BaseController {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
-
-    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
-        requisition.getProgramId());
 
     LOGGER.debug("Submitting a requisition with id " + requisition.getId());
 
@@ -284,7 +277,7 @@ public class RequisitionController extends BaseController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisitionId).throwExceptionIfHasErrors();
     requisitionService.delete(requisitionId);
   }
 
@@ -300,56 +293,37 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                           @PathVariable("id") UUID requisitionId) {
-    permissionService.canUpdateRequisition(requisitionId);
-
-    if (isNotTrue(isNull(requisitionDto.getId()))
-        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
-      throw new ValidationMessageException(new Message(ERROR_ID_MISMATCH));
-    }
+    requisitionService.validateCanSaveRequisition(requisitionDto, requisitionId)
+        .throwExceptionIfHasErrors();
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-
-    if (isNull(requisitionToUpdate)) {
-      throw new ContentNotFoundMessageException(new Message(
-          ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    }
-
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
         requisitionToUpdate.getStatus());
     requisition.setId(requisitionId);
 
-    requisitionVersionValidator.validateRequisitionTimestamps(
-        requisition, requisitionToUpdate
-    );
+    requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
+        .throwExceptionIfHasErrors();
 
-    RequisitionStatus status = requisitionToUpdate.getStatus();
-    if (status != RequisitionStatus.APPROVED
-        && status != RequisitionStatus.SKIPPED
-        && status != RequisitionStatus.RELEASED) {
-      LOGGER.debug("Updating requisition with id: {}", requisitionId);
+    LOGGER.debug("Updating requisition with id: {}", requisitionId);
 
-      BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-      draftValidator.validate(requisition, bindingResult);
+    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
+    draftValidator.validate(requisition, bindingResult);
 
-      if (bindingResult.hasErrors()) {
-        LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-        throw new BindingResultException(getErrors(bindingResult));
-      }
-
-      requisitionToUpdate.updateFrom(requisition,
-          stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-              requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
-                      getLineItemOrderableIds(requisition)));
-
-      requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
-
-      LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-      return requisitionDtoBuilder.build(requisitionToUpdate);
-    } else {
-      throw new ValidationMessageException(new Message(ERROR_CANNOT_UPDATE_WITH_STATUS,
-          requisitionToUpdate.getStatus()));
+    if (bindingResult.hasErrors()) {
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
+      throw new BindingResultException(getErrors(bindingResult));
     }
+
+    requisitionToUpdate.updateFrom(requisition,
+        stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
+            requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
+                    getLineItemOrderableIds(requisition)));
+
+    requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+
+    LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
+    return requisitionDtoBuilder.build(requisitionToUpdate);
   }
 
   /**
@@ -362,7 +336,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canViewRequisition(requisitionId);
+    permissionService.canViewRequisition(requisitionId).throwExceptionIfHasErrors();
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
       throw new ContentNotFoundMessageException(
@@ -410,7 +384,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canUpdateRequisition(requisitionId);
+    permissionService.canUpdateRequisition(requisitionId).throwExceptionIfHasErrors();
 
     Requisition requisition = requisitionService.skip(requisitionId);
     requisitionStatusProcessor.statusChange(requisition);
@@ -424,7 +398,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canApproveRequisition(requisitionId);
+    permissionService.canApproveRequisition(requisitionId).throwExceptionIfHasErrors();
     Requisition rejectedRequisition = requisitionService.reject(requisitionId);
     requisitionStatusProcessor.statusChange(rejectedRequisition);
 
@@ -440,55 +414,24 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canApproveRequisition(requisitionId);
+
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    }
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+
+    requisitionService.validateCanApproveRequisition(requisition, requisitionId, userId)
+        .throwExceptionIfHasErrors();
 
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
     validator.validate(requisition, bindingResult);
-
     if (bindingResult.hasErrors()) {
       LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
-    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
-        requisition.getProgramId());
 
-    if (requisition.isApprovable()
-        || (configurationSettingService.getSkipAuthorization()
-        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
+    SupervisoryNodeDto supervisoryNodeDto =
+        supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
-      SupervisoryNodeDto supervisoryNodeDto =
-          supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
-      UUID userId = authenticationHelper.getCurrentUser().getId();
-
-      requisitionService.checkIfCanApproveRequisition(requisition.getProgramId(),
-          supervisoryNodeDto != null ? supervisoryNodeDto.getId() : null, userId);
-
-      UUID parentNodeId = null;
-      if (supervisoryNodeDto != null) {
-        SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
-        if (parentNode != null) {
-          parentNodeId = parentNode.getId();
-        }
-      }
-
-      requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
-              getLineItemOrderableIds(requisition)), userId);
-
-      saveStatusMessage(requisition);
-
-      requisitionRepository.save(requisition);
-      requisitionStatusProcessor.statusChange(requisition);
-      LOGGER.debug("Requisition with id " + requisitionId + " approved");
-      return basicRequisitionDtoBuilder.build(requisition);
-    } else {
-      throw new ValidationMessageException(new Message(
-          MessageKeys.ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisitionId));
-    }
+    return markAsApproved(requisition, userId, supervisoryNodeDto);
   }
 
   /**
@@ -540,7 +483,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
-    permissionService.canAuthorizeRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisitionId).throwExceptionIfHasErrors();
 
     if (configurationSettingService.getSkipAuthorization()) {
       throw new ValidationMessageException(new Message(ERROR_AUTHORIZATION_TO_BE_SKIPPED));
@@ -559,8 +502,6 @@ public class RequisitionController extends BaseController {
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
-    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(requisition.getFacilityId(),
-        requisition.getProgramId());
 
     UserDto user = authenticationHelper.getCurrentUser();
 
@@ -617,7 +558,7 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   public void convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
     UserDto user = authenticationHelper.getCurrentUser();
-    permissionService.canConvertToOrder(list);
+    permissionService.canConvertToOrder(list).throwExceptionIfHasErrors();
     requisitionService.convertToOrder(list, user);
   }
 
@@ -636,6 +577,27 @@ public class RequisitionController extends BaseController {
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
     }
+  }
+
+  protected BasicRequisitionDto markAsApproved(Requisition requisition, UUID userId,
+                                               SupervisoryNodeDto supervisoryNodeDto) {
+    UUID parentNodeId = null;
+    if (supervisoryNodeDto != null) {
+      SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
+      if (parentNode != null) {
+        parentNodeId = parentNode.getId();
+      }
+    }
+
+    requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
+        getLineItemOrderableIds(requisition)), userId);
+
+    saveStatusMessage(requisition);
+
+    requisitionRepository.save(requisition);
+    requisitionStatusProcessor.statusChange(requisition);
+    LOGGER.debug("Requisition with id " + requisition.getId() + " approved");
+    return basicRequisitionDtoBuilder.build(requisition);
   }
 
   private Set<UUID> getLineItemOrderableIds(Requisition requisition) {
