@@ -16,6 +16,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2788](https://openlmis.atlassian.net/browse/OLMIS-2788): Fixed print requisition.
 * [OLMIS-2747](https://openlmis.atlassian.net/browse/OLMIS-2747): Fixed bug preventing user from being able to re-initiate a requisition after being removed, when there's already a requisition for next period.
 * [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
+* [MW-397](https://openlmis.atlassian.net/browse/MW-397): Refactored the error handling.
 
 4.0.0 / 2017-06-23
 ==================
