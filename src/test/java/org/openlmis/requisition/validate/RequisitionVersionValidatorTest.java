@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.validate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -22,7 +24,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.exception.VersionMismatchException;
+import org.openlmis.requisition.errorhandling.FailureType;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 
 import java.time.ZonedDateTime;
 
@@ -42,37 +45,44 @@ public class RequisitionVersionValidatorTest {
   public void shouldAcceptCorrectModifiedDate() {
     ZonedDateTime dateModified = ZonedDateTime.now();
 
-    testModifiedDateValidation(dateModified, ZonedDateTime.from(dateModified));
+    ValidationResult result =
+        testModifiedDateValidation(dateModified, ZonedDateTime.from(dateModified));
+    assertTrue(result.isSuccess());
   }
 
   @Test
   public void shouldAcceptWithNoModifiedDate() {
     ZonedDateTime dateModified = ZonedDateTime.now();
 
-    testModifiedDateValidation(null, dateModified);
+    ValidationResult result = testModifiedDateValidation(null, dateModified);
+    assertTrue(result.isSuccess());
   }
 
-  @Test(expected = VersionMismatchException.class)
+  @Test
   public void shouldRejectFutureModifiedDate() {
     ZonedDateTime dateModified = ZonedDateTime.now();
     ZonedDateTime incomingDate = dateModified.plusYears(1);
 
-    testModifiedDateValidation(incomingDate, dateModified);
+    ValidationResult result = testModifiedDateValidation(incomingDate, dateModified);
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.CONFLICT, result.getError().getType());
   }
 
-  @Test(expected = VersionMismatchException.class)
+  @Test
   public void shouldRejectPastModifiedDate() {
     ZonedDateTime dateModified = ZonedDateTime.now();
     ZonedDateTime incomingDate = dateModified.minusMinutes(5);
 
-    testModifiedDateValidation(incomingDate, dateModified);
+    ValidationResult result = testModifiedDateValidation(incomingDate, dateModified);
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.CONFLICT, result.getError().getType());
   }
 
-  private void testModifiedDateValidation(ZonedDateTime incomingDate, ZonedDateTime
+  private ValidationResult testModifiedDateValidation(ZonedDateTime incomingDate, ZonedDateTime
       databaseDate) {
     when(incomingReq.getModifiedDate()).thenReturn(incomingDate);
     when(existingReq.getModifiedDate()).thenReturn(databaseDate);
-    requisitionVersionValidator.validateRequisitionTimestamps(
+    return requisitionVersionValidator.validateRequisitionTimestamps(
         incomingReq, existingReq);
   }
 }

@@ -28,6 +28,15 @@
       "type": "string",
       "title": "selectExpression"
     },
+    "selectMethod": {
+      "type": "string",
+      "title": "selectMethod",
+      "description": "HTTP method to retrieve parameter data, if not given default value is GET"
+    },
+    "selectBody": {
+      "type": "string",
+      "title": "selectBody"
+    },
     "description": {
       "type": "string",
       "title": "description"

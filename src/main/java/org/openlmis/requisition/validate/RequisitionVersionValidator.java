@@ -18,7 +18,7 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 
 import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.exception.VersionMismatchException;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
@@ -34,18 +34,19 @@ public class RequisitionVersionValidator {
 
   /**
    * Validates if the date modified of the incoming requisition matches
-   * the date modified of the existing requisition. If not, a
-   * {@link VersionMismatchException} is thrown. If the incoming requisition has
+   * the date modified of the existing requisition. If the incoming requisition has
    * no modified date, that will not trigger the exception.
    * @param incomingReq the requisition to validate
    * @param existingReq the existing version of the requisition
+   * @return ValidationResult that contains outcome of this validation
    */
-  public void validateRequisitionTimestamps(Requisition incomingReq,
-                                            Requisition existingReq) {
+  public ValidationResult validateRequisitionTimestamps(Requisition incomingReq,
+                                                        Requisition existingReq) {
     ZonedDateTime dateModified = incomingReq.getModifiedDate();
     if (dateModified != null
         && !dateModified.isEqual(existingReq.getModifiedDate())) {
-      throw new VersionMismatchException(ERROR_DATE_MODIFIED_MISMATCH);
+      return ValidationResult.conflict(ERROR_DATE_MODIFIED_MISMATCH);
     }
+    return ValidationResult.success();
   }
 }

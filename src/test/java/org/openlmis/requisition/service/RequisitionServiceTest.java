@@ -69,12 +69,15 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.errorhandling.FailureType;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -93,7 +96,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
-import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.BasicRequisitionDtoComparator;
@@ -123,6 +125,7 @@ import java.util.stream.Collectors;
 public class RequisitionServiceTest {
 
   private Requisition requisition;
+  private RequisitionDto requisitionDto;
 
   @Mock
   private RequisitionLineItem lineItem1;
@@ -237,6 +240,7 @@ public class RequisitionServiceTest {
   @Before
   public void setUp() {
     generateRequisition();
+    generateRequisitionDto();
     mockRepositories();
   }
 
@@ -373,11 +377,11 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
@@ -386,11 +390,11 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsInApproval() {
     requisition.setStatus(IN_APPROVAL);
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
@@ -400,26 +404,15 @@ public class RequisitionServiceTest {
   public void shouldSaveStatusMessageWhileRejectingRequisition() {
     requisition.setStatus(AUTHORIZED);
     requisition.setDraftStatusMessage("some_message");
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(true);
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition.getId());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
-  }
-
-  @Test(expected = PermissionMessageException.class)
-  public void shouldThrowExceptionWhenUserHasNoPermissionToApproveThisRequisition() {
-    requisition.setStatus(IN_APPROVAL);
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class))).thenReturn(false);
-    requisitionService.reject(requisition.getId());
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -639,27 +632,119 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfUserCanApproveRequisition() {
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class)))
+  public void shouldPassValidationIfUserCanApproveRequisition() {
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
 
-    requisitionService.checkIfCanApproveRequisition(programId, supervisoryNodeId, userId);
+    ValidationResult result = requisitionService.validateCanApproveRequisition(
+        requisition, requisition.getId(), userId);
+
+    assertTrue(result.isSuccess());
   }
 
-  @Test(expected = PermissionMessageException.class)
-  public void shouldThrowExceptionIfUserHasNoApproveRightAssigned() {
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        any(RightDto.class),
-        any(UUID.class),
-        any(UUID.class),
-        any(UUID.class)))
-        .thenReturn(false);
+  @Test
+  public void shouldFailValidationIfUserHasNoApproveRightAssigned() {
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.noPermission("no.permission"));
 
-    requisitionService.checkIfCanApproveRequisition(programId, supervisoryNodeId, userId);
+    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
+        requisition.getId(), userId);
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfRequisitionDoesNotExist() {
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+
+    ValidationResult result = requisitionService.validateCanApproveRequisition(null,
+        UUID.randomUUID(), userId);
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NOT_FOUND, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfRequisitionIsInIncorrectState() {
+    when(permissionService.canApproveRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
+    requisition.setStatus(INITIATED);
+
+    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
+        UUID.randomUUID(), userId);
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.VALIDATION, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfUserHasNoUpdateRightsAssigned() {
+    when(permissionService.canUpdateRequisition(requisitionDto.getId()))
+        .thenReturn(ValidationResult.noPermission("no.permission"));
+
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
+        requisitionDto.getId());
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfIdsDoNotMatch() {
+    when(permissionService.canUpdateRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
+        UUID.randomUUID());
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.VALIDATION, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfRequisitionDoesNotExistOnSave() {
+    when(permissionService.canUpdateRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(null);
+
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
+        requisitionDto.getId());
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NOT_FOUND, result.getError().getType());
+  }
+
+  @Test
+  public void shouldFailValidationIfRequisitionIsInIncorrectStatus() {
+    when(permissionService.canUpdateRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
+    requisition.setStatus(RELEASED);
+
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
+        requisitionDto.getId());
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.VALIDATION, result.getError().getType());
+  }
+
+  @Test
+  public void shouldPassValidationIfUserCanUpdateRequisition() {
+    when(permissionService.canUpdateRequisition(any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
+    requisition.setStatus(SUBMITTED);
+
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
+        requisitionDto.getId());
+
+    assertTrue(result.isSuccess());
   }
 
   @Test
@@ -1099,6 +1184,14 @@ public class RequisitionServiceTest {
     requisition.setSupervisoryNodeId(supervisoryNodeId);
     requisition.setStatus(AUTHORIZED);
     return requisition;
+  }
+
+  private RequisitionDto generateRequisitionDto() {
+    requisitionDto = new RequisitionDto();
+    requisitionDto.setId(UUID.randomUUID());
+    requisitionDto.setSupervisoryNode(supervisoryNodeId);
+    requisitionDto.setStatus(AUTHORIZED);
+    return requisitionDto;
   }
 
   private SupplyLineDto generateSupplyLine(

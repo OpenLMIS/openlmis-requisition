@@ -22,6 +22,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -29,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
@@ -38,14 +40,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -64,6 +66,8 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   @Before
   public void setUp() {
     mockUserAuthenticated();
+    doReturn(ValidationResult.success()).when(permissionService).canEditReportTemplates();
+    doReturn(ValidationResult.success()).when(permissionService).canViewReports();
   }
 
   // GET /api/reports/templates/requisitions

@@ -72,7 +72,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public RequisitionTemplateDto createRequisitionTemplate(
       @RequestBody RequisitionTemplateDto requisitionTemplateDto, BindingResult bindingResult) {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
     RequisitionTemplate requisitionTemplate =
         RequisitionTemplate.newInstance(requisitionTemplateDto);
@@ -99,7 +99,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Iterable<RequisitionTemplateDto> getAllRequisitionTemplates() {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
     return RequisitionTemplateDto.newInstance(requisitionTemplateRepository.findAll());
   }
@@ -119,7 +119,7 @@ public class RequisitionTemplateController extends BaseController {
       @PathVariable("id") UUID requisitionTemplateId,
       @RequestBody RequisitionTemplateDto requisitionTemplateDto,
       BindingResult bindingResult) {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
     RequisitionTemplate requisitionTemplate =
         RequisitionTemplate.newInstance(requisitionTemplateDto);
@@ -158,7 +158,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public RequisitionTemplateDto getRequisitionTemplate(
       @PathVariable("id") UUID requisitionTemplateId) {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
@@ -178,7 +178,7 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
     RequisitionTemplate requisitionTemplate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
     if (requisitionTemplate == null) {
@@ -200,7 +200,7 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseBody
   public RequisitionTemplateDto getTemplateByProgram(
       @RequestParam(value = "program", required = false) UUID program) {
-    permissionService.canManageRequisitionTemplate();
+    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
     return RequisitionTemplateDto.newInstance(
         requisitionTemplateService.getTemplateForProgram(program));
   }

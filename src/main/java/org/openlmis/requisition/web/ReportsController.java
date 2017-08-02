@@ -58,7 +58,7 @@ public class ReportsController extends BaseController {
   @ResponseBody
   public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
       throws JasperReportViewException {
-    permissionService.canViewRequisition(id);
+    permissionService.canViewRequisition(id).throwExceptionIfHasErrors();
 
     Requisition requisition = requisitionRepository.findOne(id);
     if (requisition == null) {
