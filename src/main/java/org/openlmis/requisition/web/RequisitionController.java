@@ -252,7 +252,7 @@ public class RequisitionController extends BaseController {
     validator.validate(requisition, bindingResult);
 
     if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failedValidation: {}", getErrors(bindingResult));
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
 
@@ -424,7 +424,7 @@ public class RequisitionController extends BaseController {
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
     validator.validate(requisition, bindingResult);
     if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failedValidation: {}", getErrors(bindingResult));
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
 
