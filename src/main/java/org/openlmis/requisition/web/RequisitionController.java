@@ -311,7 +311,7 @@ public class RequisitionController extends BaseController {
     draftValidator.validate(requisition, bindingResult);
 
     if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failedValidation: {}", getErrors(bindingResult));
+      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
 

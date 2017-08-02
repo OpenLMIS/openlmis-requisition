@@ -33,6 +33,7 @@ public class RequisitionStatusTest {
   private boolean preAuthorize;
   private boolean postSubmitted;
   private boolean submittable;
+  private boolean updatable;
 
   /**
    * Creates a new instance of RequisitionStatusTest. It is used by JUnit to create a parameterized
@@ -43,11 +44,12 @@ public class RequisitionStatusTest {
    * @param postSubmitted flag that is used to check if the given status should be postSubmitted
    */
   public RequisitionStatusTest(RequisitionStatus status, boolean preAuthorize,
-                               boolean postSubmitted, boolean submittable) {
+                               boolean postSubmitted, boolean submittable, boolean updatable) {
     this.status = status;
     this.preAuthorize = preAuthorize;
     this.postSubmitted = postSubmitted;
     this.submittable = submittable;
+    this.updatable = updatable;
   }
 
   /**
@@ -56,16 +58,16 @@ public class RequisitionStatusTest {
    * @return a collections of arrays that contain data needed to create a new instance of the test.
    */
   @Parameterized.Parameters(name = "status = {0}, preAuthorize = {1}, postSubmitted = {2}, "
-      + "submittable = {3}")
+      + "submittable = {3}, updatable = {4}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {RequisitionStatus.INITIATED, true, false, true},
-        {RequisitionStatus.REJECTED, true, false, true},
-        {RequisitionStatus.SUBMITTED, true, true, false},
-        {RequisitionStatus.AUTHORIZED, false, true, false},
-        {RequisitionStatus.APPROVED, false, true, false},
-        {RequisitionStatus.RELEASED, false, true, false},
-        {RequisitionStatus.SKIPPED, false, false, false}
+        {RequisitionStatus.INITIATED, true, false, true, true},
+        {RequisitionStatus.REJECTED, true, false, true, true},
+        {RequisitionStatus.SUBMITTED, true, true, false, true},
+        {RequisitionStatus.AUTHORIZED, false, true, false,true},
+        {RequisitionStatus.APPROVED, false, true, false, false},
+        {RequisitionStatus.RELEASED, false, true, false, false},
+        {RequisitionStatus.SKIPPED, false, false, false, false}
     });
   }
 
@@ -82,5 +84,10 @@ public class RequisitionStatusTest {
   @Test
   public void shouldHaveCorrectValueForSubmittable() throws Exception {
     assertThat(status.isSubmittable(), is(equalTo(submittable)));
+  }
+
+  @Test
+  public void shouldHaveCorrectValueForUpdatable() throws Exception {
+    assertThat(status.isUpdatable(), is(equalTo(updatable)));
   }
 }

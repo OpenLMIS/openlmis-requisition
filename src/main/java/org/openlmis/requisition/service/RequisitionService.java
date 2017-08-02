@@ -19,7 +19,6 @@ import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
@@ -477,7 +476,7 @@ public class RequisitionService {
     }
 
     RequisitionStatus status = requisitionToUpdate.getStatus();
-    if (status == APPROVED || status == SKIPPED || status == RELEASED) {
+    if (!status.isUpdatable()) {
       return ValidationResult.failedValidation(ERROR_CANNOT_UPDATE_WITH_STATUS,
           requisitionToUpdate.getStatus());
     }

@@ -39,6 +39,11 @@ public enum RequisitionStatus {
   }
 
   @JsonIgnore
+  public boolean isUpdatable() {
+    return value < 4 && value != -1;
+  }
+
+  @JsonIgnore
   public boolean isPreAuthorize() {
     return value == 1 || value == 2;
   }

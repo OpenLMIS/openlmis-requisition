@@ -34,7 +34,7 @@ public class RequisitionVersionValidator {
 
   /**
    * Validates if the date modified of the incoming requisition matches
-   * the date modified of the existing requisition If the incoming requisition has
+   * the date modified of the existing requisition. If the incoming requisition has
    * no modified date, that will not trigger the exception.
    * @param incomingReq the requisition to validate
    * @param existingReq the existing version of the requisition

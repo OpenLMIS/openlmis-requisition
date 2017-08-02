@@ -51,7 +51,8 @@ public class ValidationResult {
   }
 
   /**
-   * Creates a ValidationResult for a check that failed on validation.
+   * Creates a ValidationResult for a check that failed due to a reference to
+   * an instance that did not exist.
    *
    * @param messageKey a message key to include in the error or exception
    * @param msgParameters parameters for the given message
@@ -64,7 +65,8 @@ public class ValidationResult {
   }
 
   /**
-   * Creates a ValidationResult for a check that failed on validation.
+   * Creates a ValidationResult for a check that failed due to a user not having
+   * permissions to access the resource.
    *
    * @param messageKey a message key to include in the error or exception
    * @param msgParameters parameters for the given message
@@ -77,7 +79,7 @@ public class ValidationResult {
   }
 
   /**
-   * Creates a ValidationResult for a check that failed on validation.
+   * Creates a ValidationResult for a check that failed due to a conflict.
    *
    * @param messageKey a message key to include in the error or exception
    * @param msgParameters parameters for the given message
