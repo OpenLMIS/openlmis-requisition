@@ -29,6 +29,7 @@ import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRChild;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import org.junit.Test;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -94,7 +95,7 @@ public class ReportUtilsTest {
 
     // when
     Map<String, RequisitionTemplateColumn> result =
-        ReportUtils.getSortedTemplateColumnsForPrint(map);
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.RELEASED);
 
     // then
     assertEquals(map.size(), result.size());
@@ -109,14 +110,48 @@ public class ReportUtilsTest {
   public void shouldFilterOutSkippedColumn() {
     // given
     Map<String, RequisitionTemplateColumn> map = new HashMap<>();
-    map.put("skipped", mock(RequisitionTemplateColumn.class));
+    RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
+    stubDisplay(column, 1);
+    map.put("skipped", column);
 
     // when
     Map<String, RequisitionTemplateColumn> result =
-        ReportUtils.getSortedTemplateColumnsForPrint(map);
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.RELEASED);
 
     // then
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void shouldFilterOutApprovedQuantityColumnIfStatusIsPreAuthorize() {
+    // given
+    Map<String, RequisitionTemplateColumn> map = new HashMap<>();
+    RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
+    stubDisplay(column, 1);
+    map.put("approvedQuantity", column);
+
+    // when
+    Map<String, RequisitionTemplateColumn> result =
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.INITIATED);
+
+    // then
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void shouldIncludeApprovedQuantityColumnIfStatusIsAuthorized() {
+    // given
+    Map<String, RequisitionTemplateColumn> map = new HashMap<>();
+    RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
+    stubDisplay(column, 1);
+    map.put("approvedQuantity", column);
+
+    // when
+    Map<String, RequisitionTemplateColumn> result =
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.AUTHORIZED);
+
+    // then
+    assertEquals(1, result.size());
   }
 
   @Test

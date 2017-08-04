@@ -21,6 +21,7 @@ import static net.sf.jasperreports.engine.JRParameter.REPORT_RESOURCE_BUNDLE;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -56,14 +57,19 @@ public final class ReportUtils {
 
   /**
    * Sorts the map of requisition template columns by their display order, without 'skipped' column.
+   * It also filters out 'approvedQuantity' column if the requisition status is either
+   * INITIATED, REJECTED or SUBMITTED.
+   *
    * @param map map of column keys to columns.
    * @return sorted map.
    */
   public static Map<String, RequisitionTemplateColumn> getSortedTemplateColumnsForPrint(
-      Map<String, RequisitionTemplateColumn> map) {
+      Map<String, RequisitionTemplateColumn> map, RequisitionStatus requisitionStatus) {
     List<Map.Entry<String, RequisitionTemplateColumn>> sorted = map.entrySet().stream()
         .filter(ent -> !ent.getKey().equals("skipped"))
         .filter(ent -> ent.getValue().getIsDisplayed())
+        .filter(ent -> !ent.getKey().equals("approvedQuantity")
+            || requisitionStatus.isAuthorized())
         .sorted(Comparator.comparingInt(ent -> ent.getValue().getDisplayOrder()))
         .collect(Collectors.toList());
 

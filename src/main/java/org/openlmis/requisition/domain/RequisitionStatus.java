@@ -61,4 +61,8 @@ public enum RequisitionStatus {
   public boolean duringApproval() {
     return value == 3;
   }
+
+  public boolean isAuthorized() {
+    return value >= 3;
+  }
 }

@@ -196,7 +196,7 @@ public class JasperReportsViewService {
     RequisitionTemplate template = requisition.getTemplate();
 
     Map<String, Object> params = ReportUtils.createParametersMap();
-    params.put("subreport", createCustomizedRequisitionLineSubreport(template));
+    params.put("subreport", createCustomizedRequisitionLineSubreport(template, reportDto));
     params.put("datasource", Collections.singletonList(reportDto));
     params.put("template", template);
 
@@ -241,15 +241,17 @@ public class JasperReportsViewService {
     return new ModelAndView(jasperView, parameters);
   }
 
-  private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template)
+  private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template,
+                                                                RequisitionReportDto reportDto)
       throws JasperReportViewException {
     try (InputStream inputStream = getClass().getResourceAsStream(REQUISITION_LINE_REPORT_DIR)) {
       JasperDesign design = JRXmlLoader.load(inputStream);
       JRBand detail = design.getDetailSection().getBands()[0];
       JRBand header = design.getColumnHeader();
 
+      RequisitionStatus requisitionStatus = reportDto.getRequisition().getStatus();
       Map<String, RequisitionTemplateColumn> columns =
-          ReportUtils.getSortedTemplateColumnsForPrint(template.getColumnsMap());
+          ReportUtils.getSortedTemplateColumnsForPrint(template.getColumnsMap(), requisitionStatus);
 
       ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 9);
       ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 9);
