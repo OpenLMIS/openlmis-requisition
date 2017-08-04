@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.errorhandling;
+package org.openlmis.requisition.dto;
 
 import org.openlmis.utils.Message;
 
@@ -21,11 +21,26 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
+import java.util.UUID;
 
-@AllArgsConstructor
+/**
+ * General and field error messages linked with a specific requisition.
+ */
 @Getter
-public class ValidationFailure {
-  private Message message;
+@AllArgsConstructor
+public class RequisitionErrorMessage {
+
+  private UUID requisitionId;
+  private Message.LocalizedMessage errorMessage;
   private Map<String, String> fieldErrors;
-  private FailureType type;
+
+  public RequisitionErrorMessage(UUID requisitionId, Message.LocalizedMessage message) {
+    this.requisitionId = requisitionId;
+    this.errorMessage = message;
+  }
+
+  public RequisitionErrorMessage(UUID requisitionId, Map<String, String> fieldErrors) {
+    this.requisitionId = requisitionId;
+    this.fieldErrors = fieldErrors;
+  }
 }

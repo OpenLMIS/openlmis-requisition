@@ -16,13 +16,11 @@
 package org.openlmis.requisition.service;
 
 import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
@@ -53,7 +51,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
-import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -454,20 +451,13 @@ public class RequisitionService {
    * It makes sure that the user has got rights to save the requisition, that the requisition
    * exists and that it has got correct status to be eligible for saving.
    *
-   * @param requisitionDto the requisition DTO to verify
    * @param requisitionId the UUID for which the request was made
    * @return ValidationResult instance containing the outcome of this validation
    */
-  public ValidationResult validateCanSaveRequisition(RequisitionDto requisitionDto,
-                                                     UUID requisitionId) {
+  public ValidationResult validateCanSaveRequisition(UUID requisitionId) {
     ValidationResult permissionCheck = permissionService.canUpdateRequisition(requisitionId);
     if (permissionCheck.hasErrors()) {
       return permissionCheck;
-    }
-
-    if (isNotTrue(isNull(requisitionDto.getId()))
-        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
-      return ValidationResult.failedValidation(ERROR_ID_MISMATCH);
     }
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);

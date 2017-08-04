@@ -16,10 +16,12 @@
 package org.openlmis.requisition.errorhandling;
 
 import static org.openlmis.requisition.errorhandling.FailureType.CONFLICT;
+import static org.openlmis.requisition.errorhandling.FailureType.FIELD_VALIDATION;
 import static org.openlmis.requisition.errorhandling.FailureType.NOT_FOUND;
 import static org.openlmis.requisition.errorhandling.FailureType.NO_PERMISSION;
 import static org.openlmis.requisition.errorhandling.FailureType.VALIDATION;
 
+import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
@@ -27,8 +29,11 @@ import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.utils.Message;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ValidationResult {
 
   private List<ValidationFailure> errors;
@@ -92,6 +97,19 @@ public class ValidationResult {
   }
 
   /**
+   * Creates a ValidationResult for a check that failed for specific entity fields.
+   *
+   * @param fieldErrors a map containing errors for specific fields
+   * @return a ValidationResult instance containing field validation error
+   */
+  public static ValidationResult fieldErrors(Map<String, String> fieldErrors) {
+    ValidationResult result = new ValidationResult();
+    ValidationFailure failure = new ValidationFailure(null, fieldErrors, FIELD_VALIDATION);
+    result.errors.add(failure);
+    return result;
+  }
+
+  /**
    * Creates a ValidationResult for a check that succeeded.
 
    * @return a ValidationResult instance representing successful validation
@@ -107,7 +125,24 @@ public class ValidationResult {
    * @param type a type of an error
    */
   public void addError(Message message, FailureType type) {
-    this.errors.add(new ValidationFailure(message, type));
+    this.errors.add(new ValidationFailure(message, new HashMap<>(), type));
+  }
+
+  /**
+   * Adds a new error of FIELD_VALIDATION type to this validation result.
+   *
+   * @param fieldErrors a map of errors for specific fields of an entity
+   */
+  public void addFieldErrors(Map<String, String> fieldErrors) {
+    this.errors.add(new ValidationFailure(null, fieldErrors, FIELD_VALIDATION));
+  }
+
+  /**
+   * Adds all validation errors from another validation to this one.
+   * @param validationResult a validation result of another check
+   */
+  public void addValidationResult(ValidationResult validationResult) {
+    this.errors.addAll(validationResult.gerErrors());
   }
 
   /**
@@ -159,6 +194,8 @@ public class ValidationResult {
           throw new PermissionMessageException(failure.getMessage());
         case CONFLICT:
           throw new VersionMismatchException(failure.getMessage());
+        case FIELD_VALIDATION:
+          throw new BindingResultException(failure.getFieldErrors());
         default:
       }
     }

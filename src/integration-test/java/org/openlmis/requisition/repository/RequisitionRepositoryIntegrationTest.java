@@ -18,11 +18,13 @@ package org.openlmis.requisition.repository;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 
 import com.google.common.collect.Sets;
 
+import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -230,6 +232,19 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(matchingRequisitions.size(), result.size());
+  }
+
+  @Test
+  public void shouldFindRequisitionsByMultipleIds() {
+    UUID id1 = requisitions.get(0).getId();
+    UUID id2 = requisitions.get(1).getId();
+
+    List<Requisition> foundRequisitions = Lists.newArrayList(repository.findAll(
+        Lists.newArrayList(id1, id2, UUID.randomUUID())));
+    assertNotNull(foundRequisitions);
+    assertEquals(2, foundRequisitions.size());
+    assertEquals(requisitions.get(0), foundRequisitions.get(0));
+    assertEquals(requisitions.get(1), foundRequisitions.get(1));
   }
 
   @Test
