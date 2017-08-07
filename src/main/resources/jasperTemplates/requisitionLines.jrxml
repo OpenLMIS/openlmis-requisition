@@ -270,7 +270,7 @@
             </textField>
             <textField>
                 <reportElement key="approvedQuantity" mode="Opaque" x="409" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="5ca60a9a-32ae-47e4-b72f-6be575361d5c">
-                    <printWhenExpression><![CDATA[$P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.INITIATED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.REJECTED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED]]></printWhenExpression>
+                    <printWhenExpression><![CDATA[$P{requisitionStatus}.isAuthorized()]]></printWhenExpression>
                 </reportElement>
                 <box padding="2">
                     <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
