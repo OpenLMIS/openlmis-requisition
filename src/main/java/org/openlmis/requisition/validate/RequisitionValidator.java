@@ -18,6 +18,7 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
@@ -84,6 +85,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         }
       }
     }
+    validateDatePhysicalStockCountCompleted(errors, requisition);
   }
 
   private void validateNonFullSupplyLineItem(Errors errors, Requisition requisition,
@@ -102,7 +104,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   private void validateFullSupplyLineItem(Errors errors, Requisition requisition,
                                           RequisitionLineItem item) {
     RequisitionTemplate template = requisition.getTemplate();
-    
+
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
         BEGINNING_BALANCE);
 
@@ -131,7 +133,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     validateCalculations(errors, template, item);
 
     validateRequestedQuantityAndExplanation(errors, item, template);
-    
+
     validateStockAdjustments(errors, requisition, item);
   }
 
@@ -149,7 +151,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         }
       } else {
         checkTemplate(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
-        checkTemplate(errors, template, item.getRequestedQuantityExplanation(), 
+        checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
             REQUESTED_QUANTITY_EXPLANATION);
       }
     } else {
@@ -215,4 +217,12 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     }
   }
 
+  private void validateDatePhysicalStockCountCompleted(Errors errors, Requisition requisition) {
+    if ((requisition.getStatus() == RequisitionStatus.INITIATED
+        || requisition.getStatus() == RequisitionStatus.SUBMITTED)
+        && requisition.getDatePhysicalStockCountCompleted() == null) {
+      rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
+    }
+  }
 }

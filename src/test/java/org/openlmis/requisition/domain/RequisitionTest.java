@@ -436,7 +436,7 @@ public class RequisitionTest {
 
   @Test
   @PrepareForTest(RequisitionStatus.class)
-  public void shouldSetDatePhysicalStockCountCompletedWhenRequisitionIsAfterAuthorize() {
+  public void shouldNotSetDatePhysicalStockCountCompletedWhenRequisitionIsAfterAuthorize() {
     RequisitionStatus requisitionStatus = PowerMockito.mock(RequisitionStatus.class);
     when(requisitionStatus.isPreAuthorize()).thenReturn(false);
     this.requisition.setStatus(requisitionStatus);

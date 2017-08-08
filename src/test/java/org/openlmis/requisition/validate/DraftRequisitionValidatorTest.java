@@ -17,12 +17,15 @@ package org.openlmis.requisition.validate;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -46,7 +49,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -270,6 +273,46 @@ public class DraftRequisitionValidatorTest {
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors, times(0)).rejectValue(any(), any());
+  }
+
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsInFuture() {
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now().plusDays(1));
+    Message message =
+        new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE, DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
+    String msg = "datePhysicalStockCountCompleted can't be in future";
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(DATE_PHYSICAL_STOCK_COUNT_COMPLETED), contains(msg));
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsToday() {
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsInPast() {
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now().minusDays(1));
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNull() {
+    requisition.setDatePhysicalStockCountCompleted(null);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
   }
 
   private RequisitionLineItem generateLineItem() {

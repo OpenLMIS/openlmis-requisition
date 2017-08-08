@@ -16,6 +16,7 @@
 package org.openlmis.requisition.validate;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
@@ -53,6 +55,7 @@ import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -508,6 +511,84 @@ public class RequisitionValidatorTest {
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS), contains(msg));
   }
 
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringSubmit() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringAuthorize() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringSubmit() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringAuthorize() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringApprove() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringApprovalHierarchy() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.IN_APPROVAL);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringRelease() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.APPROVED);
+  }
+
+  private void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus status) {
+    RequisitionLineItem lineItem = generateLineItem();
+    requisitionLineItems.add(lineItem);
+
+    when(requisition.getStatus()).thenReturn(status);
+    when(requisition.getDatePhysicalStockCountCompleted()).thenReturn(null);
+    Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED, DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
+    String msg =
+        "datePhysicalStockCountCompleted must be entered prior to submission of a requisition";
+
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(DATE_PHYSICAL_STOCK_COUNT_COMPLETED), contains(msg));
+  }
+
+  private void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(
+      RequisitionStatus status) {
+    RequisitionLineItem lineItem = generateLineItem();
+    requisitionLineItems.add(lineItem);
+
+    when(requisition.getStatus()).thenReturn(status);
+    when(requisition.getDatePhysicalStockCountCompleted()).thenReturn(LocalDate.now());
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  private void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(
+      RequisitionStatus status) {
+    RequisitionLineItem lineItem = generateLineItem();
+    requisitionLineItems.add(lineItem);
+
+    when(requisition.getStatus()).thenReturn(status);
+    when(requisition.getDatePhysicalStockCountCompleted()).thenReturn(null);
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
   private RequisitionLineItem generateLineItem() {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setRequestedQuantity(1);
@@ -557,6 +638,7 @@ public class RequisitionValidatorTest {
     requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setTemplate(requisitionTemplate);
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
     return requisition;
   }
 }

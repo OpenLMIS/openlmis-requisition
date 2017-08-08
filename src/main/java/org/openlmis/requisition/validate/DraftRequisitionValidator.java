@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.validate;
 
+import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
 import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.Requisition.MODIFIED_DATE;
@@ -22,6 +23,7 @@ import static org.openlmis.requisition.domain.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -39,11 +41,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Component
+@SuppressWarnings("PMD.TooManyMethods")
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private static final int DAYS_IN_MONTH = 30;
@@ -66,11 +70,21 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
+    validateDatePhysicalStockCountCompleted(errors, requisition);
+
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
     if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, savedRequisition, i));
+    }
+  }
+
+  private void validateDatePhysicalStockCountCompleted(Errors errors, Requisition requisition) {
+    if (requisition.getDatePhysicalStockCountCompleted() != null
+        && requisition.getDatePhysicalStockCountCompleted().isAfter(LocalDate.now())) {
+      rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
+          new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE, DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
     }
   }
 

@@ -91,6 +91,8 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
   public static final String MODIFIED_DATE = "modifiedDate";
+  public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
+      "datePhysicalStockCountCompleted";
 
   @OneToMany(
       mappedBy = "requisition",

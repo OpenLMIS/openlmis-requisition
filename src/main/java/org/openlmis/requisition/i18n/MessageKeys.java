@@ -135,6 +135,8 @@ public abstract class MessageKeys {
       + ".validation.isInvariant";
   public static final String ERROR_DATE_MODIFIED_MISMATCH =
       "requisition.error.validation.dateModifiedMismatch";
+  public static final String ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE = ERROR_PREFIX
+      + ".validation.datePhysicalStockCountCompleted.inFuture";
   public static final String ERROR_IS_HIDDEN = ERROR_PREFIX
       + ".validation.isHidden";
   public static final String ERROR_MUST_BE_NON_NEGATIVE = ERROR_PREFIX
