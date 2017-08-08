@@ -14,7 +14,8 @@
     "supervisoryNode": { "type": "string", "title": "supervisoryNode" },
     "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
     "draftStatusMessage": { "type": "string", "title": "draftStatusMessage" },
-    "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"schemas/requisitionLineItemDto.json" }, "uniqueItems": false }
+    "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"schemas/requisitionLineItemDto.json" }, "uniqueItems": false },
+    "datePhysicalStockCountCompleted": { "type": "string", "title": "datePhysicalStockCountCompleted" }
   },
   "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
 }
