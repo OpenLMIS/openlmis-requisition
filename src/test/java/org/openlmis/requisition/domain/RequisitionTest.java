@@ -52,6 +52,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -417,6 +418,32 @@ public class RequisitionTest {
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
 
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldSetDatePhysicalStockCountCompletedWhenRequisitionIsPreAuthorize() {
+    RequisitionStatus requisitionStatus = PowerMockito.mock(RequisitionStatus.class);
+    when(requisitionStatus.isPreAuthorize()).thenReturn(true);
+    this.requisition.setStatus(requisitionStatus);
+
+    updateWithDatePhysicalCountCompletd();
+
+    assertEquals(
+        requisition.getDatePhysicalStockCountCompleted(),
+        this.requisition.getDatePhysicalStockCountCompleted());
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldSetDatePhysicalStockCountCompletedWhenRequisitionIsAfterAuthorize() {
+    RequisitionStatus requisitionStatus = PowerMockito.mock(RequisitionStatus.class);
+    when(requisitionStatus.isPreAuthorize()).thenReturn(false);
+    this.requisition.setStatus(requisitionStatus);
+
+    updateWithDatePhysicalCountCompletd();
+
+    assertNull(this.requisition.getDatePhysicalStockCountCompleted());
   }
 
   @Test
@@ -934,11 +961,11 @@ public class RequisitionTest {
   public void shouldRecordStatusChangeOnInitiate() {
     UUID initiatorId = UUID.randomUUID();
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
-    
-    requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null, 
+
+    requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null,
         initiatorId);
 
-    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED, 
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
         initiatorId);
   }
 
@@ -950,7 +977,7 @@ public class RequisitionTest {
 
     requisition.submit(Collections.emptyList(), submitterId);
 
-    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED, 
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED,
         submitterId);
   }
 
@@ -963,7 +990,7 @@ public class RequisitionTest {
 
     requisition.authorize(Collections.emptyList(), authorizerId);
 
-    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED, 
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED,
         authorizerId);
   }
 
@@ -1003,11 +1030,20 @@ public class RequisitionTest {
         releaserId);
   }
 
+  private void updateWithDatePhysicalCountCompletd() {
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    this.requisition.setTemplate(requisitionTemplate);
+
+    Requisition requisition = new Requisition();
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    this.requisition.updateFrom(requisition, Collections.emptyList(), Collections.emptyList());
+  }
+
   private Requisition createRequisitionWithStatusOf(RequisitionStatus status) {
     return new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID
         .randomUUID(), status, false);
   }
-  
+
   private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition, 
       RequisitionStatus status, UUID authorId) {
     Optional<StatusChange> change = requisition.getStatusChanges().stream()

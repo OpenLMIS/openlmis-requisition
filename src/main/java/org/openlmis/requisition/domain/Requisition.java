@@ -47,6 +47,7 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,6 +183,10 @@ public class Requisition extends BaseTimestampedEntity {
   @Type(type = UUID)
   private Set<UUID> availableNonFullSupplyProducts;
 
+  @Getter
+  @Setter
+  private LocalDate datePhysicalStockCountCompleted;
+
   /**
    * Constructor.
    *
@@ -217,6 +222,10 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
     updateTotalCostAndPacksToShip(products);
+
+    if (this.isPreAuthorize()) {
+      setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
+    }
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());
@@ -527,6 +536,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
+    exporter.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
   }
 
   /**
@@ -676,6 +686,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setDraftStatusMessage(String draftStatusMessage);
 
+    void setDatePhysicalStockCountCompleted(LocalDate localDate);
   }
 
   public interface Importer {
@@ -704,5 +715,7 @@ public class Requisition extends BaseTimestampedEntity {
     String getDraftStatusMessage();
 
     Set<OrderableDto> getAvailableNonFullSupplyProducts();
+
+    LocalDate getDatePhysicalStockCountCompleted();
   }
 }

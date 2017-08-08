@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,6 +101,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   
   @Getter
   private List<StatusChangeDto> statusHistory = new ArrayList<>();
+
+  @Getter
+  @Setter
+  private LocalDate datePhysicalStockCountCompleted;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {

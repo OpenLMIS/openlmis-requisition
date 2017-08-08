@@ -86,6 +86,7 @@ public final class RequisitionBuilder {
 
     // required for conflict check
     requisition.setModifiedDate(importer.getModifiedDate());
+    requisition.setDatePhysicalStockCountCompleted(importer.getDatePhysicalStockCountCompleted());
 
     return requisition;
   }

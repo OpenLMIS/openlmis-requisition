@@ -33,6 +33,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,6 +89,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getModifiedDate()).thenReturn(modifiedDate);
     when(requisitionDto.getDraftStatusMessage()).thenReturn(DRAFT_STATUS_MESSAGE);
     when(requisitionDto.getEmergency()).thenReturn(false);
+    when(requisitionDto.getDatePhysicalStockCountCompleted()).thenReturn(LocalDate.now());
 
     when(processingPeriodDto.getId()).thenReturn(processingPeriodUuid);
     when(processingPeriodDto.getDurationInMonths()).thenReturn(MONTHS_IN_PERIOD);
@@ -131,6 +133,9 @@ public class RequisitionBuilderTest {
     assertEquals(MONTHS_IN_PERIOD, requisition.getNumberOfMonthsInPeriod());
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(DRAFT_STATUS_MESSAGE, requisition.getDraftStatusMessage());
+    assertEquals(
+        requisitionDto.getDatePhysicalStockCountCompleted(),
+        requisition.getDatePhysicalStockCountCompleted());
     assertEquals(null, requisition.getId());
     assertEquals(null, requisition.getFacilityId());
     assertEquals(null, requisition.getProgramId());

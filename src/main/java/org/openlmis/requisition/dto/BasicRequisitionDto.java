@@ -25,6 +25,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.utils.StatusChangeHelper;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,11 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
 
   @Override
   public void setDraftStatusMessage(String draftStatusMessage) {
+    // unsupported operation
+  }
+
+  @Override
+  public void setDatePhysicalStockCountCompleted(LocalDate localDate) {
     // unsupported operation
   }
 }
