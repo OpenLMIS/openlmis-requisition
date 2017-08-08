@@ -85,7 +85,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         }
       }
     }
-    validateDatePhysicalStockCountCompleted(errors, requisition);
+    //validateDatePhysicalStockCountCompleted(errors, requisition);
   }
 
   private void validateNonFullSupplyLineItem(Errors errors, Requisition requisition,
