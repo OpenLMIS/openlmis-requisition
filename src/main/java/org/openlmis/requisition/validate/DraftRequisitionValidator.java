@@ -90,7 +90,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
           new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE));
     }
 
-    if (requisition.getStatus().isAuthorized()
+    if (savedRequisition.getStatus().isAuthorized()
         && stockCountDateMismatch(requisition, savedRequisition)) {
       rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
           new Message(ERROR_DATE_STOCK_COUNT_MISMATCH));

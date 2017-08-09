@@ -23,6 +23,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
@@ -320,8 +321,8 @@ public class DraftRequisitionValidatorTest {
   @Test
   @PrepareForTest(RequisitionStatus.class)
   public void shouldRejectIfDatePhysicalStockCountCompletedMismatchAfterRequisitionWasAuthorized() {
-    mockStockCountDateMismatch();
-    mockStatus(true);
+    Requisition savedRequisition = mockStockCountDateMismatch();
+    mockStatus(savedRequisition, true);
     Message message = new Message(ERROR_DATE_STOCK_COUNT_MISMATCH);
     String msg = "datePhysicalStockCountCompleted mismatch";
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
@@ -334,7 +335,8 @@ public class DraftRequisitionValidatorTest {
   @Test
   @PrepareForTest(RequisitionStatus.class)
   public void shouldNotRejectIfDatePhysicalStockCountCompletedMatchAfterRequisitionWasAuthorized() {
-    mockStatus(true);
+    Requisition savedRequisition = mockSavedRequisition();
+    mockStatus(savedRequisition, true);
 
     draftRequisitionValidator.validate(requisition, errors);
 
@@ -344,12 +346,24 @@ public class DraftRequisitionValidatorTest {
   @Test
   @PrepareForTest(RequisitionStatus.class)
   public void shouldNotRejectIfDateStockCountCompletedMismatchBeforeRequisitionWasAuthorized() {
-    mockStockCountDateMismatch();
-    mockStatus(false);
+    Requisition savedRequisition = mockStockCountDateMismatch();
+    mockStatus(savedRequisition, false);
 
     draftRequisitionValidator.validate(requisition, errors);
 
     verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldPassValidationIfRequisitionHasNoStatus() {
+    requisition.setStatus(null);
+    Requisition savedRequisition = mockSavedRequisition();
+    mockStatus(savedRequisition, false);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verifyZeroInteractions(errors);
   }
 
   private RequisitionLineItem generateLineItem() {
@@ -388,18 +402,26 @@ public class DraftRequisitionValidatorTest {
     return lineItem;
   }
 
-  private void mockStockCountDateMismatch() {
+  private Requisition mockStockCountDateMismatch() {
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
     Requisition savedRequisition = mock(Requisition.class);
     when(requisitionRepository.findOne(requisitionId)).thenReturn(savedRequisition);
     when(savedRequisition.getDatePhysicalStockCountCompleted())
         .thenReturn(LocalDate.now().minusDays(1));
     when(savedRequisition.getEmergency()).thenReturn(requisition.getEmergency());
+    return savedRequisition;
   }
 
-  private void mockStatus(boolean isAuthorized) {
+  private Requisition mockSavedRequisition() {
+    Requisition savedRequisition = mock(Requisition.class);
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(savedRequisition);
+    when(savedRequisition.getEmergency()).thenReturn(requisition.getEmergency());
+    return savedRequisition;
+  }
+
+  private void mockStatus(Requisition requisition, boolean isAuthorized) {
     RequisitionStatus status = PowerMockito.mock(RequisitionStatus.class);
     when(status.isAuthorized()).thenReturn(isAuthorized);
-    requisition.setStatus(status);
+    when(requisition.getStatus()).thenReturn(status);
   }
 }
