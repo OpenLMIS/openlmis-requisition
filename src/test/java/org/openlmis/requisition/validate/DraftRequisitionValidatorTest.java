@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -37,7 +38,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -48,6 +48,9 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.validation.Errors;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -55,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class DraftRequisitionValidatorTest {
 
@@ -278,8 +281,7 @@ public class DraftRequisitionValidatorTest {
   @Test
   public void shouldRejectIfDatePhysicalStockCountCompletedIsInFuture() {
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now().plusDays(1));
-    Message message =
-        new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE, DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
+    Message message = new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE);
     String msg = "datePhysicalStockCountCompleted can't be in future";
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
 
@@ -309,6 +311,41 @@ public class DraftRequisitionValidatorTest {
   @Test
   public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNull() {
     requisition.setDatePhysicalStockCountCompleted(null);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldRejectIfDatePhysicalStockCountCompletedMismatchAfterRequisitionWasAuthorized() {
+    mockStockCountDateMismatch();
+    mockStatus(true);
+    Message message = new Message(ERROR_DATE_STOCK_COUNT_MISMATCH);
+    String msg = "datePhysicalStockCountCompleted mismatch";
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(DATE_PHYSICAL_STOCK_COUNT_COMPLETED), contains(msg));
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedMatchAfterRequisitionWasAuthorized() {
+    mockStatus(true);
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  @PrepareForTest(RequisitionStatus.class)
+  public void shouldNotRejectIfDateStockCountCompletedMismatchBeforeRequisitionWasAuthorized() {
+    mockStockCountDateMismatch();
+    mockStatus(false);
 
     draftRequisitionValidator.validate(requisition, errors);
 
@@ -349,5 +386,20 @@ public class DraftRequisitionValidatorTest {
     lineItem.setApprovedQuantity(1);
     lineItem.setRemarks("Remarks");
     return lineItem;
+  }
+
+  private void mockStockCountDateMismatch() {
+    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    Requisition savedRequisition = mock(Requisition.class);
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(savedRequisition);
+    when(savedRequisition.getDatePhysicalStockCountCompleted())
+        .thenReturn(LocalDate.now().minusDays(1));
+    when(savedRequisition.getEmergency()).thenReturn(requisition.getEmergency());
+  }
+
+  private void mockStatus(boolean isAuthorized) {
+    RequisitionStatus status = PowerMockito.mock(RequisitionStatus.class);
+    when(status.isAuthorized()).thenReturn(isAuthorized);
+    requisition.setStatus(status);
   }
 }

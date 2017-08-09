@@ -24,6 +24,7 @@ import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
@@ -70,7 +71,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
-    validateDatePhysicalStockCountCompleted(errors, requisition);
+    validateDatePhysicalStockCountCompleted(errors, requisition, savedRequisition);
 
     validateInvariantsDidntChange(errors, requisition, savedRequisition);
 
@@ -80,12 +81,21 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     }
   }
 
-  private void validateDatePhysicalStockCountCompleted(Errors errors, Requisition requisition) {
+  private void validateDatePhysicalStockCountCompleted(Errors errors,
+                                                       Requisition requisition,
+                                                       Requisition savedRequisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null
         && requisition.getDatePhysicalStockCountCompleted().isAfter(LocalDate.now())) {
       rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
-          new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE, DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
+          new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE));
     }
+
+    if (requisition.getStatus().isAuthorized()
+        && stockCountDateMismatch(requisition, savedRequisition)) {
+      rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
+          new Message(ERROR_DATE_STOCK_COUNT_MISMATCH));
+    }
+
   }
 
   private void validateInvariantsDidntChange(Errors errors, Requisition requisition,
@@ -175,5 +185,12 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     if (dateModified != null && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
       rejectValue(errors, MODIFIED_DATE, new Message(ERROR_DATE_MODIFIED_MISMATCH));
     }
+  }
+
+  private boolean stockCountDateMismatch(Requisition requisition, Requisition savedRequisition) {
+    return requisition.getDatePhysicalStockCountCompleted() != null
+        ? !requisition.getDatePhysicalStockCountCompleted()
+        .isEqual(savedRequisition.getDatePhysicalStockCountCompleted())
+        : savedRequisition.getDatePhysicalStockCountCompleted() != null;
   }
 }
