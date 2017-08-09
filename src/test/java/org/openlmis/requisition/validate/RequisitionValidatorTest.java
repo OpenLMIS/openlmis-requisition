@@ -35,7 +35,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -513,13 +512,11 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  @Ignore
   public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringSubmit() {
     shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.INITIATED);
   }
 
   @Test
-  @Ignore
   public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringAuthorize() {
     shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.SUBMITTED);
   }
