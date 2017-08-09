@@ -138,11 +138,11 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
-    doReturn(Lists.newArrayList())
+    doReturn(Collections.emptyList())
         .when(stockAdjustmentReasonReferenceDataService)
         .getStockAdjustmentReasonsByProgram(any(UUID.class));
 
-    doReturn(Lists.newArrayList())
+    doReturn(Collections.emptyList())
         .when(orderableReferenceDataService)
         .findByIds(anySetOf(UUID.class));
   }
@@ -270,6 +270,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     assertThat(
         requisitionErrors.get(0).get("requisitionId").asText(),
         equalTo(requisitions.get(0).getId().toString())
+    );
+    assertThat(
+        requisitionErrors.get(0).get("errorMessage").get("messageKey").asText(),
+        equalTo(ERROR_NO_FOLLOWING_PERMISSION)
     );
 
     ArrayNode requisitionDtos = (ArrayNode) json.get("requisitionDtos");
