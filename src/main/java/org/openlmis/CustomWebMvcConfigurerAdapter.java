@@ -17,6 +17,7 @@ package org.openlmis;
 
 import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -28,6 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import java.util.List;
 
 @Configuration
+@EnableCaching
 public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 
   @Value("${service.url}")

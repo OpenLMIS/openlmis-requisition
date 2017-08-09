@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
+  protected static final String INVALID_TOKEN = "invalid_token";
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   protected RestOperations restTemplate = new RestTemplate();
@@ -92,11 +93,11 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters);
 
     try {
-      return restTemplate.exchange(
+      return runWithTokenRetry(() -> restTemplate.exchange(
               createUri(url, params),
               HttpMethod.GET,
               createEntity(authService.obtainAccessToken()),
-              type).getBody();
+              type)).getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
       if (HttpStatus.NOT_FOUND == ex.getStatusCode()) {
@@ -161,12 +162,12 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters);
 
     try {
-      ResponseEntity<P[]> response = restTemplate.exchange(
+      ResponseEntity<P[]> response = runWithTokenRetry(() -> restTemplate.exchange(
               createUri(url, params),
               method,
               RequestHelper.createEntity(authService.obtainAccessToken(), payload),
               type
-      );
+      ));
 
       return Stream.of(response.getBody()).collect(Collectors.toList());
     } catch (HttpStatusCodeException ex) {
@@ -198,12 +199,13 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters);
 
     try {
-      ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
+      ResponseEntity<PageImplRepresentation<P>> response =
+          runWithTokenRetry(() -> restTemplate.exchange(
               createUri(url, params),
               method,
               RequestHelper.createEntity(authService.obtainAccessToken(), payload),
               new DynamicPageTypeReference<>(type)
-      );
+      ));
       return response.getBody();
 
     } catch (HttpStatusCodeException ex) {
@@ -218,14 +220,32 @@ public abstract class BaseCommunicationService<T> {
         .init()
         .setAll(parameters);
 
-    ResponseEntity<ResultDto<P>> response = restTemplate.exchange(
+    ResponseEntity<ResultDto<P>> response = runWithTokenRetry(() -> restTemplate.exchange(
         createUri(url, params),
         HttpMethod.GET,
         createEntity(authService.obtainAccessToken()),
         new DynamicResultDtoTypeReference<>(type)
-    );
+    ));
 
     return response.getBody();
+  }
+
+  protected <T> ResponseEntity<T> runWithTokenRetry(HttpTask<T> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()
+          && ex.getResponseBodyAsString().contains(INVALID_TOKEN)) {
+        // the token has (most likely) expired - clear the cache and retry once
+        authService.clearTokenCache();
+        return task.run();
+      }
+      throw ex;
+    }
+  }
+
+  private interface HttpTask<T> {
+    ResponseEntity<T> run() throws HttpStatusCodeException;
   }
 
   private DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {

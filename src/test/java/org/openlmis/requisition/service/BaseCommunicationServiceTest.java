@@ -24,12 +24,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.service.BaseCommunicationService.INVALID_TOKEN;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -41,6 +45,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -61,6 +66,9 @@ public abstract class BaseCommunicationServiceTest<T> {
 
   @Captor
   protected ArgumentCaptor<HttpEntity> entityCaptor;
+
+  @Rule
+  public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -148,6 +156,29 @@ public abstract class BaseCommunicationServiceTest<T> {
     )).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
     service.findOne(id);
+  }
+
+  @Test
+  public void shouldRetryObtainingAccessToken() throws Exception {
+    // given
+    BaseCommunicationService<T> service = prepareService();
+    HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
+    when(exception.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
+    when(exception.getResponseBodyAsString()).thenReturn(
+        "{\"error\":\"" + INVALID_TOKEN + "\",\"error_description\":\"" + UUID.randomUUID() + "}");
+    UUID id = UUID.randomUUID();
+
+    // when
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+        eq(service.getResultClass())
+    )).thenThrow(exception);
+
+    expectedException.expect(DataRetrievalException.class);
+    service.findOne(id);
+
+    verify(authService, times(1)).clearTokenCache();
+    verify(authService, times(2)).obtainAccessToken();
   }
 
   protected abstract T generateInstance();
