@@ -517,6 +517,11 @@ public class RequisitionValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringSubmitAfterReject() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.REJECTED);
+  }
+
+  @Test
   public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringAuthorize() {
     shouldRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.SUBMITTED);
   }
@@ -524,6 +529,7 @@ public class RequisitionValidatorTest {
   @Test
   public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringSubmit() {
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.INITIATED);
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.REJECTED);
   }
 
   @Test
@@ -550,8 +556,9 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     requisitionLineItems.add(lineItem);
 
-    when(requisition.getStatus()).thenReturn(status);
-    when(requisition.getDatePhysicalStockCountCompleted()).thenReturn(null);
+    Requisition requisition = getRequisition();
+    requisition.setStatus(status);
+    requisition.setDatePhysicalStockCountCompleted(null);
     Message message = new Message(ERROR_VALUE_MUST_BE_ENTERED, DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
     String msg =
         "datePhysicalStockCountCompleted must be entered prior to submission of a requisition";
@@ -568,8 +575,8 @@ public class RequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     requisitionLineItems.add(lineItem);
 
-    when(requisition.getStatus()).thenReturn(status);
-    when(requisition.getDatePhysicalStockCountCompleted()).thenReturn(LocalDate.now());
+    Requisition requisition = getRequisition();
+    requisition.setStatus(status);
 
     requisitionValidator.validate(requisition, errors);
 

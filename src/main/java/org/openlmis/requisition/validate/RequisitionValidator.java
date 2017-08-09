@@ -218,9 +218,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   }
 
   private void validateDatePhysicalStockCountCompleted(Errors errors, Requisition requisition) {
-    if ((requisition.getStatus() == RequisitionStatus.INITIATED
-        || requisition.getStatus() == RequisitionStatus.SUBMITTED)
-        && requisition.getDatePhysicalStockCountCompleted() == null) {
+    if ((requisition.isPreAuthorize()
+        && requisition.getDatePhysicalStockCountCompleted() == null)) {
       rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
           new Message(ERROR_VALUE_MUST_BE_ENTERED, DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
     }
