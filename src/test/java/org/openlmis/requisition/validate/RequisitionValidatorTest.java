@@ -535,17 +535,17 @@ public class RequisitionValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringApprove() {
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringApprove() {
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.AUTHORIZED);
   }
 
   @Test
-  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringApprovalHierarchy() {
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringApprovalHierarchy() {
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.IN_APPROVAL);
   }
 
   @Test
-  public void shouldNotRejectIfDatePhysicalStockCountCompletedNullDuringRelease() {
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringRelease() {
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.APPROVED);
   }
 
