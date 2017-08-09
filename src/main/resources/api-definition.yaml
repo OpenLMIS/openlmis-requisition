@@ -73,12 +73,12 @@ schemas:
           "title": "RequisitionLineItemDto",
           "description": "A single requisitionLineItemDto",
           "properties": {
-              "id": { "type": "string", "required": true, "title": "id" },
-              "orderable": { "type": "object", "$ref": "#/schemas/basicOrderableDto", "required": true, "title": "orderable" },
-              "approvedQuantity": {"type": "integer", "required": true, "title": "approvedQuantity" },
-              "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
-              "totalCost": {"type": "number", "required": false, "title": "totalCost" },
-              "skipped": {"type": "boolean", "required": false, "title": "skipped" }
+              "id": { "type": "string", "title": "id" },
+              "orderable": { "type": "object", "$ref": "#/schemas/basicOrderableDto", "title": "orderable" },
+              "approvedQuantity": {"type": "integer", "title": "approvedQuantity" },
+              "pricePerPack": {"type": "number", "title": "pricePerPack" },
+              "totalCost": {"type": "number", "title": "totalCost" },
+              "skipped": {"type": "boolean", "title": "skipped" }
           },
           "required": ["id", "approvedQuantity", "orderable"]
       }
