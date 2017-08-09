@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -59,9 +58,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
    * Attempts to retrieve requisitions with the provided UUIDs.
    */
   @RequestMapping(value = "/requisitions", params = "retrieveAll", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RequisitionsProcessingStatusDto retrieveAll(@RequestParam(value = "id") List<UUID> uuids) {
+  public ResponseEntity<RequisitionsProcessingStatusDto> retrieveAll(
+      @RequestParam(value = "id") List<UUID> uuids) {
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
@@ -78,14 +77,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
 
     processingStatus.removeSkippedProducts();
-    return processingStatus;
+    return buildResponse(processingStatus);
   }
 
   /**
    * Attempts to approve requisitions with the provided UUIDs.
    */
   @RequestMapping(value = "/requisitions", params = "approveAll", method = RequestMethod.POST)
-  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public ResponseEntity<RequisitionsProcessingStatusDto> approve(
       @RequestParam(value = "id") List<UUID> uuids) {
@@ -112,15 +110,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
           new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
     }
 
-    return new ResponseEntity<>(processingStatus, processingStatus.getRequisitionErrors().isEmpty()
-        ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    return buildResponse(processingStatus);
   }
 
   /**
    * Attempts to approve requisitions with the provided UUIDs.
    */
   @RequestMapping(value = "/requisitions", params = "saveAll", method = RequestMethod.PUT)
-  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public ResponseEntity<RequisitionsProcessingStatusDto> update(
       @RequestBody List<ApproveRequisitionDto> dtos) {
@@ -149,8 +145,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
 
     processingStatus.removeSkippedProducts();
-    return new ResponseEntity<>(processingStatus, processingStatus.getRequisitionErrors().isEmpty()
-        ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    return buildResponse(processingStatus);
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
@@ -210,6 +205,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
         }
       }
     }
+  }
+
+  private ResponseEntity<RequisitionsProcessingStatusDto> buildResponse(
+      RequisitionsProcessingStatusDto processingStatus) {
+    return new ResponseEntity<>(processingStatus, processingStatus.getRequisitionErrors().isEmpty()
+        ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
   }
 
   private Message.LocalizedMessage localizeMessage(Message message) {

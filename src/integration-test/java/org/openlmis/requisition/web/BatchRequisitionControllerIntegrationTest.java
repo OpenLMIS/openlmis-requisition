@@ -171,7 +171,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(permissionService).canViewRequisition(requisitions.get(0));
 
     Response response = get(RETRIEVE_ALL, requisitionIds);
-    checkErrorResponseBody(response, 200);
+    checkErrorResponseBody(response, 400);
   }
 
   // POST /api/requisitions?approveAll&id={}&id={}&id={}

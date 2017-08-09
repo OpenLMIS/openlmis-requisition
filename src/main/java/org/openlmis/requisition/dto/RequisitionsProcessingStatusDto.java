@@ -50,7 +50,7 @@ public class RequisitionsProcessingStatusDto {
   }
 
   /**
-   * Removes skipped products but only if those products are skipped in all requisitions.
+   * Removes skipped line items if they are skipped in all requisitions.
    */
   public void removeSkippedProducts() {
     // all requisition line items
@@ -68,7 +68,7 @@ public class RequisitionsProcessingStatusDto {
         .map(BasicOrderableDto::getId)
         .collect(Collectors.toSet());
 
-    // if the given product is not skipped in any requisition, it will not be removed
+    // if the given line item is not skipped in any requisition, it will not be removed
     // because it will not be present on the list.
     requisitionLineItems
         .stream()

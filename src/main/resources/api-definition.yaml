@@ -56,7 +56,7 @@ schemas:
           "description": "A single requisitionDto for batch approval",
           "properties": {
               "id": { "type": "string", "title": "id" },
-              "modifiedDate": {"type": "array", "title": "modifiedDate", "items": {"type": "integer"}, "uniqueItems": false },
+              "modifiedDate": {"type": "string", "title": "modifiedDate" },
               "status": { "type": "string", "title": "status" },
               "facility": { "type": "object", "$ref": "schemas/basicfacilityDto.json", "title": "facility" },
               "program": { "type": "object", "$ref": "schemas/basicProgramDto.json", "title": "program" },
@@ -79,7 +79,8 @@ schemas:
               "pricePerPack": {"type": "number", "required": false, "title": "pricePerPack" },
               "totalCost": {"type": "number", "required": false, "title": "totalCost" },
               "skipped": {"type": "boolean", "required": false, "title": "skipped" }
-          }
+          },
+          "required": ["id", "approvedQuantity", "orderable"]
       }
 
   - approveRequisitionDtoArray: |
