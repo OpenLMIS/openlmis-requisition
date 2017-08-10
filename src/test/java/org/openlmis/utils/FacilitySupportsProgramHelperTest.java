@@ -27,9 +27,8 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.settings.service.ConfigurationSettingService;
-import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class FacilitySupportsProgramHelperTest {
   FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
-  ConfigurationSettingService configurationSettingService;
+  DateHelper dateHelper;
 
   @InjectMocks
   FacilitySupportsProgramHelper facilitySupportsProgramHelper;
@@ -56,9 +55,7 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto = new FacilityDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
-    Field field = FacilitySupportsProgramHelper.class.getDeclaredField("timeZoneId");
-    field.setAccessible(true);
-    field.set(facilitySupportsProgramHelper, "UTC");
+    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now(ZoneId.of("UTC")));
   }
 
   @Test(expected = ValidationMessageException.class)

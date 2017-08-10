@@ -48,12 +48,14 @@ import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.DateHelper;
 import org.openlmis.utils.Message;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.validation.Errors;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,9 @@ public class DraftRequisitionValidatorTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
+
+  @Mock
+  DateHelper dateHelper;
 
   @InjectMocks
   private DraftRequisitionValidator draftRequisitionValidator;
@@ -96,6 +101,7 @@ public class DraftRequisitionValidatorTest {
     requisitionTemplate.setColumnsMap(columnsMap);
     requisition = generateRequisition();
     mockRepositoriesAndObjects();
+    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now(ZoneId.of("UTC")));
   }
 
   @Test

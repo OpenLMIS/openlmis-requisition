@@ -22,11 +22,8 @@ import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,8 +33,8 @@ public class FacilitySupportsProgramHelper {
   @Autowired
   FacilityReferenceDataService facilityReferenceDataService;
 
-  @Value("${time.zoneId}")
-  private String timeZoneId;
+  @Autowired
+  DateHelper dateHelper;
 
   /**
    * Method check if facility supports program.
@@ -75,10 +72,7 @@ public class FacilitySupportsProgramHelper {
   }
 
   private boolean isStartDateBeforeNow(LocalDate startDate) {
-    return (startDate == null) || startDate.isBefore(getCurrentDateWithSystemZone());
+    return (startDate == null) || startDate.isBefore(dateHelper.getCurrentDateWithSystemZone());
   }
 
-  private LocalDate getCurrentDateWithSystemZone() {
-    return LocalDate.now(ZoneId.of(timeZoneId));
-  }
 }

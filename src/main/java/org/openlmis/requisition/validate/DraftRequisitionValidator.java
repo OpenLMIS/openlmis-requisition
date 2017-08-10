@@ -37,12 +37,11 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.DateHelper;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +57,9 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -85,7 +87,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
                                                        Requisition requisition,
                                                        Requisition savedRequisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null
-        && requisition.getDatePhysicalStockCountCompleted().isAfter(LocalDate.now())) {
+        && requisition.getDatePhysicalStockCountCompleted()
+        .isAfter(dateHelper.getCurrentDateWithSystemZone())) {
       rejectValue(errors, DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
           new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE));
     }
