@@ -15,16 +15,16 @@
 
 package org.openlmis.requisition.web;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -33,37 +33,22 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
-import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionSecurityService;
-import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
-import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.validate.DraftRequisitionValidator;
-import org.openlmis.requisition.validate.RequisitionValidator;
-import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -94,22 +79,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
 @Transactional
-public class RequisitionController extends BaseController {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionController.class);
-  private static final String REQUISITION = "requisition";
-
-  @Autowired
-  private RequisitionRepository requisitionRepository;
-
-  @Autowired
-  private RequisitionValidator validator;
-
-  @Autowired
-  private DraftRequisitionValidator draftValidator;
-
-  @Autowired
-  private RequisitionService requisitionService;
+public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
@@ -121,46 +91,16 @@ public class RequisitionController extends BaseController {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
-
-  @Autowired
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
-  @Autowired
-  private AuthenticationHelper authenticationHelper;
-
-  @Autowired
-  private PermissionService permissionService;
-
-  @Autowired
   private RequisitionSecurityService requisitionSecurityService;
 
   @Autowired
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
-  @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-
-  @Autowired
-  private OrderableReferenceDataService orderableReferenceDataService;
-  
-  @Autowired
-  private StatusMessageRepository statusMessageRepository;
-
-  @Autowired
-  private RequisitionVersionValidator requisitionVersionValidator;
-
-  @Autowired
-  private RequisitionStatusProcessor requisitionStatusProcessor;
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -252,11 +192,11 @@ public class RequisitionController extends BaseController {
     validator.validate(requisition, bindingResult);
 
     if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
+      logger.warn("Validation for requisition failed: {}", getErrors(bindingResult));
       throw new BindingResultException(getErrors(bindingResult));
     }
 
-    LOGGER.debug("Submitting a requisition with id " + requisition.getId());
+    logger.debug("Submitting a requisition with id " + requisition.getId());
 
     UserDto user = authenticationHelper.getCurrentUser();
 
@@ -266,7 +206,7 @@ public class RequisitionController extends BaseController {
     
     requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
-    LOGGER.debug("Requisition with id " + requisition.getId() + " submitted");
+    logger.debug("Requisition with id " + requisition.getId() + " submitted");
 
     return basicRequisitionDtoBuilder.build(requisition);
   }
@@ -293,7 +233,12 @@ public class RequisitionController extends BaseController {
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                           @PathVariable("id") UUID requisitionId) {
-    requisitionService.validateCanSaveRequisition(requisitionDto, requisitionId)
+    if (isNotTrue(isNull(requisitionDto.getId()))
+        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
+      throw new ValidationMessageException(ERROR_ID_MISMATCH);
+    }
+
+    requisitionService.validateCanSaveRequisition(requisitionId)
         .throwExceptionIfHasErrors();
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
@@ -304,26 +249,11 @@ public class RequisitionController extends BaseController {
 
     requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
         .throwExceptionIfHasErrors();
+    validateFields(draftValidator, requisition).throwExceptionIfHasErrors();
 
-    LOGGER.debug("Updating requisition with id: {}", requisitionId);
+    logger.debug("Updating requisition with id: {}", requisitionId);
 
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-    draftValidator.validate(requisition, bindingResult);
-
-    if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      throw new BindingResultException(getErrors(bindingResult));
-    }
-
-    requisitionToUpdate.updateFrom(requisition,
-        stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-            requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
-                    getLineItemOrderableIds(requisition)));
-
-    requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
-
-    LOGGER.debug("Saved requisition with id: " + requisitionToUpdate.getId());
-    return requisitionDtoBuilder.build(requisitionToUpdate);
+    return doUpdate(requisitionToUpdate, requisition);
   }
 
   /**
@@ -414,24 +344,14 @@ public class RequisitionController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
-
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
     requisitionService.validateCanApproveRequisition(requisition, requisitionId, userId)
         .throwExceptionIfHasErrors();
+    validateFields(validator, requisition).throwExceptionIfHasErrors();
 
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-    validator.validate(requisition, bindingResult);
-    if (bindingResult.hasErrors()) {
-      LOGGER.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      throw new BindingResultException(getErrors(bindingResult));
-    }
-
-    SupervisoryNodeDto supervisoryNodeDto =
-        supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
-
-    return markAsApproved(requisition, userId, supervisoryNodeDto);
+    return doApprove(requisition, userId);
   }
 
   /**
@@ -516,7 +436,7 @@ public class RequisitionController extends BaseController {
 
     requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
-    LOGGER.debug("Requisition: " + requisitionId + " authorized.");
+    logger.debug("Requisition: " + requisitionId + " authorized.");
 
     return basicRequisitionDtoBuilder.build(requisition);
   }
@@ -565,43 +485,5 @@ public class RequisitionController extends BaseController {
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
-  }
-  
-  private void saveStatusMessage(Requisition requisition) {
-    if (isNotBlank(requisition.getDraftStatusMessage())) {
-      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          authenticationHelper.getCurrentUser().getId(),
-          authenticationHelper.getCurrentUser().getFirstName(),
-          authenticationHelper.getCurrentUser().getLastName(),
-          requisition.getDraftStatusMessage());
-      statusMessageRepository.save(newStatusMessage);
-      requisition.setDraftStatusMessage("");
-    }
-  }
-
-  protected BasicRequisitionDto markAsApproved(Requisition requisition, UUID userId,
-                                               SupervisoryNodeDto supervisoryNodeDto) {
-    UUID parentNodeId = null;
-    if (supervisoryNodeDto != null) {
-      SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
-      if (parentNode != null) {
-        parentNodeId = parentNode.getId();
-      }
-    }
-
-    requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
-        getLineItemOrderableIds(requisition)), userId);
-
-    saveStatusMessage(requisition);
-
-    requisitionRepository.save(requisition);
-    requisitionStatusProcessor.statusChange(requisition);
-    LOGGER.debug("Requisition with id " + requisition.getId() + " approved");
-    return basicRequisitionDtoBuilder.build(requisition);
-  }
-
-  private Set<UUID> getLineItemOrderableIds(Requisition requisition) {
-    return requisition.getRequisitionLineItems().stream().map(
-            RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
   }
 }

@@ -12,12 +12,12 @@ New functionality added in a backwards-compatible manner:
 
 * [OLMIS-2709](https://openlmis.atlassian.net/browse/OLMIS-2709): Changed ReferenceData facility service search endpoint to use smaller dto.
 * The /requisitions/requisitionsForConvert endpoint accepts several sortBy parameters. Data returned by the endpoint will be sorted by those parameters in order of occurrence. By defaults data will be sorted by emergency flag and program name.
+* [OLMIS-2928](https://openlmis.atlassian.net/browse/OLMIS-2928): Introduced new batch endpoints, that allow retrieval and approval of several requisitions at once. This also refactored the error handling.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2788](https://openlmis.atlassian.net/browse/OLMIS-2788): Fixed print requisition.
 * [OLMIS-2747](https://openlmis.atlassian.net/browse/OLMIS-2747): Fixed bug preventing user from being able to re-initiate a requisition after being removed, when there's already a requisition for next period.
 * [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
-* [MW-397](https://openlmis.atlassian.net/browse/MW-397): Refactored the error handling.
 * [OLMIS-2534](https://openlmis.atlassian.net/browse/OLMIS-2534): Fixed potential huge performance issue. The javers log initializer will not retrieve all domain objects at once if a repository implemenets [PagingAndSortingRepository](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/PagingAndSortingRepository.html)
 
 4.0.0 / 2017-06-23

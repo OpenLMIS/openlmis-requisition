@@ -175,10 +175,11 @@ public class PermissionService {
 
   /**
    * Checks if current user has permission to view a requisition.
-   * @return true if user has got the necessary rights to view given requisition; false otherwise
+   *
+   * @return ValidationResult containing info about the result of this check
    */
-  public boolean canViewRequisition(Requisition requisition) {
-    return hasPermission(REQUISITION_VIEW, requisition.getProgramId(),
+  public ValidationResult canViewRequisition(Requisition requisition) {
+    return checkPermission(REQUISITION_VIEW, requisition.getProgramId(),
         requisition.getFacilityId(), null);
   }
 

@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 @Component
-abstract class AbstractRequisitionValidator extends BaseValidator {
+public abstract class AbstractRequisitionValidator extends BaseValidator {
   static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
   public boolean supports(Class<?> clazz) {

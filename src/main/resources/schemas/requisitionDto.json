@@ -5,7 +5,7 @@
   "description": "A single requisitionDto",
   "properties": {
     "id": { "type": "string", "title": "id" },
-    "createdDate": {"type": "array", "title": "createdDate", "items": {"type": "integer" }, "uniqueItems": false },
+    "createdDate": {"type": "string", "title": "createdDate" },
     "facility": { "type": "object", "$ref": "schemas/facilityDto.json", "title": "facility" },
     "program": { "type": "object", "$ref": "schemas/programDto.json", "title": "program" },
     "supplyingFacility" : {"type": ["string", "null"], "title": "supplyingFacility"},

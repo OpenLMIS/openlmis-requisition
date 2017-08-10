@@ -19,5 +19,6 @@ public enum FailureType {
   VALIDATION,
   NOT_FOUND,
   NO_PERMISSION,
-  CONFLICT
+  CONFLICT,
+  FIELD_VALIDATION
 }

@@ -688,23 +688,10 @@ public class RequisitionServiceTest {
     when(permissionService.canUpdateRequisition(requisitionDto.getId()))
         .thenReturn(ValidationResult.noPermission("no.permission"));
 
-    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
-        requisitionDto.getId());
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
-  }
-
-  @Test
-  public void shouldFailValidationIfIdsDoNotMatch() {
-    when(permissionService.canUpdateRequisition(any(UUID.class)))
-        .thenReturn(ValidationResult.success());
-
-    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
-        UUID.randomUUID());
-
-    assertTrue(result.hasErrors());
-    assertEquals(FailureType.VALIDATION, result.getError().getType());
   }
 
   @Test
@@ -713,8 +700,7 @@ public class RequisitionServiceTest {
         .thenReturn(ValidationResult.success());
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(null);
 
-    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
-        requisitionDto.getId());
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.NOT_FOUND, result.getError().getType());
@@ -727,8 +713,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
     requisition.setStatus(RELEASED);
 
-    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
-        requisitionDto.getId());
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.VALIDATION, result.getError().getType());
@@ -741,8 +726,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
     requisition.setStatus(SUBMITTED);
 
-    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto,
-        requisitionDto.getId());
+    ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
 
     assertTrue(result.isSuccess());
   }

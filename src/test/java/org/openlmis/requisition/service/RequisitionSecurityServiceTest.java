@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +53,9 @@ public class RequisitionSecurityServiceTest {
     final UUID program = UUID.randomUUID();
     final Requisition requisition = mockRequisition(facility, program);
 
+    when(permissionService.canViewRequisition(any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
     List<Requisition> allRequisitions = Lists.newArrayList(requisition, requisition, requisition);
 
     requisitionSecurityService.filterInaccessibleRequisitions(allRequisitions);
@@ -69,6 +73,9 @@ public class RequisitionSecurityServiceTest {
 
     List<Requisition> allRequisitions = Lists.newArrayList(requisition, requisition2, requisition3);
 
+    when(permissionService.canViewRequisition(any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
     requisitionSecurityService.filterInaccessibleRequisitions(allRequisitions);
 
     // The permission service should be called one time for each requisition (no cache hits)
@@ -83,7 +90,10 @@ public class RequisitionSecurityServiceTest {
     final Requisition requisition4 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
 
     when(permissionService.canViewRequisition(any(Requisition.class)))
-        .thenReturn(true, false, false, true);
+        .thenReturn(ValidationResult.success(),
+            ValidationResult.noPermission("accessDenied"),
+            ValidationResult.noPermission("accessDenied"),
+            ValidationResult.success());
 
     List<Requisition> allRequisitions = Lists.newArrayList(requisition, requisition2,
         requisition3, requisition4);

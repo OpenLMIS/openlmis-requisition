@@ -50,7 +50,7 @@ public class RequisitionSecurityService {
       Boolean accessible = getCachedRight(verified, requisition);
 
       if (accessible == null) {
-        accessible = permissionService.canViewRequisition(requisition);
+        accessible = permissionService.canViewRequisition(requisition).isSuccess();
         addCachedRight(verified, requisition, accessible);
       }
 

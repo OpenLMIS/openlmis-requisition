@@ -16,46 +16,47 @@
 package org.openlmis.requisition.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class OrderableDto extends BasicOrderableDto {
-
-  private Set<ProgramOrderableDto> programs;
-  private DispensableDto dispensable;
-
-  @Builder
-  private OrderableDto(UUID id, String productCode, String fullProductName, long netContent,
-                       long packRoundingThreshold, boolean roundToZero,
-                       Set<ProgramOrderableDto> programs, DispensableDto dispensable) {
-    super(id, productCode, fullProductName, netContent, packRoundingThreshold, roundToZero);
-    this.programs = programs;
-    this.dispensable = dispensable;
-  }
+@NoArgsConstructor
+public class BasicOrderableDto {
+  private UUID id;
+  private String productCode;
+  private String fullProductName;
+  private long netContent;
+  private long packRoundingThreshold;
+  private boolean roundToZero;
 
   /**
-   * Find ProgramOrderableDto in programs using programId.
+   * Returns the number of packs to order. For this Orderable given a desired number of
+   * dispensing units, will return the number of packs that should be ordered.
    *
-   * @param programId programId
-   * @return product
+   * @param dispensingUnits # of dispensing units we'd like to order for
+   * @return the number of packs that should be ordered.
    */
-  public ProgramOrderableDto findProgramOrderableDto(UUID programId) {
-    if (programs != null) {
-      for (ProgramOrderableDto programOrderableDto : programs) {
-        if (programOrderableDto.getProgramId().equals(programId)) {
-          return programOrderableDto;
-        }
-      }
+  public long packsToOrder(long dispensingUnits) {
+    if (dispensingUnits <= 0 || netContent == 0) {
+      return 0;
     }
-    return null;
+
+    long packsToOrder = dispensingUnits / netContent;
+    long remainderQuantity = dispensingUnits % netContent;
+
+    if (remainderQuantity > 0 && remainderQuantity > packRoundingThreshold) {
+      packsToOrder += 1;
+    }
+
+    if (packsToOrder == 0 && !roundToZero) {
+      packsToOrder = 1;
+    }
+
+    return packsToOrder;
   }
 }

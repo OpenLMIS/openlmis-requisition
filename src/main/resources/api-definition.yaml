@@ -49,6 +49,75 @@ schemas:
 
   - requisitionLineItemDto: !include schemas/requisitionLineItemDto.json
 
+  - approveRequisitionDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "ApproveRequisitionDto",
+          "description": "A single requisitionDto for batch approval",
+          "properties": {
+              "id": { "type": "string", "title": "id" },
+              "modifiedDate": {"type": "string", "title": "modifiedDate" },
+              "status": { "type": "string", "title": "status" },
+              "facility": { "type": "object", "$ref": "schemas/basicfacilityDto.json", "title": "facility" },
+              "program": { "type": "object", "$ref": "schemas/basicProgramDto.json", "title": "program" },
+              "processingPeriod": { "type": "object", "$ref": "schemas/basicProcessingPeriodDto.json", "title": "processingPeriod" },
+              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/approveRequisitionLineItemDto" }, "uniqueItems": false }
+          },
+          "required": ["id", "facility", "program", "processingPeriod", "status"]
+      }
+
+
+  - approveRequisitionLineItemDto: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionLineItemDto",
+          "description": "A single requisitionLineItemDto",
+          "properties": {
+              "id": { "type": "string", "title": "id" },
+              "orderable": { "type": "object", "$ref": "#/schemas/basicOrderableDto", "title": "orderable" },
+              "approvedQuantity": {"type": "integer", "title": "approvedQuantity" },
+              "pricePerPack": {"type": "number", "title": "pricePerPack" },
+              "totalCost": {"type": "number", "title": "totalCost" },
+              "skipped": {"type": "boolean", "title": "skipped" }
+          },
+          "required": ["id", "approvedQuantity", "orderable"]
+      }
+
+  - approveRequisitionDtoArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/approveRequisitionDto" }
+      }
+
+  - requisitionError: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionError",
+          "description": "A single requisition error",
+          "properties": {
+              "errorMessage": { "type": "object", "$ref": "#/schemas/localizedMessage" },
+              "fieldErrors": { "type": "object", "$ref": "#/schemas/simpleMap" },
+              "requisitionId": { "type": "string", "title": "id" }
+          }
+      }
+
+  - requisitionErrorArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "#/schemas/requisitionError" }
+      }
+
+  - requisitionsProcessingStatus: |
+      {   "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema",
+          "title": "RequisitionsProcessingStatus",
+          "description": "An array of all requsitions that have been processed successfully and an array of errors.",
+          "properties": {
+              "requisitions": { "type": "object", "$ref": "#/schemas/approveRequisitionDtoArray" },
+              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" }
+          }
+      }
+
   - requisitionTemplate: !include schemas/requisitionTemplate.json
 
   - requisitionTemplateArray: |
@@ -63,6 +132,15 @@ schemas:
           "items": [
               { "type": "object", "$ref": "/schemas/requisitionDto.json" },
               { "type": "array", "items": { "type": "object", "$ref": "#/schemas/facility" } }
+          ]
+      }
+
+  - simpleMap: |
+      {
+          "type": "array",
+          "items": [
+              { "type": "string", "title": "key", "required": true },
+              { "type": "string", "title": "value" }
           ]
       }
 
@@ -177,6 +255,74 @@ resourceTypes:
 
 /api:
   /requisitions:
+      put:
+          is: [ secured ]
+          description: When saveAll param is present, it will save all requisitions from the request body
+          queryParameters:
+              saveAll:
+                  displayName: saveAll
+                  type: string
+                  required: false
+                  repeat: false
+          body:
+              application/json:
+                  schema: approveRequisitionDtoArray
+          responses:
+              "200":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+              "400":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+      post:
+          is: [ secured ]
+          description: when approveAll param is present, it will approve requisitions with passed ids
+          queryParameters:
+              approveAll:
+                  displayName: approveAll
+                  type: string
+                  required: false
+                  repeat: false
+              id:
+                  displayName: id
+                  type: string
+                  required: false
+                  repeat: true
+          responses:
+              "200":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+              "400":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+      get:
+          is: [ secured ]
+          description: when retrieveAll param is present, it will retrieve requisitions with passed ids
+          queryParameters:
+              retrieveAll:
+                  displayName: retrieveAll
+                  type: string
+                  required: false
+                  repeat: false
+              id:
+                  displayName: id
+                  type: string
+                  required: false
+                  repeat: true
+          responses:
+              "200":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+              "400":
+                  body:
+                    application/json:
+                        schema: requisitionsProcessingStatus
+
       displayName: Requisition
       /initiate:
           post:
