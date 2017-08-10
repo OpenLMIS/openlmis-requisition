@@ -251,18 +251,6 @@ public class RequisitionControllerTest {
   public void shouldReturnBadRequestWhenRequisitionIdDiffersFromTheOneInUrl() throws Exception {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
-    when(requisitionDto.getTemplate()).thenReturn(null);
-    when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
-    when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
-    when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
-    when(initiatedRequsition.getTemplate()).thenReturn(template);
-    when(requisitionRepository.findOne(uuid2)).thenReturn(initiatedRequsition);
-
-    when(requisitionService.validateCanSaveRequisition(any(UUID.class)))
-        .thenReturn(ValidationResult.failedValidation("IdsMismatch"));
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
 
     requisitionController.updateRequisition(requisitionDto, uuid2);
   }
