@@ -1,7 +1,7 @@
 execution:
   - concurrency: 1
-    iterations: 1
-    scenario: initiate-requisition
+    iterations: 10
+    scenario: requisition-workflow
   - concurrency: 1
     iterations: 1
     scenario: search-one-page
@@ -23,9 +23,8 @@ scenarios:
             jsonpath: $.access_token
   initiate-requisition:
     requests:
-      - include-scenario: get-user-token
-      # program = family planning, facility = comfort health clinic
-      - url: ${__P(base-uri)}/api/requisitions/periodsForInitiate?programId=10845cb9-d365-4aaa-badd-b4fa39c6a26a&facilityId=e6799d64-d10d-4011-b8c2-0e4d4a3f65ce&emergency=false
+      # program = family planning, facility = Kankao Health Facility
+      - url: ${__P(base-uri)}/api/requisitions/periodsForInitiate?programId=dce17f2e-af3e-40ad-8e00-3496adef44c3&facilityId=7938919f-6f61-4d1a-a4dc-923c31e9cd45&emergency=false
         method: GET
         label: GetPeriodsForInitiate
         headers:
@@ -38,7 +37,7 @@ scenarios:
             String uuid = vars.get("periodUuid");
             uuid = uuid.replaceAll(/"|\[|\]/, "");
             vars.put("periodUuid", uuid);
-      - url: ${__P(base-uri)}/api/requisitions/initiate?program=10845cb9-d365-4aaa-badd-b4fa39c6a26a&facility=e6799d64-d10d-4011-b8c2-0e4d4a3f65ce&suggestedPeriod=${periodUuid}&emergency=false
+      - url: ${__P(base-uri)}/api/requisitions/initiate?program=dce17f2e-af3e-40ad-8e00-3496adef44c3&facility=7938919f-6f61-4d1a-a4dc-923c31e9cd45&suggestedPeriod=${periodUuid}&emergency=false
         method: POST
         label: InitiateRequisition
         headers:
@@ -52,10 +51,91 @@ scenarios:
             String uuid = vars.get("reqUuid");
             uuid = uuid.replaceAll(/"|\[|\]/, "");
             vars.put("reqUuid", uuid);
+  update-requisition:
+    requests:
       - url: ${__P(base-uri)}/api/requisitions/${reqUuid}
-        method: DELETE
+        method: GET
+        label: RetrieveAndUpdateRequisition
         headers:
           Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          script-text: |
+            import groovy.json.JsonSlurper;
+            import groovy.json.JsonOutput;
+
+            def response = prev.getResponseDataAsString();
+
+            def jsonSlurper = new JsonSlurper();
+            def requisition = jsonSlurper.parseText(response);
+
+            requisition.requisitionLineItems.eachWithIndex { line, index ->
+              line.skipped = false;
+              line.beginningBalance = (index + 1) * 10;
+              line.totalConsumedQuantity = line.beginningBalance / 2;
+              line.totalReceivedQuantity = line.beginningBalance / 5;
+              line.requestedQuantity = line.beginningBalance * 2;
+              line.requestedQuantityExplanation = "we need more";
+              line.totalStockoutDays = 0;
+            }
+
+            vars.put("requisition", JsonOutput.toJson(requisition));
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}
+        method: PUT
+        label: UpdateRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        body:
+          ${requisition}
+  submit-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}/submit
+        method: POST
+        label: SubmitRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  authorize-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}/authorize
+        method: POST
+        label: AuthorizeRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  reject-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}/reject
+        method: PUT
+        label: RejectRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  approve-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}/approve
+        method: POST
+        label: ApproveRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  delete-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${reqUuid}
+        method: DELETE
+        label: DeleteRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  requisition-workflow:
+    requests:
+      - include-scenario: get-user-token
+      - include-scenario: initiate-requisition
+      - include-scenario: update-requisition
+      - include-scenario: submit-requisition
+      - include-scenario: authorize-requisition
+      - include-scenario: reject-requisition
+      - include-scenario: submit-requisition
+      - include-scenario: authorize-requisition
+      - include-scenario: approve-requisition
+      - include-scenario: reject-requisition
+      - include-scenario: delete-requisition
   search-one-page:
     requests:
       - include-scenario: get-user-token
