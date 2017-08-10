@@ -421,29 +421,12 @@ public class RequisitionTest {
   }
 
   @Test
-  @PrepareForTest(RequisitionStatus.class)
-  public void shouldSetDatePhysicalStockCountCompletedWhenRequisitionIsPreAuthorize() {
-    RequisitionStatus requisitionStatus = PowerMockito.mock(RequisitionStatus.class);
-    when(requisitionStatus.isPreAuthorize()).thenReturn(true);
-    this.requisition.setStatus(requisitionStatus);
-
-    updateWithDatePhysicalCountCompletd();
+  public void shouldSetDatePhysicalStockCountCompletedWhenUpdateRequisition() {
+    Requisition requisition = updateWithDatePhysicalCountCompleted();
 
     assertEquals(
         requisition.getDatePhysicalStockCountCompleted(),
         this.requisition.getDatePhysicalStockCountCompleted());
-  }
-
-  @Test
-  @PrepareForTest(RequisitionStatus.class)
-  public void shouldNotSetDatePhysicalStockCountCompletedWhenRequisitionIsAfterAuthorize() {
-    RequisitionStatus requisitionStatus = PowerMockito.mock(RequisitionStatus.class);
-    when(requisitionStatus.isPreAuthorize()).thenReturn(false);
-    this.requisition.setStatus(requisitionStatus);
-
-    updateWithDatePhysicalCountCompletd();
-
-    assertNull(this.requisition.getDatePhysicalStockCountCompleted());
   }
 
   @Test
@@ -1030,13 +1013,15 @@ public class RequisitionTest {
         releaserId);
   }
 
-  private void updateWithDatePhysicalCountCompletd() {
+  private Requisition updateWithDatePhysicalCountCompleted() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     this.requisition.setTemplate(requisitionTemplate);
 
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
     this.requisition.updateFrom(requisition, Collections.emptyList(), Collections.emptyList());
+
+    return requisition;
   }
 
   private Requisition createRequisitionWithStatusOf(RequisitionStatus status) {

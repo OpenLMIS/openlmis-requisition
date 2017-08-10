@@ -225,9 +225,7 @@ public class Requisition extends BaseTimestampedEntity {
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
     updateTotalCostAndPacksToShip(products);
 
-    if (this.isPreAuthorize()) {
-      setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
-    }
+    setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());
