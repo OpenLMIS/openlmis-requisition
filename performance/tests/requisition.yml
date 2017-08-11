@@ -55,7 +55,7 @@ scenarios:
     requests:
       - url: ${__P(base-uri)}/api/requisitions/${reqUuid}
         method: GET
-        label: RetrieveAndUpdateRequisition
+        label: GetRequisitionToUpdate
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
