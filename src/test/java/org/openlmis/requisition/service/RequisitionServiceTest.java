@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
@@ -54,6 +55,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
@@ -74,7 +76,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -847,7 +848,7 @@ public class RequisitionServiceTest {
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
 
-    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
@@ -872,7 +873,7 @@ public class RequisitionServiceTest {
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
 
-    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
@@ -895,10 +896,38 @@ public class RequisitionServiceTest {
     UUID userId = UUID.randomUUID();
     when(user.getId()).thenReturn(userId);
 
-    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5);
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
         convertToOrderRightId)).thenReturn(new ArrayList<>());
+
+    // when
+    requisitionService.releaseRequisitionsAsOrder(requisitions, user);
+  }
+
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotReleaseRequisitionsAsOrderIfApprovedQtyDisabled() {
+    // given
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, APPROVED);
+    when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
+
+    // when
+    requisitionService.releaseRequisitionsAsOrder(requisitions, user);
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotReleaseRequisitionsAsOrderInIncorrectStatus() {
+    // given
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+
+    List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, SUBMITTED);
 
     // when
     requisitionService.releaseRequisitionsAsOrder(requisitions, user);
@@ -1019,7 +1048,7 @@ public class RequisitionServiceTest {
     UserDto user = mock(UserDto.class);
     when(user.getId()).thenReturn(UUID.randomUUID());
 
-    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount);
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -1044,7 +1073,7 @@ public class RequisitionServiceTest {
     UserDto user = mock(UserDto.class);
     when(user.getId()).thenReturn(UUID.randomUUID());
 
-    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount);
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -1065,7 +1094,7 @@ public class RequisitionServiceTest {
     UserDto user = mock(UserDto.class);
     when(user.getId()).thenReturn(UUID.randomUUID());
 
-    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(1);
+    List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(1, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -1122,7 +1151,8 @@ public class RequisitionServiceTest {
     assertTrue(resultSet.equals(nonFullSupplySet));
   }
   
-  private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(int amount) {
+  private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(
+      int amount, RequisitionStatus status) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
     }
@@ -1134,11 +1164,12 @@ public class RequisitionServiceTest {
       when(facility.getId()).thenReturn(UUID.randomUUID());
 
       Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-          UUID.randomUUID(), APPROVED, false);
+          UUID.randomUUID(), status, false);
       requisition.setId(UUID.randomUUID());
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
       requisition.setRequisitionLineItems(Lists.newArrayList());
+      requisition.setTemplate(requisitionTemplate);
 
       when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
@@ -1176,15 +1207,6 @@ public class RequisitionServiceTest {
     requisitionDto.setSupervisoryNode(supervisoryNodeId);
     requisitionDto.setStatus(AUTHORIZED);
     return requisitionDto;
-  }
-
-  private SupplyLineDto generateSupplyLine(
-      UUID program, UUID supervisoryNode, UUID facility) {
-    SupplyLineDto supplyLine = new SupplyLineDto();
-    supplyLine.setProgram(program);
-    supplyLine.setSupervisoryNode(supervisoryNode);
-    supplyLine.setSupplyingFacility(facility);
-    return supplyLine;
   }
 
   private List<BasicRequisitionDto> getBasicRequisitionDtoList() {
@@ -1396,6 +1418,7 @@ public class RequisitionServiceTest {
     when(facility.getId()).thenReturn(facilityId);
     when(program.getId()).thenReturn(programId);
     when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);
+    when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(true);
 
     processingPeriodDto = new ProcessingPeriodDto();
     processingPeriodDto.setProcessingSchedule(processingScheduleDto);

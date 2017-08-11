@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
@@ -31,6 +32,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLA
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.requisition.domain.Requisition;
@@ -492,13 +494,8 @@ public class RequisitionService {
     for (ConvertToOrderDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
-
-      if (APPROVED == loadedRequisition.getStatus()) {
-        loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
-      } else {
-        throw new ValidationMessageException(new Message(ERROR_REQUISITION_MUST_BE_APPROVED,
-            loadedRequisition.getId()));
-      }
+      isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
+      loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
       Set<UUID> validFacilities = getAvailableSupplyingDepots(requisitionId)
@@ -607,6 +604,21 @@ public class RequisitionService {
     }
 
     orderFulfillmentService.create(orders);
+  }
+
+  private ValidationResult isEligibleForConvertToOrder(Requisition requisition) {
+    if (APPROVED != requisition.getStatus()) {
+      return ValidationResult.failedValidation(
+          ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());
+    } else if (!approvedQtyColumnEnabled(requisition)) {
+      return ValidationResult.failedValidation(
+          ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY, requisition.getId());
+    }
+    return ValidationResult.success();
+  }
+
+  private boolean approvedQtyColumnEnabled(Requisition requisition) {
+    return requisition.getTemplate().isColumnInTemplateAndDisplayed(APPROVED_QUANTITY);
   }
 
   private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {

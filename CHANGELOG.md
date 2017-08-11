@@ -19,6 +19,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2747](https://openlmis.atlassian.net/browse/OLMIS-2747): Fixed bug preventing user from being able to re-initiate a requisition after being removed, when there's already a requisition for next period.
 * [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
 * [OLMIS-2534](https://openlmis.atlassian.net/browse/OLMIS-2534): Fixed potential huge performance issue. The javers log initializer will not retrieve all domain objects at once if a repository implemenets [PagingAndSortingRepository](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/PagingAndSortingRepository.html)
+* [OLMIS-3008](https://openlmis.atlassian.net/browse/OLMIS-3008): Add correct error message when trying to convert requisition to an order with approved quantity disabled in the the requisition template.
 
 4.0.0 / 2017-06-23
 ==================
