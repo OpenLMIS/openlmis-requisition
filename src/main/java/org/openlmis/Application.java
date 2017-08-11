@@ -45,6 +45,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.util.Locale;
 
 @SpringBootApplication
@@ -68,6 +69,9 @@ public class Application {
 
   @Value("${spring.jpa.properties.hibernate.default_schema}")
   private String preferredSchema;
+
+  @Value("${time.zoneId}")
+  private String timeZoneId;
 
   /**
    * Creates new LocaleResolver.
@@ -162,7 +166,7 @@ public class Application {
 
   @Bean
   public Clock clock() {
-    return Clock.systemDefaultZone();
+    return Clock.system(ZoneId.of(timeZoneId));
   }
 
 }

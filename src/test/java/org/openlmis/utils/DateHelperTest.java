@@ -26,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -35,8 +34,7 @@ import java.time.ZoneId;
 @RunWith(MockitoJUnitRunner.class)
 public class DateHelperTest {
 
-  public static final String UTC = "UTC";
-  public static final ZoneId ZONE_ID = ZoneId.of(UTC);
+  private static final ZoneId ZONE_ID = ZoneId.of("UTC");
 
   @Mock
   Clock clock;
@@ -46,38 +44,32 @@ public class DateHelperTest {
 
   @Before
   public void setUp() {
-    when(clock.withZone(ZONE_ID)).thenReturn(clock);
     when(clock.getZone()).thenReturn(ZONE_ID);
     when(clock.instant()).thenReturn(Instant.now());
-
-    ReflectionTestUtils.setField(dateHelper, "timeZoneId", UTC);
   }
 
   @Test
   public void shouldGetCurrentDateWithSystemTimeZone() {
-    assertEquals(LocalDate.now(clock.withZone(ZONE_ID)), dateHelper.getCurrentDateWithSystemZone());
+    assertEquals(LocalDate.now(clock), dateHelper.getCurrentDateWithSystemZone());
   }
 
   @Test
   public void shouldReturnTrueWhenStartDateIsBeforeNow() {
-    boolean startDateBeforeNow =
-        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).minusDays(1));
+    boolean startDateBeforeNow = dateHelper.isDateBeforeNow(LocalDate.now(clock).minusDays(1));
 
     assertTrue(startDateBeforeNow);
   }
 
   @Test
   public void shouldReturnFalseWhenStartDateIsAfterNow() {
-    boolean startDateBeforeNow =
-        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).plusDays(1));
+    boolean startDateBeforeNow = dateHelper.isDateBeforeNow(LocalDate.now(clock).plusDays(1));
 
     assertFalse(startDateBeforeNow);
   }
 
   @Test
   public void shouldReturnFalseWhenStartDateEqualsNow() {
-    boolean startDateBeforeNow =
-        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)));
+    boolean startDateBeforeNow = dateHelper.isDateBeforeNow(LocalDate.now(clock));
 
     assertFalse(startDateBeforeNow);
   }
