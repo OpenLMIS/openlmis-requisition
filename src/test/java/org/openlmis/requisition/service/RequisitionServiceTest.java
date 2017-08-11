@@ -523,10 +523,8 @@ public class RequisitionServiceTest {
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UUID userId = UUID.randomUUID();
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(userId);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+    UserDto user = mockUser();
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
             .thenReturn(roleAssignmentDtos);
 
     when(requisitionRepository.searchRequisitions(
@@ -540,14 +538,14 @@ public class RequisitionServiceTest {
             .thenReturn(requisitions);
 
     Set<Requisition> requisitionsForApproval =
-            requisitionService.getRequisitionsForApproval(userId, programId);
+            requisitionService.getRequisitionsForApproval(user.getId(), programId);
 
     assertEquals(2, requisitionsForApproval.size());
     assertTrue(requisitionsForApproval.contains(requisitions.get(0)));
     assertTrue(requisitionsForApproval.contains(requisitions.get(1)));
 
     requisitionsForApproval =
-            requisitionService.getRequisitionsForApproval(userId, UUID.randomUUID());
+            requisitionService.getRequisitionsForApproval(user.getId(), UUID.randomUUID());
 
     assertEquals(0, requisitionsForApproval.size());
   }
@@ -566,14 +564,12 @@ public class RequisitionServiceTest {
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UUID userId = UUID.randomUUID();
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(userId);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+    UserDto user = mockUser();
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
     Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+        requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
   }
@@ -593,14 +589,12 @@ public class RequisitionServiceTest {
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UUID userId = UUID.randomUUID();
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(userId);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+    UserDto user = mockUser();
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
     Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+        requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
   }
@@ -620,14 +614,12 @@ public class RequisitionServiceTest {
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UUID userId = UUID.randomUUID();
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(userId);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
+    UserDto user = mockUser();
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
     Set<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null);
+        requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
   }
@@ -844,16 +836,14 @@ public class RequisitionServiceTest {
   @Test
   public void shouldReleaseRequisitionsAsOrder() {
     // given
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
 
     // when
@@ -869,16 +859,14 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided() {
     // given
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
 
     for (ConvertToOrderDto requisition : requisitions) {
@@ -892,13 +880,11 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
 
-    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(userId,
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(new ArrayList<>());
 
     // when
@@ -909,9 +895,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfApprovedQtyDisabled() {
     // given
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, APPROVED);
     when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
@@ -923,9 +907,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderInIncorrectStatus() {
     // given
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, SUBMITTED);
 
@@ -1045,8 +1027,7 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(UUID.randomUUID());
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
@@ -1070,8 +1051,7 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(UUID.randomUUID());
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
@@ -1091,8 +1071,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldProcessStatusChangeWhenConvertingRequisitionToOrder() throws Exception {
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(UUID.randomUUID());
+    UserDto user = mockUser();
 
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(1, APPROVED);
 
@@ -1289,6 +1268,13 @@ public class RequisitionServiceTest {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
     requisitionTemplate.setColumnsMap(columnsMap);
     return requisitionTemplate;
+  }
+
+  private UserDto mockUser() {
+    UserDto user = mock(UserDto.class);
+    UUID userId = UUID.randomUUID();
+    when(user.getId()).thenReturn(userId);
+    return user;
   }
 
   private void mockPreviousRequisition() {
