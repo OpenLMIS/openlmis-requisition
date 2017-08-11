@@ -23,7 +23,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,11 +67,7 @@ public class FacilitySupportsProgramHelper {
     return supportedPrograms.stream()
         .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)
             && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
-            && isStartDateBeforeNow(supportedProgram.getSupportStartDate()));
-  }
-
-  private boolean isStartDateBeforeNow(LocalDate startDate) {
-    return (startDate == null) || startDate.isBefore(dateHelper.getCurrentDateWithSystemZone());
+            && dateHelper.isStartDateBeforeNow(supportedProgram.getSupportStartDate()));
   }
 
 }

@@ -15,6 +15,7 @@
 
 package org.openlmis.utils;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -28,7 +29,6 @@ import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -55,7 +55,7 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto = new FacilityDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
-    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now(ZoneId.of("UTC")));
+    when(dateHelper.isStartDateBeforeNow(any(LocalDate.class))).thenReturn(true);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -122,8 +122,8 @@ public class FacilitySupportsProgramHelperTest {
     SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(false);
-    supportedProgramDto.setSupportStartDate(LocalDate.now().plusDays(1));
+    supportedProgramDto.setProgramActive(true);
+    when(dateHelper.isStartDateBeforeNow(any(LocalDate.class))).thenReturn(false);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 

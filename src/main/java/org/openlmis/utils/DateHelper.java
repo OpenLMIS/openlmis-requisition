@@ -27,6 +27,14 @@ public class DateHelper {
   private String timeZoneId;
 
   /**
+   * Checks if startDate is before the current date from the system clock in the system time zone.
+   * @return true if startDate is before now or is null
+   */
+  public boolean isStartDateBeforeNow(LocalDate startDate) {
+    return (startDate == null) || startDate.isBefore(getCurrentDateWithSystemZone());
+  }
+
+  /**
    * Obtains the current date from the system clock in the system time zone.
    * @return the current date using the system clock
    */
