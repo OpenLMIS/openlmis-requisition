@@ -55,7 +55,7 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto = new FacilityDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
-    when(dateHelper.isStartDateBeforeNow(any(LocalDate.class))).thenReturn(true);
+    when(dateHelper.isDateBeforeNow(any(LocalDate.class))).thenReturn(true);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -123,7 +123,7 @@ public class FacilitySupportsProgramHelperTest {
     supportedProgramDto.setId(programId);
     supportedProgramDto.setSupportActive(true);
     supportedProgramDto.setProgramActive(true);
-    when(dateHelper.isStartDateBeforeNow(any(LocalDate.class))).thenReturn(false);
+    when(dateHelper.isDateBeforeNow(any(LocalDate.class))).thenReturn(false);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 

@@ -61,7 +61,7 @@ public class DateHelperTest {
   @Test
   public void shouldReturnTrueWhenStartDateIsBeforeNow() {
     boolean startDateBeforeNow =
-        dateHelper.isStartDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).minusDays(1));
+        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).minusDays(1));
 
     assertTrue(startDateBeforeNow);
   }
@@ -69,7 +69,7 @@ public class DateHelperTest {
   @Test
   public void shouldReturnFalseWhenStartDateIsAfterNow() {
     boolean startDateBeforeNow =
-        dateHelper.isStartDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).plusDays(1));
+        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)).plusDays(1));
 
     assertFalse(startDateBeforeNow);
   }
@@ -77,14 +77,14 @@ public class DateHelperTest {
   @Test
   public void shouldReturnFalseWhenStartDateEqualsNow() {
     boolean startDateBeforeNow =
-        dateHelper.isStartDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)));
+        dateHelper.isDateBeforeNow(LocalDate.now(clock.withZone(ZONE_ID)));
 
     assertFalse(startDateBeforeNow);
   }
 
   @Test
   public void shouldReturnTrueWhenStartDateIsNull() {
-    boolean startDateBeforeNow = dateHelper.isStartDateBeforeNow(null);
+    boolean startDateBeforeNow = dateHelper.isDateBeforeNow(null);
 
     assertTrue(startDateBeforeNow);
   }

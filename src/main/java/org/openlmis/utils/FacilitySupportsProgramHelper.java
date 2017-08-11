@@ -67,7 +67,7 @@ public class FacilitySupportsProgramHelper {
     return supportedPrograms.stream()
         .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)
             && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
-            && dateHelper.isStartDateBeforeNow(supportedProgram.getSupportStartDate()));
+            && dateHelper.isDateBeforeNow(supportedProgram.getSupportStartDate()));
   }
 
 }
