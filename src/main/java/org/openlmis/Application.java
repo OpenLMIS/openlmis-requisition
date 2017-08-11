@@ -44,6 +44,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
+import java.time.Clock;
 import java.util.Locale;
 
 @SpringBootApplication
@@ -159,5 +160,9 @@ public class Application {
     };
   }
 
+  @Bean
+  public Clock clock() {
+    return Clock.systemDefaultZone();
+  }
 
 }

@@ -15,13 +15,18 @@
 
 package org.openlmis.utils;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
 @Component
 public class DateHelper {
+
+  @Autowired
+  private Clock clock;
 
   @Value("${time.zoneId}")
   private String timeZoneId;
@@ -39,7 +44,7 @@ public class DateHelper {
    * @return the current date using the system clock
    */
   public LocalDate getCurrentDateWithSystemZone() {
-    return LocalDate.now(ZoneId.of(timeZoneId));
+    return LocalDate.now(clock.withZone(ZoneId.of(timeZoneId)));
   }
 
 }
