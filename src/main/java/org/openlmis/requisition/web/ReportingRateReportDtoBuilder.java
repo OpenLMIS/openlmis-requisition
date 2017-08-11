@@ -226,7 +226,12 @@ public class ReportingRateReportDtoBuilder {
     if (zone == null) {
       return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, null);
     } else {
-      return geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, zone.getId());
+      Collection<GeographicZoneDto> zones =
+          geographicZoneReferenceDataService.search(GEOGRAPHIC_ZONE_LEVEL, zone.getId());
+      if (zones.isEmpty()) {
+        return Collections.singleton(zone);
+      }
+      return zones;
     }
   }
 

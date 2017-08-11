@@ -20,6 +20,8 @@ import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -49,11 +51,10 @@ public class GeographicZoneReferenceDataService
    * @return List of matched geographic zones.
    */
   public Collection<GeographicZoneDto> search(Integer levelNumber, UUID parent) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("levelNumber", levelNumber)
-        .set("parent", parent);
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("levelNumber", levelNumber);
+    payload.put("parent", parent);
 
-    return findAll("search", parameters);
+    return getPage("search", RequestParameters.init(), payload).getContent();
   }
 }
