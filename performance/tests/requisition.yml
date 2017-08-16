@@ -69,6 +69,7 @@ scenarios:
             def jsonSlurper = new JsonSlurper();
             def requisition = jsonSlurper.parseText(response);
 
+            requisition.datePhysicalStockCountCompleted = "2017-08-15"
             requisition.requisitionLineItems.eachWithIndex { line, index ->
               line.skipped = false;
               line.beginningBalance = (index + 1) * 10;
