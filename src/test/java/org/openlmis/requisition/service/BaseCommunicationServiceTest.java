@@ -47,7 +47,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-
 import java.net.URI;
 import java.util.UUID;
 
@@ -71,12 +70,12 @@ public abstract class BaseCommunicationServiceTest<T> {
   public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     mockAuth();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     checkAuth();
   }
 
