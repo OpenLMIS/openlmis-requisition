@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,7 +33,6 @@ import org.junit.Test;
 import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
@@ -42,6 +42,8 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +61,9 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private RequisitionTemplateRepository templateRepository;
+
+  @Autowired
+  private EntityManager entityManager;
   
   private RequisitionTemplate testTemplate;
 
@@ -71,8 +76,12 @@ public class RequisitionRepositoryIntegrationTest
 
   @Override
   Requisition generateInstance() {
-    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), INITIATED, getNextInstanceNumber() % 2 == 0);
+    return generateInstance(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+  }
+
+  private Requisition generateInstance(UUID facilityId, UUID programId, UUID processingPeriodId) {
+    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
+            INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
@@ -94,58 +103,63 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchRequisitionsByAllProperties() {
-    Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
-        requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
-        requisitions.get(0).getStatus(), requisitions.get(0).getEmergency());
-    requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
+    // for this test we need an emergency requisition
+    // so that the uniqueness constraint is not violated
+    Requisition requisitionToCopy = requisitions.get(1);
+
+    Requisition requisition = new Requisition(requisitionToCopy.getFacilityId(),
+        requisitionToCopy.getProgramId(), requisitionToCopy.getProcessingPeriodId(),
+        requisitionToCopy.getStatus(), requisitionToCopy.getEmergency());
+    requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setStatusChanges(Collections.singletonList(
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    requisition.setEmergency(true);
     repository.save(requisition);
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        requisitions.get(0).getFacilityId(),
-        requisitions.get(0).getProgramId(),
-        requisitions.get(0).getCreatedDate().minusDays(1),
-        requisitions.get(0).getCreatedDate().plusDays(2),
-        requisitions.get(0).getProcessingPeriodId(),
-        requisitions.get(0).getSupervisoryNodeId(),
-        EnumSet.of(requisitions.get(0).getStatus()),
-        requisitions.get(0).getEmergency());
+        requisitionToCopy.getFacilityId(),
+        requisitionToCopy.getProgramId(),
+        requisitionToCopy.getCreatedDate().minusDays(1),
+        requisitionToCopy.getCreatedDate().plusDays(2),
+        requisitionToCopy.getProcessingPeriodId(),
+        requisitionToCopy.getSupervisoryNodeId(),
+        EnumSet.of(requisitionToCopy.getStatus()),
+        requisitionToCopy.getEmergency());
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
       assertEquals(
           receivedRequisition.getProgramId(),
-          requisitions.get(0).getProgramId());
+          requisitionToCopy.getProgramId());
       assertEquals(
           receivedRequisition.getProcessingPeriodId(),
-          requisitions.get(0).getProcessingPeriodId());
+          requisitionToCopy.getProcessingPeriodId());
       assertEquals(
           receivedRequisition.getFacilityId(),
-          requisitions.get(0).getFacilityId());
+          requisitionToCopy.getFacilityId());
       assertEquals(
           receivedRequisition.getSupervisoryNodeId(),
-          requisitions.get(0).getSupervisoryNodeId());
+          requisitionToCopy.getSupervisoryNodeId());
       assertEquals(
           receivedRequisition.getStatus(),
-          requisitions.get(0).getStatus());
+          requisitionToCopy.getStatus());
       assertTrue(
           receivedRequisition.getCreatedDate().isBefore(
-              requisitions.get(0).getCreatedDate().plusDays(2)));
+              requisitionToCopy.getCreatedDate().plusDays(2)));
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(
-              requisitions.get(0).getCreatedDate().minusDays(1)));
-      assertEquals(receivedRequisition.getEmergency(), requisitions.get(0).getEmergency());
+              requisitionToCopy.getCreatedDate().minusDays(1)));
       assertEquals(receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
+      assertEquals(receivedRequisition.getEmergency(), requisitionToCopy.getEmergency());
     }
   }
 
   @Test
   public void testSearchRequisitionsByFacilityAndProgram() {
     Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
-        requisitions.get(0).getProgramId(), requisitions.get(0).getProcessingPeriodId(),
+        requisitions.get(0).getProgramId(), UUID.randomUUID(),
         requisitions.get(0).getStatus(), false);
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
@@ -290,13 +304,40 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(5, requisition.getPreviousRequisitions().size());
   }
 
-  private Requisition generateRequisition(UUID facility, UUID program, RequisitionStatus status) {
-    Requisition requisition = new Requisition(facility, program, UUID.randomUUID(),
-        status, false);
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setTemplate(testTemplate);
+  @Test(expected = PersistenceException.class)
+  public void shouldNotAllowMultipleRegularRequisitionForFacilityProgramPeriod() {
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    UUID periodId = UUID.randomUUID();
 
-    return requisition;
+    Requisition requisition1 =  generateInstance(facilityId, programId, periodId);
+    Requisition requisition2 = generateInstance(facilityId, programId, periodId);
+
+    requisition1.setEmergency(false);
+    requisition2.setEmergency(false);
+
+    repository.save(asList(requisition1, requisition2));
+
+    entityManager.flush();
+  }
+
+  @Test
+  public void shouldAllowMultipleEmergencyRequisitionsForFacilityProgramPeriod() {
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    UUID periodId = UUID.randomUUID();
+
+    Requisition regularRequisition =  generateInstance(facilityId, programId, periodId);
+    Requisition emergencyRequisition1 = generateInstance(facilityId, programId, periodId);
+    Requisition emergencyRequisition2 = generateInstance(facilityId, programId, periodId);
+
+    emergencyRequisition1.setEmergency(true);
+    emergencyRequisition2.setEmergency(true);
+    regularRequisition.setEmergency(false);
+
+    repository.save(asList(regularRequisition, emergencyRequisition1, emergencyRequisition2));
+
+    entityManager.flush();
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
@@ -306,14 +347,5 @@ public class RequisitionRepositoryIntegrationTest
 
     return templateRepository.save(new RequisitionTemplate(
         Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));
-  }
-
-  private Requisition generateInstanceBasedOn(Requisition entity) {
-    Requisition entity2 = generateInstance();
-    entity2.setProcessingPeriodId(entity.getProcessingPeriodId());
-    entity2.setFacilityId(entity.getFacilityId());
-    entity2.setProgramId(entity.getProgramId());
-    entity2.setEmergency(entity.getEmergency());
-    return entity2;
   }
 }
