@@ -49,7 +49,7 @@ public class StockAdjustmentReason extends BaseEntity {
   @Type(type = UUID)
   private UUID reasonId;
 
-  @Column(nullable = false, unique = true, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
   private String name;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
