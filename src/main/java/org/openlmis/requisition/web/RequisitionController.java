@@ -22,6 +22,13 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -53,6 +60,9 @@ import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,18 +81,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionController.class);
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
@@ -305,6 +310,12 @@ public class RequisitionController extends BaseRequisitionController {
           Set<RequisitionStatus> requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
+    XLOGGER.entry(facility, program, initiatedDateFrom, initiatedDateTo, processingPeriod, 
+        supervisoryNode, requisitionStatuses, pageable);
+    Profiler profiler = new Profiler("REQUISITIONS_SEARCH");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("REQUISITION_SERVICE_SEARCH");
     List<Requisition> requisitions = requisitionService.searchRequisitions(facility, program,
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency);
@@ -312,8 +323,15 @@ public class RequisitionController extends BaseRequisitionController {
     List<Requisition> filteredList =
         requisitionSecurityService.filterInaccessibleRequisitions(requisitions);
 
+    profiler.start("REQUISITION_DTO_BUILD");
     List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(filteredList);
-    return Pagination.getPage(dtoList, pageable);
+
+    profiler.start("REQUISITION_PAGINATION");
+    Page page = Pagination.getPage(dtoList, pageable);
+
+    profiler.stop().log();
+    XLOGGER.exit(page);
+    return page;
   }
 
   /**
