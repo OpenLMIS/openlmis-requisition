@@ -61,6 +61,7 @@ dependencies {
     compile 'org.javers:javers-spring-boot-starter-sql:2.8.1'
     compile 'org.flywaydb:flyway-core:4.0.3'
     compile 'org.hibernate:hibernate-java8'
+    compile "org.slf4j:slf4j-ext:1.7.25"
 
     testCompile "com.jayway.restassured:rest-assured:2.7.0"
 
