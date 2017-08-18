@@ -189,6 +189,16 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private LocalDate datePhysicalStockCountCompleted;
 
+  @OneToMany(
+      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.LAZY,
+      orphanRemoval = true)
+  @JoinColumn(name = "requisitionId")
+  @DiffIgnore
+  @Getter
+  @Setter
+  private List<StockAdjustmentReason> stockAdjustmentReasons;
+
   /**
    * Constructor.
    *

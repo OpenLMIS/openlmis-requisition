@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 
 import com.google.common.collect.Sets;
-
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -36,14 +36,14 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonType;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +51,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -89,6 +91,10 @@ public class RequisitionRepositoryIntegrationTest
     List<StatusChange> statusChanges = new ArrayList<>();
     statusChanges.add(StatusChange.newStatusChange(requisition, UUID.randomUUID()));
     requisition.setStatusChanges(statusChanges);
+
+    StockAdjustmentReason reason = generateStockAdjustmentReason();
+    requisition.setStockAdjustmentReasons(newArrayList(reason));
+
     return requisition;
   }
 
@@ -338,6 +344,16 @@ public class RequisitionRepositoryIntegrationTest
     repository.save(asList(regularRequisition, emergencyRequisition1, emergencyRequisition2));
 
     entityManager.flush();
+  }
+
+  private StockAdjustmentReason generateStockAdjustmentReason() {
+    StockAdjustmentReason reason = new StockAdjustmentReason();
+    reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
+    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setDescription("simple description");
+    reason.setIsFreeTextAllowed(false);
+    reason.setName("simple name");
+    return reason;
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
