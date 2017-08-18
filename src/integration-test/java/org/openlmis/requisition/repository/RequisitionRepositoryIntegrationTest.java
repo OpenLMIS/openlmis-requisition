@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -352,7 +353,7 @@ public class RequisitionRepositoryIntegrationTest
     reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
     reason.setDescription("simple description");
     reason.setIsFreeTextAllowed(false);
-    reason.setName("simple name");
+    reason.setName(RandomStringUtils.random(5));
     return reason;
   }
 

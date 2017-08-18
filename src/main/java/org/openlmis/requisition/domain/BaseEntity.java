@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openlmis.util.View;
@@ -31,6 +32,7 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
+@EqualsAndHashCode
 public abstract class BaseEntity {
   static final String TEXT_COLUMN_DEFINITION = "text";
   protected static final String UUID = "pg-uuid";

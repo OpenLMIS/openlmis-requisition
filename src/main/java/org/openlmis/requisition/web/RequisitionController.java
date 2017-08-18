@@ -25,15 +25,18 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -44,6 +47,7 @@ import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.Message;
@@ -67,7 +71,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -105,6 +108,9 @@ public class RequisitionController extends BaseRequisitionController {
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
 
+  @Autowired
+  private ValidReasonStockmanagementService validReasonStockmanagementService;
+
   /**
    * Allows creating new requisitions.
    *
@@ -140,8 +146,11 @@ public class RequisitionController extends BaseRequisitionController {
     permissionService.canInitRequisition(programId, facilityId).throwExceptionIfHasErrors();
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
-    Requisition newRequisition = requisitionService
-        .initiate(program.getId(), facility.getId(), suggestedPeriod, emergency);
+    List<StockAdjustmentReason> stockAdjustmentReasons =
+        getStockAdjustmentReasons(programId, facility);
+
+    Requisition newRequisition = requisitionService.initiate(
+        program.getId(), facility.getId(), suggestedPeriod, emergency, stockAdjustmentReasons);
     return requisitionDtoBuilder.build(newRequisition, facility, program);
   }
 
@@ -203,7 +212,7 @@ public class RequisitionController extends BaseRequisitionController {
     requisition.submit(orderableReferenceDataService.findByIds(
             getLineItemOrderableIds(requisition)), user.getId());
     saveStatusMessage(requisition);
-    
+
     requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
     logger.debug("Requisition with id " + requisition.getId() + " submitted");
@@ -485,5 +494,18 @@ public class RequisitionController extends BaseRequisitionController {
   @InitBinder("requisition")
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
+  }
+
+  private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,
+                                                                FacilityDto facilityDto) {
+    List<ValidReasonDto> validReasons =
+        validReasonStockmanagementService
+            .search(programId, facilityDto.getType().getId());
+
+    List<ReasonDto> reasonDtos = validReasons.stream()
+        .map(ValidReasonDto::getReason)
+        .collect(Collectors.toList());
+
+    return StockAdjustmentReason.newInstance(reasonDtos);
   }
 }

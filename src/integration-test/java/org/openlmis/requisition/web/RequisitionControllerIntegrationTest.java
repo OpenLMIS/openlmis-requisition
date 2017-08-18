@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -44,7 +45,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -53,17 +54,23 @@ import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -80,6 +87,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
@@ -94,9 +102,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,8 +186,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean(name = "facilityReferenceDataService")
   private FacilityReferenceDataService facilityReferenceDataService;
 
+  @MockBean
+  private ValidReasonStockmanagementService validReasonStockmanagementService;
+
   @Autowired
   private MessageService messageService;
+
+  private List<StockAdjustmentReason> stockAdjustmentReasons;
+  private UUID facilityTypeId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -190,6 +201,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
+
+    mockReasons();
 
     when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
         .then(returnsFirstArg());
@@ -382,7 +395,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         eq(supervisoryNodeId),
         eq(statuses),
         eq(false))
-    ).willReturn(Collections.singletonList(requisition));
+    ).willReturn(singletonList(requisition));
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -474,7 +487,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
         .thenReturn(Collections.emptyList());
 
-    List<Requisition> requisitions = Collections.singletonList(inaccessibleRequisition);
+    List<Requisition> requisitions = singletonList(inaccessibleRequisition);
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
         eq(null), eq(null), eq(null))
@@ -826,7 +839,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     doReturn(ValidationResult.success())
         .when(permissionService).canInitRequisition(programId, facilityId);
-    doReturn(requisition).when(requisitionService).initiate(programId, facilityId, periodId, false);
+    doReturn(requisition)
+        .when(requisitionService)
+        .initiate(eq(programId), eq(facilityId), eq(periodId), eq(false),
+            anyListOf(StockAdjustmentReason.class));
     mockValidationSuccess();
 
     // when
@@ -844,7 +860,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertEquals(requisition.getId(), result.getId());
-    verify(requisitionService, atLeastOnce()).initiate(programId, facilityId, periodId, false);
+    verify(facilityReferenceDataService).findOne(facilityId);
+    verify(validReasonStockmanagementService).search(programId, facilityTypeId);
+    verify(requisitionService, atLeastOnce())
+        .initiate(programId, facilityId, periodId, false, stockAdjustmentReasons);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -857,7 +876,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     ValidationMessageException err =
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
-    given(requisitionService.initiate(programId, facilityId, periodId, false)).willThrow(err);
+    given(requisitionService
+        .initiate(eq(programId), eq(facilityId), eq(periodId), eq(false),
+            anyListOf(StockAdjustmentReason.class)))
+        .willThrow(err);
 
     doReturn(ValidationResult.success())
         .when(permissionService).canInitRequisition(programId, facilityId);
@@ -903,7 +925,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM)));
 
     // then
-    verify(requisitionService, never()).initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean());
+    verify(requisitionService, never())
+        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), anyList());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -931,7 +954,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean());
+    verify(requisitionService, never())
+        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), anyList());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1197,7 +1221,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     FacilityDto facility = new FacilityDto();
     facility.setId(UUID.randomUUID());
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
+    List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
     requisition.setRequisition(generateBasicRequisition());
@@ -1213,7 +1237,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         eq(filterValue), eq(filterBy), any(Pageable.class), eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
     PageImplRepresentation response = restAssured.given()
@@ -1245,7 +1269,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     FacilityDto facility = new FacilityDto();
     facility.setId(UUID.randomUUID());
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
+    List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
     requisition.setRequisition(generateBasicRequisition());
@@ -1262,7 +1286,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         eq(filterValue), eq(filterBy), sortByCaptor.capture(), eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
     PageImplRepresentation response = restAssured.given()
@@ -1331,7 +1355,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
         any(), any(), any(), eq(managedFacilitiesIds)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
     PageImplRepresentation response = restAssured.given()
@@ -1353,7 +1377,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldConvertRequisitionToOrder() {
     // given
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(generateConvertToOrderDto());
+    List<ConvertToOrderDto> requisitions = singletonList(generateConvertToOrderDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -1377,7 +1401,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
-    List<ConvertToOrderDto> requisitions = Collections.singletonList(generateConvertToOrderDto());
+    List<ConvertToOrderDto> requisitions = singletonList(generateConvertToOrderDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -1399,6 +1423,23 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private void mockReasons() {
+    ReasonDto reasonDto = new ReasonDto();
+    reasonDto.setId(UUID.randomUUID());
+    reasonDto.setReasonCategory(ReasonCategory.ADJUSTMENT);
+    reasonDto.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reasonDto.setDescription("simple description");
+    reasonDto.setIsFreeTextAllowed(false);
+    reasonDto.setName("simple name");
+
+    ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
+    when(validReasonDto.getReason()).thenReturn(reasonDto);
+
+    doReturn(singletonList(validReasonDto))
+        .when(validReasonStockmanagementService).search(anyUuid(), anyUuid());
+    stockAdjustmentReasons = singletonList(StockAdjustmentReason.newInstance(reasonDto));
   }
 
   private void testSkipRequisitionValidationFailure(String messageKey, Object... messageParams) {
@@ -1452,10 +1493,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private FacilityDto mockFacility() {
-    FacilityDto facilityDto = new FacilityDto();
-    facilityDto.setId(UUID.randomUUID());
-    given(facilityReferenceDataService.findOne(anyUuid()))
-        .willReturn(facilityDto);
+    FacilityDto facilityDto = mock(FacilityDto.class);
+    FacilityTypeDto facilityTypeDto = new FacilityTypeDto();
+    facilityTypeDto.setId(facilityTypeId);
+    when(facilityDto.getType()).thenReturn(facilityTypeDto);
+    when(facilityDto.getId()).thenReturn(UUID.randomUUID());
+    when(facilityReferenceDataService.findOne(anyUuid()))
+        .thenReturn(facilityDto);
+
     return facilityDto;
   }
 

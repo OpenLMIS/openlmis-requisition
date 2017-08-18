@@ -15,12 +15,20 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Objects.isNull;
+
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,6 +39,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "stock_adjustment_reasons", schema = "requisition")
 public class StockAdjustmentReason extends BaseEntity {
@@ -58,6 +67,70 @@ public class StockAdjustmentReason extends BaseEntity {
 
   public boolean isDebitReasonType() {
     return getReasonType() == ReasonType.DEBIT;
+  }
+
+  /**
+   * Create a new list of Stock Adjustment Reason based on data from {@link Importer}s
+   *
+   * @param importerList list of {@link Importer}
+   * @return new list of Stock Adjustment Reason.
+   */
+  public static List<StockAdjustmentReason> newInstance(Collection<ReasonDto> importerList) {
+    if (isNull(importerList)) {
+      return null;
+    }
+    List<StockAdjustmentReason> list = new ArrayList<>(importerList.size());
+    importerList.forEach(importer -> list.add(newInstance(importer)));
+
+    return list;
+  }
+
+  /**
+   * Create a new instance of Stock Adjustment Reason based on data from {@link Importer}
+   *
+   * @param importer instance of {@link Importer}
+   * @return new instance of Stock Adjustment Reason.
+   */
+  public static StockAdjustmentReason newInstance(Importer importer) {
+    if (isNull(importer)) {
+      return null;
+    }
+    StockAdjustmentReason reason = new StockAdjustmentReason();
+    reason.setId(importer.getId());
+    reason.setName(importer.getName());
+    reason.setDescription(importer.getDescription());
+    reason.setReasonCategory(importer.getReasonCategory());
+    reason.setReasonType(importer.getReasonType());
+    reason.setIsFreeTextAllowed(importer.getIsFreeTextAllowed());
+    return reason;
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setName(String name);
+
+    void setDescription(String description);
+
+    void setReasonType(ReasonType reasonType);
+
+    void setReasonCategory(ReasonCategory reasonCategory);
+
+    void setIsFreeTextAllowed(Boolean isFreeTextAllowed);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    String getName();
+
+    String getDescription();
+
+    ReasonType getReasonType();
+
+    ReasonCategory getReasonCategory();
+
+    Boolean getIsFreeTextAllowed();
   }
 }
 

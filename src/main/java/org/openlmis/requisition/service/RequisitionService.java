@@ -41,6 +41,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -165,12 +166,14 @@ public class RequisitionService {
    *
    * @param programId         UUID of Program.
    * @param facilityId        UUID of Facility.
-   * @param emergency         Emergency status.
    * @param suggestedPeriodId Period for requisition.
+   * @param emergency         Emergency status.
+   * @param stockAdjustmentReasons list of stockAdjustmentReasons
    * @return Initiated requisition.
    */
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              boolean emergency) {
+                              boolean emergency,
+                              List<StockAdjustmentReason> stockAdjustmentReasons) {
     Requisition requisition = RequisitionBuilder.newRequisition(
         facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
@@ -213,6 +216,8 @@ public class RequisitionService {
         .stream()
         .map(ap -> ap.getOrderable().getId())
         .collect(Collectors.toSet()));
+
+    requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
 
     requisitionRepository.save(requisition);
     return requisition;

@@ -42,7 +42,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -59,6 +58,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -71,6 +71,8 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -104,7 +106,6 @@ import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -230,6 +231,7 @@ public class RequisitionServiceTest {
   private static final UUID NON_FULL_PRODUCT_ID = UUID.randomUUID();
 
   private ProcessingPeriodDto processingPeriodDto;
+  private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
@@ -242,6 +244,7 @@ public class RequisitionServiceTest {
   public void setUp() {
     generateRequisition();
     generateRequisitionDto();
+    generateReasons();
     mockRepositories();
   }
 
@@ -745,8 +748,8 @@ public class RequisitionServiceTest {
         false);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        programId, facilityId, suggestedPeriodId, false
-    );
+        programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
@@ -761,8 +764,8 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false
-    );
+        this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
@@ -776,8 +779,8 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false
-    );
+        this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     verify(periodService, times(2)).findPreviousPeriods(any(), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -793,8 +796,8 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false
-    );
+        this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -806,8 +809,8 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false
-    );
+        this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -816,12 +819,23 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetAvailableNonFullSupplyProductsForRequisition() {
     prepareForTestInitiate(SETTING);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
+
+    assertEquals(stockAdjustmentReasons, initiatedRequisition.getStockAdjustmentReasons());
+  }
+
+  @Test
+  public void shouldSetStockAdjustmenReasonsDuringInitiate() {
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(PRODUCT_ID, true);
     mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false
-    );
+        this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
 
     Set<UUID> availableNonFullSupplyProducts = initiatedRequisition
         .getAvailableNonFullSupplyProducts();
@@ -830,7 +844,7 @@ public class RequisitionServiceTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenInitiatingEmptyRequisition() {
-    requisitionService.initiate(null, null, null, false);
+    requisitionService.initiate(null, null, null, false, stockAdjustmentReasons);
   }
 
   @Test
@@ -984,7 +998,7 @@ public class RequisitionServiceTest {
         supplyingDepots, pageable, pageSize, pageNumber);
 
     requisitionDtos.sort(new BasicRequisitionDtoComparator(pageable));
-    
+
     List<BasicRequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
 
@@ -1129,7 +1143,7 @@ public class RequisitionServiceTest {
     // then
     assertTrue(resultSet.equals(nonFullSupplySet));
   }
-  
+
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(
       int amount, RequisitionStatus status) {
     if (amount < 1) {
@@ -1186,6 +1200,17 @@ public class RequisitionServiceTest {
     requisitionDto.setSupervisoryNode(supervisoryNodeId);
     requisitionDto.setStatus(AUTHORIZED);
     return requisitionDto;
+  }
+
+  private void generateReasons() {
+    StockAdjustmentReason reason = new StockAdjustmentReason();
+    reason.setId(UUID.randomUUID());
+    reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
+    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setDescription("simple description");
+    reason.setIsFreeTextAllowed(false);
+    reason.setName("simple name");
+    stockAdjustmentReasons = Collections.singletonList(reason);
   }
 
   private List<BasicRequisitionDto> getBasicRequisitionDtoList() {

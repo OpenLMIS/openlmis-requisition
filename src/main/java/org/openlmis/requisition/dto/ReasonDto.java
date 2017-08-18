@@ -18,11 +18,13 @@ package org.openlmis.requisition.dto;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.openlmis.requisition.domain.StockAdjustmentReason.Exporter;
+import org.openlmis.requisition.domain.StockAdjustmentReason.Importer;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-public class ReasonDto {
+@EqualsAndHashCode(callSuper = true)
+public class ReasonDto extends BaseDto implements Exporter, Importer {
   private String name;
   private String description;
   private ReasonType reasonType;
