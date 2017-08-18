@@ -51,16 +51,16 @@ public class ValidReasonStockManagementServiceTest
 
   @Override
   protected ValidReasonDto generateInstance() {
-    ValidReasonDto order = new ValidReasonDto();
-    order.setProgramId(UUID.randomUUID());
-    order.setFacilityTypeId(UUID.randomUUID());
+    ValidReasonDto validReason = new ValidReasonDto();
+    validReason.setProgramId(UUID.randomUUID());
+    validReason.setFacilityTypeId(UUID.randomUUID());
 
     ReasonDto reason = new ReasonDto();
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
     reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
-    order.setReason(reason);
+    validReason.setReason(reason);
 
-    return order;
+    return validReason;
   }
 
   @Before
