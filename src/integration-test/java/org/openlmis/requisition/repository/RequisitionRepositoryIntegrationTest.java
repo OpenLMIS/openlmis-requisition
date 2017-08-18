@@ -349,6 +349,7 @@ public class RequisitionRepositoryIntegrationTest
 
   private StockAdjustmentReason generateStockAdjustmentReason() {
     StockAdjustmentReason reason = new StockAdjustmentReason();
+    reason.setReasonId(UUID.randomUUID());
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
     reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
     reason.setDescription("simple description");

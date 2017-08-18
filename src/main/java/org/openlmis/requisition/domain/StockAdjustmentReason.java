@@ -22,6 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
@@ -39,10 +40,14 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "stock_adjustment_reasons", schema = "requisition")
 public class StockAdjustmentReason extends BaseEntity {
+
+  @Column(nullable = false)
+  @Type(type = UUID)
+  private UUID reasonId;
 
   @Column(nullable = false, unique = true, columnDefinition = TEXT_COLUMN_DEFINITION)
   private String name;
@@ -96,7 +101,7 @@ public class StockAdjustmentReason extends BaseEntity {
       return null;
     }
     StockAdjustmentReason reason = new StockAdjustmentReason();
-    reason.setId(importer.getId());
+    reason.setReasonId(importer.getId());
     reason.setName(importer.getName());
     reason.setDescription(importer.getDescription());
     reason.setReasonCategory(importer.getReasonCategory());

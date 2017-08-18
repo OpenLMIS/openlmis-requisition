@@ -1,6 +1,7 @@
 CREATE TABLE stock_adjustment_reasons
 (
   id UUID PRIMARY KEY NOT NULL,
+  reasonid UUID NOT NULL,
   description TEXT,
   isfreetextallowed BOOLEAN NOT NULL,
   name TEXT NOT NULL,
