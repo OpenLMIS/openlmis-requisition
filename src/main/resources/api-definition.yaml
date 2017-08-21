@@ -666,7 +666,7 @@ resourceTypes:
                       description: This parameter contains filter value.
                       type: string
                       required: false
-                      repeat: false
+                      repeat: true
                   filterBy:
                       displayName: filterBy
                       description: This parameter contains field which we are going to filter by.

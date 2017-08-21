@@ -1037,6 +1037,43 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldFilterRequisitionsForConvertByMultipleValues() {
+    // given
+    final String filterBy = "programName";
+    final String fpProgram = "Family Planning";
+    final String emProgram = "Essential Meds";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    FacilityDto supplyingDepot = new FacilityDto();
+    supplyingDepot.setId(supplyingDepotId);
+    List<FacilityDto> supplyingDepots = new ArrayList<>(Arrays.asList(supplyingDepot));
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mock(Pageable.class);
+    Sort sort = new Sort(Sort.Direction.DESC, filterBy);
+    when(pageable.getSort()).thenReturn(sort);
+
+    List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
+    List<BasicRequisitionDto> familyPlanningRequisitions = getBasicRequisitionDtoList();
+
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, filterBy, emProgram,
+        supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(familyPlanningRequisitions, filterBy, fpProgram,
+        supplyingDepots, pageable, pageSize, pageNumber);
+
+    Collection<UUID> userManagedFacilities = new ArrayList<>(Arrays.asList(supplyingDepotId));
+
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        Lists.newArrayList(emProgram, fpProgram), filterBy, pageable, userManagedFacilities);
+
+    // then
+    verify(programReferenceDataService).search(emProgram);
+    verify(programReferenceDataService).search(fpProgram);
+  }
+
+  @Test
   public void shouldConvertRequisitionsToOrders() {
     // given
     int requisitionsCount = 5;

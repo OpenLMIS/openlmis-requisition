@@ -453,9 +453,9 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                    "all".
+   * @param filterValue  List of expressions to be used in filters.
+   * @param filterBy     Field used to filter: "programName", "facilityCode", "facilityName" or
+   *                     "all".
    * @param pageable     Pageable object that allows client to optionally add "page" (page number)
    *                     and "size" (page size) query parameters to the request.
    * @return Page of approved requisitions.
@@ -464,7 +464,7 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
-      @RequestParam(required = false) String filterValue,
+      @RequestParam(required = false) List<String> filterValue,
       @RequestParam(required = false) String filterBy,
       Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();

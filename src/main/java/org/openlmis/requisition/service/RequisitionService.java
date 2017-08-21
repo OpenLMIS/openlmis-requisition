@@ -90,6 +90,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -556,20 +557,20 @@ public class RequisitionService {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                    "all".
-   * @param pageable    Pageable object that allows to optionally add "page" (page number)
+   * @param filterValues Expressions to be used in filters.
+   * @param filterBy     Field used to filter: "programName", "facilityCode", "facilityName" or
+   *                     "all".
+   * @param pageable     Pageable object that allows to optionally add "page" (page number)
    *                     and "size" (page size) query parameters.
    * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
-      searchApprovedRequisitionsWithSortAndFilterAndPaging(String filterValue,
+      searchApprovedRequisitionsWithSortAndFilterAndPaging(List<String> filterValues,
                                                            String filterBy,
                                                            Pageable pageable,
                                                            Collection<UUID> userManagedFacilities) {
-    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
+    List<UUID> desiredUuids = findDesiredUuids(filterValues, filterBy);
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
     List<BasicRequisitionDto> requisitionDtosList =
@@ -647,32 +648,66 @@ public class RequisitionService {
     return requisitionLineItems;
   }
 
-  private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
+  private List<UUID> findDesiredUuids(List<String> filterValues, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
-    boolean filterAll = "all".equals(filterBy);
+    filterValues = filterValues == null ? Collections.EMPTY_LIST : filterValues;
+
+    Collection<ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
+    Collection<MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
+
+    facilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
+    programs.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
+
+    return uuidsToReturn;
+  }
+
+  private Collection<ProgramDto> findProgramsWithFilter(String filterBy,
+                                                        List<String> filterValues) {
+    if (filterValues.isEmpty()) {
+      return programReferenceDataService.findAll();
+    }
+
+    boolean filterAll = isFilterAll(filterBy);
+    List<ProgramDto> foundPrograms = new ArrayList<>();
+
+    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
+      for (String expression : filterValues) {
+        foundPrograms.addAll(programReferenceDataService.search(expression));
+      }
+    }
+
+    return foundPrograms;
+  }
+
+  private Collection<MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
+                                                                  List<String> filterValues) {
+    boolean filterAll = isFilterAll(filterBy);
     boolean filterByCode = "facilityCode".equals(filterBy);
     boolean filterByName = "facilityName".equals(filterBy);
 
-    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
-      Collection<ProgramDto> foundPrograms = programReferenceDataService.search(filterValue);
-      foundPrograms.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
-    }
-
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
-    if (filterAll && filterValue.isEmpty()) {
-      foundFacilities.addAll(facilityReferenceDataService.findAll());
-    } else {
-      if (filterAll || filterByCode) {
-        foundFacilities.addAll(facilityReferenceDataService.search(filterValue, null, null, false));
-      }
 
-      if (filterAll || filterByName) {
-        foundFacilities.addAll(facilityReferenceDataService.search(null, filterValue, null, false));
+    for (String expression : filterValues) {
+      if (filterAll && filterValues.isEmpty()) {
+        foundFacilities.addAll(facilityReferenceDataService.findAll());
+      } else {
+        if (filterAll || filterByCode) {
+          foundFacilities.addAll(facilityReferenceDataService.search(
+              expression, null, null, false));
+        }
+
+        if (filterAll || filterByName) {
+          foundFacilities.addAll(facilityReferenceDataService.search(
+              null, expression, null, false));
+        }
       }
     }
 
-    foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
-    return uuidsToReturn;
+    return foundFacilities;
+  }
+
+  private boolean isFilterAll(String filterBy) {
+    return "all".equals(filterBy);
   }
 
   private List<Requisition> getRecentRequisitions(Requisition requisition, int amount) {
