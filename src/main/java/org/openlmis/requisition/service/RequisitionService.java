@@ -35,6 +35,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.util.Collections;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -81,6 +82,7 @@ import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -342,8 +344,23 @@ public class RequisitionService {
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
                                               Boolean emergency) {
-    return requisitionRepository.searchRequisitions(facility, program, initiatedDateFrom,
-        initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses, emergency);
+    Profiler profiler = new Profiler("REQUISITION_SERVICE_SEARCH");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("GET_PERM_STRINGS");
+    List<String> permissionStrings = permissionService.getPermissionStrings();
+    if (permissionStrings.isEmpty()) {
+      profiler.stop().log();
+      return Collections.emptyList();
+    }
+    
+    profiler.start("REPOSITORY_SEARCH");
+    List<Requisition> results = requisitionRepository.searchRequisitions(facility, program, 
+        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, 
+        requisitionStatuses, emergency, permissionStrings);
+
+    profiler.stop().log();
+    return results;
   }
 
   /**
@@ -353,7 +370,7 @@ public class RequisitionService {
                                               UUID program,
                                               UUID processingPeriod) {
     return requisitionRepository.searchRequisitions(facility, program, null, null,
-        processingPeriod, null, null, null);
+        processingPeriod, null, null, null, permissionService.getPermissionStrings());
   }
 
   /**
@@ -361,7 +378,7 @@ public class RequisitionService {
    */
   public List<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses) {
     return requisitionRepository.searchRequisitions(null, null, null, null, null,
-        null, requisitionStatuses, null);
+        null, requisitionStatuses, null, permissionService.getPermissionStrings());
   }
 
   /**
@@ -369,7 +386,7 @@ public class RequisitionService {
    */
   public List<Requisition> searchRequisitions(UUID program, UUID supervisoryNode) {
     return requisitionRepository.searchRequisitions(null, program, null, null, null,
-        supervisoryNode, null, null);
+        supervisoryNode, null, null, permissionService.getPermissionStrings());
   }
 
   /**

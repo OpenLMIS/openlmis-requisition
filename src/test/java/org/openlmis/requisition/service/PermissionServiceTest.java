@@ -31,6 +31,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_DEL
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -373,7 +374,33 @@ public class PermissionServiceTest {
     permissionService.canEditReportTemplates();
     permissionService.canManageRequisitionTemplate();
   }
+  
+  @Test
+  public void getPermissionStringsShouldGet() {
+    // given
+    when(userReferenceDataService.getPermissionStrings(user.getId()))
+        .thenReturn(Collections.singletonList("permissionString"));
+    
+    // when
+    List<String> permissionStrings = permissionService.getPermissionStrings();
+    
+    // then
+    assertEquals(1, permissionStrings.size());
+    assertEquals("permissionString", permissionStrings.get(0));
+  }
+  
+  @Test
+  public void getPermissionStringsShouldReturnEmptyListForServiceTokens() {
+    // given
+    when(securityContext.getAuthentication()).thenReturn(trustedClient);
 
+    // when
+    List<String> permissionStrings = permissionService.getPermissionStrings();
+
+    // then
+    assertEquals(0, permissionStrings.size());
+  }
+  
   private void hasRight(UUID rightId, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService

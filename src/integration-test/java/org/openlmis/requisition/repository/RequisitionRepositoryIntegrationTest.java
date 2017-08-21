@@ -71,6 +71,8 @@ public class RequisitionRepositoryIntegrationTest
   private RequisitionTemplate testTemplate;
 
   private List<Requisition> requisitions;
+  
+  private List<String> userPermissionStrings = new ArrayList<>();
 
   @Override
   RequisitionRepository getRepository() {
@@ -83,6 +85,9 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   private Requisition generateInstance(UUID facilityId, UUID programId, UUID processingPeriodId) {
+    // Add permission to user for each facility and program
+    userPermissionStrings.add("REQUISITION_VIEW|" + facilityId + "|" + programId);
+
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
             INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
@@ -133,7 +138,8 @@ public class RequisitionRepositoryIntegrationTest
         requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getSupervisoryNodeId(),
         EnumSet.of(requisitionToCopy.getStatus()),
-        requisitionToCopy.getEmergency());
+        requisitionToCopy.getEmergency(),
+        userPermissionStrings);
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -178,7 +184,7 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(),
-        null, null, null, null, null, null);
+        null, null, null, null, null, null, userPermissionStrings);
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -196,7 +202,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null, userPermissionStrings);
 
     assertEquals(5, receivedRequisitions.size());
   }
@@ -204,7 +210,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchEmergencyRequsitions() {
     List<Requisition> emergency = repository.searchRequisitions(
-        null, null, null, null, null, null, null, true);
+        null, null, null, null, null, null, null, true, userPermissionStrings);
 
     assertEquals(2, emergency.size());
     emergency.forEach(requisition -> assertTrue(requisition.getEmergency()));
@@ -213,7 +219,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchStandardRequisitions() {
     List<Requisition> standard = repository.searchRequisitions(
-        null, null, null, null, null, null, null, false);
+        null, null, null, null, null, null, null, false, userPermissionStrings);
 
     assertEquals(3, standard.size());
     standard.forEach(requisition -> assertFalse(requisition.getEmergency()));
@@ -233,6 +239,20 @@ public class RequisitionRepositoryIntegrationTest
         assertEquals(requisition.getNumberOfMonthsInPeriod(), element.getNumberOfMonthsInPeriod());
       });
     });
+  }
+
+  @Test
+  public void searchShouldExcludeRequisitionsWithNoMatchingPermissionStrings() {
+    // given
+    List<String> userPermissionStringSubset = Collections.singletonList(
+        userPermissionStrings.get(0));
+
+    // when
+    List<Requisition> requisitions = repository.searchRequisitions(
+        null, null, null, null, null, null, null, false, userPermissionStringSubset);
+
+    // then
+    assertEquals(1, requisitions.size());
   }
 
   @Test

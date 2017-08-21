@@ -239,6 +239,7 @@ public class RequisitionServiceTest {
   private UUID approveRequisitionRightId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
+  private List<String> permissionStrings = Collections.singletonList("validPermissionString");
 
   @Before
   public void setUp() {
@@ -246,6 +247,7 @@ public class RequisitionServiceTest {
     generateRequisitionDto();
     generateReasons();
     mockRepositories();
+    when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
   }
 
   @Test
@@ -445,7 +447,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(AUTHORIZED);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> authorizedRequisitions =
@@ -460,7 +462,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> inApprovalRequisitions =
@@ -499,7 +501,9 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null))
+        EnumSet.of(requisition.getStatus()),
+        null,
+        permissionStrings))
         .thenReturn(requisitions);
 
     Set<Requisition> requisitionsForApproval =
@@ -531,14 +535,16 @@ public class RequisitionServiceTest {
             .thenReturn(roleAssignmentDtos);
 
     when(requisitionRepository.searchRequisitions(
-            requisition.getFacilityId(),
-            requisition.getProgramId(),
-            requisition.getCreatedDate().minusDays(2),
-            requisition.getCreatedDate().plusDays(2),
-            requisition.getProcessingPeriodId(),
-            requisition.getSupervisoryNodeId(),
-            EnumSet.of(requisition.getStatus()), null))
-            .thenReturn(requisitions);
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
+        requisition.getCreatedDate().minusDays(2),
+        requisition.getCreatedDate().plusDays(2),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
+        EnumSet.of(requisition.getStatus()), 
+        null,
+        permissionStrings))
+        .thenReturn(requisitions);
 
     Set<Requisition> requisitionsForApproval =
             requisitionService.getRequisitionsForApproval(user.getId(), programId);
@@ -939,7 +945,9 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null))
+        EnumSet.of(requisition.getStatus()),
+        null,
+        permissionStrings))
         .thenReturn(Collections.singletonList(requisition));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
@@ -973,6 +981,25 @@ public class RequisitionServiceTest {
     assertEquals(
         receivedRequisitions.get(0).getStatus(),
         requisition.getStatus());
+  }
+  
+  @Test
+  public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
+    // given
+    when(permissionService.getPermissionStrings()).thenReturn(Collections.emptyList());
+
+    // when
+    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
+        requisition.getCreatedDate().minusDays(2),
+        requisition.getCreatedDate().plusDays(2),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
+        EnumSet.of(requisition.getStatus()), null);
+
+    // then
+    assertEquals(0, receivedRequisitions.size());
   }
 
   @Test
@@ -1312,13 +1339,13 @@ public class RequisitionServiceTest {
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(Collections.singletonList(previousRequisition));
   }
 
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(Collections.emptyList());
   }
 
@@ -1396,7 +1423,7 @@ public class RequisitionServiceTest {
     requisitions.add(requisition2);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
         .thenReturn(requisitions);
     return requisitions;
   }

@@ -17,22 +17,23 @@ package org.openlmis.requisition.repository.custom.impl;
 
 import static java.util.stream.Collectors.toList;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionPermissionString;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
@@ -48,15 +49,18 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private EntityManager entityManager;
 
   /**
-   * Method returns all Requisitions with matched parameters.
+   * Method returns all Requisitions with matched parameters. User permission strings must not be
+   * empty.
    *
-   * @param facility            Facility of searched Requisitions.
-   * @param program             Program of searched Requisitions.
-   * @param initiatedDateFrom   After what date should searched Requisition be created.
-   * @param initiatedDateTo     Before what date should searched Requisition be created.
-   * @param processingPeriod    ProcessingPeriod of searched Requisitions.
-   * @param supervisoryNode     SupervisoryNode of searched Requisitions.
-   * @param requisitionStatuses Statuses of searched Requisitions.
+   * @param facility              Facility of searched Requisitions.
+   * @param program               Program of searched Requisitions.
+   * @param initiatedDateFrom     After what date should searched Requisition be created.
+   * @param initiatedDateTo       Before what date should searched Requisition be created.
+   * @param processingPeriod      ProcessingPeriod of searched Requisitions.
+   * @param supervisoryNode       SupervisoryNode of searched Requisitions.
+   * @param requisitionStatuses   Statuses of searched Requisitions.
+   * @param emergency             Requisitions with emergency status.
+   * @param userPermissionStrings Permission strings of current user.
    * @return List of Requisitions with matched parameters.
    */
   @Override
@@ -66,7 +70,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       UUID processingPeriod,
       UUID supervisoryNode,
       Set<RequisitionStatus> requisitionStatuses,
-      Boolean emergency) {
+      Boolean emergency,
+      List<String> userPermissionStrings) {
+
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Requisition> queryMain = builder.createQuery(Requisition.class);
@@ -105,6 +111,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           root.get(CREATED_DATE), initiatedDateTo));
     }
 
+    Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
+        .join("permissionStrings");
+    Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
+    Predicate permissionStringPredicate = permissionStringExp.in(userPermissionStrings);
+    predicate = builder.and(predicate, permissionStringPredicate);
+
     queryMain.where(predicate);
     queryMain.orderBy(builder.asc(root.get(CREATED_DATE)));
 
@@ -126,7 +138,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    */
   @Override
   public List<Requisition> searchRequisitions(UUID processingPeriod, UUID facility,
-                                              UUID program, Boolean emergency) {
+      UUID program, Boolean emergency) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
     Root<Requisition> root = query.from(Requisition.class);

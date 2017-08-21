@@ -15,16 +15,15 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class UserReferenceDataService extends BaseReferenceDataService<UserDto> {
@@ -97,5 +96,15 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
         .set("warehouseId", warehouse);
     
     return getResult(user + "/hasRight", parameters, Boolean.class);
+  }
+
+  /**
+   * Get user's permission strings (a list of strings that outlines the permissions of the user).
+   *
+   * @param user id of user
+   * @return a set of permission strings.
+   */
+  public List<String> getPermissionStrings(UUID user) {
+    return findAll(user + "/permissionStrings", String[].class);
   }
 }

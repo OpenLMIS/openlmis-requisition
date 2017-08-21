@@ -20,6 +20,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -34,9 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Service
@@ -281,4 +281,17 @@ public class PermissionService {
     return null != result && result.getResult();
   }
 
+  /**
+   * Get current user's permission strings.
+   * @return user's permission strings
+   */
+  public List<String> getPermissionStrings() {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+        .getAuthentication();
+    if (authentication.isClientOnly()) {
+      return Collections.emptyList();
+    }
+    UserDto user = authenticationHelper.getCurrentUser();
+    return userReferenceDataService.getPermissionStrings(user.getId());
+  }
 }

@@ -19,7 +19,6 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -46,6 +45,17 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_DEL
 
 import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -102,17 +112,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -447,63 +446,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertEquals(2, resultPage.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnOnlyRequisitionsForWhichUserHasRights() {
-    // given
-    Requisition accessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-    List<Requisition> requisitions = Arrays.asList(accessibleRequisition, inaccessibleRequisition);
-
-    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
-        .thenReturn(Lists.newArrayList(accessibleRequisition));
-
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(null), eq(null))
-    ).willReturn(requisitions);
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertEquals(1, resultPage.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnEmptyListIfUserHasNoRightsToSeeFoundRequisitions() {
-    // given
-    Requisition inaccessibleRequisition = generateRequisition(RequisitionStatus.INITIATED);
-
-    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
-        .thenReturn(Collections.emptyList());
-
-    List<Requisition> requisitions = singletonList(inaccessibleRequisition);
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(null), eq(null))
-    ).willReturn(requisitions);
-
-    // when
-    PageImplRepresentation resultPage = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertTrue(resultPage.getContent().isEmpty());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

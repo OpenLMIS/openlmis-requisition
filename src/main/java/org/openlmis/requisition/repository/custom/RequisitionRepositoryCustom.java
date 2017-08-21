@@ -31,7 +31,8 @@ public interface RequisitionRepositoryCustom {
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        Set<RequisitionStatus> requisitionStatuses,
-                                       Boolean emergency);
+                                       Boolean emergency,
+                                       List<String> userPermissionStrings);
 
   List<Requisition> searchRequisitions(UUID processingPeriod,
                                        UUID facility,

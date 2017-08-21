@@ -13,20 +13,33 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.utils;
+package org.openlmis.requisition.domain;
 
-public final class RightName {
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-  public static final String ORDERS_EDIT = "ORDERS_EDIT";
+@Entity
+@Table(name = "requisition_permission_strings")
+@NoArgsConstructor
+@AllArgsConstructor
+public class RequisitionPermissionString extends BaseEntity {
 
-  public static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
-  public static final String REQUISITION_AUTHORIZE = "REQUISITION_AUTHORIZE";
-  public static final String REQUISITION_CREATE = "REQUISITION_CREATE";
-  public static final String REQUISITION_DELETE = "REQUISITION_DELETE";
-  public static final String REQUISITION_VIEW = "REQUISITION_VIEW";
+  @ManyToOne(cascade = {CascadeType.REFRESH})
+  @JoinColumn(name = "requisitionId", nullable = false)
+  @Getter
+  @Setter
+  private Requisition requisition;
 
-
-  private RightName() {
-
-  }
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
+  @Getter
+  @Setter
+  private String permissionString;
 }

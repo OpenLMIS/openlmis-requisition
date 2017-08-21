@@ -320,11 +320,8 @@ public class RequisitionController extends BaseRequisitionController {
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
         emergency);
 
-    List<Requisition> filteredList =
-        requisitionSecurityService.filterInaccessibleRequisitions(requisitions);
-
     profiler.start("REQUISITION_DTO_BUILD");
-    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(filteredList);
+    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(requisitions);
 
     profiler.start("REQUISITION_PAGINATION");
     Page page = Pagination.getPage(dtoList, pageable);
