@@ -93,4 +93,9 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   public void setDatePhysicalStockCountCompleted(LocalDate localDate) {
     // unsupported operation
   }
+
+  @Override
+  public void setStockAdjustmentReasons(List<ReasonDto> reasonDto) {
+    // unsupported operation
+  }
 }

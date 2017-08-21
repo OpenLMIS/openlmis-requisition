@@ -30,7 +30,6 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -43,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
-
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -78,9 +76,6 @@ public abstract class BaseRequisitionController extends BaseController {
   protected BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   @Autowired
-  protected StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
-
-  @Autowired
   protected SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Autowired
@@ -112,11 +107,8 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
-    requisitionToUpdate.updateFrom(requisition,
-        stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
-            requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
-            getLineItemOrderableIds(requisition)),
-          predicate.exec(requisition.getProgramId()));
+    requisitionToUpdate.updateFrom(requisition, orderableReferenceDataService.findByIds(
+            getLineItemOrderableIds(requisition)), predicate.exec(requisition.getProgramId()));
 
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 

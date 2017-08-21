@@ -110,6 +110,20 @@ public class StockAdjustmentReason extends BaseEntity {
     return reason;
   }
 
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(reasonId);
+    exporter.setName(name);
+    exporter.setDescription(description);
+    exporter.setReasonCategory(reasonCategory);
+    exporter.setReasonType(reasonType);
+    exporter.setIsFreeTextAllowed(isFreeTextAllowed);
+  }
+
   public interface Exporter {
     void setId(UUID id);
 

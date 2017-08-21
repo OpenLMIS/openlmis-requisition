@@ -63,7 +63,6 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -73,7 +72,6 @@ import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.validation.Errors;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -121,9 +119,6 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionTemplateRepository templateRepository;
-
-  @Mock
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @Mock
   private PermissionService permissionService;
@@ -233,8 +228,8 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
-        anyList(), anyList(), anyBoolean());
+    verify(initiatedRequsition, never())
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
   }
 
   @Test
@@ -285,13 +280,10 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(),
-        anyList(), eq(true));
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
-    verify(stockAdjustmentReasonReferenceDataService)
-        .getStockAdjustmentReasonsByProgram(any(UUID.class));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
@@ -525,8 +517,7 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class),
-        anyList(), anyList(), anyBoolean());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyBoolean());
     verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
   }
 

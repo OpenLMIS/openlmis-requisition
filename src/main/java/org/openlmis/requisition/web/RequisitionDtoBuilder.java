@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.web;
 
+import static org.openlmis.requisition.dto.ReasonDto.newInstance;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -28,7 +30,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -111,6 +112,8 @@ public class RequisitionDtoBuilder {
               orderableReferenceDataService.findByIds(
                       requisition.getAvailableNonFullSupplyProducts())));
     }
+
+    requisitionDto.setStockAdjustmentReasons(newInstance(requisition.getStockAdjustmentReasons()));
 
     return requisitionDto;
   }

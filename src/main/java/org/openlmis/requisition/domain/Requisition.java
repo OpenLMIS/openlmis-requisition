@@ -43,7 +43,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
@@ -222,11 +222,10 @@ public class Requisition extends BaseTimestampedEntity {
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition            Requisition with new values.
-   * @param stockAdjustmentReasons Collection of stockAdjustmentReasons.
+   * @param products               Collection of orderables.
    */
   public void updateFrom(
-      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
-      Collection<OrderableDto> products,
+      Requisition requisition, Collection<OrderableDto> products,
       boolean isDatePhysicalStockCountCompletedEnabled) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
@@ -234,7 +233,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.draftStatusMessage = requisition.draftStatusMessage;
 
     updateReqLines(requisition.getRequisitionLineItems());
-    calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
+    calculateAndValidateTemplateFields(this.template);
     updateTotalCostAndPacksToShip(products);
 
     if (isDatePhysicalStockCountCompletedEnabled) {
@@ -585,8 +584,7 @@ public class Requisition extends BaseTimestampedEntity {
     return money.isPresent() ? money.get() : defaultValue;
   }
 
-  private void calculateAndValidateTemplateFields(
-      RequisitionTemplate template, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template) {
     getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
             numberOfMonthsInPeriod));
@@ -701,6 +699,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setDraftStatusMessage(String draftStatusMessage);
 
     void setDatePhysicalStockCountCompleted(LocalDate localDate);
+
+    void setStockAdjustmentReasons(List<ReasonDto> reasonDto);
   }
 
   public interface Importer {
