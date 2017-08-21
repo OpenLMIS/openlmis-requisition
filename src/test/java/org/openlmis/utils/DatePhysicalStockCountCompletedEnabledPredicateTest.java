@@ -49,7 +49,7 @@ public class DatePhysicalStockCountCompletedEnabledPredicateTest {
 
   @Test
   public void shouldReturnFalseIfProgramIdIsNull() {
-    assertEquals(predicate.exec(null), false);
+    assertEquals(false, predicate.exec(null));
   }
 
   @Test

@@ -286,7 +286,7 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(),
-        anyList(), anyBoolean());
+        anyList(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
