@@ -52,7 +52,7 @@
     "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
   },
   {
-    "id": "c96936a9-ec75-4a00-bc13-01a723e71c51",
+    "id": "6977865d-a663-4cb4-8dc9-0dc14ca9e7fe",
     "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
     "name": "Transfer Out",
     "description": "Transfer Out",
@@ -63,7 +63,7 @@
   },
 
   {
-    "id": "c96936a9-ec75-4a00-bc13-01a723e71c51",
+    "id": "89dc28d5-5943-45a3-a747-88bea201e6e7",
     "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
     "name": "Transfer In",
     "description": "Transfer In",
@@ -298,7 +298,7 @@
     "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
   },
   {
-    "id": "6c902375-9a0c-4fd5-89fa-e557727616bd",
+    "id": "6fb87e9c-5528-4ab8-805b-75659d1f8662",
     "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
     "name": "Stolen",
     "description": "Stolen",

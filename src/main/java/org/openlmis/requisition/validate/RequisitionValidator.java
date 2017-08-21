@@ -43,15 +43,13 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustment;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -59,16 +57,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class RequisitionValidator extends AbstractRequisitionValidator {
-  static final String STOCK_ADJUSTMENT_REASON = "reasonId";
   static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
       + " the calculated value.";
   static final String VALUE_NOT_FOUND = " could not be found.";
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
-
-  @Autowired
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -168,18 +162,18 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateStockAdjustments(
       Errors errors, Requisition requisition, RequisitionLineItem item) {
-    List<UUID> reasons = stockAdjustmentReasonReferenceDataService
-        .getStockAdjustmentReasonsByProgram(requisition.getProgramId())
-        .stream().map(StockAdjustmentReasonDto::getId).collect(Collectors.toList());
+    List<UUID> reasons = requisition
+        .getStockAdjustmentReasons()
+        .stream().map(StockAdjustmentReason::getId).collect(Collectors.toList());
 
     for (StockAdjustment adjustment : item.getStockAdjustments()) {
       if (!reasons.contains(adjustment.getReasonId())) {
-        rejectValue(errors, STOCK_ADJUSTMENT_REASON,
+        rejectValue(errors, REQUISITION_LINE_ITEMS,
             new Message(ERROR_STOCK_ADJUSTMENT_NOT_FOUND, adjustment.getReasonId()));
       }
 
       if (adjustment.getQuantity() == null || adjustment.getQuantity() < 0) {
-        rejectValue(errors, STOCK_ADJUSTMENT_REASON,
+        rejectValue(errors, REQUISITION_LINE_ITEMS,
             new Message(ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE, adjustment.getReasonId()));
       }
     }

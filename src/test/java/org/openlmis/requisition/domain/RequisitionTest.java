@@ -432,7 +432,7 @@ public class RequisitionTest {
   @Test
   public void shouldNotSetDatePhysicalStockCountCompletedWhenItIsDisabled() {
     updateWithDatePhysicalCountCompleted(false);
-    assertEquals(null, this.requisition.getDatePhysicalStockCountCompleted());
+    assertNull(this.requisition.getDatePhysicalStockCountCompleted());
   }
 
   @Test
@@ -1025,7 +1025,7 @@ public class RequisitionTest {
 
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
-    requisition.updateFrom(requisition, Collections.emptyList(), true);
+    this.requisition.updateFrom(requisition, Collections.emptyList(), updateStockDate);
 
     return requisition;
   }
