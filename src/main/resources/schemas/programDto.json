@@ -31,6 +31,10 @@
     "showNonFullSupplyTab": {
       "type": "boolean",
       "title": "showNonFullSupplyTab"
+    },
+    "enableDatePhysicalStockCountCompleted": {
+      "type": "boolean",
+      "title": "enableDatePhysicalStockCountCompleted"
     }
   },
   "required": [
@@ -40,6 +44,7 @@
     "description",
     "active",
     "periodsSkippable",
-    "showNonFullSupplyTab"
+    "showNonFullSupplyTab",
+    "enableDatePhysicalStockCountCompleted"
   ]
 }

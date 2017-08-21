@@ -38,6 +38,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.BaseEntity;
@@ -53,6 +54,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -103,6 +105,12 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean
   private RequisitionVersionValidator requisitionVersionValidator;
 
+  @MockBean(name = "programReferenceDataService")
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private ProgramDto program;
+
   private List<Requisition> requisitions;
   private List<ApproveRequisitionDto> approveRequisitions;
   private List<UUID> requisitionIds;
@@ -145,6 +153,14 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     doReturn(Collections.emptyList())
         .when(orderableReferenceDataService)
         .findByIds(anySetOf(UUID.class));
+
+    doReturn(false)
+        .when(program)
+        .getEnableDatePhysicalStockCountCompleted();
+
+    doReturn(program)
+        .when(programReferenceDataService)
+        .findOne(any(UUID.class));
   }
 
   // GET /api/requisitions?retrieveAll&id={}&id={}&id={}

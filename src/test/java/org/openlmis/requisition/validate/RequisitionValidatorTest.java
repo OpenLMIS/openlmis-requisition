@@ -46,9 +46,11 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
@@ -80,6 +82,12 @@ public class RequisitionValidatorTest {
 
   @Mock
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
+
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private ProgramDto program;
 
   @InjectMocks
   private RequisitionValidator requisitionValidator;
@@ -527,6 +535,12 @@ public class RequisitionValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsDisabled() {
+    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(false);
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuring(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
   public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringSubmit() {
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.INITIATED);
     shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuring(RequisitionStatus.REJECTED);
@@ -626,10 +640,12 @@ public class RequisitionValidatorTest {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(requisition.getTemplate()).thenReturn(requisitionTemplate);
 
+    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(true);
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
     when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
         .thenReturn(new ArrayList<>());
+    when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(program);
   }
 
   private RequisitionLineItem getSkippedAndIncorrectRequisitionLineItem() {

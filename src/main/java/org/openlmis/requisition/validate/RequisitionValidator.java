@@ -43,7 +43,9 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.Message;
@@ -69,6 +71,9 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   @Autowired
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
   @Override
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
@@ -85,7 +90,12 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         }
       }
     }
-    validateDatePhysicalStockCountCompleted(errors, requisition);
+
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+
+    if (program.getEnableDatePhysicalStockCountCompleted()) {
+      validateDatePhysicalStockCountCompleted(errors, requisition);
+    }
   }
 
   private void validateNonFullSupplyLineItem(Errors errors, Requisition requisition,
