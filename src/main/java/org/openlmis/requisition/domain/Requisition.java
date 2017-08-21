@@ -198,7 +198,7 @@ public class Requisition extends BaseTimestampedEntity {
   @DiffIgnore
   @Getter
   @Setter
-  private List<StockAdjustmentReason> stockAdjustmentReasons;
+  private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
 
   /**
    * Constructor.

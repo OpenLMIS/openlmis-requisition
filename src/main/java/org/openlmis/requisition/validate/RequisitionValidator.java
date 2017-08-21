@@ -164,7 +164,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       Errors errors, Requisition requisition, RequisitionLineItem item) {
     List<UUID> reasons = requisition
         .getStockAdjustmentReasons()
-        .stream().map(StockAdjustmentReason::getId).collect(Collectors.toList());
+        .stream().map(StockAdjustmentReason::getReasonId).collect(Collectors.toList());
 
     for (StockAdjustment adjustment : item.getStockAdjustments()) {
       if (!reasons.contains(adjustment.getReasonId())) {
