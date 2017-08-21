@@ -93,7 +93,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
-    if (program.getEnableDatePhysicalStockCountCompleted()) {
+    if (program.getEnableDatePhysicalStockCountCompleted() != null
+        && program.getEnableDatePhysicalStockCountCompleted()) {
       validateDatePhysicalStockCountCompleted(errors, requisition);
     }
   }

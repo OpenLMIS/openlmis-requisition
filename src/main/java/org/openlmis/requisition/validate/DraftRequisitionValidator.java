@@ -79,7 +79,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
-    if (program.getEnableDatePhysicalStockCountCompleted()) {
+    if (program.getEnableDatePhysicalStockCountCompleted() != null
+        && program.getEnableDatePhysicalStockCountCompleted()) {
       validateDatePhysicalStockCountCompleted(errors, requisition, savedRequisition);
     }
 
