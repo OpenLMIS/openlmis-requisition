@@ -79,7 +79,7 @@ import javax.persistence.Table;
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
-@Table(name = "requisitions")
+@Table(name = "requisitions", schema = "requisition")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {

@@ -94,14 +94,19 @@ See the Debugging section in the Service Template README at
 https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#debugging.
 
 ### Demo Data
-You can use a standard data set for demonstration purposes. To do so, first follow the Quick Start
-until step 3 is done: https://github.com/OpenLMIS/openlmis-requisition/blob/master/README.md#quickstart.
-Then, before `gradle bootRun`, use `gradle demoDataSeed`. This will generate a sql input file under
-`./demo-data` directory.
+A basic set of demo data is included with this service, defined under `./demo-data/`.  This data may
+be optionally loaded by using the `demodata` Spring Profile.  Setting this profile may be done by
+setting the `spring.profiles.active` environment variable.
 
-To insert this data into the database, finish the Quick Start steps,
-and then outside of container's interactive shell, run:
-`docker exec -i openlmisrequisition_db_1 psql -Upostgres open_lmis < demo-data/input.sql`
+When building locally from the development environment, you may run:
+
+```shell
+$ export spring_profiles_active=demodata
+$ gradle bootRun
+```
+
+To see how to set environment variables through Docker Compose, see the
+[Reference Distribution](https://github.org/openlmis/openlmis-ref-distro)
 
 ## Production by Spring Profile
 
