@@ -43,11 +43,10 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustment;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
+import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,7 +71,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Override
   public void validate(Object target, Errors errors) {
@@ -91,10 +90,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
       }
     }
 
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-
-    if (program.getEnableDatePhysicalStockCountCompleted() != null
-        && program.getEnableDatePhysicalStockCountCompleted()) {
+    if (predicate.exec(requisition.getProgramId())) {
       validateDatePhysicalStockCountCompleted(errors, requisition);
     }
   }

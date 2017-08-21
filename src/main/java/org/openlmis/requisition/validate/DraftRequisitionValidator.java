@@ -35,11 +35,10 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.DateHelper;
+import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,10 +60,10 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   private RequisitionRepository requisitionRepository;
 
   @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
+  private DateHelper dateHelper;
 
   @Autowired
-  private DateHelper dateHelper;
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Override
   public boolean supports(Class<?> clazz) {
@@ -75,12 +74,10 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
     validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
-    if (program.getEnableDatePhysicalStockCountCompleted() != null
-        && program.getEnableDatePhysicalStockCountCompleted()) {
+    if (predicate.exec(requisition.getProgramId())) {
       validateDatePhysicalStockCountCompleted(errors, requisition, savedRequisition);
     }
 

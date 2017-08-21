@@ -37,6 +37,7 @@ import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,8 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   protected RequisitionStatusProcessor requisitionStatusProcessor;
 
+  @Autowired
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   protected ValidationResult validateFields(AbstractRequisitionValidator validator,
                                             Requisition requisition) {
@@ -112,7 +115,8 @@ public abstract class BaseRequisitionController extends BaseController {
     requisitionToUpdate.updateFrom(requisition,
         stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(
             requisitionToUpdate.getProgramId()), orderableReferenceDataService.findByIds(
-            getLineItemOrderableIds(requisition)));
+            getLineItemOrderableIds(requisition)),
+          predicate.exec(requisition.getProgramId()));
 
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 

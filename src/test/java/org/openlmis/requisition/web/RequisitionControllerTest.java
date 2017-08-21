@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -69,6 +70,7 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
+import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.springframework.validation.Errors;
 
@@ -156,6 +158,9 @@ public class RequisitionControllerTest {
   @Mock
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
+  @Mock
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
+
   @InjectMocks
   private RequisitionController requisitionController;
 
@@ -184,6 +189,8 @@ public class RequisitionControllerTest {
         .thenReturn(processingPeriods);
     when(periodService.getPeriods(programUuid, facilityUuid, true))
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
+
+    when(predicate.exec(any(UUID.class))).thenReturn(true);
 
     mockRequisitionRepository();
   }
@@ -226,7 +233,8 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyList(), anyList());
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class),
+        anyList(), anyList(), anyBoolean());
   }
 
   @Test
@@ -277,7 +285,8 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), anyList());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(),
+        anyList(), anyBoolean());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -516,7 +525,8 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyList());
+    verify(requisition, never()).updateFrom(any(Requisition.class),
+        anyList(), anyList(), anyBoolean());
     verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
   }
 

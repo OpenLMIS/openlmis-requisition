@@ -45,12 +45,11 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.DateHelper;
+import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.Message;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -74,16 +73,13 @@ public class DraftRequisitionValidatorTest {
   private RequisitionRepository requisitionRepository;
 
   @Mock
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Mock
   private ConfigurationSettingService configurationSettingService;
 
   @Mock
-  DateHelper dateHelper;
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Mock
-  private ProgramDto program;
+  DateHelper dateHelper;
 
   @InjectMocks
   private DraftRequisitionValidator draftRequisitionValidator;
@@ -110,8 +106,7 @@ public class DraftRequisitionValidatorTest {
     requisition = generateRequisition();
     mockRepositoriesAndObjects();
     when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now(ZoneId.of("UTC")));
-    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(true);
-    when(programReferenceDataService.findOne(programId)).thenReturn(program);
+    when(predicate.exec(any(UUID.class))).thenReturn(true);
   }
 
   @Test
@@ -119,8 +114,6 @@ public class DraftRequisitionValidatorTest {
     Requisition updatedRequisition = generateRequisition();
 
     updatedRequisition.setProgramId(UUID.randomUUID());
-    when(programReferenceDataService.findOne(updatedRequisition.getProgramId()))
-        .thenReturn(program);
     Assert.assertNotEquals(requisition.getProgramId(), updatedRequisition.getProgramId());
     updatedRequisition.setFacilityId(UUID.randomUUID());
     Assert.assertNotEquals(requisition.getFacilityId(), updatedRequisition.getFacilityId());
@@ -312,7 +305,7 @@ public class DraftRequisitionValidatorTest {
   @Test
   public void shouldNotRejectIfDatePhysicalStockCountCompletedIsDisabled() {
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now().plusDays(1));
-    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(false);
+    when(predicate.exec(any(UUID.class))).thenReturn(false);
 
     draftRequisitionValidator.validate(requisition, errors);
 

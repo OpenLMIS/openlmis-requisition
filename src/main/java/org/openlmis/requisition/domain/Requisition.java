@@ -47,6 +47,7 @@ import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -225,7 +226,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void updateFrom(
       Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
-      Collection<OrderableDto> products) {
+      Collection<OrderableDto> products,
+      boolean isDatePhysicalStockCountCompletedEnabled) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
@@ -235,7 +237,9 @@ public class Requisition extends BaseTimestampedEntity {
     calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
     updateTotalCostAndPacksToShip(products);
 
-    setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
+    if (isDatePhysicalStockCountCompletedEnabled) {
+      setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
+    }
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());

@@ -211,7 +211,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     requisition.authorize(Collections.emptyList(), UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(new Requisition(), Collections.emptyList(),
+        Collections.emptyList(), true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -306,7 +307,8 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(new Requisition(), Collections.emptyList(),
+        Collections.emptyList(), true);
     verifyStatic(times(1));
   }
 
@@ -322,7 +324,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList(), true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
 
@@ -340,7 +342,7 @@ public class RequisitionTest {
 
     int count = requisition.getRequisitionLineItems().size();
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList(), true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(count + 1));
 
@@ -394,7 +396,7 @@ public class RequisitionTest {
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList(), true);
 
     // then
     requisition
@@ -413,7 +415,8 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(new Requisition(), Collections.emptyList(),
+        Collections.emptyList(), true);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -422,11 +425,16 @@ public class RequisitionTest {
 
   @Test
   public void shouldSetDatePhysicalStockCountCompletedWhenUpdateRequisition() {
-    Requisition requisition = updateWithDatePhysicalCountCompleted();
-
+    Requisition requisition = updateWithDatePhysicalCountCompleted(true);
     assertEquals(
         requisition.getDatePhysicalStockCountCompleted(),
         this.requisition.getDatePhysicalStockCountCompleted());
+  }
+
+  @Test
+  public void shouldNotSetDatePhysicalStockCountCompletedWhenItIsDisabled() {
+    updateWithDatePhysicalCountCompleted(false);
+    assertEquals(null, this.requisition.getDatePhysicalStockCountCompleted());
   }
 
   @Test
@@ -935,7 +943,7 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList());
+    requisition.updateFrom(newRequisition, Collections.emptyList(), Collections.emptyList(), true);
 
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
@@ -1013,13 +1021,14 @@ public class RequisitionTest {
         releaserId);
   }
 
-  private Requisition updateWithDatePhysicalCountCompleted() {
+  private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     this.requisition.setTemplate(requisitionTemplate);
 
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
-    this.requisition.updateFrom(requisition, Collections.emptyList(), Collections.emptyList());
+    this.requisition.updateFrom(requisition, Collections.emptyList(),
+        Collections.emptyList(), updateStockDate);
 
     return requisition;
   }
