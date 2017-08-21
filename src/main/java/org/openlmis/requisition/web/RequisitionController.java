@@ -49,7 +49,6 @@ import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.RequisitionSecurityService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -97,9 +96,6 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
-
-  @Autowired
-  private RequisitionSecurityService requisitionSecurityService;
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
@@ -316,19 +312,20 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.setLogger(XLOGGER);
 
     profiler.start("REQUISITION_SERVICE_SEARCH");
-    List<Requisition> requisitions = requisitionService.searchRequisitions(facility, program,
+    Page<Requisition> requisitionPage = requisitionService.searchRequisitions(facility, program,
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        emergency);
+        emergency, pageable);
 
     profiler.start("REQUISITION_DTO_BUILD");
-    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(requisitions);
-
-    profiler.start("REQUISITION_PAGINATION");
-    Page page = Pagination.getPage(dtoList, pageable);
+    assert requisitionPage != null;
+    Page<BasicRequisitionDto> requisitionDtoPage = Pagination.getPage(
+        basicRequisitionDtoBuilder.build(requisitionPage.getContent()),
+        pageable,
+        requisitionPage.getTotalElements());
 
     profiler.stop().log();
-    XLOGGER.exit(page);
-    return page;
+    XLOGGER.exit(requisitionDtoPage);
+    return requisitionDtoPage;
   }
 
   /**
@@ -406,15 +403,14 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
-    List<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
-        EnumSet.of(RequisitionStatus.SUBMITTED));
 
-    List<Requisition> filteredList =
-        requisitionSecurityService.filterInaccessibleRequisitions(submittedRequisitions);
-
-    List<RequisitionDto> dtoList = requisitionDtoBuilder.build(filteredList);
-
-    return Pagination.getPage(dtoList, pageable);
+    Page<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
+        EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
+    
+    return Pagination.getPage(
+        requisitionDtoBuilder.build(submittedRequisitions.getContent()),
+        pageable,
+        submittedRequisitions.getTotalElements());
   }
 
   /**

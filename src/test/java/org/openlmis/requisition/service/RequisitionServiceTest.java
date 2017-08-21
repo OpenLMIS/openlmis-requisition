@@ -102,8 +102,10 @@ import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.BasicRequisitionDtoComparator;
+import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import java.math.BigDecimal;
@@ -240,6 +242,8 @@ public class RequisitionServiceTest {
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
   private List<String> permissionStrings = Collections.singletonList("validPermissionString");
+  private PageRequest pageRequest = new PageRequest(
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE);
 
   @Before
   public void setUp() {
@@ -447,8 +451,9 @@ public class RequisitionServiceTest {
     requisition.setStatus(AUTHORIZED);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
-        .thenReturn(Collections.singletonList(requisition));
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -462,8 +467,9 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
-        .thenReturn(Collections.singletonList(requisition));
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> inApprovalRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -503,8 +509,9 @@ public class RequisitionServiceTest {
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()),
         null,
-        permissionStrings))
-        .thenReturn(requisitions);
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
 
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(userId, null);
@@ -543,8 +550,9 @@ public class RequisitionServiceTest {
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()), 
         null,
-        permissionStrings))
-        .thenReturn(requisitions);
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
 
     Set<Requisition> requisitionsForApproval =
             requisitionService.getRequisitionsForApproval(user.getId(), programId);
@@ -947,8 +955,9 @@ public class RequisitionServiceTest {
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()),
         null,
-        permissionStrings))
-        .thenReturn(Collections.singletonList(requisition));
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacilityId(),
@@ -957,7 +966,9 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null);
+        EnumSet.of(requisition.getStatus()),
+        null,
+        pageRequest).getContent();
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
@@ -996,7 +1007,9 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null);
+        EnumSet.of(requisition.getStatus()),
+        null,
+        pageRequest).getContent();
 
     // then
     assertEquals(0, receivedRequisitions.size());
@@ -1339,14 +1352,15 @@ public class RequisitionServiceTest {
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.singletonList(previousRequisition));
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Pagination.getPage(Collections.singletonList(previousRequisition), 
+            pageRequest));
   }
 
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.emptyList());
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Pagination.getPage(Collections.emptyList(), pageRequest));
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
@@ -1423,8 +1437,9 @@ public class RequisitionServiceTest {
     requisitions.add(requisition2);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings))
-        .thenReturn(requisitions);
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
     return requisitions;
   }
 

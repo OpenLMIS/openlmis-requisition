@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -337,13 +338,14 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public List<Requisition> searchRequisitions(UUID facility, UUID program,
+  public Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                               ZonedDateTime initiatedDateFrom,
                                               ZonedDateTime initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
-                                              Boolean emergency) {
+                                              Boolean emergency,
+                                              Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_SEARCH");
     profiler.setLogger(LOGGER);
 
@@ -351,13 +353,13 @@ public class RequisitionService {
     List<String> permissionStrings = permissionService.getPermissionStrings();
     if (permissionStrings.isEmpty()) {
       profiler.stop().log();
-      return Collections.emptyList();
+      return Pagination.getPage(Collections.emptyList(), pageable);
     }
     
     profiler.start("REPOSITORY_SEARCH");
-    List<Requisition> results = requisitionRepository.searchRequisitions(facility, program, 
+    Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program, 
         initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, 
-        requisitionStatuses, emergency, permissionStrings);
+        requisitionStatuses, emergency, permissionStrings, pageable);
 
     profiler.stop().log();
     return results;
@@ -366,27 +368,31 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public List<Requisition> searchRequisitions(UUID facility,
+  public Page<Requisition> searchRequisitions(UUID facility,
                                               UUID program,
-                                              UUID processingPeriod) {
+                                              UUID processingPeriod,
+                                              Pageable pageable) {
     return requisitionRepository.searchRequisitions(facility, program, null, null,
-        processingPeriod, null, null, null, permissionService.getPermissionStrings());
+        processingPeriod, null, null, null, permissionService.getPermissionStrings(), pageable);
   }
 
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public List<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses) {
+  public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
+                                              Pageable pageable) {
     return requisitionRepository.searchRequisitions(null, null, null, null, null,
-        null, requisitionStatuses, null, permissionService.getPermissionStrings());
+        null, requisitionStatuses, null, permissionService.getPermissionStrings(), pageable);
   }
 
   /**
    * Finds requisitions matching supervisory node and program.
    */
-  public List<Requisition> searchRequisitions(UUID program, UUID supervisoryNode) {
+  public Page<Requisition> searchRequisitions(UUID program,
+                                              UUID supervisoryNode,
+                                              Pageable pageable) {
     return requisitionRepository.searchRequisitions(null, program, null, null, null,
-        supervisoryNode, null, null, permissionService.getPermissionStrings());
+        supervisoryNode, null, null, permissionService.getPermissionStrings(), pageable);
   }
 
   /**
@@ -407,7 +413,8 @@ public class RequisitionService {
             && roleAssignment.getProgramId() != null
                 && (program == null || program.equals(roleAssignment.getProgramId()))) {
           requisitionsForApproval.addAll(getApprovableRequisitions(
-              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
+              roleAssignment.getProgramId(),
+              roleAssignment.getSupervisoryNodeId()));
         }
       }
     }
@@ -417,8 +424,10 @@ public class RequisitionService {
   /**
    * Get approvable requisitions for specified program and supervisoryNode.
    */
-  public List<Requisition> getApprovableRequisitions(UUID programId, UUID supervisoryNodeId) {
-    List<Requisition> requisitions = searchRequisitions(programId, supervisoryNodeId);
+  public List<Requisition> getApprovableRequisitions(UUID programId,
+                                                     UUID supervisoryNodeId) {
+    Page<Requisition> requisitions = searchRequisitions(programId, supervisoryNodeId,
+        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE));
 
     List<Requisition> filteredRequisitions = new ArrayList<>();
     if (requisitions != null) {
@@ -711,7 +720,9 @@ public class RequisitionService {
                                                     ProcessingPeriodDto period) {
     return searchRequisitions(requisition.getFacilityId(),
         requisition.getProgramId(),
-        period.getId());
+        period.getId(),
+        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE))
+        .getContent();
   }
 
   private void saveStatusMessage(Requisition requisition) {

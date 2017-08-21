@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
-import static java.util.stream.Collectors.toList;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -30,11 +28,16 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.utils.Pagination;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   private static final String FACILITY_ID = "facilityId";
@@ -52,78 +55,50 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * Method returns all Requisitions with matched parameters. User permission strings must not be
    * empty.
    *
-   * @param facility              Facility of searched Requisitions.
-   * @param program               Program of searched Requisitions.
+   * @param facilityId            Facility of searched Requisitions.
+   * @param programId             Program of searched Requisitions.
    * @param initiatedDateFrom     After what date should searched Requisition be created.
    * @param initiatedDateTo       Before what date should searched Requisition be created.
-   * @param processingPeriod      ProcessingPeriod of searched Requisitions.
-   * @param supervisoryNode       SupervisoryNode of searched Requisitions.
+   * @param processingPeriodId    ProcessingPeriod of searched Requisitions.
+   * @param supervisoryNodeId     SupervisoryNode of searched Requisitions.
    * @param requisitionStatuses   Statuses of searched Requisitions.
    * @param emergency             Requisitions with emergency status.
    * @param userPermissionStrings Permission strings of current user.
    * @return List of Requisitions with matched parameters.
    */
   @Override
-  public List<Requisition> searchRequisitions(UUID facility, UUID program,
+  public Page<Requisition> searchRequisitions(UUID facilityId,
+      UUID programId,
       ZonedDateTime initiatedDateFrom,
       ZonedDateTime initiatedDateTo,
-      UUID processingPeriod,
-      UUID supervisoryNode,
+      UUID processingPeriodId,
+      UUID supervisoryNodeId,
       Set<RequisitionStatus> requisitionStatuses,
       Boolean emergency,
-      List<String> userPermissionStrings) {
+      List<String> userPermissionStrings,
+      Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
-    CriteriaQuery<Requisition> queryMain = builder.createQuery(Requisition.class);
-    Root<Requisition> root = queryMain.from(Requisition.class);
+    CriteriaQuery<Requisition> requisitionQuery = builder.createQuery(Requisition.class);
+    requisitionQuery = prepareQuery(requisitionQuery, facilityId, programId, initiatedDateFrom,
+        initiatedDateTo, processingPeriodId, supervisoryNodeId, requisitionStatuses, emergency,
+        userPermissionStrings, false);
 
-    Predicate predicate = builder.conjunction();
-    if (facility != null) {
-      predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facility));
-    }
-    if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
-    }
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareQuery(countQuery, facilityId, programId, initiatedDateFrom,
+        initiatedDateTo, processingPeriodId, supervisoryNodeId, requisitionStatuses, emergency,
+        userPermissionStrings, true);
 
-    if (processingPeriod != null) {
-      predicate = builder.and(predicate,
-          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriod));
-    }
-    if (supervisoryNode != null) {
-      predicate = builder.and(predicate,
-          builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNode));
-    }
-    predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
-    if (null != emergency) {
-      predicate = builder.and(predicate,
-          builder.equal(root.get(EMERGENCY), emergency));
-    }
+    Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-    if (initiatedDateFrom != null && initiatedDateTo != null) {
-      predicate = builder.and(predicate, builder.between(root.get(CREATED_DATE),
-          initiatedDateFrom, initiatedDateTo));
-    } else if (initiatedDateFrom != null) {
-      predicate = builder.and(predicate, builder.greaterThanOrEqualTo(
-          root.get(CREATED_DATE), initiatedDateFrom));
-    } else if (initiatedDateTo != null) {
-      predicate = builder.and(predicate, builder.lessThanOrEqualTo(
-          root.get(CREATED_DATE), initiatedDateTo));
-    }
+    Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
+    List<Requisition> requisitions = entityManager.createQuery(requisitionQuery)
+        .setMaxResults(maxAndFirst.getLeft())
+        .setFirstResult(maxAndFirst.getRight())
+        .getResultList();
 
-    Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
-        .join("permissionStrings");
-    Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
-    Predicate permissionStringPredicate = permissionStringExp.in(userPermissionStrings);
-    predicate = builder.and(predicate, permissionStringPredicate);
-
-    queryMain.where(predicate);
-    queryMain.orderBy(builder.asc(root.get(CREATED_DATE)));
-
-    List<Requisition> results = entityManager.createQuery(queryMain).getResultList();
-    List<Requisition> distinctResults = results.stream().distinct().collect(toList());
-
-    return distinctResults;
+    return Pagination.getPage(requisitions, pageable, count);
   }
 
 
@@ -203,6 +178,74 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       throw new IllegalArgumentException("Requisition's id must be provided");
     }
     return entityManager.find(Requisition.class, requisitionId);
+  }
+
+  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query,
+      UUID facilityId,
+      UUID programId,
+      ZonedDateTime initiatedDateFrom,
+      ZonedDateTime initiatedDateTo,
+      UUID processingPeriodId,
+      UUID supervisoryNodeId,
+      Set<RequisitionStatus> requisitionStatuses,
+      Boolean emergency,
+      List<String> userPermissionStrings,
+      boolean count) {
+
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+    Root<Requisition> root = query.from(Requisition.class);
+
+    if (count) {
+      CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
+      query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
+    } else {
+      query.orderBy(builder.asc(root.get(CREATED_DATE)));
+    }
+
+    Predicate predicate = builder.conjunction();
+    if (facilityId != null) {
+      predicate = builder.and(predicate, builder.equal(root.get(FACILITY_ID), facilityId));
+    }
+    if (programId != null) {
+      predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), programId));
+    }
+    if (processingPeriodId != null) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get(PROCESSING_PERIOD_ID), processingPeriodId));
+    }
+    if (supervisoryNodeId != null) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get(SUPERVISORY_NODE_ID), supervisoryNodeId));
+    }
+    predicate = filterByStatuses(builder, predicate, requisitionStatuses, root);
+    if (null != emergency) {
+      predicate = builder.and(predicate,
+          builder.equal(root.get(EMERGENCY), emergency));
+    }
+
+    if (initiatedDateFrom != null && initiatedDateTo != null) {
+      predicate = builder.and(predicate, builder.between(root.get(CREATED_DATE),
+          initiatedDateFrom, initiatedDateTo));
+    } else if (initiatedDateFrom != null) {
+      predicate = builder.and(predicate, builder.greaterThanOrEqualTo(
+          root.get(CREATED_DATE), initiatedDateFrom));
+    } else if (initiatedDateTo != null) {
+      predicate = builder.and(predicate, builder.lessThanOrEqualTo(
+          root.get(CREATED_DATE), initiatedDateTo));
+    }
+
+    Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
+        .join("permissionStrings");
+    Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
+    Predicate permissionStringPredicate = permissionStringExp.in(userPermissionStrings);
+    predicate = builder.and(predicate, permissionStringPredicate);
+
+    query.where(predicate);
+
+    query.distinct(true);
+
+    return query;
   }
 
   private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,

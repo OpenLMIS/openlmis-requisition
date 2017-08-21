@@ -19,7 +19,6 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -89,7 +88,6 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionSecurityService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -107,6 +105,7 @@ import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
@@ -176,9 +175,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
-  @MockBean
-  private RequisitionSecurityService requisitionSecurityService;
-
   @MockBean(name = "programReferenceDataService")
   private ProgramReferenceDataService programReferenceDataService;
 
@@ -193,6 +189,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID facilityTypeId = UUID.randomUUID();
+  
+  private Pageable pageRequest = new PageRequest(
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE);
 
   @Before
   public void setUp() {
@@ -202,9 +201,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockRequisitionDtoBuilderResponses();
 
     mockReasons();
-
-    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
-        .then(returnsFirstArg());
   }
 
   // GET /api/requisitions/{id}
@@ -393,8 +389,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         eq(periodId),
         eq(supervisoryNodeId),
         eq(statuses),
-        eq(false))
-    ).willReturn(singletonList(requisition));
+        eq(false),
+        any(Pageable.class))
+    ).willReturn(Pagination.getPage(singletonList(requisition), pageRequest));
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -430,8 +427,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(statusSet), eq(null))
-    ).willReturn(requisitions);
+        eq(null), eq(statusSet), eq(null), any(Pageable.class))
+    ).willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
     PageImplRepresentation resultPage = restAssured.given()
@@ -996,8 +993,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     Requisition[] requisitions = {generateRequisition(), generateRequisition()};
     given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class)))
-        .willReturn(Arrays.asList(requisitions));
+        anySetOf(RequisitionStatus.class), any(Pageable.class)))
+        .willReturn(Pagination.getPage(Arrays.asList(requisitions), pageRequest));
 
     // when
     PageImplRepresentation response = restAssured.given()
@@ -1011,64 +1008,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertEquals(2, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnOnlySubmittedRequisitionsForWhichUserHasRight() {
-    // given
-    Requisition availableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
-    Requisition unavailableRequisition = generateRequisition(RequisitionStatus.SUBMITTED);
-    Requisition[] requisitions = {availableRequisition, unavailableRequisition};
-
-    given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class)))
-        .willReturn(Arrays.asList(requisitions));
-    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
-        .thenReturn(Lists.newArrayList(availableRequisition));
-
-    // when
-    PageImplRepresentation<RequisitionDto> response = new PageImplRepresentation<>();
-    response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(SUBMITTED_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(response.getClass());
-
-    // then
-    assertEquals(1, response.getContent().size());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnEmptyListWhenUserHasNoRightsToSeeSubmittedRequisitions() {
-    // given
-    List<Requisition> requisitions = Arrays.asList(
-        generateRequisition(RequisitionStatus.SUBMITTED),
-        generateRequisition(RequisitionStatus.SUBMITTED));
-
-    when(requisitionSecurityService.filterInaccessibleRequisitions(anyList()))
-        .thenReturn(Collections.emptyList());
-
-    given(requisitionService.searchRequisitions(
-        eq(EnumSet.of(RequisitionStatus.SUBMITTED))))
-        .willReturn(requisitions);
-
-    // when
-    PageImplRepresentation response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(SUBMITTED_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    // then
-    assertEquals(0, response.getContent().size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

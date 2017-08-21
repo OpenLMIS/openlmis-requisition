@@ -80,7 +80,7 @@ import org.openlmis.utils.RightName;
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
-@Table(name = "requisitions", schema = "requisition")
+@Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
