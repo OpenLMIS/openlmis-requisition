@@ -225,14 +225,6 @@ public class Requisition extends BaseTimestampedEntity {
     this.status = status;
     this.emergency = emergency;
     permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        RightName.REQUISITION_APPROVE, facilityId, programId));
-    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        RightName.REQUISITION_AUTHORIZE, facilityId, programId));
-    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        RightName.REQUISITION_CREATE, facilityId, programId));
-    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        RightName.REQUISITION_DELETE, facilityId, programId));
-    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
         RightName.REQUISITION_VIEW, facilityId, programId));
   }
 
