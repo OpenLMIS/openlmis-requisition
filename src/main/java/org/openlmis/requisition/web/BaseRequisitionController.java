@@ -108,7 +108,8 @@ public abstract class BaseRequisitionController extends BaseController {
 
   protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     requisitionToUpdate.updateFrom(requisition, orderableReferenceDataService.findByIds(
-            getLineItemOrderableIds(requisition)), predicate.exec(requisition.getProgramId()));
+            getLineItemOrderableIds(requisition)),
+        predicate.exec(requisitionToUpdate.getProgramId()));
 
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
