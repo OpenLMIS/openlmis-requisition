@@ -44,7 +44,7 @@ public class StatusChange extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID authorId;
 
   @Column(nullable = false)

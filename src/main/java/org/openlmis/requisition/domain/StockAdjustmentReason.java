@@ -46,7 +46,7 @@ import javax.persistence.Table;
 public class StockAdjustmentReason extends BaseEntity {
 
   @Column(nullable = false)
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID reasonId;
 
   @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)

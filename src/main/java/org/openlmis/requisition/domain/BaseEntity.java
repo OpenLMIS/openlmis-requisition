@@ -29,13 +29,13 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class BaseEntity {
   static final String TEXT_COLUMN_DEFINITION = "text";
-  protected static final String UUID = "pg-uuid";
+  protected static final String UUID_TYPE = "pg-uuid";
 
   @Id
   @GeneratedValue(generator = "uuid-gen")
   @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
   @JsonView(View.BasicInformation.class)
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   @Getter
   @Setter
   protected UUID id;

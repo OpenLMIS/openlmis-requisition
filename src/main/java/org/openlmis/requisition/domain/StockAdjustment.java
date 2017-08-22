@@ -35,7 +35,7 @@ public class StockAdjustment extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID reasonId;
 
   @Column(nullable = false)

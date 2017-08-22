@@ -119,24 +119,24 @@ public class Requisition extends BaseTimestampedEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID facilityId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID programId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID processingPeriodId;
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID supplyingFacilityId;
 
   @Column(nullable = false)
@@ -165,7 +165,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID supervisoryNodeId;
 
   @ManyToMany
@@ -184,7 +184,7 @@ public class Requisition extends BaseTimestampedEntity {
       joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private Set<UUID> availableNonFullSupplyProducts;
 
   @Getter

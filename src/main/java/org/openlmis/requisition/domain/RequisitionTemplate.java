@@ -46,7 +46,6 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
-  private static final String UUID_TYPE = "pg-uuid";
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";

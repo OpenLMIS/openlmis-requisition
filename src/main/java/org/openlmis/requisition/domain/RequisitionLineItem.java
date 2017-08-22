@@ -80,8 +80,6 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
 
-  private static final String UUID_TYPE = "pg-uuid";
-
   @Getter
   @Setter
   @Type(type = UUID_TYPE)
