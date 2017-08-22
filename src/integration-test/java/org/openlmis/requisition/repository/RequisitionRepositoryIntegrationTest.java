@@ -382,7 +382,7 @@ public class RequisitionRepositoryIntegrationTest
     StockAdjustmentReason reason = new StockAdjustmentReason();
     reason.setReasonId(UUID.randomUUID());
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setReasonType(ReasonType.CREDIT);
     reason.setDescription("simple description");
     reason.setIsFreeTextAllowed(false);
     reason.setName(RandomStringUtils.random(5));
