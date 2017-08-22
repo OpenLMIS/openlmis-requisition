@@ -3,8 +3,11 @@ execution:
     iterations: 10
     scenario: requisition-workflow
   - concurrency: 1
-    iterations: 1
+    hold-for: 2m
     scenario: search-one-page
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-requisitions-for-approval
 
 scenarios:
   get-user-token:
@@ -257,6 +260,18 @@ scenarios:
       - url: ${__P(base-uri)}/api/requisitions/search
         method: GET
         label: GetAPageOfTenRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        body:
+          page: 1
+          size: 10
+  get-requisitions-for-approval:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval
+        method: GET
+        label: GetAPageOfTenRequisitionsForApproval
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
