@@ -55,7 +55,6 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
@@ -86,9 +85,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @MockBean
   private RequisitionValidator validator;
-
-  @MockBean
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @MockBean
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
@@ -145,10 +141,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     doReturn(ValidationResult.success())
         .when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
-
-    doReturn(Collections.emptyList())
-        .when(stockAdjustmentReasonReferenceDataService)
-        .getStockAdjustmentReasonsByProgram(any(UUID.class));
 
     doReturn(Collections.emptyList())
         .when(orderableReferenceDataService)
