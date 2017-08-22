@@ -37,6 +37,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
@@ -86,6 +87,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -109,6 +111,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
 
@@ -807,6 +810,35 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotInitiateRequisitionWhenNoStockService() {
+    // given
+    doReturn(ValidationResult.success())
+        .when(permissionService).canInitRequisition(anyUuid(), anyUuid());
+    DataRetrievalException exception =
+        mockDataException(ERROR_SERVICE_REQUIRED, "Stock Management");
+    doThrow(exception).when(validReasonStockmanagementService).search(anyUuid(), anyUuid());
+    mockValidationSuccess();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(PROGRAM, mockProgram().getId())
+        .queryParam(FACILITY, mockFacility().getId())
+        .queryParam(SUGGESTED_PERIOD, UUID.randomUUID())
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(500)
+        .body(MESSAGE, equalTo(getMessage(ERROR_SERVICE_REQUIRED, "Stock Management")));
+
+    // then
+    verify(requisitionService, never())
+        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), any());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.requestChecks());
+  }
+
+  @Test
   public void shouldNotInitiateRequisitionWhenPeriodDoesNotExist() {
     // given
     UUID programId = mockProgram().getId();
@@ -1435,6 +1467,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     ValidationMessageException exception = mock(ValidationMessageException.class);
     Message errorMessage = new Message(key, (Object[]) args);
     given(exception.asMessage()).willReturn(errorMessage);
+
+    return exception;
+  }
+
+  private DataRetrievalException mockDataException(String key, Object... args) {
+    DataRetrievalException exception = mock(DataRetrievalException.class);
+    given(exception.asMessage()).willReturn(new Message(key, (Object[]) args));
+    given(exception.getStatus()).willReturn(HttpStatus.NOT_FOUND);
 
     return exception;
   }

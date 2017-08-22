@@ -232,6 +232,8 @@ public abstract class MessageKeys {
   public static final String STATUS_CHANGE_USER_SYSTEM =
       SERVICE_PREFIX + ".statusChange.user.system";
 
+  public static final String ERROR_SERVICE_REQUIRED = ERROR_PREFIX + ".service.required";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }

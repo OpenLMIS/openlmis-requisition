@@ -29,11 +29,14 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.RequestParameters;
 import org.openlmis.utils.RequestHelper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +60,7 @@ public class ValidReasonStockManagementServiceTest
 
     ReasonDto reason = new ReasonDto();
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setReasonType(ReasonType.CREDIT);
     validReason.setReason(reason);
 
     return validReason;
@@ -98,6 +101,19 @@ public class ValidReasonStockManagementServiceTest
     assertNull(entityCaptor.getValue().getBody());
     assertAuthHeader(entityCaptor.getValue());
   }
+
+  @Test(expected = DataRetrievalException.class)
+  public void shouldThrowExceptionIfThereIsProblemWithGetValidReasons() throws Exception {
+    // given
+    when(restTemplate
+        .exchange(any(URI.class), eq(HttpMethod.GET),
+            any(HttpEntity.class), eq(ValidReasonDto[].class)))
+        .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+
+    // when
+    service.search(UUID.randomUUID(), UUID.randomUUID());
+  }
+
 
   private URI prepareUrl(ValidReasonDto validReason) {
     RequestParameters parameters = RequestParameters

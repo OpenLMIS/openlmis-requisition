@@ -23,6 +23,10 @@ public abstract class BaseFulfillmentService<T> extends BaseCommunicationService
   @Value("${fulfillment.url}")
   private String fulfillmentUrl;
 
+  @Override
+  protected String getServiceName() {
+    return "Fulfillment";
+  }
 
   @Override
   protected String getServiceUrl() {

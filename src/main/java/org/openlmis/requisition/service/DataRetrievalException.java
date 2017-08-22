@@ -15,16 +15,17 @@
 
 package org.openlmis.requisition.service;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
+import org.openlmis.requisition.exception.BaseMessageException;
+import org.openlmis.utils.Message;
+import org.springframework.http.HttpStatus;
 
 /**
  * Signals we were unable to retrieve reference data
  * due to a communication error.
  */
 @Getter
-public class DataRetrievalException extends RuntimeException {
+public class DataRetrievalException extends BaseMessageException {
   private final String resource;
   private final HttpStatus status;
   private final String response;
@@ -36,9 +37,9 @@ public class DataRetrievalException extends RuntimeException {
    * @param status   the http status that was returned
    * @param response the response from service
    */
-  public DataRetrievalException(String resource, HttpStatus status, String response) {
-    super(String.format("Unable to retrieve %s. Error code: %d, response message: %s",
-        resource, status.value(), response));
+  public DataRetrievalException(Message message, String resource,
+                                HttpStatus status, String response) {
+    super(message);
     this.resource = resource;
     this.status = status;
     this.response = response;

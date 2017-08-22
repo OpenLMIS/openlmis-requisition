@@ -15,12 +15,14 @@
 
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 import static org.openlmis.utils.RequestHelper.createEntity;
 import static org.openlmis.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.utils.DynamicPageTypeReference;
 import org.openlmis.utils.DynamicResultDtoTypeReference;
+import org.openlmis.utils.Message;
 import org.openlmis.utils.PageImplRepresentation;
 import org.openlmis.utils.RequestHelper;
 import org.slf4j.Logger;
@@ -55,6 +57,8 @@ public abstract class BaseCommunicationService<T> {
   protected abstract Class<T> getResultClass();
 
   protected abstract Class<T[]> getArrayResultClass();
+
+  protected abstract String getServiceName();
 
   /**
    * Return one object from service.
@@ -249,7 +253,9 @@ public abstract class BaseCommunicationService<T> {
   }
 
   private DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
-    return new DataRetrievalException(getResultClass().getSimpleName(),
+    return new DataRetrievalException(
+        new Message(ERROR_SERVICE_REQUIRED, getServiceName()),
+        getResultClass().getSimpleName(),
         ex.getStatusCode(),
         ex.getResponseBodyAsString());
   }
