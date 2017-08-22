@@ -224,16 +224,16 @@ public class Requisition extends BaseTimestampedEntity {
     this.processingPeriodId = processingPeriodId;
     this.status = status;
     this.emergency = emergency;
-    permissionStrings.add(new RequisitionPermissionString(this,
-        RightName.REQUISITION_APPROVE + "|" + facilityId + "|" + programId));
-    permissionStrings.add(new RequisitionPermissionString(this, 
-        RightName.REQUISITION_AUTHORIZE + "|" + facilityId + "|" + programId));
-    permissionStrings.add(new RequisitionPermissionString(this, 
-        RightName.REQUISITION_CREATE + "|" + facilityId + "|" + programId));
-    permissionStrings.add(new RequisitionPermissionString(this, 
-        RightName.REQUISITION_DELETE + "|" + facilityId + "|" + programId));
-    permissionStrings.add(new RequisitionPermissionString(this, 
-        RightName.REQUISITION_VIEW + "|" + facilityId + "|" + programId));
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_APPROVE, facilityId, programId));
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_AUTHORIZE, facilityId, programId));
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_CREATE, facilityId, programId));
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_DELETE, facilityId, programId));
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_VIEW, facilityId, programId));
   }
 
   /**

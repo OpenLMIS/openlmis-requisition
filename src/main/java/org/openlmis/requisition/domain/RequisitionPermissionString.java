@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain;
 
+import java.util.Objects;
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,4 +44,23 @@ public class RequisitionPermissionString extends BaseEntity {
   @Getter
   @Setter
   private String permissionString;
+
+  /**
+   * Convenience constructor to create permission string based on a set of values, which all must
+   * not be null.
+   * 
+   * @param requisition requisition associated with permission string
+   * @param rightName right name of string
+   * @param facilityId facility ID of string
+   * @param programId program ID of string
+   */
+  public static RequisitionPermissionString newRequisitionPermissionString(Requisition requisition,
+      String rightName, UUID facilityId, UUID programId) {
+    Objects.requireNonNull(requisition);
+    Objects.requireNonNull(rightName);
+    Objects.requireNonNull(facilityId);
+    Objects.requireNonNull(programId);
+    return new RequisitionPermissionString(requisition,
+        String.join("|", rightName, facilityId.toString(), programId.toString()));
+  }
 }
