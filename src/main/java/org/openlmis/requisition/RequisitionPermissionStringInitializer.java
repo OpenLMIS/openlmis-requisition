@@ -16,6 +16,7 @@
 package org.openlmis.requisition;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.util.Arrays;
@@ -36,9 +37,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 
 /**
- * RightAssignmentInitializer runs after its associated Spring application has loaded. It 
- * automatically re-generates right assignments into the database, after dropping the existing 
- * right assignments. This component only runs when the "refresh-db" Spring profile is set.
+ * RequisitionPermissionStringInitializer runs after its associated Spring application has loaded.
+ * It automatically re-generates requisition permission strings into the database, after dropping
+ * the existing ones. This component only runs when the "refresh-db" Spring profile is set.
  */
 @Component
 @Profile("refresh-db")
@@ -122,7 +123,9 @@ public class RequisitionPermissionStringInitializer implements CommandLineRunner
 
   private String resourceToString(final Resource resource) throws IOException {
     XLOGGER.entry(resource.getDescription());
-    String str = StreamUtils.copyToString(resource.getInputStream(), Charset.defaultCharset());
+    InputStream is = resource.getInputStream();
+    String str = StreamUtils.copyToString(is, Charset.defaultCharset());
+    is.close();
     XLOGGER.exit();
     return str;
   }

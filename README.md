@@ -125,6 +125,18 @@ $ export spring_profiles_active=demo-data,performance-data
 $ gradle bootRun
 ```
 
+### Database Refresh
+In order to allow pagination in the database, the database stores a set of permission strings for 
+each requisition, to determine what can be done to a requisition. If the database has no permission 
+strings or incorrect permission strings set in this table, it may be necessary to refresh this table
+from time to time. A mechanism has been created to allow these right assignments to be 
+re-generated, by activating the `refresh-db` Spring profile. For example:
+
+```shell
+$ export spring_profiles_active=demo-data,refresh-db
+$ gradle bootRun
+```
+
 ## Production by Spring Profile
 
 By default when this service is started, it will clean its schema in the database before migrating
