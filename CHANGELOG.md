@@ -7,6 +7,8 @@ Contract breaking changes:
 (/api/settings) are no longer available. Use environment variables to configure the application.
 * [MW-365](https://openlmis.atlassian.net/browse/MW-365): Requisition search endpoints: requisitionsForApproval and requisitionsForConvert will now return smaller basic dtos.
 * [OLMIS-2833](https://openlmis.atlassian.net/browse/OLMIS-2833): Added date physical stock count completed to Requisition
+* [OLMIS-2671](https://openlmis.atlassian.net/browse/OLMIS-2671): Stock Management service is now required by Requisition
+* [OLMIS-2694](https://openlmis.atlassian.net/browse/OLMIS-2694): Changed Requisition adjustment reasons to come from Stock Service
 
 New functionality added in a backwards-compatible manner:
 
