@@ -24,6 +24,7 @@ public class BaseMessageException extends RuntimeException {
   private final Message message;
 
   public BaseMessageException(Message message) {
+    super(message.getKey());
     this.message = message;
   }
 

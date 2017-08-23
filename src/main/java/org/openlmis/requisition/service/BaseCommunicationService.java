@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_OCCURED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 import static org.openlmis.utils.RequestHelper.createEntity;
 import static org.openlmis.utils.RequestHelper.createUri;
@@ -253,8 +254,14 @@ public abstract class BaseCommunicationService<T> {
   }
 
   private DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
+    String errorKey;
+    if (ex.getStatusCode().is5xxServerError() || ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+      errorKey = ERROR_SERVICE_REQUIRED;
+    } else {
+      errorKey = ERROR_SERVICE_OCCURED;
+    }
     return new DataRetrievalException(
-        new Message(ERROR_SERVICE_REQUIRED, getServiceName()),
+        new Message(errorKey, getServiceName()),
         getResultClass().getSimpleName(),
         ex.getStatusCode(),
         ex.getResponseBodyAsString());

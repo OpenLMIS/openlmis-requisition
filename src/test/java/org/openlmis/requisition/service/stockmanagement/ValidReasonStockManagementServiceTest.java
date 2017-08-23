@@ -21,9 +21,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_OCCURED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
@@ -44,6 +48,9 @@ import java.util.UUID;
 
 public class ValidReasonStockManagementServiceTest
     extends BaseStockmanagementServiceTest<ValidReasonDto> {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   private ValidReasonStockmanagementService service;
 
@@ -102,13 +109,32 @@ public class ValidReasonStockManagementServiceTest
     assertAuthHeader(entityCaptor.getValue());
   }
 
-  @Test(expected = DataRetrievalException.class)
-  public void shouldThrowExceptionIfThereIsProblemWithGetValidReasons() throws Exception {
+  @Test
+  public void shouldThrowExceptionWithProperKeyIfServerCannotBeFound() throws Exception {
+    thrown.expect(DataRetrievalException.class);
+    thrown.expectMessage(ERROR_SERVICE_REQUIRED);
+
     // given
     when(restTemplate
         .exchange(any(URI.class), eq(HttpMethod.GET),
             any(HttpEntity.class), eq(ValidReasonDto[].class)))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+
+    // when
+    service.search(UUID.randomUUID(), UUID.randomUUID());
+  }
+
+
+  @Test
+  public void shouldThrowExceptionWithProperKeyIfOtherErrorOccured() throws Exception {
+    thrown.expect(DataRetrievalException.class);
+    thrown.expectMessage(ERROR_SERVICE_OCCURED);
+
+    // given
+    when(restTemplate
+        .exchange(any(URI.class), eq(HttpMethod.GET),
+            any(HttpEntity.class), eq(ValidReasonDto[].class)))
+        .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
     // when
     service.search(UUID.randomUUID(), UUID.randomUUID());
