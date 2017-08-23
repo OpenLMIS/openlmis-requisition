@@ -87,7 +87,7 @@ scenarios:
                 vars.put("new_period", JsonOutput.toJson(last));
           - url: ${__P(base-uri)}/api/processingPeriods/${new_period_id}
             method: PUT
-            label: CreatePeriod
+            label: CreateProcessingPeriod
             headers:
               Authorization: Bearer ${access_token}
               Content-Type: application/json
@@ -187,12 +187,16 @@ scenarios:
     requests:
       - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert
         method: GET
-        label: GetSupplyingDepot
+        label: GetSupplyingDepotForFacilityPageOfTwo
         headers:
           Authorization: Bearer ${access_token}
         body:
+          filterBy: all
+          filterValue: ${facility_code}
           page: 0
-          size: 10
+          # In demo data there is requisition with APPROVE status for
+          # Family Planning and Kankao Health Facility
+          size: 2
         jsr223:
           script-text: |
             import groovy.json.JsonSlurper;
@@ -235,6 +239,7 @@ scenarios:
       program_id: dce17f2e-af3e-40ad-8e00-3496adef44c3
       # Kankao Health Facility
       facility_id: 7938919f-6f61-4d1a-a4dc-923c31e9cd45
+      facility_code: HF01
       emergency: false
       # SCH002
       schedule_id: 057921bd-1841-4748-8523-dbe5ebb58368
