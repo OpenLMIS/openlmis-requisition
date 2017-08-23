@@ -125,9 +125,12 @@ public class Resource2Db {
   
   private String resourceToString(final Resource resource) throws IOException {
     XLOGGER.entry(resource.getDescription());
-    InputStream is = resource.getInputStream();
-    String str = StreamUtils.copyToString(is, Charset.defaultCharset());
-    is.close();
+
+    String str;
+    try (InputStream is = resource.getInputStream()) {
+      str = StreamUtils.copyToString(is, Charset.defaultCharset());
+    }
+
     XLOGGER.exit();
     return str;
   }
