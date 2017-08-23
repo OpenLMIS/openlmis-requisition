@@ -27,6 +27,7 @@ function addCatArg {
 addCatArg ${INPUT_DIR}/demo_sql_header.txt
 addCatArg /app/src/main/resources/db/starter/afterMigrate.sql
 addCatArg input.sql
+addCatArg /app/src/main/resources/db/migration/*__generate_requisition_permission_strings.sql
 addCatArg ${INPUT_DIR}/demo_sql_footer.txt
 
 cat ${CAT_ARGS[@]} > result.sql

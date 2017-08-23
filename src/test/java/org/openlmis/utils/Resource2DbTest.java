@@ -15,6 +15,17 @@
 
 package org.openlmis.utils;
 
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,18 +34,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class Resource2DbTest {
@@ -55,6 +54,22 @@ public class Resource2DbTest {
 
     // when
     resource2Db.updateDbFromSql(resource);
+
+    // then
+    verify(inputStream, times(1)).close();
+    assertFalse(resource.isOpen());
+  }
+
+  @Test
+  public void updateDbFromSqlSingleShouldCloseInputStream() throws IOException {
+    // given
+    Resource resource = mock(Resource.class);
+    InputStream inputStream = spy(IOUtils.toInputStream("some data"));
+    when(resource.getInputStream()).thenReturn(inputStream);
+    when(template.batchUpdate(any(String.class))).thenReturn(new int[]{1});
+
+    // when
+    resource2Db.updateDbFromSqlSingle(resource);
 
     // then
     verify(inputStream, times(1)).close();
@@ -85,6 +100,11 @@ public class Resource2DbTest {
   @Test(expected = NullPointerException.class)
   public void updateDbFromSqlWithNullShouldThrowException() throws IOException {
     resource2Db.updateDbFromSql(null);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void updateDbFromSqlSingleWithNullShouldThrowException() throws IOException {
+    resource2Db.updateDbFromSqlSingle(null);
   }
 
   @Test(expected = IllegalArgumentException.class)

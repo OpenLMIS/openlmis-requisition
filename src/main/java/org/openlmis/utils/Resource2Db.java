@@ -15,6 +15,18 @@
 
 package org.openlmis.utils;
 
+import static java.util.stream.Collectors.joining;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -27,16 +39,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.joining;
+import org.springframework.util.StreamUtils;
 
 /**
  * Spring oriented utility class to load data into a database.  When given Spring's
@@ -74,6 +77,21 @@ public class Resource2Db {
   }
 
   /**
+   * Update the database from a Resource which has lines of SQL.  One SQL statement for the whole
+   * resource.
+   * @param resource the Resource with SQL.
+   * @throws IOException if the Resource can't be used.
+   * @throws NullPointerException if the resource is null.
+   */
+  public void updateDbFromSqlSingle(Resource resource) throws IOException {
+    XLOGGER.entry(resource.getDescription());
+    Validate.notNull(resource);
+    List<String> sqlLines = Collections.singletonList(resourceToString(resource));
+    updateDbFromSqlStrings(sqlLines);
+    XLOGGER.exit();
+  }
+
+  /**
    * Insert into the database (a table) from a Resource with CSV data.
    * @param tableName the name of the table (incl schema) to load the data into.
    * @param resource the Resource as a CSV, with a header, that has the data to load.
@@ -103,6 +121,15 @@ public class Resource2Db {
 
     XLOGGER.exit("SQL lines read: " + lines.size());
     return lines;
+  }
+  
+  private String resourceToString(final Resource resource) throws IOException {
+    XLOGGER.entry(resource.getDescription());
+    InputStream is = resource.getInputStream();
+    String str = StreamUtils.copyToString(is, Charset.defaultCharset());
+    is.close();
+    XLOGGER.exit();
+    return str;
   }
 
   /*
