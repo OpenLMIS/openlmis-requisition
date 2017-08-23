@@ -663,14 +663,14 @@ public class RequisitionService {
 
   private Collection<ProgramDto> findProgramsWithFilter(String filterBy,
                                                         List<String> filterValues) {
-    if (filterValues.isEmpty()) {
-      return programReferenceDataService.findAll();
-    }
-
     boolean filterAll = isFilterAll(filterBy);
     List<ProgramDto> foundPrograms = new ArrayList<>();
 
     if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
+      if (filterValues.isEmpty()) {
+        return programReferenceDataService.findAll();
+      }
+
       for (String expression : filterValues) {
         foundPrograms.addAll(programReferenceDataService.search(expression));
       }
@@ -687,19 +687,19 @@ public class RequisitionService {
 
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
 
-    for (String expression : filterValues) {
-      if (filterAll && filterValues.isEmpty()) {
-        foundFacilities.addAll(facilityReferenceDataService.findAll());
-      } else {
-        if (filterAll || filterByCode) {
-          foundFacilities.addAll(facilityReferenceDataService.search(
-              expression, null, null, false));
-        }
+    if ((filterAll || filterByCode || filterByName) && filterValues.isEmpty()) {
+      foundFacilities.addAll(facilityReferenceDataService.findAll());
+    }
 
-        if (filterAll || filterByName) {
-          foundFacilities.addAll(facilityReferenceDataService.search(
-              null, expression, null, false));
-        }
+    for (String expression : filterValues) {
+      if (filterAll || filterByCode) {
+        foundFacilities.addAll(facilityReferenceDataService.search(
+            expression, null, null, false));
+      }
+
+      if (filterAll || filterByName) {
+        foundFacilities.addAll(facilityReferenceDataService.search(
+            null, expression, null, false));
       }
     }
 
