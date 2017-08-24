@@ -58,14 +58,12 @@ schemas:
               "id": { "type": "string", "title": "id" },
               "modifiedDate": {"type": "string", "title": "modifiedDate" },
               "status": { "type": "string", "title": "status" },
-              "facility": { "type": "object", "$ref": "schemas/basicfacilityDto.json", "title": "facility" },
-              "program": { "type": "object", "$ref": "schemas/basicProgramDto.json", "title": "program" },
-              "processingPeriod": { "type": "object", "$ref": "schemas/basicProcessingPeriodDto.json", "title": "processingPeriod" },
+              "facilityName": { "type": "string", "title": "facilityName" },
+              "periodName": { "type": "string", "title": "periodName" },
               "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/approveRequisitionLineItemDto" }, "uniqueItems": false }
           },
-          "required": ["id", "facility", "program", "processingPeriod", "status"]
+          "required": ["id", "facilityName", "periodName", "status"]
       }
-
 
   - approveRequisitionLineItemDto: |
       {   "type": "object",
