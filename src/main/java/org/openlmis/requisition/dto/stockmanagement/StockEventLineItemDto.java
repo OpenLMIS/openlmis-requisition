@@ -13,20 +13,26 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import org.openlmis.requisition.dto.OrderableDto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@EqualsAndHashCode
-public class BaseDto {
+import java.time.ZonedDateTime;
+import java.util.List;
 
-  @Getter
-  @Setter
-  protected UUID id;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class StockEventLineItemDto {
+  private OrderableDto orderable;
+  private Integer stockOnHand;
+  private Integer quantity;
+  private ZonedDateTime occurredDate;
+  private List<StockmanagementStockAdjustmentDto> stockAdjustments;
 }

@@ -52,6 +52,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -64,6 +65,7 @@ import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
@@ -71,6 +73,7 @@ import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
+import org.openlmis.utils.StockEventBuilder;
 import org.springframework.validation.Errors;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -155,6 +158,12 @@ public class RequisitionControllerTest {
 
   @Mock
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
+
+  @Mock
+  private StockEventBuilder inventoryDraftBuilder;
+
+  @Mock
+  private StockEventStockManagementService inventoryService;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -330,13 +339,7 @@ public class RequisitionControllerTest {
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
 
-    UserDto approver = mock(UserDto.class);
-    when(approver.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
-    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class),
-        any(UUID.class)))
-        .thenReturn(ValidationResult.success());
+    setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -346,19 +349,14 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
+
+    verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
     mockSupervisoryNode();
-
-    UserDto approver = mock(UserDto.class);
-    when(approver.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
-    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class),
-        any(UUID.class)))
-        .thenReturn(ValidationResult.success());
+    setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -368,6 +366,21 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
+  }
+
+  @Test
+  public void shouldCreatePhysicalInventoryDraftWhenApprovingRequisitionWithoutParentNode() {
+    mockSupervisoryNode();
+    setUpApprover();
+    StockEventDto inventoryDraft = mock(StockEventDto.class);
+    when(inventoryDraftBuilder.fromRequisition(authorizedRequsition))
+            .thenReturn(inventoryDraft);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(authorizedRequsition).approve(eq(null), any(), any());
+    verify(inventoryDraftBuilder).fromRequisition(authorizedRequsition);
+    verify(inventoryService).save(inventoryDraft);
   }
 
   @Test(expected = PermissionMessageException.class)
@@ -524,5 +537,15 @@ public class RequisitionControllerTest {
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
     verify(requisition, never()).setSupervisoryNodeId(any());
     assertNull(requisition.getSupervisoryNodeId());
+  }
+
+  private void setUpApprover() {
+    UserDto approver = mock(UserDto.class);
+    when(approver.getId()).thenReturn(UUID.randomUUID());
+    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
+            any(UUID.class),
+            any(UUID.class)))
+            .thenReturn(ValidationResult.success());
   }
 }
