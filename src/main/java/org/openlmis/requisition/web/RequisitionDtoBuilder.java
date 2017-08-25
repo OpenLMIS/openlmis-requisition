@@ -28,8 +28,12 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.utils.RequisitionExportHelper;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class RequisitionDtoBuilder {
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionDtoBuilder.class);
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -85,16 +90,23 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility, ProgramDto program) {
+    XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
+      XLOGGER.exit();
       return null;
     }
+    Profiler profiler = new Profiler("REQUISITION_DTO_BUILD");
+    profiler.setLogger(XLOGGER);
 
     RequisitionDto requisitionDto = new RequisitionDto();
 
+    profiler.start("EXPORT");
     requisition.export(requisitionDto);
 
+    profiler.start("SET_SUB_RESOURCES");
     requisitionDto.setTemplate(
         BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
+
     if (facility != null) {
       facility.setSupportedPrograms(null);
     }
@@ -103,18 +115,23 @@ public class RequisitionDtoBuilder {
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
 
+    profiler.start("SET_LINE_ITEMS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
         requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
+    profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
     if (null != requisition.getAvailableNonFullSupplyProducts()) {
       requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
               orderableReferenceDataService.findByIds(
                       requisition.getAvailableNonFullSupplyProducts())));
     }
 
+    profiler.start("SET_STOCK_ADJ_REASONS");
     requisitionDto.setStockAdjustmentReasons(newInstance(requisition.getStockAdjustmentReasons()));
 
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
     return requisitionDto;
   }
 

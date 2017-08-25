@@ -20,6 +20,9 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class BasicRequisitionDtoBuilder {
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
+      BasicRequisitionDtoBuilder.class);
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -57,14 +62,20 @@ public class BasicRequisitionDtoBuilder {
    * null}.
    */
   public BasicRequisitionDto build(Requisition requisition) {
+    XLOGGER.entry(requisition);
     if (null == requisition) {
+      XLOGGER.exit();
       return null;
     }
+    Profiler profiler = new Profiler("BASIC_REQUISITION_DTO_BUILD");
+    profiler.setLogger(XLOGGER);
 
     BasicRequisitionDto requisitionDto = new BasicRequisitionDto();
 
+    profiler.start("EXPORT");
     requisition.export(requisitionDto);
 
+    profiler.start("SET_SUB_RESOURCES");
     requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
     requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
 
@@ -72,6 +83,8 @@ public class BasicRequisitionDtoBuilder {
         requisition.getProcessingPeriodId()
     ));
 
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
     return requisitionDto;
   }
 
