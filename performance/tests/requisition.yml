@@ -185,18 +185,13 @@ scenarios:
           Authorization: Bearer ${access_token}
   get-supplying-depot:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert
+      # In demo data there is requisition with APPROVE status for
+      # Family Planning and Kankao Health Facility
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?filterBy=all&filterValue=${facility_code}&page=0&size=2
         method: GET
         label: GetSupplyingDepotForFacilityPageOfTwo
         headers:
           Authorization: Bearer ${access_token}
-        body:
-          filterBy: all
-          filterValue: ${facility_code}
-          page: 0
-          # In demo data there is requisition with APPROVE status for
-          # Family Planning and Kankao Health Facility
-          size: 2
         jsr223:
           script-text: |
             import groovy.json.JsonSlurper;
@@ -262,27 +257,21 @@ scenarios:
   search-one-page:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/requisitions/search
+      - url: ${__P(base-uri)}/api/requisitions/search?page=0&size=10
         method: GET
         label: GetAPageOfTenRequisitions
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
-        body:
-          page: 1
-          size: 10
   get-requisitions-for-approval:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval?page=0&size=10
         method: GET
         label: GetAPageOfTenRequisitionsForApproval
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
-        body:
-          page: 1
-          size: 10
 
 reporting:
     - module: passfail
