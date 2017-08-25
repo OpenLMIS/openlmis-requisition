@@ -392,7 +392,6 @@ public class RequisitionLineItem extends BaseEntity {
    */
   public void resetData() {
     setBeginningBalance(null);
-    setBeginningBalance(null);
     setTotalReceivedQuantity(null);
     setTotalLossesAndAdjustments(null);
     setStockOnHand(null);
@@ -405,7 +404,6 @@ public class RequisitionLineItem extends BaseEntity {
     setRequestedQuantityExplanation(null);
     setTotalStockoutDays(null);
     setPacksToShip(null);
-    setPricePerPack(null);
     setTotalCost(null);
     setNumberOfNewPatientsAdded(null);
     setAdjustedConsumption(null);
