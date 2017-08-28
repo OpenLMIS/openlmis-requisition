@@ -44,7 +44,18 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -70,7 +81,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -87,7 +97,6 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.settings.service.ConfigurationSettingService;
@@ -105,20 +114,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -192,9 +187,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private ValidReasonStockmanagementService validReasonStockmanagementService;
 
-  @MockBean
-  private StockEventStockManagementService stockEventStockManagementService;
-
   @Autowired
   private MessageService messageService;
 
@@ -210,7 +202,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
-    mockStockEventServiceResponses();
 
     mockReasons();
   }
@@ -1494,11 +1485,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(exception.asMessage()).willReturn(errorMessage);
 
     return exception;
-  }
-
-  private void mockStockEventServiceResponses() {
-    when(stockEventStockManagementService.save(any(StockEventDto.class)))
-        .thenReturn(new StockEventDto());
   }
 
   private ConvertToOrderDto generateConvertToOrderDto() {
