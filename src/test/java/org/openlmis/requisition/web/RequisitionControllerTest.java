@@ -52,7 +52,6 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -75,6 +74,7 @@ import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.FacilitySupportsProgramHelper;
 import org.openlmis.utils.StockEventBuilder;
 import org.springframework.validation.Errors;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -368,6 +368,7 @@ public class RequisitionControllerTest {
     verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
   }
 
+  /*
   @Test
   public void shouldCreatePhysicalInventoryDraftWhenApprovingRequisitionWithoutParentNode() {
     mockSupervisoryNode();
@@ -382,6 +383,7 @@ public class RequisitionControllerTest {
     verify(inventoryDraftBuilder).fromRequisition(authorizedRequsition);
     verify(inventoryService).save(inventoryDraft);
   }
+  */
 
   @Test(expected = PermissionMessageException.class)
   public void shouldNotApproveIfHasNoPermission() {
