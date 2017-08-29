@@ -34,7 +34,6 @@ import org.openlmis.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.slf4j.Logger;
@@ -80,8 +79,6 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String AVERAGE_CONSUMPTION = "averageConsumption";
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
-
-  private static final String UUID_TYPE = "pg-uuid";
 
   @Getter
   @Setter
@@ -395,7 +392,6 @@ public class RequisitionLineItem extends BaseEntity {
    */
   public void resetData() {
     setBeginningBalance(null);
-    setBeginningBalance(null);
     setTotalReceivedQuantity(null);
     setTotalLossesAndAdjustments(null);
     setStockOnHand(null);
@@ -408,7 +404,6 @@ public class RequisitionLineItem extends BaseEntity {
     setRequestedQuantityExplanation(null);
     setTotalStockoutDays(null);
     setPacksToShip(null);
-    setPricePerPack(null);
     setTotalCost(null);
     setNumberOfNewPatientsAdded(null);
     setAdjustedConsumption(null);
@@ -436,7 +431,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Calculate and set all calculated fields in this requisition line item.
    */
   public void calculateAndSetFields(RequisitionTemplate template,
-                                    Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
+                                    Collection<StockAdjustmentReason> stockAdjustmentReasons,
                                     Integer numberOfMonthsInPeriod) {
     calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
     calculateAndSetStockOnHand(template);
@@ -541,7 +536,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetTotalLossesAndAdjustments(
-      Collection<StockAdjustmentReasonDto> reasons) {
+      Collection<StockAdjustmentReason> reasons) {
     int calculated = calculateTotalLossesAndAdjustments(this, reasons);
     if (getTotalLossesAndAdjustments() != null
         && !Objects.equals(getTotalLossesAndAdjustments(), calculated)) {

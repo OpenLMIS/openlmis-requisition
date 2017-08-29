@@ -20,6 +20,10 @@ public final class RightName {
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
 
   public static final String REQUISITION_APPROVE = "REQUISITION_APPROVE";
+  public static final String REQUISITION_AUTHORIZE = "REQUISITION_AUTHORIZE";
+  public static final String REQUISITION_CREATE = "REQUISITION_CREATE";
+  public static final String REQUISITION_DELETE = "REQUISITION_DELETE";
+  public static final String REQUISITION_VIEW = "REQUISITION_VIEW";
 
 
   private RightName() {

@@ -26,6 +26,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
@@ -50,13 +51,14 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -88,9 +90,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private RequisitionValidator validator;
 
   @MockBean
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
-
-  @MockBean
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @MockBean
@@ -108,6 +107,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean(name = "programReferenceDataService")
   private ProgramReferenceDataService programReferenceDataService;
 
+  @MockBean
+  private StockEventStockManagementService stockEventStockManagementService;
+
   @Mock
   private ProgramDto program;
 
@@ -121,6 +123,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
+    mockStockEventServiceResponses();
 
     requisitions = Lists.newArrayList(
         generateRequisition(RequisitionStatus.AUTHORIZED),
@@ -145,10 +148,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     doReturn(ValidationResult.success())
         .when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
-
-    doReturn(Collections.emptyList())
-        .when(stockAdjustmentReasonReferenceDataService)
-        .getStockAdjustmentReasonsByProgram(any(UUID.class));
 
     doReturn(Collections.emptyList())
         .when(orderableReferenceDataService)
@@ -356,6 +355,11 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());
+  }
+
+  private void mockStockEventServiceResponses() {
+    when(stockEventStockManagementService.submit(any(StockEventDto.class)))
+        .thenReturn(new StockEventDto());
   }
 
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {

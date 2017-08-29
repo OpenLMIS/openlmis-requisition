@@ -25,6 +25,15 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
 
 import com.google.common.collect.Sets;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
@@ -44,16 +53,10 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -71,6 +74,11 @@ public class RequisitionRepositoryIntegrationTest
   private RequisitionTemplate testTemplate;
 
   private List<Requisition> requisitions;
+  
+  private List<String> userPermissionStrings = new ArrayList<>();
+  
+  private Pageable pageRequest = new PageRequest(
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Override
   RequisitionRepository getRepository() {
@@ -83,6 +91,9 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   private Requisition generateInstance(UUID facilityId, UUID programId, UUID processingPeriodId) {
+    // Add permission to user for each facility and program
+    userPermissionStrings.add("REQUISITION_VIEW|" + facilityId + "|" + programId);
+
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
             INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
@@ -133,7 +144,9 @@ public class RequisitionRepositoryIntegrationTest
         requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getSupervisoryNodeId(),
         EnumSet.of(requisitionToCopy.getStatus()),
-        requisitionToCopy.getEmergency());
+        requisitionToCopy.getEmergency(),
+        userPermissionStrings,
+        pageRequest).getContent();
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -178,7 +191,7 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(),
-        null, null, null, null, null, null);
+        null, null, null, null, null, null, userPermissionStrings, pageRequest).getContent();
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -196,7 +209,8 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(5, receivedRequisitions.size());
   }
@@ -204,7 +218,8 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchEmergencyRequsitions() {
     List<Requisition> emergency = repository.searchRequisitions(
-        null, null, null, null, null, null, null, true);
+        null, null, null, null, null, null, null, true, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, emergency.size());
     emergency.forEach(requisition -> assertTrue(requisition.getEmergency()));
@@ -213,7 +228,8 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchStandardRequisitions() {
     List<Requisition> standard = repository.searchRequisitions(
-        null, null, null, null, null, null, null, false);
+        null, null, null, null, null, null, null, false, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(3, standard.size());
     standard.forEach(requisition -> assertFalse(requisition.getEmergency()));
@@ -233,6 +249,21 @@ public class RequisitionRepositoryIntegrationTest
         assertEquals(requisition.getNumberOfMonthsInPeriod(), element.getNumberOfMonthsInPeriod());
       });
     });
+  }
+
+  @Test
+  public void searchShouldExcludeRequisitionsWithNoMatchingPermissionStrings() {
+    // given
+    List<String> userPermissionStringSubset = Collections.singletonList(
+        userPermissionStrings.get(0));
+
+    // when
+    List<Requisition> requisitions = repository.searchRequisitions(
+        null, null, null, null, null, null, null, false, userPermissionStringSubset, pageRequest)
+        .getContent();
+
+    // then
+    assertEquals(1, requisitions.size());
   }
 
   @Test
@@ -351,7 +382,7 @@ public class RequisitionRepositoryIntegrationTest
     StockAdjustmentReason reason = new StockAdjustmentReason();
     reason.setReasonId(UUID.randomUUID());
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setReasonType(ReasonType.CREDIT);
     reason.setDescription("simple description");
     reason.setIsFreeTextAllowed(false);
     reason.setName(RandomStringUtils.random(5));

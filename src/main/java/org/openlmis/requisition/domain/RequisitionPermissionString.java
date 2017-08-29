@@ -15,26 +15,24 @@
 
 package org.openlmis.requisition.domain;
 
-import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name = "status_changes")
+@Table(name = "requisition_permission_strings")
 @NoArgsConstructor
-public class StatusChange extends BaseTimestampedEntity {
+@AllArgsConstructor
+public class RequisitionPermissionString extends BaseEntity {
 
   @ManyToOne(cascade = {CascadeType.REFRESH})
   @JoinColumn(name = "requisitionId", nullable = false)
@@ -42,44 +40,27 @@ public class StatusChange extends BaseTimestampedEntity {
   @Setter
   private Requisition requisition;
 
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID_TYPE)
-  private UUID authorId;
-
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  @Getter
-  @Setter
-  private RequisitionStatus status;
-
-  private StatusChange(Requisition requisition, UUID authorId) {
-    this.requisition = Objects.requireNonNull(requisition);
-    this.authorId = authorId;
-    this.status = Objects.requireNonNull(requisition.getStatus());
-  }
-
-  public static StatusChange newStatusChange(Requisition requisition, UUID authorId) {
-    return new StatusChange(requisition, authorId);
-  }
+  private String permissionString;
 
   /**
-   * Export this object to the specified exporter (DTO).
-   *
-   * @param exporter exporter to export to
+   * Convenience constructor to create permission string based on a set of values, which all must
+   * not be null.
+   * 
+   * @param requisition requisition associated with permission string
+   * @param rightName right name of string
+   * @param facilityId facility ID of string
+   * @param programId program ID of string
    */
-  public void export(StatusChange.Exporter exporter) {
-    exporter.setCreatedDate(getCreatedDate());
-    exporter.setStatus(status);
-    exporter.setAuthorId(authorId);
-  }
-
-  public interface Exporter {
-
-    void setCreatedDate(ZonedDateTime createdDate);
-
-    void setStatus(RequisitionStatus status);
-
-    void setAuthorId(UUID authorId);
+  public static RequisitionPermissionString newRequisitionPermissionString(Requisition requisition,
+      String rightName, UUID facilityId, UUID programId) {
+    Objects.requireNonNull(requisition);
+    Objects.requireNonNull(rightName);
+    Objects.requireNonNull(facilityId);
+    Objects.requireNonNull(programId);
+    return new RequisitionPermissionString(requisition,
+        String.join("|", rightName, facilityId.toString(), programId.toString()));
   }
 }

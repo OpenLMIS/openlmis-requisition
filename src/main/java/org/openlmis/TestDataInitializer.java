@@ -15,6 +15,7 @@
 
 package org.openlmis;
 
+import java.io.IOException;
 import org.openlmis.utils.Resource2Db;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -22,17 +23,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-
 @Component
 @Profile("performance-data")
+@Order(5)
 public class TestDataInitializer implements CommandLineRunner {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(TestDataInitializer.class);
   private static final String PERF_DATA_PATH = "classpath:db/performance-data/";
+  private static final String DB_MIGRATION_PATH = "classpath:db/migration/";
 
   @Value(value = PERF_DATA_PATH + "Requisitions5k.csv")
   private Resource requisitions;
@@ -42,6 +44,10 @@ public class TestDataInitializer implements CommandLineRunner {
 
   @Value(value = PERF_DATA_PATH + "StockAdjustments300k.csv")
   private Resource stockAdjustments;
+  
+  @Value(value = DB_MIGRATION_PATH
+      + "20170822230153657__generate_requisition_permission_strings.sql")
+  private Resource generateRequisitionPermissionStrings;
 
   @Autowired
   private JdbcTemplate template;
@@ -58,6 +64,9 @@ public class TestDataInitializer implements CommandLineRunner {
     r2db.insertToDbFromCsv("requisition.requisitions", requisitions);
     r2db.insertToDbFromCsv("requisition.requisition_line_items", requisitionLineItems);
     r2db.insertToDbFromCsv("requisition.stock_adjustments", stockAdjustments);
+    
+    template.update("DELETE FROM requisition.requisition_permission_strings;");
+    r2db.updateDbFromSqlSingle(generateRequisitionPermissionStrings);
 
     XLOGGER.exit();
   }

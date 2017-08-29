@@ -21,7 +21,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_CHECK_RESULT;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
@@ -42,9 +44,11 @@ import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +64,7 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,6 +98,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected RequisitionRepository requisitionRepository;
+
+  @MockBean
+  protected PeriodReferenceDataService periodReferenceDataService;
 
   protected RestAssuredClient restAssured;
 
@@ -153,7 +161,7 @@ public abstract class BaseWebIntegrationTest {
 
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition(
-        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), requisitionStatus, true);
+        UUID.randomUUID(), UUID.randomUUID(), generateProcessingPeriod(), requisitionStatus, true);
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
@@ -175,6 +183,7 @@ public abstract class BaseWebIntegrationTest {
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setTemplate(generateRequisitionTemplate());
+    requisition.setProcessingPeriodId(generateProcessingPeriod());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
@@ -189,6 +198,17 @@ public abstract class BaseWebIntegrationTest {
     template.setNumberOfPeriodsToAverage(1);
 
     return template;
+  }
+
+  protected final UUID generateProcessingPeriod() {
+    ProcessingPeriodDto period = new ProcessingPeriodDto();
+
+    period.setId(UUID.randomUUID());
+    period.setEndDate(LocalDate.now().minusDays(5));
+
+    when(periodReferenceDataService.findOne(eq(period.getId()))).thenReturn(period);
+
+    return period.getId();
   }
 
   protected void mockExternalAuthorization() {

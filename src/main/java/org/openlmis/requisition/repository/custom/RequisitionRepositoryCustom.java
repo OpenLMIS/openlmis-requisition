@@ -15,23 +15,26 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RequisitionRepositoryCustom {
 
-  List<Requisition> searchRequisitions(UUID facility, UUID program,
+  Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                        ZonedDateTime initiatedDateFrom,
                                        ZonedDateTime initiatedDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        Set<RequisitionStatus> requisitionStatuses,
-                                       Boolean emergency);
+                                       Boolean emergency,
+                                       List<String> userPermissionStrings,
+                                       Pageable pageable);
 
   List<Requisition> searchRequisitions(UUID processingPeriod,
                                        UUID facility,

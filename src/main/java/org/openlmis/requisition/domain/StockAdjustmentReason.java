@@ -46,7 +46,7 @@ import javax.persistence.Table;
 public class StockAdjustmentReason extends BaseEntity {
 
   @Column(nullable = false)
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID reasonId;
 
   @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
@@ -108,6 +108,20 @@ public class StockAdjustmentReason extends BaseEntity {
     reason.setReasonType(importer.getReasonType());
     reason.setIsFreeTextAllowed(importer.getIsFreeTextAllowed());
     return reason;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(reasonId);
+    exporter.setName(name);
+    exporter.setDescription(description);
+    exporter.setReasonCategory(reasonCategory);
+    exporter.setReasonType(reasonType);
+    exporter.setIsFreeTextAllowed(isFreeTextAllowed);
   }
 
   public interface Exporter {

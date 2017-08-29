@@ -1,0 +1,554 @@
+[
+  {
+    "id": "6c9ee496-9752-42e5-b483-4fb393fcae6b",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "218bef9d-fecf-4524-abed-aa1e3d633217",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+
+  {
+    "id": "36d68ef7-7e72-4eca-98cc-ec3daf8bff39",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "cce6e900-97b8-4e81-bf02-7a2f5d460837",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+
+  {
+    "id": "c96936a9-ec75-4a00-bc13-01a723e71c51",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "6977865d-a663-4cb4-8dc9-0dc14ca9e7fe",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+
+  {
+    "id": "89dc28d5-5943-45a3-a747-88bea201e6e7",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "b24139f7-61cf-4bd2-9e42-5b0b4359680d",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+
+  {
+    "id": "301ecb15-a4c3-4d88-8bd9-70f9d2d6ed6f",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "2d0882db-0fba-4e9e-ae82-e28b5110f197",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+
+  {
+    "id": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer In",
+    "description": "Transfer In",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "name": "Transfer Out",
+    "description": "Transfer Out",
+    "reasonCategory": "TRANSFER",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+
+  {
+    "id": "d994cce4-5c44-493d-97ad-c33c6fc84356",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "a0030f13-dd27-4c40-bbd9-965394ec74f4",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "1ad9022c-5e65-4dcd-b4a5-8ec061b0e225",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "f1642d1a-0777-45a1-80c4-c6c0fcd449df",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "c476b9ee-ab5d-44b5-a061-8d102df2558c",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "cb204de3-a11e-4fac-a20e-c3d194231dcc",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "ba139cdc-6ac2-483e-bd61-062ecc442f45",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+
+  {
+    "id": "836ae3e8-fcdc-43cd-af40-8e7f29bc4e7d",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "5da111a5-48db-4557-9165-63d26d9f97c5",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "8fc8f269-1104-4a3e-8694-09aaf63329e6",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "ad9bacd4-1bf1-44bb-aba5-dff6eb0e72cb",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "7a9dcb21-f942-4450-aed1-8cdd1d5fb0f5",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "4f61a8c8-82f7-4a0d-a7bf-e9c34e716e74",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "70e1c8b6-b383-48f9-a779-430f7b262914",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+
+  {
+    "id": "74245a9b-3fa6-4a9d-96f7-de14f49453d2",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "2fd348a1-cf45-470e-8da4-1592d8926166",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "6c902375-9a0c-4fd5-89fa-e557727616bd",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "6fb87e9c-5528-4ab8-805b-75659d1f8662",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "4ca6c6de-0c0c-4b21-833a-e8ba6837bb7c",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "692dd5b5-05a2-4b7b-b047-7d6a6c43d8b3",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "d4363fcf-9443-4f5e-9c03-b08bbdf41c9e",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+
+  {
+    "id": "bd41eb83-9f09-4dc6-b899-e9988686d086",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "ffa5bb34-36aa-43d9-9a31-e983adefe2c7",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "b86b4bb7-475b-4ac5-b984-9d62b6e8f838",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "659c9d2e-8fe8-4a94-85ae-084b5e3f1499",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "4705a10b-1b84-4354-a95f-8c0bc79e418e",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "e98fa398-522b-4a6c-a262-6cbe1bcd052e",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "cd179bbc-a7f2-49e2-abc4-1b98f8c4c99b",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+
+  {
+    "id": "54040471-d351-4ea3-8300-c735ffba4fa4",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "4cde7b1c-7e1e-40a6-80be-5f7e480eb010",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "4fa4c68c-7570-47c6-95bb-dae881e5f017",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "1d18d884-eeac-41ee-84a6-703c4bbe91a1",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "210a1d91-5fc7-4dbb-8df2-f072ed14a5e0",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "8dc16557-0c31-49d3-9ab9-25bec4a1875f",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "b86d6c28-0a3b-4be4-91fa-2369d5b26bd5",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+
+  {
+    "id": "b235dc46-7f19-4ef7-9240-6f43e6db0513",
+    "reasonId": "279d55bd-42e3-438c-a63d-9c021b185dae",
+    "name": "Facility return",
+    "description": "Facility return",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "CREDIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "115b6122-35b6-486e-b45a-57cfb3a97f1f",
+    "reasonId": "5b09202e-b8a7-4f77-9e0e-8156f8efc613",
+    "name": "Damage",
+    "description": "Damage",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "8837eaa4-e030-4cee-82fe-c17493b023ee",
+    "reasonId": "3e7940db-49a5-492f-a4eb-75acb981dd2b",
+    "name": "Expired",
+    "description": "Expired",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "a9e53165-5319-46f6-bbb4-1a5bdbc56547",
+    "reasonId": "09e1d05d-f736-4834-9346-c27196a99eae",
+    "name": "Stolen",
+    "description": "Stolen",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "47cc92f5-2d15-47aa-a50e-5bcdcab9b7af",
+    "reasonId": "b7e99f5b-af04-433d-9c30-d4f90c60c47b",
+    "name": "Lost",
+    "description": "Lost",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": true,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "a2f35c06-3ef2-4dee-bf79-b30a3654d1ba",
+    "reasonId": "30f6002d-a78d-44db-b2b9-46e76795a188",
+    "name": "Passed open-vial time limit",
+    "description": "Passed open-vial time limit",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "d784d432-b56c-4b86-aea7-a7331e0efbab",
+    "reasonId": "6f8d0431-6ec5-4280-9019-c6024b168b23",
+    "name": "Cold chain failure",
+    "description": "Cold chain failure",
+    "reasonCategory": "ADJUSTMENT",
+    "reasonType": "DEBIT",
+    "isFreeTextAllowed": false,
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  }
+
+]

@@ -56,8 +56,10 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.openlmis.utils.Message;
+import org.openlmis.utils.Pagination;
 import org.openlmis.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -357,7 +359,9 @@ public class JasperReportsViewService {
       if (facility.getActive()) {
         List<Requisition> requisitions = requisitionService.searchRequisitions(
             facility.getId(), program.getId(), null, null, processingPeriod.getId(),
-            null, validStatuses, null);
+            null, validStatuses, null,
+            new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
+            .getContent();
         if (requisitions.size() == 0) {
           TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();
           facility.export(timelinessFacility);

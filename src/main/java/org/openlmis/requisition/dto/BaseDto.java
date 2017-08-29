@@ -16,11 +16,14 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EqualsAndHashCode
 public class BaseDto {
 
   @Getter

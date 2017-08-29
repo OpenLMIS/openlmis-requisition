@@ -20,7 +20,6 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.web.PermissionMessageException;
-import org.openlmis.util.ErrorResponse;
 import org.openlmis.utils.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,12 +33,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ControllerAdvice
 public class GlobalErrorHandling extends AbstractErrorHandling {
-  
+
+  /**
+   * Handles Message exceptions and returns status 500.
+   *
+   * @param ex the DataRetrievalException to handle
+   * @return the error response for the user
+   */
   @ExceptionHandler(DataRetrievalException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public ErrorResponse handleRefDataException(DataRetrievalException ex) {
-    return logErrorAndRespond("Error fetching from reference data", ex);
+  public Message.LocalizedMessage handleDataRetrievalException(DataRetrievalException ex) {
+    logger.error(String.format("Unable to retrieve %s. Error code: %d, response message: %s",
+        ex.getResource(), ex.getStatus().value(), ex.getResponse()));
+    return getLocalizedMessage(ex);
   }
 
   /**

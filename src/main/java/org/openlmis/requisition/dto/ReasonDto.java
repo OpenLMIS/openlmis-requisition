@@ -18,8 +18,13 @@ package org.openlmis.requisition.dto;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.domain.StockAdjustmentReason.Exporter;
 import org.openlmis.requisition.domain.StockAdjustmentReason.Importer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,4 +35,36 @@ public class ReasonDto extends BaseDto implements Exporter, Importer {
   private ReasonType reasonType;
   private ReasonCategory reasonCategory;
   private Boolean isFreeTextAllowed;
+
+  /**
+   * Create new list of ReasonDto based on given list of {@link StockAdjustmentReason}
+   *
+   * @param reasons list of {@link StockAdjustmentReason}
+   * @return new list of ReasonDto.
+   */
+  public static List<ReasonDto> newInstance(Iterable<StockAdjustmentReason> reasons) {
+    if (reasons == null) {
+      return Collections.emptyList();
+    }
+    List<ReasonDto> reasonDtos = new ArrayList<>();
+    reasons.forEach(r -> reasonDtos.add(newInstance(r)));
+    return reasonDtos;
+  }
+
+  /**
+   * Create new instance of RequisitionTemplateDto based on given {@link RequisitionTemplate}
+   *
+   * @param reason instance of Template
+   * @return new instance of RequisitionTemplateDto.
+   */
+  public static ReasonDto newInstance(StockAdjustmentReason reason) {
+    if (reason == null) {
+      return null;
+    }
+    ReasonDto reasonDto = new ReasonDto();
+    reason.export(reasonDto);
+
+    return reasonDto;
+  }
+
 }

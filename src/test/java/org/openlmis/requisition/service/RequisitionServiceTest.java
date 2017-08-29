@@ -107,8 +107,10 @@ import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.BasicRequisitionDtoComparator;
+import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -244,6 +246,9 @@ public class RequisitionServiceTest {
   private UUID approveRequisitionRightId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
+  private List<String> permissionStrings = Collections.singletonList("validPermissionString");
+  private PageRequest pageRequest = new PageRequest(
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {
@@ -251,6 +256,7 @@ public class RequisitionServiceTest {
     generateRequisitionDto();
     generateReasons();
     mockRepositories();
+    when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
   }
 
   @Test
@@ -450,8 +456,9 @@ public class RequisitionServiceTest {
     requisition.setStatus(AUTHORIZED);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
-        .thenReturn(Collections.singletonList(requisition));
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -465,8 +472,9 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
-        .thenReturn(Collections.singletonList(requisition));
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> inApprovalRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
@@ -504,8 +512,11 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null))
-        .thenReturn(requisitions);
+        EnumSet.of(requisition.getStatus()),
+        null,
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
 
     Set<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(userId, null);
@@ -536,14 +547,17 @@ public class RequisitionServiceTest {
             .thenReturn(roleAssignmentDtos);
 
     when(requisitionRepository.searchRequisitions(
-            requisition.getFacilityId(),
-            requisition.getProgramId(),
-            requisition.getCreatedDate().minusDays(2),
-            requisition.getCreatedDate().plusDays(2),
-            requisition.getProcessingPeriodId(),
-            requisition.getSupervisoryNodeId(),
-            EnumSet.of(requisition.getStatus()), null))
-            .thenReturn(requisitions);
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
+        requisition.getCreatedDate().minusDays(2),
+        requisition.getCreatedDate().plusDays(2),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
+        EnumSet.of(requisition.getStatus()), 
+        null,
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
 
     Set<Requisition> requisitionsForApproval =
             requisitionService.getRequisitionsForApproval(user.getId(), programId);
@@ -944,8 +958,11 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null))
-        .thenReturn(Collections.singletonList(requisition));
+        EnumSet.of(requisition.getStatus()),
+        null,
+        permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacilityId(),
@@ -954,7 +971,9 @@ public class RequisitionServiceTest {
         requisition.getCreatedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), null);
+        EnumSet.of(requisition.getStatus()),
+        null,
+        pageRequest).getContent();
 
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
@@ -978,6 +997,27 @@ public class RequisitionServiceTest {
     assertEquals(
         receivedRequisitions.get(0).getStatus(),
         requisition.getStatus());
+  }
+  
+  @Test
+  public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
+    // given
+    when(permissionService.getPermissionStrings()).thenReturn(Collections.emptyList());
+
+    // when
+    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
+        requisition.getFacilityId(),
+        requisition.getProgramId(),
+        requisition.getCreatedDate().minusDays(2),
+        requisition.getCreatedDate().plusDays(2),
+        requisition.getProcessingPeriodId(),
+        requisition.getSupervisoryNodeId(),
+        EnumSet.of(requisition.getStatus()),
+        null,
+        pageRequest).getContent();
+
+    // then
+    assertEquals(0, receivedRequisitions.size());
   }
 
   @Test
@@ -1366,7 +1406,7 @@ public class RequisitionServiceTest {
     StockAdjustmentReason reason = new StockAdjustmentReason();
     reason.setId(UUID.randomUUID());
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
+    reason.setReasonType(ReasonType.DEBIT);
     reason.setDescription("simple description");
     reason.setIsFreeTextAllowed(false);
     reason.setName("simple name");
@@ -1479,14 +1519,15 @@ public class RequisitionServiceTest {
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.singletonList(previousRequisition));
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Pagination.getPage(Collections.singletonList(previousRequisition), 
+            pageRequest));
   }
 
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.emptyList());
+        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(Pagination.getPage(Collections.emptyList(), pageRequest));
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
@@ -1563,8 +1604,9 @@ public class RequisitionServiceTest {
     requisitions.add(requisition2);
 
     when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null))
-        .thenReturn(requisitions);
+        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
+        pageRequest))
+        .thenReturn(Pagination.getPage(requisitions, pageRequest));
     return requisitions;
   }
 

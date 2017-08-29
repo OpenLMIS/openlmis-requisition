@@ -24,6 +24,11 @@ public abstract class BaseStockManagementService<T> extends BaseCommunicationSer
   private String stockmanagementUrl;
 
   @Override
+  protected String getServiceName() {
+    return "Stock Management";
+  }
+
+  @Override
   protected String getServiceUrl() {
     return stockmanagementUrl;
   }

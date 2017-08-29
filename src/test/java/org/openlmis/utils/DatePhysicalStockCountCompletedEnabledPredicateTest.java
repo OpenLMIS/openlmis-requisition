@@ -55,22 +55,22 @@ public class DatePhysicalStockCountCompletedEnabledPredicateTest {
   @Test
   public void shouldReturnFalseIfProgramWasNotFound() {
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
-    assertEquals(predicate.exec(UUID.randomUUID()), false);
+    assertEquals(false, predicate.exec(UUID.randomUUID()));
   }
 
   @Test
   public void shouldReturnFalseIfProgramFieldIsNull() {
     when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(null);
-    assertEquals(predicate.exec(UUID.randomUUID()), false);
+    assertEquals(false, predicate.exec(UUID.randomUUID()));
   }
 
   @Test
   public void shouldReturnValueOfProgramField() {
     when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(true);
-    assertEquals(predicate.exec(UUID.randomUUID()), true);
+    assertEquals(true, predicate.exec(UUID.randomUUID()));
 
     when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(false);
-    assertEquals(predicate.exec(UUID.randomUUID()), false);
+    assertEquals(false, predicate.exec(UUID.randomUUID()));
   }
 
 }

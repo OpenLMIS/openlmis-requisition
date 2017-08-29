@@ -4,10 +4,10 @@
     <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
         <syslogHost>log</syslogHost>
         <facility>LOCAL0</facility>
-        <suffixPattern>[%15.15thread] %level %logger %msg</suffixPattern>
+        <suffixPattern>[%15.15thread] %level %logger:%L %M - %msg%n</suffixPattern>
     </appender>
 
-    <logger name="org.openlmis.referencedata" level="DEBUG" additivity="false">
+    <logger name="org.openlmis.requisition" level="DEBUG" additivity="false">
         <appender-ref ref="SYSLOG"/>
     </logger>
 

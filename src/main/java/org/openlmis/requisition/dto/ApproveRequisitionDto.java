@@ -15,10 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusLogEntry;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,9 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,17 +36,9 @@ public class ApproveRequisitionDto {
   private Boolean emergency;
   private RequisitionStatus status;
   private ZonedDateTime modifiedDate;
+  private String periodName;
+  private String facilityName;
 
-  private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
-
-  @JsonSerialize(as = BasicProcessingPeriodDto.class)
-  private BasicProcessingPeriodDto processingPeriod;
-
-  @JsonSerialize(as = MinimalFacilityDto.class)
-  private MinimalFacilityDto facility;
-
-  @JsonSerialize(as = BasicProgramDto.class)
-  private BasicProgramDto program;
   private List<ApproveRequisitionLineItemDto> requisitionLineItems;
 
   /**
@@ -62,10 +49,8 @@ public class ApproveRequisitionDto {
     this.emergency = requisition.getEmergency();
     this.status = requisition.getStatus();
     this.modifiedDate = requisition.getModifiedDate();
-    this.statusChanges = requisition.getStatusChanges();
-    this.processingPeriod = requisition.getProcessingPeriod();
-    this.facility = requisition.getFacility();
-    this.program = requisition.getProgram();
+    this.periodName = requisition.getProcessingPeriod().getName();
+    this.facilityName = requisition.getFacility().getName();
     this.requisitionLineItems = requisition
         .getRequisitionLineItems()
         .stream()

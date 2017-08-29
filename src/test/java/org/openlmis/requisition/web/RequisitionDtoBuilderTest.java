@@ -31,9 +31,13 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
@@ -78,6 +82,7 @@ public class RequisitionDtoBuilderTest {
   private RequisitionDtoBuilder requisitionDtoBuilder = new RequisitionDtoBuilder();
 
   private Requisition requisition;
+  private StockAdjustmentReason stockAdjustmentReason;
 
   private List<RequisitionLineItemDto> lineItemDtos = new ArrayList<>();
 
@@ -121,6 +126,8 @@ public class RequisitionDtoBuilderTest {
     assertEquals(
         requisition.getDatePhysicalStockCountCompleted(),
         requisitionDto.getDatePhysicalStockCountCompleted());
+
+    assertReasonsEquals(requisitionDto.getStockAdjustmentReasons());
   }
 
   @Test
@@ -152,6 +159,28 @@ public class RequisitionDtoBuilderTest {
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
 
+    StockAdjustmentReason reason = generateStockAdjustmentReason();
+    requisition.setStockAdjustmentReasons(Collections.singletonList(reason));
+
     return requisition;
+  }
+
+  private StockAdjustmentReason generateStockAdjustmentReason() {
+    stockAdjustmentReason = new StockAdjustmentReason();
+    stockAdjustmentReason.setReasonId(UUID.randomUUID());
+    stockAdjustmentReason.setReasonType(ReasonType.CREDIT);
+    stockAdjustmentReason.setReasonCategory(ReasonCategory.ADJUSTMENT);
+    stockAdjustmentReason.setDescription("description");
+    stockAdjustmentReason.setIsFreeTextAllowed(false);
+    return stockAdjustmentReason;
+  }
+
+  private void assertReasonsEquals(List<ReasonDto> reasonDtos) {
+    ReasonDto reasonDto = reasonDtos.get(0);
+    assertEquals(stockAdjustmentReason.getReasonId(), reasonDto.getId());
+    assertEquals(stockAdjustmentReason.getDescription(), reasonDto.getDescription());
+    assertEquals(stockAdjustmentReason.getReasonType(), reasonDto.getReasonType());
+    assertEquals(stockAdjustmentReason.getReasonCategory(), reasonDto.getReasonCategory());
+    assertEquals(stockAdjustmentReason.getIsFreeTextAllowed(), reasonDto.getIsFreeTextAllowed());
   }
 }

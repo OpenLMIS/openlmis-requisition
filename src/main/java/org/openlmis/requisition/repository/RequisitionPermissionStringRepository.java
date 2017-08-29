@@ -13,24 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.service.fulfillment;
+package org.openlmis.requisition.repository;
 
-import org.openlmis.requisition.service.BaseCommunicationService;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.UUID;
+import org.openlmis.requisition.domain.RequisitionPermissionString;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public abstract class BaseFulfillmentService<T> extends BaseCommunicationService<T> {
-
-  @Value("${fulfillment.url}")
-  private String fulfillmentUrl;
-
-  @Override
-  protected String getServiceName() {
-    return "Fulfillment";
-  }
-
-  @Override
-  protected String getServiceUrl() {
-    return fulfillmentUrl;
-  }
+public interface RequisitionPermissionStringRepository extends
+    PagingAndSortingRepository<RequisitionPermissionString, UUID> {
 
 }

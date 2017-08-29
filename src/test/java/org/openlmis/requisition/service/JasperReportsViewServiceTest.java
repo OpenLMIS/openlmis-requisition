@@ -15,27 +15,11 @@
 
 package org.openlmis.requisition.service;
 
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.dto.MinimalFacilityDto;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.GeographicLevelDto;
-import org.openlmis.requisition.dto.GeographicZoneDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,12 +29,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.GeographicLevelDto;
+import org.openlmis.requisition.dto.GeographicZoneDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.springframework.data.domain.Page;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JasperReportsViewServiceTest {
@@ -299,13 +299,14 @@ public class JasperReportsViewServiceTest {
     when(geographicZoneDto.getLevel()).thenReturn(geographicLevelDto);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(geographicZoneDto);
 
-    List<Requisition> requisitionSearchResult = mock(List.class);
-    when(requisitionSearchResult.size()).thenReturn(
-        (isMissingRnR) ? 0 : 1);
-
+    Requisition mockRequisition = mock(Requisition.class);
+    Page<Requisition> requisitionPage = mock(Page.class);
+    when(requisitionPage.getContent()).thenReturn(
+        (isMissingRnR) ? Collections.emptyList() : Collections.singletonList(mockRequisition));
+    
     when(requisitionService.searchRequisitions(eq(facilityId), eq(programId), any(), any(),
-        eq(periodId), any(), any(), any()))
-        .thenReturn(requisitionSearchResult);
+        eq(periodId), any(), any(), any(), any()))
+        .thenReturn(requisitionPage);
 
     return geographicZoneDto;
   }

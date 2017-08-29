@@ -24,6 +24,11 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   private String referenceDataUrl;
 
   @Override
+  protected String getServiceName() {
+    return "Reference Data";
+  }
+
+  @Override
   protected String getServiceUrl() {
     return referenceDataUrl;
   }

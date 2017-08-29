@@ -13,24 +13,26 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.service.fulfillment;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import org.openlmis.requisition.service.BaseCommunicationService;
-import org.springframework.beans.factory.annotation.Value;
+import org.openlmis.requisition.dto.OrderableDto;
 
-public abstract class BaseFulfillmentService<T> extends BaseCommunicationService<T> {
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-  @Value("${fulfillment.url}")
-  private String fulfillmentUrl;
+import java.time.ZonedDateTime;
+import java.util.List;
 
-  @Override
-  protected String getServiceName() {
-    return "Fulfillment";
-  }
-
-  @Override
-  protected String getServiceUrl() {
-    return fulfillmentUrl;
-  }
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class StockEventLineItemDto {
+  private OrderableDto orderable;
+  private Integer stockOnHand;
+  private Integer quantity;
+  private ZonedDateTime occurredDate;
+  private List<StockEventAdjustmentDto> stockAdjustments;
 }

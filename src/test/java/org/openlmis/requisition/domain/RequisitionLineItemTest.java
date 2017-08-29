@@ -74,7 +74,6 @@ public class RequisitionLineItemTest {
     assertNull(item.getRequestedQuantityExplanation());
     assertNull(item.getTotalStockoutDays());
     assertNull(item.getPacksToShip());
-    assertNull(item.getPricePerPack());
     assertNull(item.getTotalCost());
     assertNull(item.getNumberOfNewPatientsAdded());
     assertNull(item.getAdjustedConsumption());

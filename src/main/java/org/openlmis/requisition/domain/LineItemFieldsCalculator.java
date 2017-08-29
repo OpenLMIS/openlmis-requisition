@@ -15,14 +15,12 @@
 
 package org.openlmis.requisition.domain;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
@@ -99,18 +97,18 @@ public final class LineItemFieldsCalculator {
    * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
    */
   public static int calculateTotalLossesAndAdjustments(RequisitionLineItem lineItem,
-                                                       Collection<StockAdjustmentReasonDto>
+                                                       Collection<StockAdjustmentReason>
                                                            reasons) {
     int totalLossesAndAdjustments = 0;
     if (null != lineItem.getStockAdjustments()) {
       for (StockAdjustment adjustment : lineItem.getStockAdjustments()) {
-        Optional<StockAdjustmentReasonDto> reason = reasons
+        Optional<StockAdjustmentReason> reason = reasons
             .stream()
-            .filter(r -> r.getId().equals(adjustment.getReasonId()))
+            .filter(r -> r.getReasonId().equals(adjustment.getReasonId()))
             .findFirst();
 
         if (reason.isPresent()) {
-          int sign = isTrue(reason.get().getAdditive()) ? 1 : -1;
+          int sign = reason.get().isCreditReasonType() ? 1 : -1;
 
           totalLossesAndAdjustments += adjustment.getQuantity() * sign;
         }

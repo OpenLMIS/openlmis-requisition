@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Component
 public class DateHelper {
@@ -40,6 +41,10 @@ public class DateHelper {
    */
   public LocalDate getCurrentDateWithSystemZone() {
     return LocalDate.now(clock);
+  }
+
+  public ZoneId getZone() {
+    return clock.getZone();
   }
 
 }

@@ -49,15 +49,14 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.StockAdjustmentReasonReferenceDataService;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.utils.Message;
 import org.springframework.validation.Errors;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,9 +77,6 @@ public class RequisitionValidatorTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
-
-  @Mock
-  private StockAdjustmentReasonReferenceDataService stockAdjustmentReasonReferenceDataService;
 
   @Mock
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -252,7 +248,7 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(RequisitionValidator.VALUE_NOT_FOUND));
   }
 
@@ -279,7 +275,7 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(REASON_MUST_BE_NON_NEGATIVE));
   }
 
@@ -306,7 +302,7 @@ public class RequisitionValidatorTest {
 
     requisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.STOCK_ADJUSTMENT_REASON),
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(REASON_MUST_BE_NON_NEGATIVE));
   }
 
@@ -638,8 +634,6 @@ public class RequisitionValidatorTest {
 
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
     when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
-    when(stockAdjustmentReasonReferenceDataService.getStockAdjustmentReasonsByProgram(any()))
-        .thenReturn(new ArrayList<>());
     when(predicate.exec(any(UUID.class))).thenReturn(true);
   }
 
@@ -657,6 +651,7 @@ public class RequisitionValidatorTest {
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setTemplate(requisitionTemplate);
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    requisition.setStockAdjustmentReasons(Collections.emptyList());
     return requisition;
   }
 }

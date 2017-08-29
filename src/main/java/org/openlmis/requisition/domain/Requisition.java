@@ -43,7 +43,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
+import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RequisitionHelper;
@@ -75,11 +75,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.openlmis.utils.RightName;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
-@Table(name = "requisitions", schema = "requisition")
+@Table(name = "requisitions")
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
@@ -118,24 +119,24 @@ public class Requisition extends BaseTimestampedEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID facilityId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID programId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID processingPeriodId;
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID supplyingFacilityId;
 
   @Column(nullable = false)
@@ -164,7 +165,7 @@ public class Requisition extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID supervisoryNodeId;
 
   @ManyToMany
@@ -183,7 +184,7 @@ public class Requisition extends BaseTimestampedEntity {
       joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private Set<UUID> availableNonFullSupplyProducts;
 
   @Getter
@@ -198,7 +199,14 @@ public class Requisition extends BaseTimestampedEntity {
   @DiffIgnore
   @Getter
   @Setter
-  private List<StockAdjustmentReason> stockAdjustmentReasons;
+  private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
+
+  @OneToMany(
+      mappedBy = "requisition",
+      cascade = CascadeType.ALL)
+  @DiffIgnore
+  @Getter
+  private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
 
   /**
    * Constructor.
@@ -216,17 +224,18 @@ public class Requisition extends BaseTimestampedEntity {
     this.processingPeriodId = processingPeriodId;
     this.status = status;
     this.emergency = emergency;
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        RightName.REQUISITION_VIEW, facilityId, programId));
   }
 
   /**
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition            Requisition with new values.
-   * @param stockAdjustmentReasons Collection of stockAdjustmentReasons.
+   * @param products               Collection of orderables.
    */
   public void updateFrom(
-      Requisition requisition, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons,
-      Collection<OrderableDto> products,
+      Requisition requisition, Collection<OrderableDto> products,
       boolean isDatePhysicalStockCountCompletedEnabled) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
@@ -234,7 +243,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.draftStatusMessage = requisition.draftStatusMessage;
 
     updateReqLines(requisition.getRequisitionLineItems());
-    calculateAndValidateTemplateFields(this.template, stockAdjustmentReasons);
+    calculateAndValidateTemplateFields(this.template);
     updateTotalCostAndPacksToShip(products);
 
     if (isDatePhysicalStockCountCompletedEnabled) {
@@ -585,8 +594,7 @@ public class Requisition extends BaseTimestampedEntity {
     return money.isPresent() ? money.get() : defaultValue;
   }
 
-  private void calculateAndValidateTemplateFields(
-      RequisitionTemplate template, Collection<StockAdjustmentReasonDto> stockAdjustmentReasons) {
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template) {
     getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
             numberOfMonthsInPeriod));
@@ -701,6 +709,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setDraftStatusMessage(String draftStatusMessage);
 
     void setDatePhysicalStockCountCompleted(LocalDate localDate);
+
+    void setStockAdjustmentReasons(List<ReasonDto> reasonDto);
   }
 
   public interface Importer {

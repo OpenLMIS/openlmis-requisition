@@ -3,8 +3,11 @@ execution:
     iterations: 10
     scenario: requisition-workflow
   - concurrency: 1
-    iterations: 1
+    hold-for: 2m
     scenario: search-one-page
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-requisitions-for-approval
 
 scenarios:
   get-user-token:
@@ -84,7 +87,7 @@ scenarios:
                 vars.put("new_period", JsonOutput.toJson(last));
           - url: ${__P(base-uri)}/api/processingPeriods/${new_period_id}
             method: PUT
-            label: CreatePeriod
+            label: CreateProcessingPeriod
             headers:
               Authorization: Bearer ${access_token}
               Content-Type: application/json
@@ -182,14 +185,13 @@ scenarios:
           Authorization: Bearer ${access_token}
   get-supplying-depot:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert
+      # In demo data there is requisition with APPROVE status for
+      # Family Planning and Kankao Health Facility
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?filterBy=all&filterValue=${facility_code}&page=0&size=2
         method: GET
-        label: GetSupplyingDepot
+        label: GetSupplyingDepotForFacilityPageOfTwo
         headers:
           Authorization: Bearer ${access_token}
-        body:
-          page: 0
-          size: 10
         jsr223:
           script-text: |
             import groovy.json.JsonSlurper;
@@ -232,6 +234,7 @@ scenarios:
       program_id: dce17f2e-af3e-40ad-8e00-3496adef44c3
       # Kankao Health Facility
       facility_id: 7938919f-6f61-4d1a-a4dc-923c31e9cd45
+      facility_code: HF01
       emergency: false
       # SCH002
       schedule_id: 057921bd-1841-4748-8523-dbe5ebb58368
@@ -254,15 +257,21 @@ scenarios:
   search-one-page:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/requisitions/search
+      - url: ${__P(base-uri)}/api/requisitions/search?page=0&size=10
         method: GET
         label: GetAPageOfTenRequisitions
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
-        body:
-          page: 1
-          size: 10
+  get-requisitions-for-approval:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval?page=0&size=10
+        method: GET
+        label: GetAPageOfTenRequisitionsForApproval
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
 
 reporting:
     - module: passfail

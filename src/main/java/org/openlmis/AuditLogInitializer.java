@@ -16,8 +16,9 @@
 package org.openlmis;
 
 import static org.openlmis.utils.Pagination.DEFAULT_PAGE_NUMBER;
-import static org.openlmis.utils.Pagination.DEFAULT_PAGE_SIZE;
 
+import java.util.List;
+import java.util.Map;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
@@ -27,15 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * AuditLogInitializer runs after its associated Spring application has loaded.
@@ -46,6 +45,7 @@ import java.util.Map;
 
 @Component
 @Profile("!test")
+@Order(20)
 public class AuditLogInitializer implements CommandLineRunner {
 
   @Autowired
@@ -74,7 +74,7 @@ public class AuditLogInitializer implements CommandLineRunner {
   }
 
   private void createSnapshots(PagingAndSortingRepository<?, ?> repository) {
-    Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+    Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
 
     while (true) {
       Page<?> page = repository.findAll(pageable);

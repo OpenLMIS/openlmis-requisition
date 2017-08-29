@@ -25,12 +25,9 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Test;
-import org.openlmis.requisition.dto.StockAdjustmentReasonDto;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -50,10 +47,10 @@ public class LineItemFieldsCalculatorTest {
     UUID id3 = UUID.randomUUID();
     UUID id4 = UUID.randomUUID();
 
-    StockAdjustmentReasonDto reason1 = mock(StockAdjustmentReasonDto.class);
-    StockAdjustmentReasonDto reason2 = mock(StockAdjustmentReasonDto.class);
-    StockAdjustmentReasonDto reason3 = mock(StockAdjustmentReasonDto.class);
-    StockAdjustmentReasonDto reason4 = mock(StockAdjustmentReasonDto.class);
+    StockAdjustmentReason reason1 = mock(StockAdjustmentReason.class);
+    StockAdjustmentReason reason2 = mock(StockAdjustmentReason.class);
+    StockAdjustmentReason reason3 = mock(StockAdjustmentReason.class);
+    StockAdjustmentReason reason4 = mock(StockAdjustmentReason.class);
 
     StockAdjustment adjustment1 = mock(StockAdjustment.class);
     StockAdjustment adjustment2 = mock(StockAdjustment.class);
@@ -61,14 +58,14 @@ public class LineItemFieldsCalculatorTest {
     StockAdjustment adjustment4 = mock(StockAdjustment.class);
 
     // when
-    doReturn(true).when(reason1).getAdditive();
-    doReturn(id1).when(reason1).getId();
-    doReturn(true).when(reason2).getAdditive();
-    doReturn(id2).when(reason2).getId();
-    doReturn(false).when(reason3).getAdditive();
-    doReturn(id3).when(reason3).getId();
-    doReturn(false).when(reason4).getAdditive();
-    doReturn(id4).when(reason4).getId();
+    doReturn(true).when(reason1).isCreditReasonType();
+    doReturn(id1).when(reason1).getReasonId();
+    doReturn(true).when(reason2).isCreditReasonType();
+    doReturn(id2).when(reason2).getReasonId();
+    doReturn(false).when(reason3).isCreditReasonType();
+    doReturn(id3).when(reason3).getReasonId();
+    doReturn(false).when(reason4).isCreditReasonType();
+    doReturn(id4).when(reason4).getReasonId();
 
     doReturn(5).when(adjustment1).getQuantity();
     doReturn(id1).when(adjustment1).getReasonId();
