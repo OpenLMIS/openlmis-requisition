@@ -427,7 +427,7 @@ public class RequisitionService {
   public List<Requisition> getApprovableRequisitions(UUID programId,
                                                      UUID supervisoryNodeId) {
     Page<Requisition> requisitions = searchRequisitions(programId, supervisoryNodeId,
-        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE));
+        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION));
 
     List<Requisition> filteredRequisitions = new ArrayList<>();
     if (requisitions != null) {
@@ -721,7 +721,7 @@ public class RequisitionService {
     return searchRequisitions(requisition.getFacilityId(),
         requisition.getProgramId(),
         period.getId(),
-        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE))
+        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
         .getContent();
   }
 

@@ -360,7 +360,7 @@ public class JasperReportsViewService {
         List<Requisition> requisitions = requisitionService.searchRequisitions(
             facility.getId(), program.getId(), null, null, processingPeriod.getId(),
             null, validStatuses, null,
-            new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE))
+            new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
             .getContent();
         if (requisitions.size() == 0) {
           TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();

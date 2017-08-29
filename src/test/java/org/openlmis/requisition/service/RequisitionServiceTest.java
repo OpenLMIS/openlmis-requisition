@@ -243,7 +243,7 @@ public class RequisitionServiceTest {
   private UUID userId = UUID.randomUUID();
   private List<String> permissionStrings = Collections.singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(
-      Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE);
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {

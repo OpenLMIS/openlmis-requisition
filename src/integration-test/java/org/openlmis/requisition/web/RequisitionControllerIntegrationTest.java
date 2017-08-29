@@ -194,7 +194,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private UUID facilityTypeId = UUID.randomUUID();
   
   private Pageable pageRequest = new PageRequest(
-      Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE);
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {

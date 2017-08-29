@@ -16,7 +16,6 @@
 package org.openlmis;
 
 import static org.openlmis.utils.Pagination.DEFAULT_PAGE_NUMBER;
-import static org.openlmis.utils.Pagination.DEFAULT_PAGE_SIZE;
 
 import java.util.List;
 import java.util.Map;
@@ -75,7 +74,7 @@ public class AuditLogInitializer implements CommandLineRunner {
   }
 
   private void createSnapshots(PagingAndSortingRepository<?, ?> repository) {
-    Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+    Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
 
     while (true) {
       Page<?> page = repository.findAll(pageable);

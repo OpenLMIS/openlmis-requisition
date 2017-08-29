@@ -78,7 +78,7 @@ public class RequisitionRepositoryIntegrationTest
   private List<String> userPermissionStrings = new ArrayList<>();
   
   private Pageable pageRequest = new PageRequest(
-      Pagination.DEFAULT_PAGE_NUMBER, Pagination.DEFAULT_PAGE_SIZE);
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Override
   RequisitionRepository getRepository() {
