@@ -31,12 +31,14 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.utils.StockEventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,12 @@ public abstract class BaseRequisitionController extends BaseController {
   protected RequisitionStatusProcessor requisitionStatusProcessor;
 
   @Autowired
+  protected StockEventStockManagementService stockEventStockManagementService;
+
+  @Autowired
+  protected StockEventBuilder stockEventBuilder;
+
+  @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   protected ValidationResult validateFields(AbstractRequisitionValidator validator,
@@ -128,6 +136,14 @@ public abstract class BaseRequisitionController extends BaseController {
         parentNodeId = parentNode.getId();
       }
     }
+
+    /*
+    if (parentNodeId == null) {
+      stockEventStockManagementService.save(
+          stockEventBuilder.fromRequisition(requisition)
+      );
+    }
+     */
 
     requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
         getLineItemOrderableIds(requisition)), userId);

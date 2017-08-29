@@ -249,11 +249,11 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
-  private interface HttpTask<T> {
+  protected interface HttpTask<T> {
     ResponseEntity<T> run() throws HttpStatusCodeException;
   }
 
-  private DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
+  protected DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
     String errorKey;
     if (ex.getStatusCode().is5xxServerError() || ex.getStatusCode() == HttpStatus.NOT_FOUND) {
       errorKey = ERROR_SERVICE_REQUIRED;
