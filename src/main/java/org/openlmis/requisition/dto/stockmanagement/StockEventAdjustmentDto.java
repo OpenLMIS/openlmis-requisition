@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
-public class StockmanagementStockAdjustmentDto {
+public class StockEventAdjustmentDto {
   private ReasonDto reason;
   private Integer quantity;
 }

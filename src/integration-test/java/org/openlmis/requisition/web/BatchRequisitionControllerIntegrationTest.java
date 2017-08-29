@@ -358,7 +358,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   private void mockStockEventServiceResponses() {
-    when(stockEventStockManagementService.save(any(StockEventDto.class)))
+    when(stockEventStockManagementService.submit(any(StockEventDto.class)))
         .thenReturn(new StockEventDto());
   }
 

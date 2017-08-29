@@ -37,7 +37,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
-import org.openlmis.requisition.dto.stockmanagement.StockmanagementStockAdjustmentDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -173,7 +173,7 @@ public class StockEventBuilderTest {
   }
 
   @Test
-  public void itShouldNoIncludeConsumedIfTotalConsumedQuantityIsNotDisplayed() throws Exception {
+  public void itShouldNotIncludeConsumedIfTotalConsumedQuantityIsNotDisplayed() throws Exception {
     totalConsumedQuantityColumn.setIsDisplayed(false);
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
@@ -223,18 +223,18 @@ public class StockEventBuilderTest {
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(0)), 24));
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(1))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(2)), 25));
 
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(4);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(0))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(1)), 37));
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(1))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(3)), 38));
   }
 
@@ -247,18 +247,18 @@ public class StockEventBuilderTest {
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(4)), 23));
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(1))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(5)), 22));
 
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(0))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(4)), 36));
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(1))
-        .isEqualToComparingFieldByFieldRecursively(new StockmanagementStockAdjustmentDto(
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(reasons.get(5)), 35));
   }
 

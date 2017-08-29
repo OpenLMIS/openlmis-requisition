@@ -23,9 +23,9 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
-import org.openlmis.requisition.dto.stockmanagement.StockmanagementStockAdjustmentDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -73,28 +73,28 @@ public class StockEventBuilder {
   }
 
   private List<StockEventLineItemDto> fromLineItems(
-      List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons, Map<String,
-      RequisitionTemplateColumn> columnsMap, ZonedDateTime occuredDate) {
+      List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons,
+      Map<String, RequisitionTemplateColumn> columnsMap, ZonedDateTime occurredDate) {
     return lineItems.stream()
         .filter(lineItem -> !lineItem.getSkipped())
-        .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occuredDate))
+        .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occurredDate))
         .collect(Collectors.toList());
   }
 
   private StockEventLineItemDto fromLineItem(RequisitionLineItem lineItem,
                                              List<StockAdjustmentReason> reasons,
                                              Map<String, RequisitionTemplateColumn> columnsMap,
-                                             ZonedDateTime occuredDate) {
+                                             ZonedDateTime occurredDate) {
     return StockEventLineItemDto.builder()
         .quantity(lineItem.getStockOnHand())
-        .occurredDate(occuredDate)
+        .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap))
         .build();
   }
 
-  private List<StockmanagementStockAdjustmentDto> getStockAdjustments(RequisitionLineItem lineItem,
+  private List<StockEventAdjustmentDto> getStockAdjustments(RequisitionLineItem lineItem,
       List<StockAdjustmentReason> reasons, Map<String, RequisitionTemplateColumn> columnsMap) {
-    List<StockmanagementStockAdjustmentDto> stockAdjustments = new ArrayList<>();
+    List<StockEventAdjustmentDto> stockAdjustments = new ArrayList<>();
 
     if (existsAndIsDisplayed(columnsMap.get(TOTAL_LOSSES_AND_ADJUSTMENTS))) {
       stockAdjustments = lineItem.getStockAdjustments().stream()
@@ -102,16 +102,16 @@ public class StockEventBuilder {
           .collect(Collectors.toList());
     }
 
-    if (shouldInclude(TOTAL_CONSUMED_QUANTITY, CONSUMED_REASON_ID, columnsMap, reasons)) {
-      stockAdjustments.add(StockmanagementStockAdjustmentDto.builder()
+    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED_REASON_ID, reasons)) {
+      stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
           .reason(getReasonById(UUID.fromString(System.getenv(CONSUMED_REASON_ID)), reasons))
           .build()
       );
     }
 
-    if (shouldInclude(TOTAL_RECEIVED_QUANTITY, RECEIPTS_REASON_ID, columnsMap, reasons)) {
-      stockAdjustments.add(StockmanagementStockAdjustmentDto.builder()
+    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS_REASON_ID, reasons)) {
+      stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
           .reason(getReasonById(UUID.fromString(System.getenv(RECEIPTS_REASON_ID)), reasons))
           .build()
@@ -121,22 +121,12 @@ public class StockEventBuilder {
     return stockAdjustments;
   }
 
-  private StockmanagementStockAdjustmentDto fromStockAdjustment(
+  private StockEventAdjustmentDto fromStockAdjustment(
       StockAdjustment stockAdjustment, List<StockAdjustmentReason> reasons) {
-    return StockmanagementStockAdjustmentDto.builder()
+    return StockEventAdjustmentDto.builder()
         .quantity(stockAdjustment.getQuantity())
         .reason(getReasonById(stockAdjustment.getReasonId(), reasons))
         .build();
-  }
-
-  private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
-    return ReasonDto.newInstance(reasons.stream()
-        .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
-        .collect(Collectors.toList()).get(0));
-  }
-
-  private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
-    return column != null && column.getIsDisplayed();
   }
 
   private ZonedDateTime getOccurredDate(Requisition requisition) {
@@ -147,17 +137,29 @@ public class StockEventBuilder {
         .atStartOfDay(dateHelper.getZone());
   }
 
-  private boolean shouldInclude(String columnName, String reasonKey,
-      Map<String, RequisitionTemplateColumn> columnsMap, List<StockAdjustmentReason> reasons) {
-    RequisitionTemplateColumn column = columnsMap.get(columnName);
+  private boolean shouldInclude(RequisitionTemplateColumn column, String reasonKey,
+                                List<StockAdjustmentReason> reasons) {
     String reasonId = System.getenv(reasonKey);
+    UUID reasonUuid = null;
 
-    return column != null
-        && column.getIsDisplayed()
-        && reasonId != null
-        && reasons.stream()
-        .filter(reason -> reason.getReasonId().equals(UUID.fromString(reasonId)))
-        .collect(Collectors.toList()).size() == 1;
+    if (reasonId != null) {
+      reasonUuid = UUID.fromString(reasonId);
+    }
+
+    return existsAndIsDisplayed(column)
+        && reasonUuid != null
+        && getReasonById(reasonUuid, reasons) != null;
+  }
+
+  private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
+    List<ReasonDto> filtered = ReasonDto.newInstance(reasons.stream()
+        .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
+        .collect(Collectors.toList()));
+    return filtered.size() > 0 ? filtered.get(0) : null;
+  }
+
+  private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
+    return column != null && column.getIsDisplayed();
   }
 
 }

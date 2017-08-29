@@ -34,5 +34,5 @@ public class StockEventLineItemDto {
   private Integer stockOnHand;
   private Integer quantity;
   private ZonedDateTime occurredDate;
-  private List<StockmanagementStockAdjustmentDto> stockAdjustments;
+  private List<StockEventAdjustmentDto> stockAdjustments;
 }

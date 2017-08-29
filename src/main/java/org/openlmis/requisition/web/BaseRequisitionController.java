@@ -139,7 +139,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     /*
     if (parentNodeId == null) {
-      stockEventStockManagementService.save(
+      stockEventStockManagementService.submit(
           stockEventBuilder.fromRequisition(requisition)
       );
     }

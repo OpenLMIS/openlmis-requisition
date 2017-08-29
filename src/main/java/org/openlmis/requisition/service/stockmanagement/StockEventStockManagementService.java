@@ -29,12 +29,12 @@ public class StockEventStockManagementService
     extends BaseStockManagementService<StockEventDto> {
 
   /**
-   * Saves the given physical inventory draft to the stockmanagement service.
+   * Saves the given stock event to the stockmanagement service.
    *
    * @param stockEventDto  the physical inventory draft to be saved
    * @return  the saved inventory draft
    */
-  public StockEventDto save(StockEventDto stockEventDto) {
+  public StockEventDto submit(StockEventDto stockEventDto) {
     String url = getServiceUrl() + getUrl();
 
     try {
