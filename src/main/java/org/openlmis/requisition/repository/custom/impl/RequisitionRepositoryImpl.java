@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -69,8 +71,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   @Override
   public Page<Requisition> searchRequisitions(UUID facilityId,
       UUID programId,
-      ZonedDateTime initiatedDateFrom,
-      ZonedDateTime initiatedDateTo,
+      LocalDate initiatedDateFrom,
+      LocalDate initiatedDateTo,
       UUID processingPeriodId,
       UUID supervisoryNodeId,
       Set<RequisitionStatus> requisitionStatuses,
@@ -183,8 +185,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query,
       UUID facilityId,
       UUID programId,
-      ZonedDateTime initiatedDateFrom,
-      ZonedDateTime initiatedDateTo,
+      LocalDate initiatedDateFrom,
+      LocalDate initiatedDateTo,
       UUID processingPeriodId,
       UUID supervisoryNodeId,
       Set<RequisitionStatus> requisitionStatuses,
@@ -224,15 +226,24 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(root.get(EMERGENCY), emergency));
     }
 
-    if (initiatedDateFrom != null && initiatedDateTo != null) {
+    ZonedDateTime from = null;
+    ZonedDateTime to = null;
+    if (initiatedDateFrom != null) {
+      from = initiatedDateFrom.atStartOfDay(ZoneOffset.UTC);
+    }
+    if (initiatedDateTo != null) {
+      to = initiatedDateTo.plusDays(1).atStartOfDay(ZoneOffset.UTC);
+    }
+
+    if (from != null && to != null) {
       predicate = builder.and(predicate, builder.between(root.get(CREATED_DATE),
-          initiatedDateFrom, initiatedDateTo));
-    } else if (initiatedDateFrom != null) {
+          from, to));
+    } else if (from != null) {
       predicate = builder.and(predicate, builder.greaterThanOrEqualTo(
-          root.get(CREATED_DATE), initiatedDateFrom));
-    } else if (initiatedDateTo != null) {
+          root.get(CREATED_DATE), from));
+    } else if (to != null) {
       predicate = builder.and(predicate, builder.lessThanOrEqualTo(
-          root.get(CREATED_DATE), initiatedDateTo));
+          root.get(CREATED_DATE), to));
     }
 
     Join<Requisition, RequisitionPermissionString> permissionStringJoin = root

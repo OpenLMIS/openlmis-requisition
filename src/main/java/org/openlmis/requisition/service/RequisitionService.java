@@ -35,6 +35,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -90,7 +91,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -339,8 +339,8 @@ public class RequisitionService {
    * Finds requisitions matching all of the provided parameters.
    */
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime initiatedDateFrom,
-                                              ZonedDateTime initiatedDateTo,
+                                              LocalDate initiatedDateFrom,
+                                              LocalDate initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,

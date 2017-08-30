@@ -44,7 +44,6 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -108,7 +107,7 @@ import org.springframework.validation.Errors;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -387,8 +386,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID programId = UUID.randomUUID();
     UUID facilityId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
-    ZonedDateTime dateTo = ZonedDateTime.now().plusDays(10);
-    ZonedDateTime dateFrom = ZonedDateTime.now().minusDays(10);
+    LocalDate dateTo = LocalDate.now().plusDays(10);
+    LocalDate dateFrom = LocalDate.now().minusDays(10);
     Set<RequisitionStatus> statuses = EnumSet.of(RequisitionStatus.INITIATED);
 
     Requisition requisition = generateRequisition();
@@ -396,8 +395,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(requisitionService.searchRequisitions(
         eq(facilityId),
         eq(programId),
-        any(ZonedDateTime.class),
-        any(ZonedDateTime.class),
+        any(LocalDate.class),
+        any(LocalDate.class),
         eq(periodId),
         eq(supervisoryNodeId),
         eq(statuses),

@@ -139,8 +139,8 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitionToCopy.getFacilityId(),
         requisitionToCopy.getProgramId(),
-        requisitionToCopy.getCreatedDate().minusDays(1),
-        requisitionToCopy.getCreatedDate().plusDays(2),
+        requisitionToCopy.getCreatedDate().toLocalDate(),
+        requisitionToCopy.getCreatedDate().toLocalDate(),
         requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getSupervisoryNodeId(),
         EnumSet.of(requisitionToCopy.getStatus()),
