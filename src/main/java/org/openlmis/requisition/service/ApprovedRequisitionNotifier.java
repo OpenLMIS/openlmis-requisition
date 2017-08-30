@@ -29,6 +29,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
@@ -61,13 +62,13 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
-  private RequisitionService requisitionService;
-
-  @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   /**
    * Notifies all the clerks that the requisition has been approved and is ready to be converted to
@@ -124,14 +125,12 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
     UUID rightId = authenticationHelper.getRight(RightName.ORDERS_EDIT).getId();
     Set<UserDto> users = new HashSet<>();
 
-    requisitionService.getAvailableSupplyingDepots(requisition.getId()).forEach(warehouse ->
-        users.addAll(userReferenceDataService.findUsers(
+    requisitionForConvertBuilder.getAvailableSupplyingDepots(requisition.getId())
+        .forEach(warehouse -> users.addAll(userReferenceDataService.findUsers(
             rightId,
             null,
             null,
-            warehouse.getId()
-        ))
-    );
+            warehouse.getId())));
 
     return users.stream().filter(BaseNotifier::canBeNotified).collect(Collectors.toSet());
   }

@@ -33,8 +33,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -61,7 +59,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -104,9 +101,9 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
@@ -121,10 +118,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -225,6 +220,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionStatusProcessor requisitionStatusProcessor;
+
+  @Mock
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -878,6 +876,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     // when
     List<Requisition> expectedRequisitions = requisitionService
@@ -1036,8 +1036,6 @@ public class RequisitionServiceTest {
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
         null, null, supplyingDepots, pageable, pageSize, pageNumber);
-
-    requisitionDtos.sort(new BasicRequisitionDtoComparator(pageable));
 
     List<BasicRequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
@@ -1238,6 +1236,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     // when
     requisitionService.convertToOrder(list, user);
@@ -1282,6 +1282,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     requisitionService.convertToOrder(list, user);
 
@@ -1464,8 +1466,9 @@ public class RequisitionServiceTest {
                                                     List<FacilityDto> supplyingDepots,
                                                     Pageable pageable, int pageSize,
                                                     int pageNumber) {
-    List<UUID> desiredUuids = new ArrayList<>();
-    List<Requisition> requisitions = new ArrayList<>();
+    final List<UUID> desiredUuids = new ArrayList<>();
+    final List<Requisition> requisitions = new ArrayList<>();
+
     when(programReferenceDataService.search(programName))
         .thenReturn(Collections.emptyList());
     when(programReferenceDataService.findAll())
@@ -1476,30 +1479,18 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.emptyList());
     when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
         .thenReturn(requisitions);
-    when(basicRequisitionDtoBuilder.build(requisitions))
-        .thenReturn(requisitionDtos);
+
     when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
-    when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
-        .thenReturn(supplyingDepots);
+
+    List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
+    for (BasicRequisitionDto dto : requisitionDtos) {
+      requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepots));
+    }
+    when(requisitionForConvertBuilder.buildRequisitions(any(), any()))
+        .thenReturn(requisitionsWithDepots);
+
     when(pageable.getPageSize()).thenReturn(pageSize);
     when(pageable.getPageNumber()).thenReturn(pageNumber);
-  }
-
-  private RequisitionTemplate getRequisitionTemplate() {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-    //column.setSetting(SETTING);
-
-    RequisitionTemplateColumn beginningBalanceColumn = new RequisitionTemplateColumn();
-    beginningBalanceColumn.setName("beginningBalance");
-    beginningBalanceColumn.setIsDisplayed(true);
-
-    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
-    columnsMap.put(AVERAGE_CONSUMPTION, column);
-    columnsMap.put(BEGINNING_BALANCE, beginningBalanceColumn);
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(columnsMap);
-    return requisitionTemplate;
   }
 
   private UserDto mockUser() {

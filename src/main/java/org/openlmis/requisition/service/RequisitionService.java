@@ -35,7 +35,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.util.Collections;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -44,7 +43,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -72,13 +70,13 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
+import org.openlmis.utils.RequisitionForConvertComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,7 +158,7 @@ public class RequisitionService {
   private ProofOfDeliveryService proofOfDeliveryService;
 
   @Autowired
-  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   @Autowired
   private PermissionService permissionService;
@@ -530,8 +528,9 @@ public class RequisitionService {
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
-      Set<UUID> validFacilities = getAvailableSupplyingDepots(requisitionId)
-          .stream().filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
+      Set<UUID> validFacilities = requisitionForConvertBuilder
+          .getAvailableSupplyingDepots(requisitionId).stream()
+          .filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
           .collect(Collectors.toSet());
 
       if (validFacilities.contains(facilityId)) {
@@ -545,19 +544,6 @@ public class RequisitionService {
     }
 
     return releasedRequisitions;
-  }
-
-  /**
-   * Retrieves available supplying depots for given requisition.
-   *
-   * @param requisitionId id of requisition to find facilities for
-   * @return list of facilities
-   */
-  public List<FacilityDto> getAvailableSupplyingDepots(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
-    return new ArrayList<>(facilityDtos);
   }
 
   /**
@@ -599,23 +585,11 @@ public class RequisitionService {
     List<UUID> desiredUuids = findDesiredUuids(filterValues, filterBy);
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
-    List<BasicRequisitionDto> requisitionDtosList =
-        basicRequisitionDtoBuilder.build(requisitionsList);
 
-    requisitionDtosList.sort(new BasicRequisitionDtoComparator(pageable));
+    List<RequisitionWithSupplyingDepotsDto> responseList =
+        requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities);
 
-    List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-    for (BasicRequisitionDto requisition : requisitionDtosList) {
-      List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition.getId())
-          .stream()
-          .filter(f -> userManagedFacilities.contains(f.getId()))
-          .collect(Collectors.toList());
-
-      if (!facilities.isEmpty()) {
-        responseList.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
-      }
-    }
-
+    responseList.sort(new RequisitionForConvertComparator(pageable));
     return Pagination.getPage(responseList, pageable);
   }
 
