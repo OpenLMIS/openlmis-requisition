@@ -86,7 +86,8 @@ public class StockEventBuilder {
                                              Map<String, RequisitionTemplateColumn> columnsMap,
                                              ZonedDateTime occurredDate) {
     return StockEventLineItemDto.builder()
-        .quantity(lineItem.getStockOnHand())
+        .orderableId(lineItem.getOrderableId())
+        .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap))
         .build();

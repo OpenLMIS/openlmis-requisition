@@ -308,6 +308,16 @@ public class StockEventBuilderTest {
   }
 
   @Test
+  public void itShouldIncludeOrderableIds() throws Exception {
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(0).getOrderableId())
+        .isEqualTo(lineItemOneDto.getOrderableId());
+    assertThat(result.getLineItems().get(1).getOrderableId())
+        .isEqualTo(lineItemTwoDto.getOrderableId());
+  }
+
+  @Test
   public void itShouldIgnoreSkippedLineItems() throws Exception {
     lineItemOneDto.setSkipped(true);
 
@@ -329,6 +339,7 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(0), 24),
         prepareStockAdjustment(reasons.get(2), 25)
     ));
+    lineItemOneDto.setOrderableId(UUID.randomUUID());
 
 
     return lineItemOneDto;
@@ -345,6 +356,7 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(1), 37),
         prepareStockAdjustment(reasons.get(3), 38)
     ));
+    lineItemTwoDto.setOrderableId(UUID.randomUUID());
 
     return lineItemTwoDto;
   }
