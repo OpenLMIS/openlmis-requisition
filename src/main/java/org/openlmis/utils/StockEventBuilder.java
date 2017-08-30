@@ -51,6 +51,9 @@ public class StockEventBuilder {
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
   /**
    * Builds a physical inventory draft DTO from the given requisition.
    *
@@ -58,16 +61,16 @@ public class StockEventBuilder {
    * @return  the create physical inventory draft
    */
   public StockEventDto fromRequisition(Requisition requisitionDto) {
-    ZonedDateTime occurredDate = getOccurredDate(requisitionDto);
     return StockEventDto
         .builder()
         .facilityId(requisitionDto.getFacilityId())
         .programId(requisitionDto.getProgramId())
+        .userId(authenticationHelper.getCurrentUser().getId())
         .lineItems(fromLineItems(
             requisitionDto.getRequisitionLineItems(),
             requisitionDto.getStockAdjustmentReasons(),
             requisitionDto.getTemplate().getColumnsMap(),
-            occurredDate
+            getOccurredDate(requisitionDto)
         ))
         .build();
   }
@@ -86,7 +89,8 @@ public class StockEventBuilder {
                                              Map<String, RequisitionTemplateColumn> columnsMap,
                                              ZonedDateTime occurredDate) {
     return StockEventLineItemDto.builder()
-        .quantity(lineItem.getStockOnHand())
+        .orderableId(lineItem.getOrderableId())
+        .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap))
         .build();
@@ -152,10 +156,9 @@ public class StockEventBuilder {
   }
 
   private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
-    List<ReasonDto> filtered = ReasonDto.newInstance(reasons.stream()
+    return ReasonDto.newInstance(reasons.stream()
         .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
-        .collect(Collectors.toList()));
-    return filtered.size() > 0 ? filtered.get(0) : null;
+        .findFirst().orElse(null));
   }
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {

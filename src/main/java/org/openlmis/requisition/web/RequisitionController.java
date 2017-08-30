@@ -22,7 +22,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -296,9 +296,9 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(value = "facility", required = false) UUID facility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "initiatedDateFrom", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime initiatedDateFrom,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate initiatedDateFrom,
       @RequestParam(value = "initiatedDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime initiatedDateTo,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate initiatedDateTo,
       @RequestParam(value = "processingPeriod", required = false)
           UUID processingPeriod,
       @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,

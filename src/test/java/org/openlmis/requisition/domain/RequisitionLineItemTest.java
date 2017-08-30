@@ -60,8 +60,6 @@ public class RequisitionLineItemTest {
     RequisitionLineItem item = createDefaultRequisitionLineItem(createDefaultApprovedProduct(null));
     item.resetData();
 
-    assertNull(item.getBeginningBalance());
-    assertNull(item.getBeginningBalance());
     assertNull(item.getTotalReceivedQuantity());
     assertNull(item.getTotalLossesAndAdjustments());
     assertNull(item.getStockOnHand());

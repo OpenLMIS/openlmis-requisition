@@ -391,7 +391,6 @@ public class RequisitionLineItem extends BaseEntity {
    * Resets all quantities and adjustments of a line item.
    */
   public void resetData() {
-    setBeginningBalance(null);
     setTotalReceivedQuantity(null);
     setTotalLossesAndAdjustments(null);
     setStockOnHand(null);

@@ -29,8 +29,7 @@ import java.util.UUID;
 @Builder
 public class StockEventDto {
   private UUID programId;
-
   private UUID facilityId;
-
   private List<StockEventLineItemDto> lineItems;
+  private UUID userId;
 }

@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.dto.stockmanagement;
 
-import org.openlmis.requisition.dto.OrderableDto;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,13 +22,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class StockEventLineItemDto {
-  private OrderableDto orderable;
+  private UUID orderableId;
   private Integer stockOnHand;
   private Integer quantity;
   private ZonedDateTime occurredDate;

@@ -88,12 +88,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -338,8 +338,8 @@ public class RequisitionService {
    * Finds requisitions matching all of the provided parameters.
    */
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              ZonedDateTime initiatedDateFrom,
-                                              ZonedDateTime initiatedDateTo,
+                                              LocalDate initiatedDateFrom,
+                                              LocalDate initiatedDateTo,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,

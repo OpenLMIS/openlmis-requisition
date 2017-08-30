@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,8 +27,8 @@ import org.springframework.data.domain.Pageable;
 public interface RequisitionRepositoryCustom {
 
   Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                       ZonedDateTime initiatedDateFrom,
-                                       ZonedDateTime initiatedDateTo,
+                                       LocalDate initiatedDateFrom,
+                                       LocalDate initiatedDateTo,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        Set<RequisitionStatus> requisitionStatuses,

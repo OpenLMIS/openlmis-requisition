@@ -9,6 +9,7 @@ Contract breaking changes:
 * [OLMIS-2833](https://openlmis.atlassian.net/browse/OLMIS-2833): Added date physical stock count completed to Requisition
 * [OLMIS-2671](https://openlmis.atlassian.net/browse/OLMIS-2671): Stock Management service is now required by Requisition
 * [OLMIS-2694](https://openlmis.atlassian.net/browse/OLMIS-2694): Changed Requisition adjustment reasons to come from Stock Service
+* [OLMIS-2898](https://openlmis.atlassian.net/browse/OLMIS-2898): Requisition search endpoint takes from/to parameters as dates without time part.
 
 New functionality added in a backwards-compatible manner:
 

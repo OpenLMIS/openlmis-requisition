@@ -35,6 +35,7 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
@@ -86,11 +87,16 @@ public class StockEventBuilderTest {
 
   private ProcessingPeriodDto period;
 
+  private UUID userId = UUID.randomUUID();
+
   @Mock
   private DateHelper dateHelper;
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
 
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
@@ -108,6 +114,9 @@ public class StockEventBuilderTest {
 
     when(dateHelper.getZone()).thenReturn(ZONE_ID);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+    UserDto user = new UserDto();
+    user.setId(userId);
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
   }
 
   @Test
@@ -308,6 +317,16 @@ public class StockEventBuilderTest {
   }
 
   @Test
+  public void itShouldIncludeOrderableIds() throws Exception {
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(0).getOrderableId())
+        .isEqualTo(lineItemOneDto.getOrderableId());
+    assertThat(result.getLineItems().get(1).getOrderableId())
+        .isEqualTo(lineItemTwoDto.getOrderableId());
+  }
+
+  @Test
   public void itShouldIgnoreSkippedLineItems() throws Exception {
     lineItemOneDto.setSkipped(true);
 
@@ -316,6 +335,14 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().size()).isEqualTo(1);
     assertThat(result.getLineItems().get(0).getQuantity())
         .isNotEqualTo(lineItemOneDto.getStockOnHand());
+  }
+
+  @Test
+  public void itShouldIncludeUserId() throws Exception {
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getUserId())
+        .isEqualTo(userId);
   }
 
   private RequisitionLineItem prepareLineItemOneDto() {
@@ -329,6 +356,7 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(0), 24),
         prepareStockAdjustment(reasons.get(2), 25)
     ));
+    lineItemOneDto.setOrderableId(UUID.randomUUID());
 
 
     return lineItemOneDto;
@@ -345,6 +373,7 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(1), 37),
         prepareStockAdjustment(reasons.get(3), 38)
     ));
+    lineItemTwoDto.setOrderableId(UUID.randomUUID());
 
     return lineItemTwoDto;
   }
