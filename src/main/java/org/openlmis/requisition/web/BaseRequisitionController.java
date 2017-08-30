@@ -137,13 +137,11 @@ public abstract class BaseRequisitionController extends BaseController {
       }
     }
 
-    /*
     if (parentNodeId == null) {
       stockEventStockManagementService.submit(
           stockEventBuilder.fromRequisition(requisition)
       );
     }
-     */
 
     requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
         getLineItemOrderableIds(requisition)), userId);

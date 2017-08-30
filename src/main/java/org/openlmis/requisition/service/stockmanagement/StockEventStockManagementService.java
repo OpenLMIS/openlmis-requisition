@@ -23,6 +23,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import java.util.UUID;
 
 @Service
 public class StockEventStockManagementService
@@ -34,15 +35,15 @@ public class StockEventStockManagementService
    * @param stockEventDto  the physical inventory draft to be saved
    * @return  the saved inventory draft
    */
-  public StockEventDto submit(StockEventDto stockEventDto) {
+  public UUID submit(StockEventDto stockEventDto) {
     String url = getServiceUrl() + getUrl();
 
     try {
-      ResponseEntity<StockEventDto> response = runWithTokenRetry(() -> restTemplate.exchange(
+      ResponseEntity<UUID> response = runWithTokenRetry(() -> restTemplate.exchange(
           createUri(url),
           HttpMethod.POST,
           RequestHelper.createEntity(authService.obtainAccessToken(), stockEventDto),
-          getResultClass()
+          UUID.class
       ));
 
       return response.getBody();
