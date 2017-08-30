@@ -1497,7 +1497,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void mockStockEventServiceResponses() {
     when(stockEventStockManagementService.submit(any(StockEventDto.class)))
-        .thenReturn(new StockEventDto());
+        .thenReturn(UUID.randomUUID());
   }
 
   private ConvertToOrderDto generateConvertToOrderDto() {

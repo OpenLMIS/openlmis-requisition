@@ -359,7 +359,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   private void mockStockEventServiceResponses() {
     when(stockEventStockManagementService.submit(any(StockEventDto.class)))
-        .thenReturn(new StockEventDto());
+        .thenReturn(UUID.randomUUID());
   }
 
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
