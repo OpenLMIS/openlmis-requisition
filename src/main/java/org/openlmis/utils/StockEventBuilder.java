@@ -51,6 +51,9 @@ public class StockEventBuilder {
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
   /**
    * Builds a physical inventory draft DTO from the given requisition.
    *
@@ -63,6 +66,7 @@ public class StockEventBuilder {
         .builder()
         .facilityId(requisitionDto.getFacilityId())
         .programId(requisitionDto.getProgramId())
+        .userId(authenticationHelper.getCurrentUser().getId())
         .lineItems(fromLineItems(
             requisitionDto.getRequisitionLineItems(),
             requisitionDto.getStockAdjustmentReasons(),
