@@ -61,7 +61,6 @@ public class StockEventBuilder {
    * @return  the create physical inventory draft
    */
   public StockEventDto fromRequisition(Requisition requisitionDto) {
-    ZonedDateTime occurredDate = getOccurredDate(requisitionDto);
     return StockEventDto
         .builder()
         .facilityId(requisitionDto.getFacilityId())
@@ -71,7 +70,7 @@ public class StockEventBuilder {
             requisitionDto.getRequisitionLineItems(),
             requisitionDto.getStockAdjustmentReasons(),
             requisitionDto.getTemplate().getColumnsMap(),
-            occurredDate
+            getOccurredDate(requisitionDto)
         ))
         .build();
   }
@@ -157,10 +156,9 @@ public class StockEventBuilder {
   }
 
   private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
-    List<ReasonDto> filtered = ReasonDto.newInstance(reasons.stream()
+    return ReasonDto.newInstance(reasons.stream()
         .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
-        .collect(Collectors.toList()));
-    return filtered.size() > 0 ? filtered.get(0) : null;
+        .findFirst().orElse(null));
   }
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
