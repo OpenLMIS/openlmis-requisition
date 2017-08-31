@@ -16,6 +16,7 @@
 package org.openlmis.utils;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
@@ -40,6 +41,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -98,6 +100,9 @@ public class StockEventBuilderTest {
   @Mock
   private AuthenticationHelper authenticationHelper;
 
+  @Mock
+  private StockCardStockManagementService stockCardStockManagementService;
+
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
 
@@ -117,6 +122,7 @@ public class StockEventBuilderTest {
     UserDto user = new UserDto();
     user.setId(userId);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
+    when(stockCardStockManagementService.getStockCards(any(), any())).thenReturn(new ArrayList<>());
   }
 
   @Test

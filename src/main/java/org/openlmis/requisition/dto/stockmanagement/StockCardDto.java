@@ -13,21 +13,22 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import lombok.EqualsAndHashCode;
+import org.openlmis.requisition.dto.BaseDto;
+import org.openlmis.requisition.dto.OrderableDto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
+@Builder
 @Getter
-@Setter
-@EqualsAndHashCode
-@ToString
-public class ValidReasonDto {
-  private UUID programId;
-  private UUID facilityTypeId;
-  private ReasonDto reason;
+@NoArgsConstructor
+@AllArgsConstructor
+public class StockCardDto {
+  private BaseDto lot;
+  private OrderableDto orderable;
+  private Integer stockOnHand;
 }

@@ -16,7 +16,6 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +34,9 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.utils.DateHelper;
 import org.openlmis.utils.Pagination;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -52,6 +53,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @PersistenceContext
   private EntityManager entityManager;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   /**
    * Method returns all Requisitions with matched parameters. User permission strings must not be
@@ -229,10 +233,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     ZonedDateTime from = null;
     ZonedDateTime to = null;
     if (initiatedDateFrom != null) {
-      from = initiatedDateFrom.atStartOfDay(ZoneOffset.UTC);
+      from = initiatedDateFrom.atStartOfDay(dateHelper.getZone());
     }
     if (initiatedDateTo != null) {
-      to = initiatedDateTo.plusDays(1).atStartOfDay(ZoneOffset.UTC);
+      to = initiatedDateTo.plusDays(1).atStartOfDay(dateHelper.getZone());
     }
 
     if (from != null && to != null) {

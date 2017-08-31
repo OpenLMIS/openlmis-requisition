@@ -61,6 +61,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
+import org.openlmis.utils.StockEventBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -109,6 +110,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @MockBean
   private StockEventStockManagementService stockEventStockManagementService;
+
+  @MockBean
+  private StockEventBuilder stockEventBuilder;
 
   @Mock
   private ProgramDto program;
@@ -358,6 +362,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   private void mockStockEventServiceResponses() {
+    when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
     when(stockEventStockManagementService.submit(any(StockEventDto.class)))
         .thenReturn(UUID.randomUUID());
   }

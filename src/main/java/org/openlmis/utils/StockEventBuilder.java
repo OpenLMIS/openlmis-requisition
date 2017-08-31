@@ -23,15 +23,18 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,8 +45,13 @@ public class StockEventBuilder {
 
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  private static final String CONSUMED_REASON_ID = "CONSUMED_REASON_ID";
-  private static final String RECEIPTS_REASON_ID = "RECEIPTS_REASON_ID";
+  private static final String CONSUMED = "CONSUMED";
+  private static final String RECEIPTS = "RECEIPTS";
+  private static final String BEGINNING_BALANCE_EXCESS = "BEGINNING_BALANCE_EXCESS";
+  private static final String BEGINNING_BALANCE_INSUFFICIENCY = "BEGINNING_BALANCE_INSUFFICIENCY";
+  private static final String REASON_ID_SUFFIX = "_REASON_ID";
+
+  private static final Map<String, UUID> defaultReasons = getDefaultReasons();
 
   @Autowired
   private DateHelper dateHelper;
@@ -54,6 +62,9 @@ public class StockEventBuilder {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
+  @Autowired
+  private StockCardStockManagementService stockCardService;
+
   /**
    * Builds a physical inventory draft DTO from the given requisition.
    *
@@ -61,6 +72,10 @@ public class StockEventBuilder {
    * @return  the create physical inventory draft
    */
   public StockEventDto fromRequisition(Requisition requisitionDto) {
+    List<StockCardDto> stockCards = stockCardService.getStockCards(requisitionDto.getFacilityId(),
+        requisitionDto.getProgramId()).stream().filter(stockCard -> stockCard.getLot() == null)
+        .collect(Collectors.toList());
+
     return StockEventDto
         .builder()
         .facilityId(requisitionDto.getFacilityId())
@@ -70,34 +85,39 @@ public class StockEventBuilder {
             requisitionDto.getRequisitionLineItems(),
             requisitionDto.getStockAdjustmentReasons(),
             requisitionDto.getTemplate().getColumnsMap(),
-            getOccurredDate(requisitionDto)
+            getOccurredDate(requisitionDto),
+            stockCards
         ))
         .build();
   }
 
   private List<StockEventLineItemDto> fromLineItems(
       List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons,
-      Map<String, RequisitionTemplateColumn> columnsMap, ZonedDateTime occurredDate) {
+      Map<String, RequisitionTemplateColumn> columnsMap, ZonedDateTime occurredDate,
+      List<StockCardDto> stockCards) {
     return lineItems.stream()
         .filter(lineItem -> !lineItem.getSkipped())
-        .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occurredDate))
+        .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occurredDate, stockCards))
         .collect(Collectors.toList());
   }
 
   private StockEventLineItemDto fromLineItem(RequisitionLineItem lineItem,
                                              List<StockAdjustmentReason> reasons,
                                              Map<String, RequisitionTemplateColumn> columnsMap,
-                                             ZonedDateTime occurredDate) {
+                                             ZonedDateTime occurredDate,
+                                             List<StockCardDto> stockCards) {
     return StockEventLineItemDto.builder()
         .orderableId(lineItem.getOrderableId())
+        .stockOnHand(lineItem.getBeginningBalance())
         .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
-        .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap))
+        .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap, stockCards))
         .build();
   }
 
   private List<StockEventAdjustmentDto> getStockAdjustments(RequisitionLineItem lineItem,
-      List<StockAdjustmentReason> reasons, Map<String, RequisitionTemplateColumn> columnsMap) {
+      List<StockAdjustmentReason> reasons, Map<String, RequisitionTemplateColumn> columnsMap,
+      List<StockCardDto> stockCards) {
     List<StockEventAdjustmentDto> stockAdjustments = new ArrayList<>();
 
     if (existsAndIsDisplayed(columnsMap.get(TOTAL_LOSSES_AND_ADJUSTMENTS))) {
@@ -106,20 +126,37 @@ public class StockEventBuilder {
           .collect(Collectors.toList());
     }
 
-    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED_REASON_ID, reasons)) {
+    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
-          .reason(getReasonById(UUID.fromString(System.getenv(CONSUMED_REASON_ID)), reasons))
+          .reason(getReasonById(getReasonId(CONSUMED), reasons))
           .build()
       );
     }
 
-    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS_REASON_ID, reasons)) {
+    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
-          .reason(getReasonById(UUID.fromString(System.getenv(RECEIPTS_REASON_ID)), reasons))
+          .reason(getReasonById(getReasonId(RECEIPTS), reasons))
           .build()
       );
+    }
+
+    StockCardDto stockCard = stockCards.stream().filter(stockCardDto -> stockCardDto.getOrderable()
+        .getId().equals(lineItem.getOrderableId())).findFirst().orElse(null);
+
+    if (shouldIncludeBeginningBalanceExcess(lineItem, stockCard, reasons)) {
+      stockAdjustments.add(StockEventAdjustmentDto.builder()
+          .quantity(lineItem.getBeginningBalance() - stockCard.getStockOnHand())
+          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons))
+          .build());
+    }
+
+    if (shouldIncludeBeginningBalanceInsufficiency(lineItem, stockCard, reasons)) {
+      stockAdjustments.add(StockEventAdjustmentDto.builder()
+          .quantity(stockCard.getStockOnHand() - lineItem.getBeginningBalance())
+          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons))
+          .build());
     }
 
     return stockAdjustments;
@@ -141,18 +178,29 @@ public class StockEventBuilder {
         .atStartOfDay(dateHelper.getZone());
   }
 
-  private boolean shouldInclude(RequisitionTemplateColumn column, String reasonKey,
+  private boolean shouldInclude(RequisitionTemplateColumn column, String reason,
                                 List<StockAdjustmentReason> reasons) {
-    String reasonId = System.getenv(reasonKey);
-    UUID reasonUuid = null;
+    return existsAndIsDisplayed(column) && getReasonById(getReasonId(reason), reasons) != null;
+  }
 
-    if (reasonId != null) {
-      reasonUuid = UUID.fromString(reasonId);
-    }
+  private boolean shouldIncludeBeginningBalanceExcess(RequisitionLineItem lineItem,
+                                                      StockCardDto stockCard,
+                                                      List<StockAdjustmentReason> reasons) {
+    return stockCard != null && stockCard.getStockOnHand() != null
+        && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
+        && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
+  }
 
-    return existsAndIsDisplayed(column)
-        && reasonUuid != null
-        && getReasonById(reasonUuid, reasons) != null;
+  private boolean shouldIncludeBeginningBalanceInsufficiency(RequisitionLineItem lineItem,
+                                                             StockCardDto stockCard,
+                                                             List<StockAdjustmentReason> reasons) {
+    return stockCard != null && stockCard.getStockOnHand() != null
+        && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
+        && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
+  }
+
+  private ReasonDto getReasonById(String reasonId, List<StockAdjustmentReason> reasons) {
+    return reasonId != null ? getReasonById(UUID.fromString(reasonId), reasons) : null;
   }
 
   private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
@@ -163,6 +211,24 @@ public class StockEventBuilder {
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
     return column != null && column.getIsDisplayed();
+  }
+
+  private UUID getReasonId(String reason) {
+    String reasonId = System.getenv(reason + REASON_ID_SUFFIX);
+    return reasonId != null ? UUID.fromString(reasonId) : defaultReasons.get(reason);
+  }
+
+  private static Map<String, UUID> getDefaultReasons() {
+    Map<String, UUID> defaultReasons = new HashMap<>();
+
+    defaultReasons.put(CONSUMED, UUID.fromString("b5c27da7-bdda-4790-925a-9484c5dfb594"));
+    defaultReasons.put(RECEIPTS, UUID.fromString("313f2f5f-0c22-4626-8c49-3554ef763de3"));
+    defaultReasons.put(BEGINNING_BALANCE_EXCESS,
+        UUID.fromString("84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"));
+    defaultReasons.put(BEGINNING_BALANCE_INSUFFICIENCY,
+        UUID.fromString("f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"));
+
+    return defaultReasons;
   }
 
 }

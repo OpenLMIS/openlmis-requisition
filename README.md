@@ -1,4 +1,4 @@
-# OpenLMIS Requisition Service
+openlmis-config/blob/test/.env# OpenLMIS Requisition Service
 This repository holds the files for the OpenLMIS Requisition Independent Service.
 
 ## Prerequisites
@@ -145,3 +145,7 @@ expected use-case for this is when this service is deployed through the
 ## Environment variables
 
 Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
+
+* **CONSUMED_REASON_ID** - the ID of the reason that will be used to make consumption entries in Stock Management physical inventory
+
+* **RECEIPTS_REASON_ID** - the ID of the reason that will be used to make receipts entries in Stock Management physical inventory

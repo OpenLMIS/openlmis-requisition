@@ -95,6 +95,7 @@ import org.openlmis.utils.Message;
 import org.openlmis.utils.PageImplRepresentation;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
+import org.openlmis.utils.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -198,6 +199,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @MockBean
   private StockEventStockManagementService stockEventStockManagementService;
+
+  @MockBean
+  private StockEventBuilder stockEventBuilder;
 
   @Autowired
   private MessageService messageService;
@@ -1545,6 +1549,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void mockStockEventServiceResponses() {
+    when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
     when(stockEventStockManagementService.submit(any(StockEventDto.class)))
         .thenReturn(UUID.randomUUID());
   }

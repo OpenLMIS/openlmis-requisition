@@ -10,6 +10,7 @@ Contract breaking changes:
 * [OLMIS-2671](https://openlmis.atlassian.net/browse/OLMIS-2671): Stock Management service is now required by Requisition
 * [OLMIS-2694](https://openlmis.atlassian.net/browse/OLMIS-2694): Changed Requisition adjustment reasons to come from Stock Service
 * [OLMIS-2898](https://openlmis.atlassian.net/browse/OLMIS-2898): Requisition search endpoint takes from/to parameters as dates without time part.
+* [OLMIS-2830](https://openlmis.atlassian.net/browse/OLMIS-2830): As of this version. Requisition now uses Stock Management as the source for adjustment reasons, moreover it stores snapshots of these available reasons during initiation. **Important**: in order to migrate from older versions, running this migration is required - https://github.com/OpenLMIS/openlmis-adjustment-reason-migration
 
 New functionality added in a backwards-compatible manner:
 
@@ -24,6 +25,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2534](https://openlmis.atlassian.net/browse/OLMIS-2534): Fixed potential huge performance issue. The javers log initializer will not retrieve all domain objects at once if a repository implemenets [PagingAndSortingRepository](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/PagingAndSortingRepository.html)
 * [OLMIS-3008](https://openlmis.atlassian.net/browse/OLMIS-3008): Add correct error message when trying to convert requisition to an order with approved quantity disabled in the the requisition template.
 * [OLMIS-2908](https://openlmis.atlassian.net/browse/OLMIS-2908): Added a unique partial index on requisitions, which prevents creation of requisitions which have the same facility, program and processing period while being a non-emergency requsition. This is now enforced by the database, not only the application logic.
+* [OLMIS-3019](https://openlmis.atlassian.net/browse/OLMIS-3019): Removed clearance of beginning balance and price per pack fields from skipped line items while authorizing.
 
 4.0.0 / 2017-06-23
 ==================
