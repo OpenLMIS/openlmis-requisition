@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,12 +45,13 @@ public class StockEventBuilder {
 
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  private static final String CONSUMED_REASON_ID = "CONSUMED_REASON_ID";
-  private static final String RECEIPTS_REASON_ID = "RECEIPTS_REASON_ID";
-  private static final String BEGINNING_BALANCE_EXCESS_REASON_ID =
-      "BEGINNING_BALANCE_EXCESS_REASON_ID";
-  private static final String BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID =
-      "BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID";
+  private static final String CONSUMED = "CONSUMED";
+  private static final String RECEIPTS = "RECEIPTS";
+  private static final String BEGINNING_BALANCE_EXCESS = "BEGINNING_BALANCE_EXCESS";
+  private static final String BEGINNING_BALANCE_INSUFFICIENCY = "BEGINNING_BALANCE_INSUFFICIENCY";
+  private static final String REASON_ID_SUFFIX = "_REASON_ID";
+
+  private static final Map<String, UUID> defaultReasons = getDefaultReasons();
 
   @Autowired
   private DateHelper dateHelper;
@@ -124,18 +126,18 @@ public class StockEventBuilder {
           .collect(Collectors.toList());
     }
 
-    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED_REASON_ID, reasons)) {
+    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
-          .reason(getReasonById(UUID.fromString(System.getenv(CONSUMED_REASON_ID)), reasons))
+          .reason(getReasonById(getReasonId(CONSUMED), reasons))
           .build()
       );
     }
 
-    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS_REASON_ID, reasons)) {
+    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
-          .reason(getReasonById(UUID.fromString(System.getenv(RECEIPTS_REASON_ID)), reasons))
+          .reason(getReasonById(getReasonId(RECEIPTS), reasons))
           .build()
       );
     }
@@ -146,15 +148,15 @@ public class StockEventBuilder {
     if (shouldIncludeBeginningBalanceExcess(lineItem, stockCard, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getBeginningBalance() - stockCard.getStockOnHand())
-          .reason(getReasonById(UUID.fromString(
-            System.getenv(BEGINNING_BALANCE_EXCESS_REASON_ID)), reasons)).build());
+          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons))
+          .build());
     }
 
     if (shouldIncludeBeginningBalanceInsufficiency(lineItem, stockCard, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(stockCard.getStockOnHand() - lineItem.getBeginningBalance())
-          .reason(getReasonById(UUID.fromString(
-            System.getenv(BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID)), reasons)).build());
+          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons))
+          .build());
     }
 
     return stockAdjustments;
@@ -176,9 +178,9 @@ public class StockEventBuilder {
         .atStartOfDay(dateHelper.getZone());
   }
 
-  private boolean shouldInclude(RequisitionTemplateColumn column, String reasonKey,
+  private boolean shouldInclude(RequisitionTemplateColumn column, String reason,
                                 List<StockAdjustmentReason> reasons) {
-    return existsAndIsDisplayed(column) && getReasonById(System.getenv(reasonKey), reasons) != null;
+    return existsAndIsDisplayed(column) && getReasonById(getReasonId(reason), reasons) != null;
   }
 
   private boolean shouldIncludeBeginningBalanceExcess(RequisitionLineItem lineItem,
@@ -186,7 +188,7 @@ public class StockEventBuilder {
                                                       List<StockAdjustmentReason> reasons) {
     return stockCard != null && stockCard.getStockOnHand() != null
         && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
-        && getReasonById(System.getenv(BEGINNING_BALANCE_EXCESS_REASON_ID), reasons) != null;
+        && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
   }
 
   private boolean shouldIncludeBeginningBalanceInsufficiency(RequisitionLineItem lineItem,
@@ -194,7 +196,7 @@ public class StockEventBuilder {
                                                              List<StockAdjustmentReason> reasons) {
     return stockCard != null && stockCard.getStockOnHand() != null
         && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
-        && getReasonById(System.getenv(BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID), reasons) != null;
+        && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
   }
 
   private ReasonDto getReasonById(String reasonId, List<StockAdjustmentReason> reasons) {
@@ -209,6 +211,24 @@ public class StockEventBuilder {
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
     return column != null && column.getIsDisplayed();
+  }
+
+  private UUID getReasonId(String reason) {
+    String reasonId = System.getenv(reason + REASON_ID_SUFFIX);
+    return reasonId != null ? UUID.fromString(reasonId) : defaultReasons.get(reason);
+  }
+
+  private static Map<String, UUID> getDefaultReasons() {
+    Map<String, UUID> defaultReasons = new HashMap<>();
+
+    defaultReasons.put(CONSUMED, UUID.fromString("b5c27da7-bdda-4790-925a-9484c5dfb594"));
+    defaultReasons.put(RECEIPTS, UUID.fromString("313f2f5f-0c22-4626-8c49-3554ef763de3"));
+    defaultReasons.put(BEGINNING_BALANCE_EXCESS,
+        UUID.fromString("84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"));
+    defaultReasons.put(BEGINNING_BALANCE_INSUFFICIENCY,
+        UUID.fromString("f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"));
+
+    return defaultReasons;
   }
 
 }
