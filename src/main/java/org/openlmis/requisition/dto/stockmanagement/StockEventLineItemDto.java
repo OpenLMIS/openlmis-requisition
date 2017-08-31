@@ -20,7 +20,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +32,6 @@ public class StockEventLineItemDto {
   private UUID orderableId;
   private Integer stockOnHand;
   private Integer quantity;
-  private ZonedDateTime occurredDate;
+  private LocalDate occurredDate;
   private List<StockEventAdjustmentDto> stockAdjustments;
 }

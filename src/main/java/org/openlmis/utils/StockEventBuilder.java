@@ -32,7 +32,7 @@ import org.openlmis.requisition.service.stockmanagement.StockCardStockManagement
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +93,7 @@ public class StockEventBuilder {
 
   private List<StockEventLineItemDto> fromLineItems(
       List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons,
-      Map<String, RequisitionTemplateColumn> columnsMap, ZonedDateTime occurredDate,
+      Map<String, RequisitionTemplateColumn> columnsMap, LocalDate occurredDate,
       List<StockCardDto> stockCards) {
     return lineItems.stream()
         .filter(lineItem -> !lineItem.getSkipped())
@@ -104,7 +104,7 @@ public class StockEventBuilder {
   private StockEventLineItemDto fromLineItem(RequisitionLineItem lineItem,
                                              List<StockAdjustmentReason> reasons,
                                              Map<String, RequisitionTemplateColumn> columnsMap,
-                                             ZonedDateTime occurredDate,
+                                             LocalDate occurredDate,
                                              List<StockCardDto> stockCards) {
     return StockEventLineItemDto.builder()
         .orderableId(lineItem.getOrderableId())
@@ -170,12 +170,11 @@ public class StockEventBuilder {
         .build();
   }
 
-  private ZonedDateTime getOccurredDate(Requisition requisition) {
+  private LocalDate getOccurredDate(Requisition requisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null) {
-      return requisition.getDatePhysicalStockCountCompleted().atStartOfDay(dateHelper.getZone());
+      return requisition.getDatePhysicalStockCountCompleted();
     }
-    return periodReferenceDataService.findOne(requisition.getProcessingPeriodId()).getEndDate()
-        .atStartOfDay(dateHelper.getZone());
+    return periodReferenceDataService.findOne(requisition.getProcessingPeriodId()).getEndDate();
   }
 
   private boolean shouldInclude(RequisitionTemplateColumn column, String reason,
