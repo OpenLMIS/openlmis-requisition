@@ -108,7 +108,6 @@ public class StockEventBuilder {
                                              List<StockCardDto> stockCards) {
     return StockEventLineItemDto.builder()
         .orderableId(lineItem.getOrderableId())
-        .stockOnHand(lineItem.getBeginningBalance())
         .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap, stockCards))
