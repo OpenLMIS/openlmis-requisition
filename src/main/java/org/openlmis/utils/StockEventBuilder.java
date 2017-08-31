@@ -19,7 +19,9 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_A
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ReasonDto;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -52,9 +55,6 @@ public class StockEventBuilder {
   private static final String REASON_ID_SUFFIX = "_REASON_ID";
 
   private static final Map<String, UUID> defaultReasons = getDefaultReasons();
-
-  @Autowired
-  private DateHelper dateHelper;
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -173,6 +173,13 @@ public class StockEventBuilder {
   private LocalDate getOccurredDate(Requisition requisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null) {
       return requisition.getDatePhysicalStockCountCompleted();
+    } else if (requisition.getEmergency()) {
+      Optional<StatusChange> submitAuditEntry = requisition.getStatusChanges().stream()
+          .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
+          .findFirst();
+      if (submitAuditEntry.isPresent()) {
+        return submitAuditEntry.get().getCreatedDate().toLocalDate();
+      }
     }
     return periodReferenceDataService.findOne(requisition.getProcessingPeriodId()).getEndDate();
   }

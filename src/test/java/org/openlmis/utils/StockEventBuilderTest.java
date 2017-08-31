@@ -30,8 +30,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -48,6 +50,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -307,7 +310,25 @@ public class StockEventBuilderTest {
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
-        .isEqualByComparingTo(DATE_PHYSICAL_STOCK_COUNT_COMPLETED.atStartOfDay(ZONE_ID)));
+        .isEqualByComparingTo(DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
+  }
+
+  @Test
+  public void itShouldUseSubmittedDateOnEmergencyRequisition() throws Exception {
+    requisition.setDatePhysicalStockCountCompleted(null);
+    requisition.setEmergency(true);
+
+    StatusChange statusChange = new StatusChange();
+    ZonedDateTime dateTime = ZonedDateTime.now();
+    statusChange.setStatus(RequisitionStatus.SUBMITTED);
+    statusChange.setCreatedDate(dateTime);
+    requisition.setStatusChanges(Arrays.asList(statusChange));
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().size()).isEqualTo(2);
+    result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
+        .isEqualByComparingTo(dateTime.toLocalDate()));
   }
 
   @Test
@@ -318,7 +339,7 @@ public class StockEventBuilderTest {
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
-        .isEqualByComparingTo(PERIOD_END_DATE.atStartOfDay(ZONE_ID)));
+        .isEqualByComparingTo(PERIOD_END_DATE));
 
   }
 
@@ -397,7 +418,7 @@ public class StockEventBuilderTest {
         prepareLineItemOneDto(),
         prepareLineItemTwoDto()
     ));
-
+    requisition.setEmergency(false);
   }
 
   private RequisitionTemplate prepareTemplate() {
