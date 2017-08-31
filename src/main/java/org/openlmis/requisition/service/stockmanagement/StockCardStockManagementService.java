@@ -34,7 +34,7 @@ public class StockCardStockManagementService extends BaseStockManagementService<
    */
   public List<StockCardDto> getStockCards(UUID facility, UUID program) {
     RequestParameters params = RequestParameters.init()
-        .set("pageSize", Integer.MAX_VALUE)
+        .set("size", Integer.MAX_VALUE)
         .set("facility", facility.toString())
         .set("program", program.toString());
 
