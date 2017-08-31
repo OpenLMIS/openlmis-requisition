@@ -15,26 +15,15 @@
 
 package org.openlmis.requisition.exception;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.openlmis.requisition.dto.LocalizedMessageDto;
+import org.openlmis.utils.Message;
 
-public class ExternalApiException extends RuntimeException {
+/**
+ * Exception for indicating that an internal server exception occured. This should result
+ * in a Internal Error api response
+ */
+public class ServerException extends BaseMessageException {
 
-  private final LocalizedMessageDto localizedMessage;
-
-  public ExternalApiException(Throwable cause,
-                              LocalizedMessageDto localizedMessage) {
-    super(cause);
-    this.localizedMessage = localizedMessage;
+  public ServerException(Throwable cause, String messageKey, Object... messageParameters) {
+    super(new Message(messageKey, messageParameters), cause);
   }
-
-  @Override
-  public String getMessage() {
-    return localizedMessage.toString();
-  }
-
-  public LocalizedMessageDto getMessageLocalized() {
-    return localizedMessage;
-  }
-
 }

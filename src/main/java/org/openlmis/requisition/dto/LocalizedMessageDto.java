@@ -13,28 +13,14 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.exception;
+package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.openlmis.requisition.dto.LocalizedMessageDto;
+import lombok.Getter;
+import lombok.Setter;
 
-public class ExternalApiException extends RuntimeException {
-
-  private final LocalizedMessageDto localizedMessage;
-
-  public ExternalApiException(Throwable cause,
-                              LocalizedMessageDto localizedMessage) {
-    super(cause);
-    this.localizedMessage = localizedMessage;
-  }
-
-  @Override
-  public String getMessage() {
-    return localizedMessage.toString();
-  }
-
-  public LocalizedMessageDto getMessageLocalized() {
-    return localizedMessage;
-  }
-
+@Getter
+@Setter
+public class LocalizedMessageDto {
+  private String messageKey;
+  private String message;
 }

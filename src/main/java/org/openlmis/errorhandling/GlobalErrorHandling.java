@@ -15,7 +15,10 @@
 
 package org.openlmis.errorhandling;
 
+import org.openlmis.requisition.dto.LocalizedMessageDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
+import org.openlmis.requisition.exception.ExternalApiException;
+import org.openlmis.requisition.exception.ServerException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.service.DataRetrievalException;
@@ -47,6 +50,22 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
     logger.error(String.format("Unable to retrieve %s. Error code: %d, response message: %s",
         ex.getResource(), ex.getStatus().value(), ex.getResponse()));
     return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(ServerException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleServerException(ServerException ex) {
+    logger.error("An internal error occurred", ex);
+    return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(ExternalApiException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public LocalizedMessageDto handleServerException(ExternalApiException ex) {
+    logger.error("An external api error occurred", ex);
+    return ex.getMessageLocalized();
   }
 
   /**
