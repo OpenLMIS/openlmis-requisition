@@ -10,6 +10,7 @@ Contract breaking changes:
 * [OLMIS-2671](https://openlmis.atlassian.net/browse/OLMIS-2671): Stock Management service is now required by Requisition
 * [OLMIS-2694](https://openlmis.atlassian.net/browse/OLMIS-2694): Changed Requisition adjustment reasons to come from Stock Service
 * [OLMIS-2898](https://openlmis.atlassian.net/browse/OLMIS-2898): Requisition search endpoint takes from/to parameters as dates without time part.
+* [OLMIS-2830](https://openlmis.atlassian.net/browse/OLMIS-2830): As of this version. Requisition now uses Stock Management as the source for adjustment reasons, moreover it stores snapshots of these available reasons during initiation. **Important**: in order to migrate from older versions, running this migration is required - https://github.com/OpenLMIS/openlmis-adjustment-reason-migration
 
 New functionality added in a backwards-compatible manner:
 
