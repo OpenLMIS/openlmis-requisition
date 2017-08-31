@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.exception;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
 
 public class ExternalApiException extends RuntimeException {
