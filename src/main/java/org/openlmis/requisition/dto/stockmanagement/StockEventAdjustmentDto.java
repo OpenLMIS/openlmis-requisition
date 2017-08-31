@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto.stockmanagement;
 
+import lombok.ToString;
 import org.openlmis.requisition.dto.ReasonDto;
 
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
+@ToString
 public class StockEventAdjustmentDto {
   private ReasonDto reason;
   private Integer quantity;
