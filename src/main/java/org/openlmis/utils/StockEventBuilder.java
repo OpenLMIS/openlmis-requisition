@@ -148,6 +148,13 @@ public class StockEventBuilder {
     StockCardDto stockCard = stockCards.stream().filter(stockCardDto -> stockCardDto.getOrderable()
         .getId().equals(lineItem.getOrderableId())).findFirst().orElse(null);
 
+    if (stockCard == null) {
+      LOGGER.warn("No stock card found for Orderable: {}", lineItem.getOrderableId());
+    } else if (stockCard.getStockOnHand() == null) {
+      LOGGER.warn("Stock card has no stock on hand for Orderable: {}",
+              lineItem.getOrderableId());
+    }
+
     if (shouldIncludeBeginningBalanceExcess(lineItem, stockCard, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getBeginningBalance() - stockCard.getStockOnHand())
