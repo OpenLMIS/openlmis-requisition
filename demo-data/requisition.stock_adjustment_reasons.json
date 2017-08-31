@@ -549,6 +549,245 @@
     "reasonType": "DEBIT",
     "isFreeTextAllowed": false,
     "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"9303c859-6df5-469b-9361-6211ef049d4e",
+    "requisitionId":"fd575c05-c469-4bb4-b5d3-4e8937a8c1ff",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"7b79abd4-fa8d-4a75-ba4b-3d61e80dbaf9",
+    "requisitionId":"fd575c05-c469-4bb4-b5d3-4e8937a8c1ff",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"764bb243-d021-4b05-ba9a-da1093c6e0ef",
+    "requisitionId":"fd575c05-c469-4bb4-b5d3-4e8937a8c1ff",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"bc9149f5-3799-4321-893c-5a75e7188e5d",
+    "requisitionId":"fd575c05-c469-4bb4-b5d3-4e8937a8c1ff",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"e621b4fd-66de-4fa2-9e50-d84a31fdb46e",
+    "requisitionId":"c6ce0209-6caf-4f40-bea8-01ce529fdc67",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"7bf0e11b-3d32-4379-98a2-ca0e310bf6d9",
+    "requisitionId":"c6ce0209-6caf-4f40-bea8-01ce529fdc67",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"d9735203-e813-4ad0-a37d-9ebbbe7c7069",
+    "requisitionId":"c6ce0209-6caf-4f40-bea8-01ce529fdc67",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"98bad03d-406d-4877-be77-8ce545e72629",
+    "requisitionId":"c6ce0209-6caf-4f40-bea8-01ce529fdc67",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"ca0e56b3-8499-486b-8b94-05cf37e5f568",
+    "requisitionId":"074a49af-12c3-429f-b5da-ed3f9e65787c",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"831b7a0a-0548-4eff-8004-7a7748408cea",
+    "requisitionId":"074a49af-12c3-429f-b5da-ed3f9e65787c",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"9a182a5f-5423-427a-a515-839c67b34832",
+    "requisitionId":"074a49af-12c3-429f-b5da-ed3f9e65787c",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"fd4fb6fc-e7ec-47d3-b7b3-a2ba6481ea6b",
+    "requisitionId":"074a49af-12c3-429f-b5da-ed3f9e65787c",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"fb828b19-0325-4296-92fd-99844fd7d9f3",
+    "requisitionId":"6167e65c-6f56-4aeb-bff5-fdfe84e01a21",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"e5201e80-af4d-4c3c-98d4-733fb80c3b87",
+    "requisitionId":"6167e65c-6f56-4aeb-bff5-fdfe84e01a21",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"c17cd381-ed73-445b-b4b4-2854ee483664",
+    "requisitionId":"6167e65c-6f56-4aeb-bff5-fdfe84e01a21",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"0a714133-23e3-4556-837c-86fd68502a7c",
+    "requisitionId":"6167e65c-6f56-4aeb-bff5-fdfe84e01a21",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"54203db0-ae7c-414e-bafe-2839f1b3eeac",
+    "requisitionId":"8c7f1a6d-d139-483a-ad60-4288016f3d23",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"72422fd0-1465-40ed-8571-d66f6d866921",
+    "requisitionId":"8c7f1a6d-d139-483a-ad60-4288016f3d23",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"b347ddd3-3458-48d0-9d43-50f1dcb63f21",
+    "requisitionId":"8c7f1a6d-d139-483a-ad60-4288016f3d23",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"67260372-675f-4b1a-86be-2fe822f0acc6",
+    "requisitionId":"8c7f1a6d-d139-483a-ad60-4288016f3d23",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+  },
+  {
+    "name":"Consumed",
+    "description":"Consumed",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"75506d14-2ede-4247-a528-444e2c7a42cf",
+    "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+  },
+  {
+    "name":"Receipts",
+    "description":"Receipts",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"bbb99bbb-82d3-4464-b849-fae57735c8db",
+    "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+  },
+  {
+    "name":"Beginning Balance Excess",
+    "description":"Beginning Balance Excess",
+    "reasonType":"CREDIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"560bb3c0-9353-49aa-b8cf-189a7c1dad2b",
+    "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+  },
+  {
+    "name":"Beginning Balance Insufficiency",
+    "description":"Beginning Balance Insufficiency",
+    "reasonType":"DEBIT",
+    "reasonCategory":"ADJUSTMENT",
+    "isFreeTextAllowed":false,
+    "id":"9ab42536-4f40-4134-8448-431d25a70c59",
+    "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
   }
-
 ]
