@@ -365,6 +365,17 @@ public class StockEventBuilderTest {
   }
 
   @Test
+  public void itShouldIgnoreNonFullSupplyLineItems() throws Exception {
+    lineItemOneDto.setNonFullSupply(true);
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().size()).isEqualTo(1);
+    assertThat(result.getLineItems().get(0).getQuantity())
+        .isNotEqualTo(lineItemOneDto.getStockOnHand());
+  }
+
+  @Test
   public void itShouldIncludeUserId() throws Exception {
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
