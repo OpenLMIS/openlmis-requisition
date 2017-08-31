@@ -31,6 +31,8 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +57,8 @@ public class StockEventBuilder {
   private static final String REASON_ID_SUFFIX = "_REASON_ID";
 
   private static final Map<String, UUID> defaultReasons = getDefaultReasons();
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StockEventBuilder.class);
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -191,17 +195,33 @@ public class StockEventBuilder {
   private boolean shouldIncludeBeginningBalanceExcess(RequisitionLineItem lineItem,
                                                       StockCardDto stockCard,
                                                       List<StockAdjustmentReason> reasons) {
-    return stockCard != null && stockCard.getStockOnHand() != null
+    boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
         && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
+
+    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}." +
+            " Including excess adjustment: {}",
+            lineItem.getBeginningBalance(),
+            stockCard == null ? null : stockCard.getStockOnHand(),
+            shouldInclude);
+
+    return shouldInclude;
   }
 
   private boolean shouldIncludeBeginningBalanceInsufficiency(RequisitionLineItem lineItem,
                                                              StockCardDto stockCard,
                                                              List<StockAdjustmentReason> reasons) {
-    return stockCard != null && stockCard.getStockOnHand() != null
+    boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
         && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
+
+    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}." +
+                    " Including insufficiency adjustment: {}",
+            lineItem.getBeginningBalance(),
+            stockCard == null ? null : stockCard.getStockOnHand(),
+            shouldInclude);
+
+    return shouldInclude;
   }
 
   private ReasonDto getReasonById(String reasonId, List<StockAdjustmentReason> reasons) {
