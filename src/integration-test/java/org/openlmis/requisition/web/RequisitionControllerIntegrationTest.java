@@ -123,6 +123,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
+  private static final String SIZE = "size";
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String INITIATE_URL = RESOURCE_URL + "/initiate";
   private static final String APPROVE_URL = RESOURCE_URL + "/{id}/approve";
@@ -149,6 +150,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   static final String PROCESSING_PERIOD = "processingPeriod";
   static final String INITIATED_DATE_FROM = "initiatedDateFrom";
   static final String INITIATED_DATE_TO = "initiatedDateTo";
+  private static final String SORT = "sort";
+  private static final String FILTER_VALUE = "filterValue";
+  private static final String FILTER_BY = "filterBy";
+  private static final String PAGE = "page";
 
   @MockBean
   private StatusMessageRepository statusMessageRepository;
@@ -1139,12 +1144,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortByFilterByAndPaging() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
+    FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
     List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
@@ -1154,7 +1156,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
 
-    String filterValue = "Hospital";
+    List<String> filterValue = Lists.newArrayList("Hospital");
     String filterBy = "facilityName";
     String sortBy = "facilityCode,asc";
     int size = 10;
@@ -1167,11 +1169,56 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // when
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .queryParam("filterValue", filterValue)
-        .queryParam("filterBy", filterBy)
-        .queryParam("sort", sortBy)
-        .queryParam("page", page)
-        .queryParam("size", size)
+        .queryParam(FILTER_VALUE, filterValue)
+        .queryParam(FILTER_BY, filterBy)
+        .queryParam(SORT, sortBy)
+        .queryParam(PAGE, page)
+        .queryParam(SIZE, size)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(APPROVED_REQUISITIONS_SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    // then
+    assertEquals(1, response.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetApprovedRequisitionsWithSortByMultipleFilterValues() {
+    // given
+    RightDto right = mockViewOrdersRight();
+
+    FacilityDto facility = mockFacility();
+    Set<FacilityDto> managedFacilities = Collections.singleton(facility);
+    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
+
+    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
+    requisition.setRequisition(generateBasicRequisition());
+
+    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
+
+    List<String> filterValue = Lists.newArrayList("Essential Meds", "Family Planning");
+    String filterBy = "programName";
+    String sortBy = "facilityCode,asc";
+    int size = 10;
+    int page = 0;
+
+    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        eq(filterValue), eq(filterBy), any(Pageable.class), eq(managedFacilitiesIds)))
+        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+
+    // when
+    PageImplRepresentation response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(FILTER_VALUE, filterValue)
+        .queryParam(FILTER_BY, filterBy)
+        .queryParam(SORT, sortBy)
+        .queryParam(PAGE, page)
+        .queryParam(SIZE, size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1187,12 +1234,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortBySeveralFilters() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
+    FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
     List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
@@ -1202,7 +1246,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
 
-    String filterValue = "Hospital";
+    List<String> filterValue = Lists.newArrayList("Hospital");
     String filterBy = "facilityName";
     int size = 10;
     int page = 0;
@@ -1216,12 +1260,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // when
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .queryParam("filterValue", filterValue)
-        .queryParam("filterBy", filterBy)
-        .queryParam("sort", "emergency,desc")
-        .queryParam("sort", "facilityCode,asc")
-        .queryParam("page", page)
-        .queryParam("size", size)
+        .queryParam(FILTER_VALUE, filterValue)
+        .queryParam(FILTER_BY, filterBy)
+        .queryParam(SORT, "emergency,desc")
+        .queryParam(SORT, "facilityCode,asc")
+        .queryParam(PAGE, page)
+        .queryParam(SIZE, size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
@@ -1350,6 +1394,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  private RightDto mockViewOrdersRight() {
+    RightDto right = new RightDto();
+    right.setId(UUID.randomUUID());
+    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    return right;
+  }
+  
   private void mockReasons() {
     ReasonDto reasonDto = new ReasonDto();
     reasonDto.setId(UUID.randomUUID());
@@ -1437,9 +1488,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private List<UUID> mockConvertToOrderRightAndFulfillmentFacilities(FacilityDto... facilities) {
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
     Set<FacilityDto> facilitySet = new HashSet<>();
     Collections.addAll(facilitySet, facilities);

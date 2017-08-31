@@ -46,9 +46,11 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.utils.AuthenticationHelper;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.RightName;
+
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
@@ -78,9 +80,6 @@ public class ApprovedRequisitionNotifierTest {
   private AuthenticationHelper authenticationHelper;
 
   @Mock
-  private RequisitionService requisitionService;
-
-  @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
@@ -88,6 +87,9 @@ public class ApprovedRequisitionNotifierTest {
 
   @Mock
   private MessageService messageService;
+
+  @Mock
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   @InjectMocks
   private ApprovedRequisitionNotifier approvedRequisitionNotifier;
@@ -229,7 +231,7 @@ public class ApprovedRequisitionNotifierTest {
     when(facilityReferenceDataService.findOne(eq(facilityId))).thenReturn(facility);
     when(programReferenceDataService.findOne(eq(programId))).thenReturn(program);
     when(periodReferenceDataService.findOne(eq(processingPeriodId))).thenReturn(processingPeriod);
-    when(requisitionService.getAvailableSupplyingDepots(eq(requisitionId)))
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(eq(requisitionId)))
         .thenReturn(Arrays.asList(warehouseOne, warehouseTwo));
     when(authenticationHelper.getRight(RightName.ORDERS_EDIT)).thenReturn(right);
     when(userReferenceDataService.findUsers(

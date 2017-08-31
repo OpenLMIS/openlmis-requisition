@@ -24,7 +24,7 @@ import com.google.common.collect.Maps;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.comparators.ComparatorChain;
-import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,7 +33,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitionDto> {
+public class RequisitionForConvertComparator implements
+    Comparator<RequisitionWithSupplyingDepotsDto> {
+
   private static final Map<String, BeanComparator> AVAILABLE_COMPARATORS;
 
   static {
@@ -51,7 +53,7 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
    * sort property (it is equal to null), the class will use default sort: emergency DESC and
    * programName ASC.
    */
-  public BasicRequisitionDtoComparator(Pageable pageable) {
+  public RequisitionForConvertComparator(Pageable pageable) {
     Sort sort = pageable.getSort();
 
     if (null == sort) {
@@ -64,7 +66,7 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
   }
 
   @Override
-  public int compare(BasicRequisitionDto o1, BasicRequisitionDto o2) {
+  public int compare(RequisitionWithSupplyingDepotsDto o1, RequisitionWithSupplyingDepotsDto o2) {
     ComparatorChain chain = new ComparatorChain();
 
     for (int i = 0, size = compareConditions.size(); i < size; ++i) {
@@ -81,7 +83,7 @@ public class BasicRequisitionDtoComparator implements Comparator<BasicRequisitio
       chain.addComparator(comparator, !order.isAscending());
     }
 
-    return chain.compare(o1, o2);
+    return chain.compare(o1.getRequisition(), o2.getRequisition());
   }
 
 }

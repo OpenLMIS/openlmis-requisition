@@ -21,16 +21,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
@@ -42,6 +44,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -56,7 +59,6 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -99,27 +101,25 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Pagination;
 import org.openlmis.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -220,6 +220,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionStatusProcessor requisitionStatusProcessor;
+
+  @Mock
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -873,6 +876,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     // when
     List<Requisition> expectedRequisitions = requisitionService
@@ -1023,21 +1028,14 @@ public class RequisitionServiceTest {
     String filterAndSortBy = "programName";
 
     UUID supplyingDepotId = UUID.randomUUID();
-    FacilityDto supplyingDepot = new FacilityDto();
-    supplyingDepot.setId(supplyingDepotId);
-    List<FacilityDto> supplyingDepots = new ArrayList<>(Arrays.asList(supplyingDepot));
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
 
     int pageSize = 3;
     int pageNumber = 0;
-    Pageable pageable = mock(Pageable.class);
-    Sort sort = new Sort(Sort.Direction.DESC, filterAndSortBy);
-
-    when(pageable.getSort()).thenReturn(sort);
+    Pageable pageable = mockPageable();
 
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
-        supplyingDepots, pageable, pageSize, pageNumber);
-
-    requisitionDtos.sort(new BasicRequisitionDtoComparator(pageable));
+        null, null, supplyingDepots, pageable, pageSize, pageNumber);
 
     List<BasicRequisitionDto> requisitionDtosSubList =
         requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
@@ -1049,12 +1047,10 @@ public class RequisitionServiceTest {
                 new RequisitionWithSupplyingDepotsDto(requisitionDto, supplyingDepots))
             .collect(Collectors.toList());
 
-    Collection<UUID> userManagedFacilities = new ArrayList<>(Arrays.asList(supplyingDepotId));
-
     //when
     Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, pageable, userManagedFacilities);
+            filterAndSortBy, pageable, Arrays.asList(supplyingDepotId));
 
     List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
         requisitionDtosRetrieved.getContent();
@@ -1077,6 +1073,155 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldFilterRequisitionsForConvertByMultipleProgramValues() {
+    // given
+    final String filterBy = "programName";
+    final String fpProgram = "Family Planning";
+    final String emProgram = "Essential Meds";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mockPageable();
+
+    List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
+    List<BasicRequisitionDto> familyPlanningRequisitions = getBasicRequisitionDtoList();
+
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, filterBy, emProgram,
+        null, null, supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(familyPlanningRequisitions, filterBy, fpProgram,
+        null, null, supplyingDepots, pageable, pageSize, pageNumber);
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        Lists.newArrayList(emProgram, fpProgram), filterBy, pageable,
+        Arrays.asList(supplyingDepotId));
+
+    // then
+    verify(programReferenceDataService).search(emProgram);
+    verify(programReferenceDataService).search(fpProgram);
+    verify(facilityReferenceDataService, never())
+        .search(anyString(), anyString(), any(UUID.class), anyBoolean());
+    verify(facilityReferenceDataService, never()).findAll();
+  }
+
+  @Test
+  public void shouldFilterRequisitionsForConvertByMultipleFacilityCodeValues() {
+    // given
+    final String filterBy = "facilityCode";
+    final String code1 = "LL001";
+    final String code2 = "LL002";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mockPageable();
+
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
+        code1, null, supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
+        code2, null, supplyingDepots, pageable, pageSize, pageNumber);
+
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        Lists.newArrayList(code1, code2), filterBy, pageable, Arrays.asList(supplyingDepotId));
+
+    // then
+    verify(facilityReferenceDataService).search(code1, null, null, false);
+    verify(facilityReferenceDataService).search(code2, null, null, false);
+    verifyZeroInteractions(programReferenceDataService);
+  }
+
+  @Test
+  public void shouldFilterRequisitionsForConvertByMultipleFacilityNameValues() {
+    // given
+    final String filterBy = "facilityName";
+    final String name1 = "Comfort Health Clinic";
+    final String name2 = "Balaka District Hospital";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mockPageable();
+
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
+        null, name1, supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
+        null, name2, supplyingDepots, pageable, pageSize, pageNumber);
+
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        Lists.newArrayList(name1, name2), filterBy, pageable, Arrays.asList(supplyingDepotId));
+
+    // then
+    verify(facilityReferenceDataService).search(null, name1, null, false);
+    verify(facilityReferenceDataService).search(null, name2, null, false);
+    verifyZeroInteractions(programReferenceDataService);
+  }
+
+  @Test
+  public void shouldFilterRequisitionsForConvertByMultipleValues() {
+    // given
+    final String filterBy = "all";
+    final String expression1 = "Essential";
+    final String expression2 = "Clinic";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mockPageable();
+
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, expression1,
+        expression1, expression1, supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, expression2,
+        expression2, expression2, supplyingDepots, pageable, pageSize, pageNumber);
+
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        Lists.newArrayList(expression1, expression2), filterBy, pageable,
+        Arrays.asList(supplyingDepotId));
+
+    // then
+    verify(facilityReferenceDataService).search(null, expression1, null, false);
+    verify(facilityReferenceDataService).search(null, expression2, null, false);
+    verify(facilityReferenceDataService).search(expression1,null, null, false);
+    verify(facilityReferenceDataService).search(expression2,null, null, false);
+    verify(programReferenceDataService).search(expression1);
+    verify(programReferenceDataService).search(expression2);
+  }
+
+  @Test
+  public void shouldNotFilterRequisitionsForConvertIfNoFilterValueProvided() {
+    // given
+    final String filterBy = "all";
+
+    UUID supplyingDepotId = UUID.randomUUID();
+    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+
+    int pageSize = 20;
+    int pageNumber = 0;
+    Pageable pageable = mockPageable();
+
+    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
+        null, null, supplyingDepots, pageable, pageSize, pageNumber);
+
+    //when
+    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null, filterBy,
+        pageable, Arrays.asList(supplyingDepotId));
+
+    // then
+    verify(facilityReferenceDataService).findAll();
+    verify(programReferenceDataService).findAll();
+  }
+
+  @Test
   public void shouldConvertRequisitionsToOrders() {
     // given
     int requisitionsCount = 5;
@@ -1091,6 +1236,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     // when
     requisitionService.convertToOrder(list, user);
@@ -1135,6 +1282,8 @@ public class RequisitionServiceTest {
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRightId)).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
 
     requisitionService.convertToOrder(list, user);
 
@@ -1182,6 +1331,19 @@ public class RequisitionServiceTest {
 
     // then
     assertTrue(resultSet.equals(nonFullSupplySet));
+  }
+
+  private List<FacilityDto> mockSupplyingDepot(UUID supplyingDepotId) {
+    FacilityDto supplyingDepot = new FacilityDto();
+    supplyingDepot.setId(supplyingDepotId);
+    return new ArrayList<>(Arrays.asList(supplyingDepot));
+  }
+
+  private Pageable mockPageable() {
+    Pageable pageable = mock(Pageable.class);
+    Sort sort = new Sort(Sort.Direction.DESC, "programName");
+    when(pageable.getSort()).thenReturn(sort);
+    return pageable;
   }
 
   private List<ConvertToOrderDto> setUpReleaseRequisitionsAsOrder(
@@ -1300,39 +1462,35 @@ public class RequisitionServiceTest {
 
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
                                                     String filterBy, String programName,
+                                                    String facilityCode, String facilityName,
                                                     List<FacilityDto> supplyingDepots,
                                                     Pageable pageable, int pageSize,
                                                     int pageNumber) {
-    List<UUID> desiredUuids = new ArrayList<>();
-    List<Requisition> requisitions = new ArrayList<>();
+    final List<UUID> desiredUuids = new ArrayList<>();
+    final List<Requisition> requisitions = new ArrayList<>();
+
     when(programReferenceDataService.search(programName))
+        .thenReturn(Collections.emptyList());
+    when(programReferenceDataService.findAll())
+        .thenReturn(Collections.emptyList());
+    when(facilityReferenceDataService.search(eq(facilityCode), eq(facilityName),
+        eq(null), eq(false))).thenReturn(Collections.emptyList());
+    when(facilityReferenceDataService.findAll())
         .thenReturn(Collections.emptyList());
     when(requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids))
         .thenReturn(requisitions);
-    when(basicRequisitionDtoBuilder.build(requisitions))
-        .thenReturn(requisitionDtos);
+
     when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
-    when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
-        .thenReturn(supplyingDepots);
+
+    List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
+    for (BasicRequisitionDto dto : requisitionDtos) {
+      requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepots));
+    }
+    when(requisitionForConvertBuilder.buildRequisitions(any(), any()))
+        .thenReturn(requisitionsWithDepots);
+
     when(pageable.getPageSize()).thenReturn(pageSize);
     when(pageable.getPageNumber()).thenReturn(pageNumber);
-  }
-
-  private RequisitionTemplate getRequisitionTemplate() {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-    //column.setSetting(SETTING);
-
-    RequisitionTemplateColumn beginningBalanceColumn = new RequisitionTemplateColumn();
-    beginningBalanceColumn.setName("beginningBalance");
-    beginningBalanceColumn.setIsDisplayed(true);
-
-    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
-    columnsMap.put(AVERAGE_CONSUMPTION, column);
-    columnsMap.put(BEGINNING_BALANCE, beginningBalanceColumn);
-
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setColumnsMap(columnsMap);
-    return requisitionTemplate;
   }
 
   private UserDto mockUser() {

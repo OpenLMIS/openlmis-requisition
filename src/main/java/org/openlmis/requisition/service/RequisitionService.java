@@ -35,8 +35,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.time.LocalDate;
-import java.util.Collections;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -45,7 +43,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -73,13 +70,13 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.settings.service.ConfigurationSettingService;
 import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.BasicRequisitionDtoComparator;
 import org.openlmis.utils.Message;
 import org.openlmis.utils.Pagination;
+import org.openlmis.utils.RequisitionForConvertComparator;
 import org.openlmis.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,8 +90,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -159,7 +158,7 @@ public class RequisitionService {
   private ProofOfDeliveryService proofOfDeliveryService;
 
   @Autowired
-  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+  private RequisitionForConvertBuilder requisitionForConvertBuilder;
 
   @Autowired
   private PermissionService permissionService;
@@ -529,8 +528,9 @@ public class RequisitionService {
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
-      Set<UUID> validFacilities = getAvailableSupplyingDepots(requisitionId)
-          .stream().filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
+      Set<UUID> validFacilities = requisitionForConvertBuilder
+          .getAvailableSupplyingDepots(requisitionId).stream()
+          .filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
           .collect(Collectors.toSet());
 
       if (validFacilities.contains(facilityId)) {
@@ -544,19 +544,6 @@ public class RequisitionService {
     }
 
     return releasedRequisitions;
-  }
-
-  /**
-   * Retrieves available supplying depots for given requisition.
-   *
-   * @param requisitionId id of requisition to find facilities for
-   * @return list of facilities
-   */
-  public List<FacilityDto> getAvailableSupplyingDepots(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
-    return new ArrayList<>(facilityDtos);
   }
 
   /**
@@ -582,39 +569,27 @@ public class RequisitionService {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValue Value to be used to filter.
-   * @param filterBy    Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                    "all".
-   * @param pageable    Pageable object that allows to optionally add "page" (page number)
+   * @param filterValues Expressions to be used in filters.
+   * @param filterBy     Field used to filter: "programName", "facilityCode", "facilityName" or
+   *                     "all".
+   * @param pageable     Pageable object that allows to optionally add "page" (page number)
    *                     and "size" (page size) query parameters.
    * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
-      searchApprovedRequisitionsWithSortAndFilterAndPaging(String filterValue,
+      searchApprovedRequisitionsWithSortAndFilterAndPaging(List<String> filterValues,
                                                            String filterBy,
                                                            Pageable pageable,
                                                            Collection<UUID> userManagedFacilities) {
-    List<UUID> desiredUuids = findDesiredUuids(filterValue, filterBy);
+    List<UUID> desiredUuids = findDesiredUuids(filterValues, filterBy);
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
-    List<BasicRequisitionDto> requisitionDtosList =
-        basicRequisitionDtoBuilder.build(requisitionsList);
 
-    requisitionDtosList.sort(new BasicRequisitionDtoComparator(pageable));
+    List<RequisitionWithSupplyingDepotsDto> responseList =
+        requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities);
 
-    List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-    for (BasicRequisitionDto requisition : requisitionDtosList) {
-      List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition.getId())
-          .stream()
-          .filter(f -> userManagedFacilities.contains(f.getId()))
-          .collect(Collectors.toList());
-
-      if (!facilities.isEmpty()) {
-        responseList.add(new RequisitionWithSupplyingDepotsDto(requisition, facilities));
-      }
-    }
-
+    responseList.sort(new RequisitionForConvertComparator(pageable));
     return Pagination.getPage(responseList, pageable);
   }
 
@@ -673,32 +648,66 @@ public class RequisitionService {
     return requisitionLineItems;
   }
 
-  private List<UUID> findDesiredUuids(String filterValue, String filterBy) {
+  private List<UUID> findDesiredUuids(List<String> filterValues, String filterBy) {
     List<UUID> uuidsToReturn = new ArrayList<>();
-    boolean filterAll = "all".equals(filterBy);
+    filterValues = filterValues == null ? Collections.EMPTY_LIST : filterValues;
+
+    Collection<ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
+    Collection<MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
+
+    facilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
+    programs.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
+
+    return uuidsToReturn;
+  }
+
+  private Collection<ProgramDto> findProgramsWithFilter(String filterBy,
+                                                        List<String> filterValues) {
+    boolean filterAll = isFilterAll(filterBy);
+    List<ProgramDto> foundPrograms = new ArrayList<>();
+
+    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
+      if (filterValues.isEmpty()) {
+        return programReferenceDataService.findAll();
+      }
+
+      for (String expression : filterValues) {
+        foundPrograms.addAll(programReferenceDataService.search(expression));
+      }
+    }
+
+    return foundPrograms;
+  }
+
+  private Collection<MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
+                                                                  List<String> filterValues) {
+    boolean filterAll = isFilterAll(filterBy);
     boolean filterByCode = "facilityCode".equals(filterBy);
     boolean filterByName = "facilityName".equals(filterBy);
 
-    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
-      Collection<ProgramDto> foundPrograms = programReferenceDataService.search(filterValue);
-      foundPrograms.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
+    Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
+
+    if ((filterAll || filterByCode || filterByName) && filterValues.isEmpty()) {
+      foundFacilities.addAll(facilityReferenceDataService.findAll());
     }
 
-    Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
-    if (filterAll && filterValue.isEmpty()) {
-      foundFacilities.addAll(facilityReferenceDataService.findAll());
-    } else {
+    for (String expression : filterValues) {
       if (filterAll || filterByCode) {
-        foundFacilities.addAll(facilityReferenceDataService.search(filterValue, null, null, false));
+        foundFacilities.addAll(facilityReferenceDataService.search(
+            expression, null, null, false));
       }
 
       if (filterAll || filterByName) {
-        foundFacilities.addAll(facilityReferenceDataService.search(null, filterValue, null, false));
+        foundFacilities.addAll(facilityReferenceDataService.search(
+            null, expression, null, false));
       }
     }
 
-    foundFacilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
-    return uuidsToReturn;
+    return foundFacilities;
+  }
+
+  private boolean isFilterAll(String filterBy) {
+    return "all".equals(filterBy);
   }
 
   private List<Requisition> getRecentRequisitions(Requisition requisition, int amount) {
