@@ -18,11 +18,14 @@ package org.openlmis.requisition.dto;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import java.util.UUID;
 
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 public class ValidReasonDto {
   private UUID programId;
   private UUID facilityTypeId;
