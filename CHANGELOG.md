@@ -25,6 +25,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2534](https://openlmis.atlassian.net/browse/OLMIS-2534): Fixed potential huge performance issue. The javers log initializer will not retrieve all domain objects at once if a repository implemenets [PagingAndSortingRepository](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/PagingAndSortingRepository.html)
 * [OLMIS-3008](https://openlmis.atlassian.net/browse/OLMIS-3008): Add correct error message when trying to convert requisition to an order with approved quantity disabled in the the requisition template.
 * [OLMIS-2908](https://openlmis.atlassian.net/browse/OLMIS-2908): Added a unique partial index on requisitions, which prevents creation of requisitions which have the same facility, program and processing period while being a non-emergency requsition. This is now enforced by the database, not only the application logic.
+* [OLMIS-3019](https://openlmis.atlassian.net/browse/OLMIS-3019): Removed clearance of beginning balance and price per pack fields from skipped line items while authorizing.
 
 4.0.0 / 2017-06-23
 ==================
