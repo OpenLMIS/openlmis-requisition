@@ -199,8 +199,8 @@ public class StockEventBuilder {
         && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
 
-    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}." +
-            " Including excess adjustment: {}",
+    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
+                    + " Including excess adjustment: {}",
             lineItem.getBeginningBalance(),
             stockCard == null ? null : stockCard.getStockOnHand(),
             shouldInclude);
@@ -215,8 +215,8 @@ public class StockEventBuilder {
         && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
 
-    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}." +
-                    " Including insufficiency adjustment: {}",
+    LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
+                    + " Including insufficiency adjustment: {}",
             lineItem.getBeginningBalance(),
             stockCard == null ? null : stockCard.getStockOnHand(),
             shouldInclude);
