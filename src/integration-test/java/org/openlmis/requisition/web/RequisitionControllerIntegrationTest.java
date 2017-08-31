@@ -1140,12 +1140,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortByFilterByAndPaging() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
+    FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
     List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
@@ -1188,12 +1185,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortByMultipleFilterValues() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
+    FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
     List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
 
@@ -1236,12 +1230,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetApprovedRequisitionsWithSortBySeveralFilters() {
     // given
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
+    FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
     List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
@@ -1399,6 +1390,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  private RightDto mockViewOrdersRight() {
+    RightDto right = new RightDto();
+    right.setId(UUID.randomUUID());
+    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    return right;
+  }
+  
   private void mockReasons() {
     ReasonDto reasonDto = new ReasonDto();
     reasonDto.setId(UUID.randomUUID());
@@ -1486,9 +1484,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private List<UUID> mockConvertToOrderRightAndFulfillmentFacilities(FacilityDto... facilities) {
-    RightDto right = new RightDto();
-    right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    RightDto right = mockViewOrdersRight();
 
     Set<FacilityDto> facilitySet = new HashSet<>();
     Collections.addAll(facilitySet, facilities);
