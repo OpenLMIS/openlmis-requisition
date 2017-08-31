@@ -76,6 +76,8 @@ public class StockEventBuilder {
    * @return  the create physical inventory draft
    */
   public StockEventDto fromRequisition(Requisition requisitionDto) {
+    LOGGER.debug("Building stock events for requisition: {}", requisitionDto.getId());
+
     List<StockCardDto> stockCards = stockCardService.getStockCards(requisitionDto.getFacilityId(),
         requisitionDto.getProgramId()).stream().filter(stockCard -> stockCard.getLot() == null)
         .collect(Collectors.toList());
