@@ -16,7 +16,6 @@
 package org.openlmis.utils;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionLineItem.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
@@ -36,12 +35,14 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.powermock.api.mockito.PowerMockito;
@@ -68,6 +69,10 @@ public class StockEventBuilderTest {
   private static final LocalDate PERIOD_END_DATE = LocalDate.now().minusDays(1);
   private static final String RECEIPTS_REASON_ID = "RECEIPTS_REASON_ID";
   private static final String CONSUMED_REASON_ID = "CONSUMED_REASON_ID";
+  private static final String BEGINNING_BALANCE_EXCESS_REASON_ID =
+      "BEGINNING_BALANCE_EXCESS_REASON_ID";
+  private static final String BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID =
+      "BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID";
   private static final ZoneId ZONE_ID = ZoneId.systemDefault();
 
   private Requisition requisition;
@@ -90,9 +95,15 @@ public class StockEventBuilderTest {
 
   private StockAdjustmentReason consumedReason;
 
+  private StockAdjustmentReason beginningBalanceExcess;
+
+  private StockAdjustmentReason beginningBalanceInsufficiency;
+
   private ProcessingPeriodDto period;
 
   private UUID userId = UUID.randomUUID();
+
+  private List<StockCardDto> stockCards;
 
   @Mock
   private DateHelper dateHelper;
@@ -119,13 +130,20 @@ public class StockEventBuilderTest {
         .thenReturn(receiptsReason.getReasonId().toString());
     PowerMockito.when(System.getenv(CONSUMED_REASON_ID))
         .thenReturn(consumedReason.getReasonId().toString());
+    PowerMockito.when(System.getenv(BEGINNING_BALANCE_EXCESS_REASON_ID))
+        .thenReturn(beginningBalanceExcess.getReasonId().toString());
+    PowerMockito.when(System.getenv(BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID))
+        .thenReturn(beginningBalanceInsufficiency.getReasonId().toString());
 
     when(dateHelper.getZone()).thenReturn(ZONE_ID);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     UserDto user = new UserDto();
     user.setId(userId);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
-    when(stockCardStockManagementService.getStockCards(any(), any())).thenReturn(new ArrayList<>());
+    when(stockCardStockManagementService.getStockCards(
+        requisition.getFacilityId(),
+        requisition.getProgramId())
+    ).thenReturn(stockCards);
   }
 
   @Test
@@ -383,10 +401,34 @@ public class StockEventBuilderTest {
         .isEqualTo(userId);
   }
 
+  @Test
+  public void itShouldIncludeBeginningBalanceExcessIfBeginningBalanceIsBiggerThanStockOnHand() {
+    lineItemOneDto.setBeginningBalance(20);
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(0).getStockAdjustments().get(4))
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
+            ReasonDto.newInstance(beginningBalanceInsufficiency), 10));
+  }
+
+  @Test
+  public void
+      itShouldIncludeBeginningBalanceInsufficiencyIfBeginningBalanceIsLowerThanStockOnHand() {
+    lineItemTwoDto.setBeginningBalance(33);
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(1).getStockAdjustments().get(4))
+        .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
+            ReasonDto.newInstance(beginningBalanceExcess), 3));
+  }
+
   private RequisitionLineItem prepareLineItemOneDto() {
     lineItemOneDto = new RequisitionLineItem();
 
     lineItemOneDto.setSkipped(false);
+    lineItemOneDto.setBeginningBalance(30);
     lineItemOneDto.setStockOnHand(21);
     lineItemOneDto.setTotalReceivedQuantity(22);
     lineItemOneDto.setTotalConsumedQuantity(23);
@@ -395,7 +437,10 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(2), 25)
     ));
     lineItemOneDto.setOrderableId(UUID.randomUUID());
-
+    stockCards.add(StockCardDto.builder()
+        .orderable(OrderableDto.builder().id(lineItemOneDto.getOrderableId()).build())
+        .stockOnHand(30)
+        .build());
 
     return lineItemOneDto;
   }
@@ -404,6 +449,7 @@ public class StockEventBuilderTest {
     lineItemTwoDto = new RequisitionLineItem();
 
     lineItemTwoDto.setSkipped(false);
+    lineItemTwoDto.setBeginningBalance(30);
     lineItemTwoDto.setStockOnHand(34);
     lineItemTwoDto.setTotalReceivedQuantity(35);
     lineItemTwoDto.setTotalConsumedQuantity(36);
@@ -412,12 +458,17 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(3), 38)
     ));
     lineItemTwoDto.setOrderableId(UUID.randomUUID());
+    stockCards.add(StockCardDto.builder()
+        .orderable(OrderableDto.builder().id(lineItemTwoDto.getOrderableId()).build())
+        .stockOnHand(30)
+        .build());
 
     return lineItemTwoDto;
   }
 
   private void prepareRequisitionDto() {
     requisition = new Requisition();
+    stockCards = new ArrayList<>();
 
     requisition.setDatePhysicalStockCountCompleted(DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
     requisition.setTemplate(prepareTemplate());
@@ -467,6 +518,8 @@ public class StockEventBuilderTest {
   private List<StockAdjustmentReason> prepareReasons() {
     consumedReason = prepareReason("Consumed");
     receiptsReason = prepareReason("Receipts");
+    beginningBalanceExcess = prepareReason("Beginning Balance Excess");
+    beginningBalanceInsufficiency = prepareReason("Beginning Balance Insufficiency");
 
     reasons = new ArrayList<>();
 
@@ -476,6 +529,8 @@ public class StockEventBuilderTest {
     reasons.add(prepareReason("Reason Four"));
     reasons.add(consumedReason);
     reasons.add(receiptsReason);
+    reasons.add(beginningBalanceExcess);
+    reasons.add(beginningBalanceInsufficiency);
 
     return reasons;
   }

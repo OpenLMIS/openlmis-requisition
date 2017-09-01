@@ -241,10 +241,6 @@ public class StockEventBuilder {
     return shouldInclude;
   }
 
-  private ReasonDto getReasonById(String reasonId, List<StockAdjustmentReason> reasons) {
-    return reasonId != null ? getReasonById(UUID.fromString(reasonId), reasons) : null;
-  }
-
   private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
     return ReasonDto.newInstance(reasons.stream()
         .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
