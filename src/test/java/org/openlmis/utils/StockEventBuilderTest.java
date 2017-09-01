@@ -209,14 +209,14 @@ public class StockEventBuilderTest {
   }
 
   @Test
-  public void itShouldIncludeConsumedIfTotalConsumedQuantityIsNotDisplayed() throws Exception {
+  public void itShouldNotIncludeConsumedIfTotalConsumedQuantityIsNotDisplayed() throws Exception {
     totalConsumedQuantityColumn.setIsDisplayed(false);
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
-        .forEach(lineItem -> assertThat(containsReason(lineItem, consumedReason)).isTrue());
+        .forEach(lineItem -> assertThat(containsReason(lineItem, consumedReason)).isFalse());
   }
 
   @Test

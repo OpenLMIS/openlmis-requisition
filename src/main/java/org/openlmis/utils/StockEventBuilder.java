@@ -131,7 +131,7 @@ public class StockEventBuilder {
           .collect(Collectors.toList());
     }
 
-    if (shouldIncludeConsumed(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
+    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
           .reason(getReasonById(getReasonId(CONSUMED), reasons))
