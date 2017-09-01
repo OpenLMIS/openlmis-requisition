@@ -205,6 +205,7 @@ public class StockEventBuilder {
                                                       StockCardDto stockCard,
                                                       List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
+        && lineItem.getBeginningBalance() != null
         && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
 
@@ -221,6 +222,7 @@ public class StockEventBuilder {
                                                              StockCardDto stockCard,
                                                              List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
+        && lineItem.getBeginningBalance() != null
         && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
 
