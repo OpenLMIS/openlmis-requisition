@@ -229,7 +229,7 @@ public class StockEventBuilder {
                                                              int beginningBalance,
                                                              List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
-        && beginningBalance > stockCard.getStockOnHand()
+        && beginningBalance < stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
 
     LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
