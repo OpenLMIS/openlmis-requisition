@@ -407,7 +407,7 @@ public class StockEventBuilderTest {
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
-    assertThat(result.getLineItems().get(0).getStockAdjustments()).isEqualTo(5);
+    assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(4))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(beginningBalanceInsufficiency), 10));
@@ -420,7 +420,7 @@ public class StockEventBuilderTest {
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
-    assertThat(result.getLineItems().get(1).getStockAdjustments()).isEqualTo(5);
+    assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(4))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(beginningBalanceExcess), 3));
