@@ -16,6 +16,7 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -236,7 +237,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       from = initiatedDateFrom.atStartOfDay(dateHelper.getZone());
     }
     if (initiatedDateTo != null) {
-      to = initiatedDateTo.plusDays(1).atStartOfDay(dateHelper.getZone());
+      to = ZonedDateTime.of(initiatedDateTo, LocalTime.MAX, dateHelper.getZone());
     }
 
     if (from != null && to != null) {
