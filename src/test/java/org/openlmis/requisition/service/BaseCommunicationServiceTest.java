@@ -27,7 +27,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.service.BaseCommunicationService.INVALID_TOKEN;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +50,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationServiceTest<T> {
   protected static final String TOKEN = UUID.randomUUID().toString();
 
@@ -164,7 +164,29 @@ public abstract class BaseCommunicationServiceTest<T> {
     HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
     when(exception.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
     when(exception.getResponseBodyAsString()).thenReturn(
-        "{\"error\":\"" + INVALID_TOKEN + "\",\"error_description\":\"" + UUID.randomUUID() + "}");
+        "{\"error\":\"invalid_token\",\"error_description\":\"" + UUID.randomUUID() + "}");
+    UUID id = UUID.randomUUID();
+
+    // when
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+        eq(service.getResultClass())
+    )).thenThrow(exception);
+
+    expectedException.expect(DataRetrievalException.class);
+    service.findOne(id);
+
+    verify(authService, times(1)).clearTokenCache();
+    verify(authService, times(2)).obtainAccessToken();
+  }
+
+  @Test
+  public void shouldRetryObtainingAccessTokenIfResponseBodyIsEmpty() throws Exception {
+    // given
+    BaseCommunicationService<T> service = prepareService();
+    HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
+    when(exception.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
+    when(exception.getResponseBodyAsString()).thenReturn("");
     UUID id = UUID.randomUUID();
 
     // when

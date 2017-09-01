@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
-  protected static final String INVALID_TOKEN = "invalid_token";
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   protected RestOperations restTemplate = new RestTemplate();
@@ -239,8 +238,7 @@ public abstract class BaseCommunicationService<T> {
     try {
       return task.run();
     } catch (HttpStatusCodeException ex) {
-      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()
-          && ex.getResponseBodyAsString().contains(INVALID_TOKEN)) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
         // the token has (most likely) expired - clear the cache and retry once
         authService.clearTokenCache();
         return task.run();
