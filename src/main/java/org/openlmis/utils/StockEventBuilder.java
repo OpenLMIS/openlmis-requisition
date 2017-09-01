@@ -131,7 +131,7 @@ public class StockEventBuilder {
           .collect(Collectors.toList());
     }
 
-    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
+    if (shouldIncludeConsumed(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
           .reason(getReasonById(getReasonId(CONSUMED), reasons))
@@ -157,16 +157,19 @@ public class StockEventBuilder {
               lineItem.getOrderableId());
     }
 
-    if (shouldIncludeBeginningBalanceExcess(lineItem, stockCard, reasons)) {
+    int beginningBalance =
+        lineItem.getBeginningBalance() == null ? 0 : lineItem.getBeginningBalance();
+
+    if (shouldIncludeBeginningBalanceExcess(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
-          .quantity(lineItem.getBeginningBalance() - stockCard.getStockOnHand())
+          .quantity(beginningBalance - stockCard.getStockOnHand())
           .reason(getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons))
           .build());
     }
 
-    if (shouldIncludeBeginningBalanceInsufficiency(lineItem, stockCard, reasons)) {
+    if (shouldIncludeBeginningBalanceInsufficiency(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
-          .quantity(stockCard.getStockOnHand() - lineItem.getBeginningBalance())
+          .quantity(stockCard.getStockOnHand() - beginningBalance)
           .reason(getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons))
           .build());
     }
@@ -201,34 +204,37 @@ public class StockEventBuilder {
     return existsAndIsDisplayed(column) && getReasonById(getReasonId(reason), reasons) != null;
   }
 
-  private boolean shouldIncludeBeginningBalanceExcess(RequisitionLineItem lineItem,
-                                                      StockCardDto stockCard,
+  private boolean shouldIncludeConsumed(RequisitionTemplateColumn column, String reason,
+                                List<StockAdjustmentReason> reasons) {
+    return column != null && getReasonById(getReasonId(reason), reasons) != null;
+  }
+
+  private boolean shouldIncludeBeginningBalanceExcess(StockCardDto stockCard,
+                                                      int beginningBalance,
                                                       List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
-        && lineItem.getBeginningBalance() != null
-        && lineItem.getBeginningBalance() > stockCard.getStockOnHand()
+        && beginningBalance > stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
 
     LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
                     + " Including excess adjustment: {}",
-            lineItem.getBeginningBalance(),
+            beginningBalance,
             stockCard == null ? null : stockCard.getStockOnHand(),
             shouldInclude);
 
     return shouldInclude;
   }
 
-  private boolean shouldIncludeBeginningBalanceInsufficiency(RequisitionLineItem lineItem,
-                                                             StockCardDto stockCard,
+  private boolean shouldIncludeBeginningBalanceInsufficiency(StockCardDto stockCard,
+                                                             int beginningBalance,
                                                              List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
-        && lineItem.getBeginningBalance() != null
-        && lineItem.getBeginningBalance() < stockCard.getStockOnHand()
+        && beginningBalance > stockCard.getStockOnHand()
         && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
 
     LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
                     + " Including insufficiency adjustment: {}",
-            lineItem.getBeginningBalance(),
+            beginningBalance,
             stockCard == null ? null : stockCard.getStockOnHand(),
             shouldInclude);
 
