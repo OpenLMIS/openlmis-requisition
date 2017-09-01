@@ -32,7 +32,6 @@ import java.util.UUID;
 @ToString
 public class StockEventLineItemDto {
   private UUID orderableId;
-  private Integer stockOnHand;
   private Integer quantity;
   private LocalDate occurredDate;
   private List<StockEventAdjustmentDto> stockAdjustments;
