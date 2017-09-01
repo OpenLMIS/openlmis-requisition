@@ -1,4 +1,4 @@
-5.0.0 / WIP
+5.0.0 / 2017-09-01
 ==================
 
 Contract breaking changes:
@@ -26,6 +26,8 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3008](https://openlmis.atlassian.net/browse/OLMIS-3008): Add correct error message when trying to convert requisition to an order with approved quantity disabled in the the requisition template.
 * [OLMIS-2908](https://openlmis.atlassian.net/browse/OLMIS-2908): Added a unique partial index on requisitions, which prevents creation of requisitions which have the same facility, program and processing period while being a non-emergency requsition. This is now enforced by the database, not only the application logic.
 * [OLMIS-3019](https://openlmis.atlassian.net/browse/OLMIS-3019): Removed clearance of beginning balance and price per pack fields from skipped line items while authorizing.
+* [OLMIS-2911](https://openlmis.atlassian.net/browse/OLMIS-2911): Added HTTP method parameter to jasper template parameter object.
+* [OLMIS-2681](https://openlmis.atlassian.net/browse/OLMIS-2681): Added profiling to requisition search endpoint, also it is using db pagination now.
 
 4.0.0 / 2017-06-23
 ==================
