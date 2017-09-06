@@ -34,7 +34,7 @@ public class UserDto {
   private String lastName;
   private String email;
   private boolean verified;
-  private FacilityDto homeFacility;
+  private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
   private Boolean allowNotify;
   private boolean active;
