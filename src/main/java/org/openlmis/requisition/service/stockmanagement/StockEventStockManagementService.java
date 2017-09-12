@@ -49,7 +49,7 @@ public class StockEventStockManagementService
    * Saves the given stock event to the stockmanagement service.
    *
    * @param stockEventDto  the physical inventory draft to be saved
-   * @retur the stock event response body
+   * @return the stock event response body
    */
   @SuppressWarnings("PMD.PreserveStackTrace")
   public StockEventResponseDto submit(StockEventDto stockEventDto) {
