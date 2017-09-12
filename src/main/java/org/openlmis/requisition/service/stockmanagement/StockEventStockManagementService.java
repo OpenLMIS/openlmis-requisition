@@ -20,20 +20,20 @@ import static org.openlmis.utils.RequestHelper.createUri;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventResponseDto;
 import org.openlmis.requisition.exception.ExternalApiException;
 import org.openlmis.requisition.exception.ServerException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.utils.RequestHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import java.io.IOException;
-import java.util.UUID;
 
 @Service
 public class StockEventStockManagementService
@@ -49,21 +49,22 @@ public class StockEventStockManagementService
    * Saves the given stock event to the stockmanagement service.
    *
    * @param stockEventDto  the physical inventory draft to be saved
-   * @return  the saved inventory draft
+   * @retur the stock event response body
    */
   @SuppressWarnings("PMD.PreserveStackTrace")
-  public UUID submit(StockEventDto stockEventDto) {
+  public StockEventResponseDto submit(StockEventDto stockEventDto) {
     String url = getServiceUrl() + getUrl();
 
     LOGGER.debug("Sending Stock Events to Stock Management: {}", stockEventDto);
 
     try {
-      ResponseEntity<UUID> response = runWithTokenRetry(() -> restTemplate.exchange(
-          createUri(url),
-          HttpMethod.POST,
-          RequestHelper.createEntity(authService.obtainAccessToken(), stockEventDto),
-          UUID.class
-      ));
+      ResponseEntity<StockEventResponseDto> response = runWithTokenRetry(() ->
+          restTemplate.exchange(
+              createUri(url),
+              HttpMethod.POST,
+              RequestHelper.createEntity(authService.obtainAccessToken(), stockEventDto),
+              StockEventResponseDto.class
+          ));
 
       return response.getBody();
     } catch (HttpStatusCodeException ex) {

@@ -52,6 +52,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventResponseDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
@@ -364,7 +365,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private void mockStockEventServiceResponses() {
     when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
     when(stockEventStockManagementService.submit(any(StockEventDto.class)))
-        .thenReturn(UUID.randomUUID());
+        .thenReturn(new StockEventResponseDto(UUID.randomUUID(), UUID.randomUUID()));
   }
 
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
