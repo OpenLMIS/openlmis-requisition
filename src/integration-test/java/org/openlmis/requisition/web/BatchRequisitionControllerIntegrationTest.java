@@ -25,6 +25,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
@@ -52,7 +53,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventResponseDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
@@ -364,8 +364,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   private void mockStockEventServiceResponses() {
     when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
-    when(stockEventStockManagementService.submit(any(StockEventDto.class)))
-        .thenReturn(new StockEventResponseDto(UUID.randomUUID(), UUID.randomUUID()));
+    doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {

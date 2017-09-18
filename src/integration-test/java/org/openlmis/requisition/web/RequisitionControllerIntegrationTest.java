@@ -70,7 +70,6 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventResponseDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -1551,8 +1550,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void mockStockEventServiceResponses() {
     when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
-    when(stockEventStockManagementService.submit(any(StockEventDto.class)))
-        .thenReturn(new StockEventResponseDto(UUID.randomUUID(), UUID.randomUUID()));
+    doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
   private ConvertToOrderDto generateConvertToOrderDto() {
