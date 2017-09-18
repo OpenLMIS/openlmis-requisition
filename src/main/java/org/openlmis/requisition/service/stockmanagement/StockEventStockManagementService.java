@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service.stockmanagement;
 
-import static org.openlmis.utils.RequestHelper.createUri;
+import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
@@ -23,7 +23,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.exception.ExternalApiException;
 import org.openlmis.requisition.exception.ServerException;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.utils.RequestHelper;
+import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

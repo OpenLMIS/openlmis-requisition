@@ -19,7 +19,7 @@ import static org.apache.commons.lang3.StringUtils.length;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

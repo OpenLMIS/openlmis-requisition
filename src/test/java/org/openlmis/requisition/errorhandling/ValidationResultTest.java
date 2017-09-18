@@ -23,7 +23,7 @@ import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.web.PermissionMessageException;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 import java.util.List;
 

@@ -17,7 +17,7 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.util.NotificationRequest;
-import org.openlmis.utils.RequestHelper;
+import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

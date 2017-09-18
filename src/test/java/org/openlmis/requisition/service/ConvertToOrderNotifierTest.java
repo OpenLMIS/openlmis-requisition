@@ -40,7 +40,7 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import java.util.Collections;
 import java.util.UUID;
 

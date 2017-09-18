@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.exception;
 
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 /**
  * Signals user being unauthorized in external api.

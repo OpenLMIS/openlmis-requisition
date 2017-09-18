@@ -24,7 +24,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
-import org.openlmis.utils.StatusChangeHelper;
+import org.openlmis.requisition.utils.StatusChangeHelper;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;

@@ -15,15 +15,15 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.openlmis.utils.RequestHelper.createEntity;
-import static org.openlmis.utils.RequestHelper.createUri;
+import static org.openlmis.requisition.utils.RequestHelper.createEntity;
+import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.RequestParameters;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;

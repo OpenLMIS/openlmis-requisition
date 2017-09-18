@@ -44,7 +44,7 @@ import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.utils.RequisitionExportHelper;
+import org.openlmis.requisition.utils.RequisitionExportHelper;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;

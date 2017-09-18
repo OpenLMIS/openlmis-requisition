@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.exception;
 
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 public class ValidationMessageException extends BaseMessageException {
 

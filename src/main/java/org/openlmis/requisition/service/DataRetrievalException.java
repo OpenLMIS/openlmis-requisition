@@ -17,7 +17,7 @@ package org.openlmis.requisition.service;
 
 import lombok.Getter;
 import org.openlmis.requisition.exception.BaseMessageException;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import org.springframework.http.HttpStatus;
 
 /**

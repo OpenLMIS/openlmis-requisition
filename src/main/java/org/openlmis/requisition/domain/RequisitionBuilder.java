@@ -20,7 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 import java.util.ArrayList;
 import java.util.Optional;

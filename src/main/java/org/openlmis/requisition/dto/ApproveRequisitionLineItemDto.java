@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.utils.MoneyDeserializer;
-import org.openlmis.utils.MoneySerializer;
+import org.openlmis.requisition.utils.MoneyDeserializer;
+import org.openlmis.requisition.utils.MoneySerializer;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

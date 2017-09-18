@@ -68,11 +68,11 @@ import org.openlmis.requisition.service.stockmanagement.StockEventStockManagemen
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
-import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.DatePhysicalStockCountCompletedEnabledPredicate;
-import org.openlmis.utils.FacilitySupportsProgramHelper;
-import org.openlmis.utils.StockEventBuilder;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
+import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.validation.Errors;
 
 import java.util.ArrayList;

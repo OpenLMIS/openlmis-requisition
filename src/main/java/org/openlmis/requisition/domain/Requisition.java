@@ -34,7 +34,7 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.CurrencyConfig;
+import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -45,8 +45,8 @@ import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RequisitionHelper;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.RequisitionHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -75,7 +75,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.openlmis.utils.RightName;
+import org.openlmis.requisition.utils.RightName;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity

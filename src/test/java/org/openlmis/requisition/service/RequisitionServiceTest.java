@@ -102,10 +102,10 @@ import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferen
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
-import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.Pagination;
-import org.openlmis.utils.RightName;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.utils.RightName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

@@ -54,11 +54,11 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
-import org.openlmis.settings.service.ConfigurationSettingService;
-import org.openlmis.utils.FacilitySupportsProgramHelper;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.Pagination;
-import org.openlmis.utils.RightName;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.utils.RightName;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;

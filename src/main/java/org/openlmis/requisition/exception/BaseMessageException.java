@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.exception;
 
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 /**
  * Base class for exceptions using Message.

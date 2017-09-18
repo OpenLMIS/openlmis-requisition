@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service;
 
-import static org.openlmis.utils.RequestHelper.createUri;
+import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;

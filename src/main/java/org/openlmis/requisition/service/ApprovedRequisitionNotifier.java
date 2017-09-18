@@ -30,9 +30,9 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
-import org.openlmis.utils.AuthenticationHelper;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RightName;
+import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;

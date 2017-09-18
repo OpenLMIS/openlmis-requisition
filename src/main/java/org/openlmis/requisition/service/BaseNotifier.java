@@ -21,7 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import java.time.chrono.Chronology;

@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.exception;
 
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 /**
  * Exception thrown when resource was not found.

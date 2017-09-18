@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

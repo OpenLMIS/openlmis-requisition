@@ -26,8 +26,8 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RequisitionExportHelper;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

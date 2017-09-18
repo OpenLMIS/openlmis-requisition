@@ -48,8 +48,8 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.RightName;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.RightName;
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.Arrays;

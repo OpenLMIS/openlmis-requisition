@@ -55,9 +55,9 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.Pagination;
-import org.openlmis.utils.ReportUtils;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.utils.ReportUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

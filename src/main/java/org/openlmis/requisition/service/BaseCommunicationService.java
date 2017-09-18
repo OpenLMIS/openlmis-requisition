@@ -17,15 +17,15 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_OCCURED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
-import static org.openlmis.utils.RequestHelper.createEntity;
-import static org.openlmis.utils.RequestHelper.createUri;
+import static org.openlmis.requisition.utils.RequestHelper.createEntity;
+import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.ResultDto;
-import org.openlmis.utils.DynamicPageTypeReference;
-import org.openlmis.utils.DynamicResultDtoTypeReference;
-import org.openlmis.utils.Message;
-import org.openlmis.utils.PageImplRepresentation;
-import org.openlmis.utils.RequestHelper;
+import org.openlmis.requisition.utils.DynamicPageTypeReference;
+import org.openlmis.requisition.utils.DynamicResultDtoTypeReference;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.PageImplRepresentation;
+import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,7 +18,7 @@ package org.openlmis.requisition.repository.custom.impl;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 
 import java.util.List;
 import java.util.UUID;

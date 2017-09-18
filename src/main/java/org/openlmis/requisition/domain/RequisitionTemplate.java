@@ -26,7 +26,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.utils.Message;
+import org.openlmis.requisition.utils.Message;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;

@@ -42,7 +42,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.utils.DynamicPageTypeReference;
+import org.openlmis.requisition.utils.DynamicPageTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;

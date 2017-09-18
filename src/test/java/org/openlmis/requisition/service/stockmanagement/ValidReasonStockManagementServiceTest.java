@@ -35,7 +35,7 @@ import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.RequestParameters;
-import org.openlmis.utils.RequestHelper;
+import org.openlmis.requisition.utils.RequestHelper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
