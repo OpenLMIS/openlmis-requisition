@@ -386,12 +386,24 @@ public class RequisitionController extends BaseRequisitionController {
   public Page<BasicRequisitionDto> requisitionsForApproval(
           @RequestParam(value = "program", required = false) UUID program,
           Pageable pageable) {
+    XLOGGER.entry(program, pageable);
+    Profiler profiler = new Profiler("REQUISITIONS_FOR_APPROVAL");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("GET_USER");
     UserDto user = authenticationHelper.getCurrentUser();
+
+    profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     Set<Requisition> approvalRequisitions = requisitionService
         .getRequisitionsForApproval(user.getId(), program);
 
-    List<BasicRequisitionDto> dtoList = basicRequisitionDtoBuilder.build(approvalRequisitions);
-    return Pagination.getPage(dtoList, pageable);
+    profiler.start("BUILD_DTO_LIST");
+    Page<BasicRequisitionDto> dtoPage = Pagination.getPage(
+        basicRequisitionDtoBuilder.build(approvalRequisitions), pageable);
+
+    profiler.stop().log();
+    XLOGGER.exit();
+    return dtoPage;
   }
 
   /**
