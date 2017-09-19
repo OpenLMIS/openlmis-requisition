@@ -35,6 +35,18 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -70,14 +82,14 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.web.OrderDtoBuilder;
-import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RequisitionForConvertComparator;
 import org.openlmis.requisition.utils.RightName;
+import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -87,17 +99,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -397,8 +398,8 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for the specified user.
    */
-  public Set<Requisition> getRequisitionsForApproval(UUID userId, UUID program) {
-    Set<Requisition> requisitionsForApproval = new LinkedHashSet<>();
+  public List<Requisition> getRequisitionsForApproval(UUID userId, UUID programId) {
+    List<Requisition> requisitionsForApproval = new ArrayList<>();
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
     List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
         .getRoleAssignments(userId)
@@ -407,15 +408,17 @@ public class RequisitionService {
         .collect(Collectors.toList());
 
     if (roleAssignments != null) {
+      Set<Pair> programNodePairs = new HashSet<>();
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
         if (roleAssignment.getSupervisoryNodeId() != null
             && roleAssignment.getProgramId() != null
-                && (program == null || program.equals(roleAssignment.getProgramId()))) {
-          requisitionsForApproval.addAll(getApprovableRequisitions(
-              roleAssignment.getProgramId(),
-              roleAssignment.getSupervisoryNodeId()));
+                && (programId == null || programId.equals(roleAssignment.getProgramId()))) {
+          programNodePairs.add(new ImmutablePair<>(
+              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
         }
       }
+      requisitionsForApproval = requisitionRepository
+          .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
     }
     return requisitionsForApproval;
   }

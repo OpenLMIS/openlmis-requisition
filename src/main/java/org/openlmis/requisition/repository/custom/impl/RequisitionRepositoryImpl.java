@@ -18,6 +18,7 @@ package org.openlmis.requisition.repository.custom.impl;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -171,6 +172,41 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     List<Requisition> results = entityManager.createQuery(criteriaQuery).getResultList();
 
     return results;
+  }
+
+  /**
+   * Get all requisitions that match any of the program/supervisoryNode pairs, that can be 
+   * approved (AUTHORIZED, IN_APPROVAL). Pairs must not be null.
+   * 
+   * @param programNodePairs program / supervisoryNode pairs
+   * @return matching requisitions
+   */
+  @Override
+  public List<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair> programNodePairs) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
+
+    Root<Requisition> root = criteriaQuery.from(Requisition.class);
+
+    List<Predicate> combinedPredicates = new ArrayList<>();
+    for (Pair pair : programNodePairs) {
+      Predicate programPredicate = builder.equal(root.get(PROGRAM_ID), pair.getLeft());
+      Predicate nodePredicate = builder.equal(root.get(SUPERVISORY_NODE_ID), pair.getRight());
+      Predicate combinedPredicate = builder.and(programPredicate, nodePredicate);
+      combinedPredicates.add(combinedPredicate);
+    }
+    Predicate pairPredicate = builder.or(combinedPredicates.toArray(
+        new Predicate[combinedPredicates.size()]));
+
+    Predicate statusPredicate = builder.or(
+        builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
+        builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
+    
+    Predicate predicate = builder.and(pairPredicate, statusPredicate);
+
+    criteriaQuery = criteriaQuery.where(predicate);
+    return entityManager.createQuery(criteriaQuery).getResultList();
   }
 
   /**

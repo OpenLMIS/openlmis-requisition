@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.springframework.data.domain.Page;
@@ -43,4 +44,7 @@ public interface RequisitionRepositoryCustom {
 
   List<Requisition> searchApprovedRequisitions(String filterBy,
                                                List<UUID> desiredUuids);
+
+  List<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair> programNodePairs);
 }

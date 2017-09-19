@@ -22,7 +22,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
 import java.time.ZonedDateTime;
@@ -30,11 +34,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -43,6 +50,7 @@ import org.junit.Test;
 import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
@@ -376,6 +384,86 @@ public class RequisitionRepositoryIntegrationTest
     repository.save(asList(regularRequisition, emergencyRequisition1, emergencyRequisition2));
 
     entityManager.flush();
+  }
+  
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldFindIfIdsAndStatusMatch() {
+    // given
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    Requisition matchingRequisition1 = requisitions.get(0);
+    matchingRequisition1.setProgramId(programId);
+    matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
+    repository.save(matchingRequisition1);
+
+    Requisition matchingRequisition2 = requisitions.get(1);
+    matchingRequisition2.setProgramId(programId);
+    matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
+    repository.save(matchingRequisition2);
+
+    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    // when
+    List<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+    
+    // then
+    assertEquals(2, results.size());
+  }
+  
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldNotFindIfIdsDoNotMatch() {
+    // given
+    UUID programId = UUID.randomUUID();
+    Requisition partialMatchingRequisition1 = requisitions.get(0);
+    partialMatchingRequisition1.setProgramId(programId);
+    partialMatchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
+    repository.save(partialMatchingRequisition1);
+
+    UUID supervisoryNodeId = UUID.randomUUID();
+    Requisition partialMatchingRequisition2 = requisitions.get(1);
+    partialMatchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
+    partialMatchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
+    repository.save(partialMatchingRequisition2);
+
+    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+    
+    // when
+    List<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+    
+    // then
+    assertEquals(0, results.size());
+  }
+  
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldNotFindIfStatusDoesNotMatch() {
+    // given
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    for (Requisition partialMatchingRequisition : requisitions) {
+      partialMatchingRequisition.setProgramId(programId);
+      partialMatchingRequisition.setSupervisoryNodeId(supervisoryNodeId);
+    }
+    requisitions.get(0).setStatus(INITIATED);
+    requisitions.get(1).setStatus(SUBMITTED);
+    requisitions.get(2).setStatus(APPROVED);
+    requisitions.get(3).setStatus(RELEASED);
+    requisitions.get(4).setStatus(SKIPPED);
+    repository.save(requisitions);
+    
+    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    // when
+    List<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+
+    // then
+    assertEquals(0, results.size());
   }
 
   private StockAdjustmentReason generateStockAdjustmentReason() {

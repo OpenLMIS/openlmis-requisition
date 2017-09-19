@@ -1093,7 +1093,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetRequisitionsForApprovalForSpecificUser() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    Set<Requisition> requisitions = Collections.singleton(requisition);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
 
     UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(userId, null)).willReturn(requisitions);
@@ -1117,7 +1117,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldGetRequisitionsForApprovalForSpecificUserAndProgram() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    Set<Requisition> requisitions = Collections.singleton(requisition);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
     UUID program = UUID.randomUUID();
 
     UUID userId = authenticationHelper.getCurrentUser().getId();

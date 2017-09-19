@@ -44,7 +44,19 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -99,30 +111,17 @@ import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataSer
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
-import org.openlmis.requisition.web.OrderDtoBuilder;
-import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
+import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
+import org.openlmis.requisition.web.OrderDtoBuilder;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -483,6 +482,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApproval() {
+    // given
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
     assertEquals(2, requisitions.size());
 
@@ -498,27 +498,14 @@ public class RequisitionServiceTest {
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
     UUID userId = UUID.randomUUID();
-    UserDto user = mock(UserDto.class);
-    when(user.getId()).thenReturn(userId);
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
         .thenReturn(roleAssignmentDtos);
 
-    when(requisitionRepository.searchRequisitions(
-        requisition.getFacilityId(),
-        requisition.getProgramId(),
-        requisition.getCreatedDate().minusDays(2).toLocalDate(),
-        requisition.getCreatedDate().plusDays(2).toLocalDate(),
-        requisition.getProcessingPeriodId(),
-        requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()),
-        null,
-        permissionStrings,
-        pageRequest))
-        .thenReturn(Pagination.getPage(requisitions, pageRequest));
-
-    Set<Requisition> requisitionsForApproval =
+    // when
+    List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(userId, null);
 
+    // then
     assertEquals(2, requisitionsForApproval.size());
     assertTrue(requisitionsForApproval.contains(requisitions.get(0)));
     assertTrue(requisitionsForApproval.contains(requisitions.get(1)));
@@ -544,20 +531,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
             .thenReturn(roleAssignmentDtos);
 
-    when(requisitionRepository.searchRequisitions(
-        requisition.getFacilityId(),
-        requisition.getProgramId(),
-        requisition.getCreatedDate().minusDays(2).toLocalDate(),
-        requisition.getCreatedDate().plusDays(2).toLocalDate(),
-        requisition.getProcessingPeriodId(),
-        requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()), 
-        null,
-        permissionStrings,
-        pageRequest))
-        .thenReturn(Pagination.getPage(requisitions, pageRequest));
-
-    Set<Requisition> requisitionsForApproval =
+    List<Requisition> requisitionsForApproval =
             requisitionService.getRequisitionsForApproval(user.getId(), programId);
 
     assertEquals(2, requisitionsForApproval.size());
@@ -588,7 +562,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
+    List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
@@ -613,7 +587,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
+    List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
@@ -638,7 +612,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
 
-    Set<Requisition> requisitionsForApproval =
+    List<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user.getId(), null);
 
     assertEquals(0, requisitionsForApproval.size());
@@ -1594,10 +1568,9 @@ public class RequisitionServiceTest {
     requisition2.setStatus(AUTHORIZED);
     requisitions.add(requisition2);
 
-    when(requisitionRepository.searchRequisitions(
-        null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
-        pageRequest))
-        .thenReturn(Pagination.getPage(requisitions, pageRequest));
+    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+        Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId))))
+        .thenReturn(requisitions);
     return requisitions;
   }
 

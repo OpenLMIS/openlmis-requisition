@@ -384,9 +384,9 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicRequisitionDto> requisitionsForApproval(
-          @RequestParam(value = "program", required = false) UUID program,
+          @RequestParam(value = "program", required = false) UUID programId,
           Pageable pageable) {
-    XLOGGER.entry(program, pageable);
+    XLOGGER.entry(programId, pageable);
     Profiler profiler = new Profiler("REQUISITIONS_FOR_APPROVAL");
     profiler.setLogger(XLOGGER);
 
@@ -394,8 +394,8 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
-    Set<Requisition> approvalRequisitions = requisitionService
-        .getRequisitionsForApproval(user.getId(), program);
+    List<Requisition> approvalRequisitions = requisitionService
+        .getRequisitionsForApproval(user.getId(), programId);
 
     profiler.start("BUILD_DTO_LIST");
     Page<BasicRequisitionDto> dtoPage = Pagination.getPage(
