@@ -399,8 +399,15 @@ public class RequisitionService {
    * Get requisitions to approve for the specified user.
    */
   public List<Requisition> getRequisitionsForApproval(UUID userId, UUID programId) {
+    Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
+    profiler.setLogger(LOGGER);
+
     List<Requisition> requisitionsForApproval = new ArrayList<>();
+
+    profiler.start("FIND_RIGHT_FROM_NAME");
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+
+    profiler.start("GET_USER_DETAILED_ROLE_ASSIGNMENTS");
     List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
         .getRoleAssignments(userId)
         .stream()
@@ -408,6 +415,7 @@ public class RequisitionService {
         .collect(Collectors.toList());
 
     if (roleAssignments != null) {
+      profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
       Set<Pair> programNodePairs = new HashSet<>();
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
         if (roleAssignment.getSupervisoryNodeId() != null
@@ -417,9 +425,12 @@ public class RequisitionService {
               roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
         }
       }
+      profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
           .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
     }
+    
+    profiler.stop().log();
     return requisitionsForApproval;
   }
 
