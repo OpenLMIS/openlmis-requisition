@@ -45,6 +45,6 @@ public interface RequisitionRepositoryCustom {
   List<Requisition> searchApprovedRequisitions(String filterBy,
                                                List<UUID> desiredUuids);
 
-  List<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs);
+  Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair> programNodePairs, Pageable pageable);
 }

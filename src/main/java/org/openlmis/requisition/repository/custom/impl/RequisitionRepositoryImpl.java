@@ -182,31 +182,26 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @return matching requisitions
    */
   @Override
-  public List<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs) {
+  public Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair> programNodePairs, Pageable pageable) {
+
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
 
-    Root<Requisition> root = criteriaQuery.from(Requisition.class);
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false);
 
-    List<Predicate> combinedPredicates = new ArrayList<>();
-    for (Pair pair : programNodePairs) {
-      Predicate programPredicate = builder.equal(root.get(PROGRAM_ID), pair.getLeft());
-      Predicate nodePredicate = builder.equal(root.get(SUPERVISORY_NODE_ID), pair.getRight());
-      Predicate combinedPredicate = builder.and(programPredicate, nodePredicate);
-      combinedPredicates.add(combinedPredicate);
-    }
-    Predicate pairPredicate = builder.or(combinedPredicates.toArray(
-        new Predicate[combinedPredicates.size()]));
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true);
 
-    Predicate statusPredicate = builder.or(
-        builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
-        builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
-    
-    Predicate predicate = builder.and(pairPredicate, statusPredicate);
+    Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-    criteriaQuery = criteriaQuery.where(predicate);
-    return entityManager.createQuery(criteriaQuery).getResultList();
+    Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
+    List<Requisition> requisitions = entityManager.createQuery(query)
+        .setMaxResults(maxAndFirst.getLeft())
+        .setFirstResult(maxAndFirst.getRight())
+        .getResultList();
+
+    return Pagination.getPage(requisitions, pageable, count);
   }
 
   /**
@@ -298,6 +293,35 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     query.distinct(true);
 
     return query;
+  }
+
+  private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
+      CriteriaQuery<T> query, Set<Pair> programNodePairs, boolean isCountQuery) {
+
+    Root<Requisition> root = query.from(Requisition.class);
+
+    if (isCountQuery) {
+      CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
+      query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
+    }
+
+    List<Predicate> combinedPredicates = new ArrayList<>();
+    for (Pair pair : programNodePairs) {
+      Predicate programPredicate = builder.equal(root.get(PROGRAM_ID), pair.getLeft());
+      Predicate nodePredicate = builder.equal(root.get(SUPERVISORY_NODE_ID), pair.getRight());
+      Predicate combinedPredicate = builder.and(programPredicate, nodePredicate);
+      combinedPredicates.add(combinedPredicate);
+    }
+    Predicate pairPredicate = builder.or(combinedPredicates.toArray(
+        new Predicate[combinedPredicates.size()]));
+
+    Predicate statusPredicate = builder.or(
+        builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
+        builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
+
+    Predicate predicate = builder.and(pairPredicate, statusPredicate);
+
+    return query.where(predicate);
   }
 
   private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,

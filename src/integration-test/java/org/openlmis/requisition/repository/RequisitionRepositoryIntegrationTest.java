@@ -63,6 +63,7 @@ import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -407,11 +408,11 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
     // when
-    List<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
     
     // then
-    assertEquals(2, results.size());
+    assertEquals(2, results.getTotalElements());
   }
   
   @Test
@@ -432,11 +433,11 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
     
     // when
-    List<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
     
     // then
-    assertEquals(0, results.size());
+    assertEquals(0, results.getTotalElements());
   }
   
   @Test
@@ -459,11 +460,11 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
     // when
-    List<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
 
     // then
-    assertEquals(0, results.size());
+    assertEquals(0, results.getTotalElements());
   }
 
   private StockAdjustmentReason generateStockAdjustmentReason() {

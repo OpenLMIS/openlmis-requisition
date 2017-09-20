@@ -398,11 +398,13 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for the specified user.
    */
-  public List<Requisition> getRequisitionsForApproval(UUID userId, UUID programId) {
+  public Page<Requisition> getRequisitionsForApproval(UUID userId, UUID programId,
+      Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     profiler.setLogger(LOGGER);
 
-    List<Requisition> requisitionsForApproval = new ArrayList<>();
+    Page<Requisition> requisitionsForApproval = Pagination.getPage(
+        Collections.emptyList(), pageable);
 
     profiler.start("FIND_RIGHT_FROM_NAME");
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
@@ -414,7 +416,7 @@ public class RequisitionService {
         .filter(r -> r.getRole().getRights().contains(right))
         .collect(Collectors.toList());
 
-    if (roleAssignments != null) {
+    if (roleAssignments != null && !roleAssignments.isEmpty()) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
       Set<Pair> programNodePairs = new HashSet<>();
       for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
@@ -427,7 +429,7 @@ public class RequisitionService {
       }
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
-          .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+          .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageable);
     }
     
     profiler.stop().log();

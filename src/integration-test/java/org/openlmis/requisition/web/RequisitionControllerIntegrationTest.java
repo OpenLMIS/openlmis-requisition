@@ -1096,7 +1096,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     List<Requisition> requisitions = Collections.singletonList(requisition);
 
     UUID userId = authenticationHelper.getCurrentUser().getId();
-    given(requisitionService.getRequisitionsForApproval(userId, null)).willReturn(requisitions);
+    given(requisitionService.getRequisitionsForApproval(
+        eq(userId), eq(null), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
     PageImplRepresentation result = restAssured.given()
@@ -1121,7 +1123,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID program = UUID.randomUUID();
 
     UUID userId = authenticationHelper.getCurrentUser().getId();
-    given(requisitionService.getRequisitionsForApproval(userId, program)).willReturn(requisitions);
+    given(requisitionService.getRequisitionsForApproval(
+        eq(userId), eq(program), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
     PageImplRepresentation result = restAssured.given()
