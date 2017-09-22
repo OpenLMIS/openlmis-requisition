@@ -49,42 +49,14 @@ schemas:
 
   - requisitionLineItemDto: !include schemas/requisitionLineItemDto.json
 
-  - approveRequisitionDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "ApproveRequisitionDto",
-          "description": "A single requisitionDto for batch approval",
-          "properties": {
-              "id": { "type": "string", "title": "id" },
-              "modifiedDate": {"type": "string", "title": "modifiedDate" },
-              "status": { "type": "string", "title": "status" },
-              "facilityName": { "type": "string", "title": "facilityName" },
-              "periodName": { "type": "string", "title": "periodName" },
-              "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"#/schemas/approveRequisitionLineItemDto" }, "uniqueItems": false }
-          },
-          "required": ["id", "facilityName", "periodName", "status"]
-      }
+  - approveRequisitionDto: !include schemas/approveRequisitionDto.json
 
-  - approveRequisitionLineItemDto: |
-      {   "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema",
-          "title": "RequisitionLineItemDto",
-          "description": "A single requisitionLineItemDto",
-          "properties": {
-              "id": { "type": "string", "title": "id" },
-              "orderable": { "type": "object", "$ref": "#/schemas/basicOrderableDto", "title": "orderable" },
-              "approvedQuantity": {"type": "integer", "title": "approvedQuantity" },
-              "pricePerPack": {"type": "number", "title": "pricePerPack" },
-              "totalCost": {"type": "number", "title": "totalCost" },
-              "skipped": {"type": "boolean", "title": "skipped" }
-          },
-          "required": ["id", "approvedQuantity", "orderable"]
-      }
+  - approveRequisitionLineItemDto: !include schemas/approveRequisitionLineItemDto.json
 
   - approveRequisitionDtoArray: |
       {
           "type": "array",
-          "items": { "type": "object", "$ref": "#/schemas/approveRequisitionDto" }
+          "items": { "type": "object", "$ref": "schemas/approveRequisitionDto.json" }
       }
 
   - requisitionError: |
