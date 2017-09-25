@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -264,6 +265,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .extract()
         .asString();
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
     JsonNode json = objectMapper.readTree(jsonString);
     ArrayNode requisitionErrors = (ArrayNode) json.get("requisitionErrors");
 
@@ -282,6 +285,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .statusCode(statusCode)
         .extract()
         .asString();
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     JsonNode json = objectMapper.readTree(jsonString);
     ArrayNode requisitionErrors = (ArrayNode) json.get("requisitionErrors");
@@ -391,18 +396,21 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
       if (requisition.getFacilityId() != null) {
         facility = new FacilityDto();
         facility.setId(requisition.getFacilityId());
+        facility.setName("facility");
       }
 
       ProgramDto program = null;
       if (requisition.getProgramId() != null) {
         program = new ProgramDto();
         program.setId(requisition.getProgramId());
+        program.setName("program");
       }
 
       ProcessingPeriodDto period = null;
       if (requisition.getProcessingPeriodId() != null) {
         period = new ProcessingPeriodDto();
         period.setId(requisition.getProcessingPeriodId());
+        period.setName("period");
       }
 
       dto.setProcessingPeriod(period);
