@@ -28,6 +28,7 @@ import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionVersionValidatorTest {
@@ -82,6 +83,7 @@ public class RequisitionVersionValidatorTest {
       databaseDate) {
     when(incomingReq.getModifiedDate()).thenReturn(incomingDate);
     when(existingReq.getModifiedDate()).thenReturn(databaseDate);
+    when(existingReq.getId()).thenReturn(UUID.randomUUID());
     return requisitionVersionValidator.validateRequisitionTimestamps(
         incomingReq, existingReq);
   }

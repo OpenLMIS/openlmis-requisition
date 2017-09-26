@@ -45,7 +45,8 @@ public class RequisitionVersionValidator {
     ZonedDateTime dateModified = incomingReq.getModifiedDate();
     if (dateModified != null
         && !dateModified.isEqual(existingReq.getModifiedDate())) {
-      return ValidationResult.conflict(ERROR_DATE_MODIFIED_MISMATCH);
+      return ValidationResult.conflict(ERROR_DATE_MODIFIED_MISMATCH,
+          existingReq.getId().toString());
     }
     return ValidationResult.success();
   }
