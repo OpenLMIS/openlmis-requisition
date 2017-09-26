@@ -18,11 +18,9 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
 import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
-import static org.openlmis.requisition.domain.Requisition.MODIFIED_DATE;
 import static org.openlmis.requisition.domain.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.Requisition.SUPERVISORY_NODE_ID;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
@@ -43,7 +41,7 @@ import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import java.time.ZonedDateTime;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -74,8 +72,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   public void validate(Object target, Errors errors) {
     Requisition requisition = (Requisition) target;
     Requisition savedRequisition = requisitionRepository.findOne(requisition.getId());
-
-    validateDateModifiedIsCorrect(errors, requisition, savedRequisition);
 
     if (predicate.exec(requisition.getProgramId())) {
       validateDatePhysicalStockCountCompleted(errors, requisition, savedRequisition);
@@ -185,14 +181,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
   private void rejectIfValueChanged(Errors errors, Object value, Object savedValue, String field) {
     if (value != null && savedValue != null && !savedValue.equals(value)) {
       rejectValue(errors, field, new Message(ERROR_IS_INVARIANT, field));
-    }
-  }
-
-  private void validateDateModifiedIsCorrect(Errors errors, Requisition requisition,
-                                             Requisition requisitionToUpdate) {
-    ZonedDateTime dateModified = requisition.getModifiedDate();
-    if (dateModified != null && !dateModified.isEqual(requisitionToUpdate.getModifiedDate())) {
-      rejectValue(errors, MODIFIED_DATE, new Message(ERROR_DATE_MODIFIED_MISMATCH));
     }
   }
 
