@@ -17,9 +17,11 @@ package org.openlmis.requisition.domain;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -283,6 +285,24 @@ public class RequisitionLineItemTest {
     requisitionLineItem.calculateAndSetAverageConsumption();
 
     assertEquals(3L, requisitionLineItem.getAverageConsumption().longValue());
+  }
+
+  @Test
+  public void shouldReturnFalseIfSkippedIsNull() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setSkipped(null);
+
+    assertFalse(requisitionLineItem.isSkipped());
+  }
+
+  @Test
+  public void shouldReturnSkippedValueIfSkippedIsNotNull() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+
+    requisitionLineItem.setSkipped(true);
+    assertTrue(requisitionLineItem.isSkipped());
+    requisitionLineItem.setSkipped(false);
+    assertFalse(requisitionLineItem.isSkipped());
   }
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
