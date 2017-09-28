@@ -472,7 +472,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.getSkipped())
+        .filter(line -> !line.isSkipped())
         .collect(Collectors.toList());
   }
 
@@ -486,7 +486,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.getSkipped())
+        .filter(line -> !line.isSkipped())
         .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
   }
@@ -501,7 +501,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.getSkipped())
+        .filter(line -> !line.isSkipped())
         .filter(RequisitionLineItem::isNonFullSupply)
         .collect(Collectors.toList());
   }
@@ -513,7 +513,7 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
     return this.requisitionLineItems.stream()
-        .filter(RequisitionLineItem::getSkipped)
+        .filter(RequisitionLineItem::isSkipped)
         .collect(Collectors.toList());
   }
 
@@ -591,7 +591,7 @@ public class Requisition extends BaseTimestampedEntity {
     Optional<Money> money = requisitionLineItems.stream()
         .map(RequisitionLineItem::getTotalCost).filter(Objects::nonNull).reduce(Money::plus);
 
-    return money.isPresent() ? money.get() : defaultValue;
+    return money.orElse(defaultValue);
   }
 
   private void calculateAndValidateTemplateFields(RequisitionTemplate template) {

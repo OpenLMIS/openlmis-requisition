@@ -165,9 +165,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .stream()
           .filter(original -> Objects.equals(original.getId(), line.getId()))
           .findFirst()
-          .ifPresent(original -> {
-            original.setApprovedQuantity(line.getApprovedQuantity());
-          });
+          .ifPresent(original -> original.setApprovedQuantity(line.getApprovedQuantity()));
     }
     requisition.setModifiedDate(dto.getModifiedDate());
     nullCalculatedFields(requisition);

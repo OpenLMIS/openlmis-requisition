@@ -102,7 +102,7 @@ public class StockEventBuilder {
       Map<String, RequisitionTemplateColumn> columnsMap, LocalDate occurredDate,
       List<StockCardDto> stockCards) {
     return lineItems.stream()
-        .filter(lineItem -> !lineItem.getSkipped() && !lineItem.isNonFullSupply())
+        .filter(lineItem -> !lineItem.isSkipped() && !lineItem.isNonFullSupply())
         .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occurredDate, stockCards))
         .collect(Collectors.toList());
   }
