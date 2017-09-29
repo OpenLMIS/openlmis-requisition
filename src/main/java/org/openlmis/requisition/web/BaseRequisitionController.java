@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
@@ -24,26 +25,31 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.DateHelper;
+import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
-import org.openlmis.requisition.utils.AuthenticationHelper;
-import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
-import org.openlmis.requisition.utils.StockEventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -101,6 +107,12 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
+  @Autowired
+  private DateHelper dateHelper;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
   protected ValidationResult validateFields(AbstractRequisitionValidator validator,
                                             Requisition requisition) {
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
@@ -126,6 +138,8 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   protected BasicRequisitionDto doApprove(Requisition requisition, UUID userId) {
+    checkIfPeriodIsValid(requisition);
+
     SupervisoryNodeDto supervisoryNodeDto =
         supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
@@ -169,5 +183,14 @@ public abstract class BaseRequisitionController extends BaseController {
   protected Set<UUID> getLineItemOrderableIds(Requisition requisition) {
     return requisition.getRequisitionLineItems().stream().map(
         RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+  }
+
+  protected void checkIfPeriodIsValid(Requisition requisition) {
+    LocalDate endDate = periodReferenceDataService
+        .findOne(requisition.getProcessingPeriodId())
+        .getEndDate();
+    if (dateHelper.isDateAfterNow(endDate)) {
+      throw new ValidationMessageException(new Message(ERROR_PERIOD_END_DATE_WRONG, endDate));
+    }
   }
 }

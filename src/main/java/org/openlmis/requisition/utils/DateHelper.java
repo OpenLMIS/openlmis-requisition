@@ -36,6 +36,14 @@ public class DateHelper {
   }
 
   /**
+   * Checks if date is after the current date from the system clock in the system time zone.
+   * @return true if date is before after or is null
+   */
+  public boolean isDateAfterNow(LocalDate date) {
+    return (date == null) || date.isAfter(getCurrentDateWithSystemZone());
+  }
+
+  /**
    * Obtains the current date from the system clock in the system time zone.
    * @return the current date using the system clock
    */

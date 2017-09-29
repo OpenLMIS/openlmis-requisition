@@ -63,8 +63,10 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
@@ -165,6 +167,12 @@ public class RequisitionControllerTest {
   @Mock
   private StockEventStockManagementService inventoryService;
 
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private DateHelper dateHelper;
+
   @InjectMocks
   private RequisitionController requisitionController;
 
@@ -197,6 +205,9 @@ public class RequisitionControllerTest {
     when(predicate.exec(any(UUID.class))).thenReturn(true);
 
     mockRequisitionRepository();
+
+    when(periodReferenceDataService.findOne(any(UUID.class)))
+        .thenReturn(mock(ProcessingPeriodDto.class));
   }
 
   @Test

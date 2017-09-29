@@ -37,6 +37,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -83,11 +84,13 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
+import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
@@ -203,8 +206,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private StockEventBuilder stockEventBuilder;
 
+  @MockBean
+  private PeriodReferenceDataService periodReferenceDataService;
+
   @Autowired
   private MessageService messageService;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID facilityTypeId = UUID.randomUUID();
@@ -499,6 +508,43 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldNotSubmitWhenPeriodEndDateIsInFuture() {
+    // given
+    Requisition requisition = spyRequisition(RequisitionStatus.INITIATED);
+    UUID requisitionId = requisition.getId();
+
+    doNothing().when(requisition).submit(any(), anyUuid());
+    doReturn(ValidationResult.success())
+        .when(permissionService).canSubmitRequisition(requisitionId);
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionId)
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
+                processingPeriodDto.getEndDate())));
+
+    // then
+    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotSubmitRequisitionWhenUserHasNoRightForSubmit() {
     // given
     Requisition requisition = spyRequisition(RequisitionStatus.INITIATED);
@@ -733,6 +779,48 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisition, atLeastOnce()).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeRequisitionWhenPeriodEndDateIsInFuture() {
+    // given
+    Requisition requisition = spyRequisition(RequisitionStatus.SUBMITTED);
+    UUID facilityId = requisition.getFacilityId();
+    UUID programId = requisition.getProgramId();
+    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
+    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
+
+    given(configurationSettingService.getSkipAuthorization()).willReturn(false);
+    given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
+        .willReturn(supervisoryNode);
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .willReturn(Collections.emptyList());
+    doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
+    doReturn(ValidationResult.success()).when(permissionService)
+        .canAuthorizeRequisition(anyUuid());
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
+                processingPeriodDto.getEndDate())));
+
+    // then
+    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -980,6 +1068,45 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals(requisitionId, result.getId());
     verify(requisition, atLeastOnce()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
         anyUuid());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionWhenPeriodEndDateIsInFuture() {
+    // given
+    Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
+
+    doReturn(ValidationResult.success())
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
+        anyUuid(), anyUuid());
+    doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    UUID requisitionId = requisition.getId();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", requisitionId)
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
+                processingPeriodDto.getEndDate())));
+
+    // then
+    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -72,26 +72,26 @@ public class StockEventBuilder {
   /**
    * Builds a physical inventory draft DTO from the given requisition.
    *
-   * @param requisitionDto  the requisition to be used a source for the physical inventory draft
+   * @param requisition  the requisition to be used a source for the physical inventory draft
    * @return  the create physical inventory draft
    */
-  public StockEventDto fromRequisition(Requisition requisitionDto) {
-    LOGGER.debug("Building stock events for requisition: {}", requisitionDto.getId());
+  public StockEventDto fromRequisition(Requisition requisition) {
+    LOGGER.debug("Building stock events for requisition: {}", requisition.getId());
 
-    List<StockCardDto> stockCards = stockCardService.getStockCards(requisitionDto.getFacilityId(),
-        requisitionDto.getProgramId()).stream().filter(stockCard -> stockCard.getLot() == null)
+    List<StockCardDto> stockCards = stockCardService.getStockCards(requisition.getFacilityId(),
+        requisition.getProgramId()).stream().filter(stockCard -> stockCard.getLot() == null)
         .collect(Collectors.toList());
 
     return StockEventDto
         .builder()
-        .facilityId(requisitionDto.getFacilityId())
-        .programId(requisitionDto.getProgramId())
+        .facilityId(requisition.getFacilityId())
+        .programId(requisition.getProgramId())
         .userId(authenticationHelper.getCurrentUser().getId())
         .lineItems(fromLineItems(
-            requisitionDto.getRequisitionLineItems(),
-            requisitionDto.getStockAdjustmentReasons(),
-            requisitionDto.getTemplate().getColumnsMap(),
-            getOccurredDate(requisitionDto),
+            requisition.getRequisitionLineItems(),
+            requisition.getStockAdjustmentReasons(),
+            requisition.getTemplate().getColumnsMap(),
+            getOccurredDate(requisition),
             stockCards
         ))
         .build();

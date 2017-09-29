@@ -206,6 +206,8 @@ public class RequisitionController extends BaseRequisitionController {
       throw new BindingResultException(getErrors(bindingResult));
     }
 
+    checkIfPeriodIsValid(requisition);
+
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
     UserDto user = authenticationHelper.getCurrentUser();
@@ -454,6 +456,8 @@ public class RequisitionController extends BaseRequisitionController {
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
+
+    checkIfPeriodIsValid(requisition);
 
     UserDto user = authenticationHelper.getCurrentUser();
 

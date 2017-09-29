@@ -80,6 +80,8 @@ public abstract class MessageKeys {
       + ".approve.requisitionMustBeAuthorizedOrSubmittedIfSkipped";
   public static final String ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION = ERROR_PREFIX
       + ".approve.noPermissionForSupervisoryNode";
+  public static final String ERROR_PERIOD_END_DATE_WRONG = ERROR_PREFIX
+        + ".approve.errorPeriodEndDateWrong";
   public static final String ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS =
       ERROR_PREFIX + ".periodsForInitiate.missingParameters";
   public static final String ERROR_INITIALIZE_MISSING_PARAMETERS = ERROR_PREFIX
