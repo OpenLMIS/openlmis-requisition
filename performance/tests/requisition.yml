@@ -40,7 +40,7 @@ scenarios:
           script-text: |
             def count = vars.get("periods_count");
 
-            if (count > 0) {
+            if (count.toInteger() > 0) {
               def uuid = vars.get("period_id");
               uuid = uuid.replaceAll(/"|\[|\]/, "");
 
