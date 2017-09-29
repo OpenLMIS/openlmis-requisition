@@ -292,7 +292,7 @@ public class RequisitionLineItemTest {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setSkipped(null);
 
-    assertFalse(requisitionLineItem.isSkipped());
+    assertFalse(requisitionLineItem.isLineSkipped());
   }
 
   @Test
@@ -300,9 +300,9 @@ public class RequisitionLineItemTest {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
 
     requisitionLineItem.setSkipped(true);
-    assertTrue(requisitionLineItem.isSkipped());
+    assertTrue(requisitionLineItem.isLineSkipped());
     requisitionLineItem.setSkipped(false);
-    assertFalse(requisitionLineItem.isSkipped());
+    assertFalse(requisitionLineItem.isLineSkipped());
   }
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {

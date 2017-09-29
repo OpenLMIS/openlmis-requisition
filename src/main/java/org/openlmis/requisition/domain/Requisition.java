@@ -472,7 +472,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.isSkipped())
+        .filter(line -> !line.isLineSkipped())
         .collect(Collectors.toList());
   }
 
@@ -486,7 +486,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.isSkipped())
+        .filter(line -> !line.isLineSkipped())
         .filter(line -> !line.isNonFullSupply())
         .collect(Collectors.toList());
   }
@@ -501,7 +501,7 @@ public class Requisition extends BaseTimestampedEntity {
       return Collections.emptyList();
     }
     return this.requisitionLineItems.stream()
-        .filter(line -> !line.isSkipped())
+        .filter(line -> !line.isLineSkipped())
         .filter(RequisitionLineItem::isNonFullSupply)
         .collect(Collectors.toList());
   }
@@ -513,7 +513,7 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
     return this.requisitionLineItems.stream()
-        .filter(RequisitionLineItem::isSkipped)
+        .filter(RequisitionLineItem::isLineSkipped)
         .collect(Collectors.toList());
   }
 

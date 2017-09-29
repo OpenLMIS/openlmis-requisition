@@ -591,7 +591,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * checks if line is skipped. Return false if null.
    */
-  public boolean isSkipped() {
+  public boolean isLineSkipped() {
     if (skipped == null) {
       return false;
     }

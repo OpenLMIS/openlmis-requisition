@@ -89,7 +89,7 @@ public class OrderDtoBuilder {
         requisition
             .getRequisitionLineItems()
             .stream()
-            .filter(line -> !line.isSkipped())
+            .filter(line -> !line.isLineSkipped())
             .map(line -> OrderLineItemDto.newOrderLineItem(
                 line, getIfPresent(products, line.getOrderableId())
             ))
