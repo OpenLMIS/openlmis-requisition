@@ -653,14 +653,16 @@ public class RequisitionTest {
   public void shouldReturnNonSkippedFullSupplyRequisitionLineItems() {
     RequisitionLineItem notSkipped = getRequisitionLineItem(false);
     RequisitionLineItem skipped = getRequisitionLineItem(true);
+    RequisitionLineItem nullSkippedValueLine = getRequisitionLineItem(null);
 
     Requisition requisition = getRequisition(notSkipped, skipped);
+    requisition.getRequisitionLineItems().add(nullSkippedValueLine);
     List<RequisitionLineItem> nonSkippedRequisitionLineItems =
         requisition.getNonSkippedFullSupplyRequisitionLineItems();
     RequisitionLineItem requisitionLineItem =
         nonSkippedRequisitionLineItems.get(0);
 
-    assertEquals(1, nonSkippedRequisitionLineItems.size());
+    assertEquals(2, nonSkippedRequisitionLineItems.size());
     assertEquals(notSkipped.getId(), requisitionLineItem.getId());
   }
 
@@ -1139,7 +1141,7 @@ public class RequisitionTest {
     return parentNode;
   }
 
-  private RequisitionLineItem getRequisitionLineItem(boolean skipped) {
+  private RequisitionLineItem getRequisitionLineItem(Boolean skipped) {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setSkipped(skipped);
     item.setNonFullSupply(false);
@@ -1155,7 +1157,7 @@ public class RequisitionTest {
 
   private Requisition getRequisition(RequisitionLineItem notSkipped, RequisitionLineItem skipped) {
     Requisition requisition = new Requisition();
-    requisition.setRequisitionLineItems(Arrays.asList(notSkipped, skipped));
+    requisition.setRequisitionLineItems(Lists.newArrayList(notSkipped, skipped));
     return requisition;
   }
 }
