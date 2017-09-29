@@ -186,11 +186,13 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   protected void checkIfPeriodIsValid(Requisition requisition) {
-    LocalDate endDate = periodReferenceDataService
-        .findOne(requisition.getProcessingPeriodId())
-        .getEndDate();
-    if (dateHelper.isDateAfterNow(endDate)) {
-      throw new ValidationMessageException(new Message(ERROR_PERIOD_END_DATE_WRONG, endDate));
+    if (requisition.getEmergency() != null && !requisition.getEmergency()) {
+      LocalDate endDate = periodReferenceDataService
+          .findOne(requisition.getProcessingPeriodId())
+          .getEndDate();
+      if (dateHelper.isDateAfterNow(endDate)) {
+        throw new ValidationMessageException(new Message(ERROR_PERIOD_END_DATE_WRONG, endDate));
+      }
     }
   }
 }

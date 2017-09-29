@@ -77,6 +77,7 @@ import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.validation.Errors;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -183,6 +184,7 @@ public class RequisitionControllerTest {
   private UUID uuid3 = UUID.fromString("00000000-0000-0000-0000-000000000003");
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
+  private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
 
   @Before
   public void setUp() {
@@ -207,7 +209,7 @@ public class RequisitionControllerTest {
     mockRequisitionRepository();
 
     when(periodReferenceDataService.findOne(any(UUID.class)))
-        .thenReturn(mock(ProcessingPeriodDto.class));
+        .thenReturn(processingPeriod);
   }
 
   @Test
@@ -234,15 +236,39 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldSubmitValidInitiatedRequisition() {
-    UserDto submitter = mock(UserDto.class);
-    when(submitter.getId()).thenReturn(UUID.randomUUID());
+    mockDependenciesForSubmit();
 
-    when(permissionService.canSubmitRequisition(uuid1))
-        .thenReturn(ValidationResult.success());
+    requisitionController.submitRequisition(uuid1);
 
-    when(initiatedRequsition.getTemplate()).thenReturn(template);
-    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
-    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
+    // we do not update in this endpoint
+    verify(initiatedRequsition, never())
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+  }
+
+  @Test
+  public void shouldSubmitEmergencyRequisitionForAnyPeriod() {
+    mockDependenciesForSubmit();
+    when(initiatedRequsition.getEmergency()).thenReturn(true);
+    when(processingPeriod.getEndDate()).thenReturn(LocalDate.now());
+
+    when(dateHelper.isDateAfterNow(processingPeriod.getEndDate())).thenReturn(true);
+
+    requisitionController.submitRequisition(uuid1);
+
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
+    // we do not update in this endpoint
+    verify(initiatedRequsition, never())
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldRejectSubmitRegularRequisitionForWrongPeriod() {
+    mockDependenciesForSubmit();
+    when(initiatedRequsition.getEmergency()).thenReturn(false);
+    when(processingPeriod.getEndDate()).thenReturn(LocalDate.now());
+
+    when(dateHelper.isDateAfterNow(processingPeriod.getEndDate())).thenReturn(true);
 
     requisitionController.submitRequisition(uuid1);
 
@@ -478,6 +504,18 @@ public class RequisitionControllerTest {
     requisitionController.authorizeRequisition(submittedRequsition.getId());
 
     verify(requisitionStatusProcessor).statusChange(submittedRequsition);
+  }
+
+  private void mockDependenciesForSubmit() {
+    UserDto submitter = mock(UserDto.class);
+    when(submitter.getId()).thenReturn(UUID.randomUUID());
+
+    when(permissionService.canSubmitRequisition(uuid1))
+        .thenReturn(ValidationResult.success());
+
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
   }
 
   private void mockSupervisoryNodeForAuthorize() {

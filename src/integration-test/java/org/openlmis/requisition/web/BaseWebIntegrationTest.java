@@ -168,6 +168,7 @@ public abstract class BaseWebIntegrationTest {
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setTemplate(generateRequisitionTemplate());
+    requisition.setEmergency(false);
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
