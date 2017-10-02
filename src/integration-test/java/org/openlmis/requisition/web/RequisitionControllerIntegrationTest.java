@@ -1194,7 +1194,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     String[] errorKeys = {
         PermissionService.REQUISITION_CREATE, PermissionService.REQUISITION_AUTHORIZE};
-    doReturn(ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION, errorKeys))
+    doReturn(ValidationResult
+        .noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION, (Object[]) errorKeys))
         .when(permissionService).canInitOrAuthorizeRequisition(anyUuid(), anyUuid());
 
     // when

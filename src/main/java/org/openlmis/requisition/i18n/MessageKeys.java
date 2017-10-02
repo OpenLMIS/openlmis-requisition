@@ -66,6 +66,8 @@ public abstract class MessageKeys {
       + ".canNotSkipPeriod.status";
   public static final String ERROR_DELETE_FAILED_WRONG_STATUS = ERROR_PREFIX
       + ".badStatus.delete";
+  public static final String ERROR_DELETE_FAILED_NEWER_EXISTS = ERROR_PREFIX
+      + ".delete.newerExists";
   public static final String ERROR_REQUISITION_NOT_FOUND = ERROR_PREFIX
       + ".requisitionNotFound";
   public static final String ERROR_FACILITY_NOT_FOUND = ERROR_PREFIX

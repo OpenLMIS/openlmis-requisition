@@ -21,6 +21,7 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANT
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
@@ -198,11 +199,11 @@ public class RequisitionService {
     // numberOfPeriodsToAverage is always >= 2 or null
     if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
       numberOfPreviousPeriodsToAverage = 0;
-      previousRequisitions = getRecentRequisitions(requisition, 1);
+      previousRequisitions = getRecentRegularRequisitions(requisition, 1);
     } else {
       numberOfPreviousPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage() - 1;
       previousRequisitions =
-          getRecentRequisitions(requisition, numberOfPreviousPeriodsToAverage);
+          getRecentRegularRequisitions(requisition, numberOfPreviousPeriodsToAverage);
     }
 
     if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
@@ -227,7 +228,7 @@ public class RequisitionService {
   }
 
   private ProofOfDeliveryDto getProofOfDeliveryDto(boolean emergency, Requisition requisition) {
-    List<Requisition> previous = getRecentRequisitions(requisition, 1);
+    List<Requisition> previous = getRecentRegularRequisitions(requisition, 1);
     ProofOfDeliveryDto pod = null;
 
     if (!emergency && !isEmpty(previous)) {
@@ -268,7 +269,9 @@ public class RequisitionService {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
     } else if (!requisition.isPreAuthorize()) {
-      throw new ValidationMessageException(new Message(ERROR_DELETE_FAILED_WRONG_STATUS));
+      throw new ValidationMessageException(ERROR_DELETE_FAILED_WRONG_STATUS);
+    } else if (!requisition.getEmergency() && !isRequisitionNewest(requisition)) {
+      throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);
     } else {
       statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
       requisitionRepository.delete(requisition);
@@ -334,7 +337,7 @@ public class RequisitionService {
           ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisitionId));
     }
   }
-  
+
   /**
    * Finds requisitions matching all of the provided parameters.
    */
@@ -355,10 +358,10 @@ public class RequisitionService {
       profiler.stop().log();
       return Pagination.getPage(Collections.emptyList(), pageable);
     }
-    
+
     profiler.start("REPOSITORY_SEARCH");
-    Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program, 
-        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, 
+    Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program,
+        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode,
         requisitionStatuses, emergency, permissionStrings, pageable);
 
     profiler.stop().log();
@@ -431,7 +434,7 @@ public class RequisitionService {
       requisitionsForApproval = requisitionRepository
           .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageable);
     }
-    
+
     profiler.stop().log();
     return requisitionsForApproval;
   }
@@ -628,6 +631,41 @@ public class RequisitionService {
     orderFulfillmentService.create(orders);
   }
 
+  private boolean isRequisitionNewest(Requisition requisition) {
+    UUID recentRequisitionId =
+        findRecentRequisition(requisition.getProgramId(), requisition.getFacilityId()).getId();
+    return requisition.getId().equals(recentRequisitionId);
+  }
+
+  /**
+   * Returns requisition associated with the most recent period for given program and facility.
+   *
+   * @param programId  Program for Requisition
+   * @param facilityId Facility for Requisition
+   * @return Requisition.
+   */
+  private Requisition findRecentRequisition(UUID programId, UUID facilityId) {
+    Requisition result = null;
+    Collection<ProcessingPeriodDto> periods =
+        periodService.searchByProgramAndFacility(programId, facilityId);
+
+    if (periods != null) {
+      for (ProcessingPeriodDto dto : periods) {
+        // There is always maximum one regular requisition for given period, facility and program
+        List<Requisition> requisitions = requisitionRepository.searchRequisitions(
+            dto.getId(), facilityId, programId, false);
+
+        if (requisitions.size() > 0) {
+          result = requisitions.get(0);
+        } else {
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
   private ValidationResult isEligibleForConvertToOrder(Requisition requisition) {
     if (APPROVED != requisition.getStatus()) {
       return ValidationResult.failedValidation(
@@ -726,13 +764,13 @@ public class RequisitionService {
     return "all".equals(filterBy);
   }
 
-  private List<Requisition> getRecentRequisitions(Requisition requisition, int amount) {
+  private List<Requisition> getRecentRegularRequisitions(Requisition requisition, int amount) {
     List<ProcessingPeriodDto> previousPeriods =
         periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
 
     List<Requisition> recentRequisitions = new ArrayList<>();
     for (ProcessingPeriodDto period : previousPeriods) {
-      List<Requisition> requisitionsByPeriod = getRequisitionsByPeriod(requisition, period);
+      List<Requisition> requisitionsByPeriod = getRegularRequisitionsByPeriod(requisition, period);
       if (!requisitionsByPeriod.isEmpty()) {
         Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
         recentRequisitions.add(requisitionByPeriod);
@@ -741,13 +779,10 @@ public class RequisitionService {
     return recentRequisitions;
   }
 
-  private List<Requisition> getRequisitionsByPeriod(Requisition requisition,
-                                                    ProcessingPeriodDto period) {
-    return searchRequisitions(requisition.getFacilityId(),
-        requisition.getProgramId(),
-        period.getId(),
-        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
-        .getContent();
+  private List<Requisition> getRegularRequisitionsByPeriod(Requisition requisition,
+                                                           ProcessingPeriodDto period) {
+    return requisitionRepository.searchRequisitions(
+        period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
   }
 
   private void saveStatusMessage(Requisition requisition) {

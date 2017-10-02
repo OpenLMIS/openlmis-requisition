@@ -127,6 +127,7 @@ import org.springframework.data.domain.Sort;
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
 
+  private static final UUID PERIOD_ID = UUID.randomUUID();
   private Requisition requisition;
   private RequisitionDto requisitionDto;
 
@@ -246,6 +247,7 @@ public class RequisitionServiceTest {
   private List<String> permissionStrings = Collections.singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+  Requisition previousRequisition;
 
   @Before
   public void setUp() {
@@ -261,6 +263,36 @@ public class RequisitionServiceTest {
     requisition.setStatus(INITIATED);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(Collections.emptyList());
+    stubRecentRequisition();
+
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
+  }
+
+  @Test
+  public void shouldDeleteRequisitionIfRecentRequisitionIsLastInPeriod() {
+    requisition.setStatus(INITIATED);
+    stubRecentRequisition();
+
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
+  }
+
+  @Test
+  public void shouldDeleteRequisitionIfRecentRequisitionIsNotInLastPeriod() {
+    requisition.setStatus(INITIATED);
+
+    ProcessingPeriodDto secondPeriod = mock(ProcessingPeriodDto.class);
+    when(secondPeriod.getId()).thenReturn(UUID.randomUUID());
+    when(periodService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Arrays.asList(processingPeriodDto, secondPeriod));
+    when(requisitionRepository
+        .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
+        .thenReturn(Collections.singletonList(requisition));
+    when(requisitionRepository
+        .searchRequisitions(secondPeriod.getId(), facilityId, programId, false))
+        .thenReturn(Collections.emptyList());
+
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
   }
@@ -269,7 +301,9 @@ public class RequisitionServiceTest {
   public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
     requisition.setStatus(SUBMITTED);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-            .thenReturn(Collections.emptyList());
+        .thenReturn(Collections.emptyList());
+    stubRecentRequisition();
+
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
   }
@@ -281,6 +315,8 @@ public class RequisitionServiceTest {
         StatusMessage.newStatusMessage(requisition, null, null, null, "Message 1"));
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(statusMessages);
+    stubRecentRequisition();
+
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
     verify(statusMessageRepository).delete(statusMessages);
@@ -290,6 +326,8 @@ public class RequisitionServiceTest {
   public void shouldNotDeleteRequisitionWhenStatusIsAuthorized() throws
       ValidationMessageException {
     requisition.setStatus(AUTHORIZED);
+    stubRecentRequisition();
+
     requisitionService.delete(requisition.getId());
   }
 
@@ -297,6 +335,8 @@ public class RequisitionServiceTest {
   public void shouldNotDeleteRequisitionWhenStatusIsInApproval() throws
       ValidationMessageException {
     requisition.setStatus(IN_APPROVAL);
+    stubRecentRequisition();
+
     requisitionService.delete(requisition.getId());
   }
 
@@ -304,7 +344,28 @@ public class RequisitionServiceTest {
   public void shouldNotDeleteRequisitionWhenStatusIsApproved() throws
       ValidationMessageException {
     requisition.setStatus(APPROVED);
+    stubRecentRequisition();
+
     requisitionService.delete(requisition.getId());
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotDeleteRequisitionIfItIsNotNewest() {
+    requisition.setStatus(INITIATED);
+
+    prepareRequisitionIsNotNewest();
+
+    requisitionService.delete(requisition.getId());
+  }
+
+  @Test
+  public void shouldDeleteEmergencyRequisitionEvenIfItIsNewest() {
+    requisition.setStatus(INITIATED);
+    requisition.setEmergency(true);
+    prepareRequisitionIsNotNewest();
+
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
   }
 
   @Test(expected = ContentNotFoundMessageException.class)
@@ -753,12 +814,49 @@ public class RequisitionServiceTest {
     mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        this.programId, facilityId, suggestedPeriodId, false,
+        programId, facilityId, suggestedPeriodId, false,
         stockAdjustmentReasons);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
         requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
+    verify(requisitionRepository).searchRequisitions(
+            initiatedRequisition.getProcessingPeriodId(), facilityId, programId, false);
+  }
+
+  @Test
+  public void shouldInitiatePreviousAdjustedConsumptionsBasedOnRegularRequisitions() {
+    prepareForTestInitiate(SETTING);
+    stubPreviousPeriod();
+    mockPreviousRequisition();
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
+
+    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
+    assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
+        requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
+    verify(requisitionRepository).searchRequisitions(
+        PERIOD_ID, facilityId, programId, false);
+  }
+
+  @Test
+  public void shouldAssignPreviousRegularRequisition() {
+    prepareForTestInitiate(SETTING);
+    stubPreviousPeriod();
+    mockPreviousRequisition();
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
+
+    UUID previousRequisitionId = initiatedRequisition.getPreviousRequisitions().get(0).getId();
+    assertEquals(previousRequisition.getId(), previousRequisitionId);
+    verify(requisitionRepository).searchRequisitions(
+        PERIOD_ID, facilityId, programId, false);
   }
 
   @Test
@@ -1476,21 +1574,20 @@ public class RequisitionServiceTest {
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(ADJUSTED_CONSUMPTION);
     previousRequisitionLineItem.setOrderableId(PRODUCT_ID);
-    Requisition previousRequisition = new Requisition();
+    previousRequisition = new Requisition();
     previousRequisition.setId(UUID.randomUUID());
     previousRequisition
         .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
 
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Pagination.getPage(Collections.singletonList(previousRequisition), 
-            pageRequest));
+        .searchRequisitions(any(), eq(facilityId), eq(programId), eq(false)))
+        .thenReturn(Collections.singletonList(previousRequisition));
   }
 
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Pagination.getPage(Collections.emptyList(), pageRequest));
+        .searchRequisitions(any(), any(), any(), any()))
+        .thenReturn(Collections.emptyList());
   }
 
   private void mockApprovedProduct(UUID productId, boolean fullSupply) {
@@ -1655,5 +1752,30 @@ public class RequisitionServiceTest {
     UserDto currentUser = new UserDto();
     currentUser.setId(currentUserId);
     when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
+  }
+
+  private void stubRecentRequisition() {
+    when(periodService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Collections.singleton(processingPeriodDto));
+    when(requisitionRepository
+        .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
+        .thenReturn(Collections.singletonList(requisition));
+  }
+
+  private void stubPreviousPeriod() {
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
+    periodDto.setId(PERIOD_ID);
+    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+        .thenReturn(Collections.singletonList(periodDto));
+  }
+
+  private void prepareRequisitionIsNotNewest() {
+    when(periodService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Collections.singleton(processingPeriodDto));
+    Requisition newestRequisition = mock(Requisition.class);
+    when(newestRequisition.getId()).thenReturn(UUID.randomUUID());
+    when(requisitionRepository
+        .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
+        .thenReturn(Collections.singletonList(newestRequisition));
   }
 }
