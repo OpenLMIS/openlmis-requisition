@@ -3,6 +3,7 @@
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3126](https://openlmis.atlassian.net/browse/OLMIS-3126): Fix unable to batch save when skip is disabled in Requisition Template.
+* [OLMIS-3215](https://openlmis.atlassian.net/browse/OLMIS-3215): Do not allow for status change (submit/authorize/approve) when period end after today.
 
 5.0.0 / 2017-09-01
 ==================
