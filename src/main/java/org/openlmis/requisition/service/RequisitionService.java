@@ -632,8 +632,8 @@ public class RequisitionService {
   }
 
   private boolean isRequisitionNewest(Requisition requisition) {
-    UUID recentRequisitionId =
-        findRecentRequisition(requisition.getProgramId(), requisition.getFacilityId()).getId();
+    UUID recentRequisitionId = findRecentRegularRequisition(
+        requisition.getProgramId(), requisition.getFacilityId()).getId();
     return requisition.getId().equals(recentRequisitionId);
   }
 
@@ -644,7 +644,7 @@ public class RequisitionService {
    * @param facilityId Facility for Requisition
    * @return Requisition.
    */
-  private Requisition findRecentRequisition(UUID programId, UUID facilityId) {
+  private Requisition findRecentRegularRequisition(UUID programId, UUID facilityId) {
     Requisition result = null;
     Collection<ProcessingPeriodDto> periods =
         periodService.searchByProgramAndFacility(programId, facilityId);
