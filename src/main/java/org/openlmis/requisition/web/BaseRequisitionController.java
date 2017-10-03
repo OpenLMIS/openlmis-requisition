@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -191,7 +192,8 @@ public abstract class BaseRequisitionController extends BaseController {
           .findOne(requisition.getProcessingPeriodId())
           .getEndDate();
       if (dateHelper.isDateAfterNow(endDate)) {
-        throw new ValidationMessageException(new Message(ERROR_PERIOD_END_DATE_WRONG, endDate));
+        throw new ValidationMessageException(new Message(
+            ERROR_PERIOD_END_DATE_WRONG, DateTimeFormatter.ISO_DATE.format(endDate)));
       }
     }
   }
