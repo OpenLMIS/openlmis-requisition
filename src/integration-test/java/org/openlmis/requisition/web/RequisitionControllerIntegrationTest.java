@@ -15,7 +15,9 @@
 
 package org.openlmis.requisition.web;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -45,6 +47,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -90,15 +93,15 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
-import org.openlmis.requisition.utils.DateHelper;
-import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.PageImplRepresentation;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -108,9 +111,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1102,8 +1102,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
-                processingPeriodDto.getEndDate())));
+            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG, processingPeriodDto.getEndDate())),
+            MESSAGE, containsString(ISO_DATE.format(processingPeriodDto.getEndDate())));
 
     // then
     verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid());
