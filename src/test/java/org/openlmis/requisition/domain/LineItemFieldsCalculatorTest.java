@@ -198,6 +198,15 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
+  public void shouldCalculateAdjustedConsumptionWhenNonStockoutDaysIsLessThanZero() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setTotalStockoutDays(92);
+    requisitionLineItem.setTotalConsumedQuantity(20);
+
+    assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
+  }
+
+  @Test
   public void shouldCalculateAverageConsumption() throws Exception {
     int averageConsumption =
         LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10, 15));

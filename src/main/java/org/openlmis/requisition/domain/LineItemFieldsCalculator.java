@@ -156,7 +156,7 @@ public final class LineItemFieldsCalculator {
     int stockoutDays = zeroIfNull(lineItem.getTotalStockoutDays());
     int nonStockoutDays = totalDays - stockoutDays;
 
-    if (nonStockoutDays == 0) {
+    if (nonStockoutDays <= 0) {
       return consumedQuantity;
     }
 
