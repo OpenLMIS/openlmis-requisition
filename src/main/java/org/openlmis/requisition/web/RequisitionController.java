@@ -129,31 +129,49 @@ public class RequisitionController extends BaseRequisitionController {
                     @RequestParam(value = "facility") UUID facilityId,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                     @RequestParam(value = "emergency") boolean emergency) {
+    XLOGGER.entry(programId, facilityId, suggestedPeriod, emergency);
+    Profiler profiler = new Profiler("POST_REQUISITION_INITIATE");
+    profiler.setLogger(XLOGGER);
+
     if (null == facilityId || null == programId) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_INITIALIZE_MISSING_PARAMETERS));
     }
 
+    profiler.start("GET_FACILITY");
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     if (facility == null) {
       throw new ContentNotFoundMessageException(
           new Message(MessageKeys.ERROR_FACILITY_NOT_FOUND, facilityId));
     }
+
+    profiler.start("GET_PROGRAM");
     ProgramDto program = programReferenceDataService.findOne(programId);
     if (program == null) {
       throw new ContentNotFoundMessageException(
           new Message(MessageKeys.ERROR_PROGRAM_NOT_FOUND, programId));
     }
 
+    profiler.start("CHECK_PERM_TO_INITIATE");
     permissionService.canInitRequisition(programId, facilityId).throwExceptionIfHasErrors();
+
+    profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
+    profiler.start("GET_STOCK_ADJ_REASONS");
     List<StockAdjustmentReason> stockAdjustmentReasons =
         getStockAdjustmentReasons(programId, facility);
 
+    profiler.start("INITITATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
         program.getId(), facility.getId(), suggestedPeriod, emergency, stockAdjustmentReasons);
-    return requisitionDtoBuilder.build(newRequisition, facility, program);
+
+    profiler.start("Build DTO");
+    RequisitionDto requisitionDto = requisitionDtoBuilder.build(newRequisition, facility, program);
+
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
+    return requisitionDto;
   }
 
   /**
