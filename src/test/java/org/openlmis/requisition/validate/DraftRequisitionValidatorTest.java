@@ -31,7 +31,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_M
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -184,23 +183,6 @@ public class DraftRequisitionValidatorTest {
 
     verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
         contains(ERROR_FIELD_IS_CALCULATED));
-  }
-
-
-  @Test
-  public void shouldRejectIfNumberOfTotalStockoutDaysIsGreaterThanLengthOfPeriod() {
-    RequisitionLineItem lineItem = generateLineItem();
-    lineItem.setTotalStockoutDays(111111);
-    requisitionLineItems.add(lineItem);
-
-    Message message =  new Message(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
-
-    draftRequisitionValidator.validate(requisition, errors);
-
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
-        contains(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
   }
 
   @Test

@@ -124,8 +124,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         RequisitionLineItem.STOCK_ON_HAND);
     rejectIfCalculatedAndNotNull(errors, template, item.getTotalConsumedQuantity(),
         RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
-    rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(errors,
-        requisition.getNumberOfMonthsInPeriod(), item);
 
     validateApprovalFields(errors, requisition, item);
   }
@@ -147,20 +145,6 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         expectedStatuses, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.REMARKS_COLUMN));
 
-  }
-
-  private void rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(Errors errors, int
-      monthsInPeriod, RequisitionLineItem requisitionLineItem) {
-    if (requisitionLineItem.getTotalStockoutDays() == null) {
-      return;
-    }
-
-    int totalStockoutDays = requisitionLineItem.getTotalStockoutDays();
-
-    if (totalStockoutDays > monthsInPeriod * DAYS_IN_MONTH) {
-      rejectValue(errors, REQUISITION_LINE_ITEMS,
-          new Message(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
-    }
   }
 
   private void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
