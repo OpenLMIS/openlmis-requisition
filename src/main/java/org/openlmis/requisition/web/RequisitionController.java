@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -494,15 +495,32 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(required = false) List<String> filterValue,
       @RequestParam(required = false) String filterBy,
       Pageable pageable) {
+    XLOGGER.entry(filterBy, filterValue, pageable);
+    Profiler profiler = new Profiler("GET_REQUSITIONS_FOR_CONVERT");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("GET_USER");
     UserDto user = authenticationHelper.getCurrentUser();
+
+    profiler.start("GET_RIGHT");
     RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
 
+    profiler.start("GET_USER_MANAGED_FACILITIES");
     Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId())
         .stream().map(FacilityDto::getId).collect(Collectors.toList());
 
-    return requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue, filterBy, pageable, userManagedFacilities);
+    profiler.start("SEARCH_FOR_APPROVED_REQUISITIONS");
+    Page<RequisitionWithSupplyingDepotsDto> page = requisitionService
+        .searchApprovedRequisitionsWithSortAndFilterAndPaging(
+            filterValue,
+            filterBy,
+            pageable,
+            userManagedFacilities);
+
+    profiler.stop().log();
+    XLOGGER.exit(page);
+    return page;
   }
 
   /**
