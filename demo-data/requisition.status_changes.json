@@ -1,42 +1,410 @@
 [
   {
-    "id": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff",
-    "createdDate": "2017-03-16T15:27:38Z",
+    "id": "6a3423fe-ca2b-49e6-8ba3-b1ae310c1b69",
+    "createdDate": "2017-01-24T08:05:13Z",
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "status": "INITIATED",
     "emergency": "false",
-    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
   },
   {
-    "id": "e20680d5-a7eb-4139-a3e4-c6a1941117f7",
-    "createdDate": "2017-03-22T12:14:22Z",
+    "id": "f0ffdc32-3e33-4690-bcd0-6f600d71d554",
+    "createdDate": "2017-01-24T10:09:25Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "23aaff93-e67a-4ae8-aee1-5c43d17c8455",
+    "createdDate": "2017-01-25T06:07:48Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "cc0a0489-1be4-4256-9c3e-7473779c432e",
+    "createdDate": "2017-01-25T08:07:38Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "8c7f1a6d-d139-483a-ad60-4288016f3d23"
+  },
+  {
+    "id": "e63f71e5-47a7-41b3-918a-f69b27070186",
+    "createdDate": "2017-07-06T09:07:46Z",
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "status": "INITIATED",
     "emergency": "false",
     "requisitionId": "21d138bc-f2c2-4188-adf3-a3aae381abde"
   },
   {
-    "id": "b500a201-fdf4-4fba-95b7-cc8fb18b5631",
-    "createdDate": "2017-03-22T13:51:34Z",
+    "id": "702fe2cc-dc7a-4cd7-9267-ae6afb0c3c85",
+    "createdDate": "2017-07-10T15:12:43Z",
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "status": "SUBMITTED",
     "emergency": "false",
     "requisitionId": "21d138bc-f2c2-4188-adf3-a3aae381abde"
   },
   {
-    "id": "80363418-1e88-49e0-a7bb-340d8125d6c3",
-    "createdDate": "2017-03-22T14:11:55Z",
+    "id": "a0aa7e51-2d69-41cb-8986-f3eaa267c0d4",
+    "createdDate": "2017-07-15T19:10:06Z",
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "status": "AUTHORIZED",
     "emergency": "false",
     "requisitionId": "21d138bc-f2c2-4188-adf3-a3aae381abde"
   },
   {
-    "id": "a2ea3bc1-b2da-4656-8b46-a0fcf03c24c4",
-    "createdDate": "2017-03-22T15:48:16Z",
+    "id": "b5cbd59e-e62d-4b7e-a535-652a9a52b303",
+    "createdDate": "2017-07-19T11:07:12Z",
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "status": "APPROVED",
     "emergency": "false",
     "requisitionId": "21d138bc-f2c2-4188-adf3-a3aae381abde"
+  },
+  {
+    "id": "0fb0bb89-e2cd-4f60-b26b-ff05c4c4ea98",
+    "createdDate": "2017-01-20T17:35:47Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "2a5a3b0c-9769-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "d1d92931-51c9-47fb-9acd-2450b2f39730",
+    "createdDate": "2017-01-20T17:59:29Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "2a5a3b0c-9769-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "6742212f-53f5-476c-bebe-a7ee515d2129",
+    "createdDate": "2017-01-20T18:07:44Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "2a5a3b0c-9769-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "d31348df-99d6-4f8a-9981-da71dfc241d1",
+    "createdDate": "2017-01-20T18:51:53Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "2a5a3b0c-9769-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "d8ac2a22-3ce2-41d2-a176-8d7a17e5c856",
+    "createdDate": "2017-01-20T19:45:41Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "05883300-976a-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "b7f3f056-454f-4901-a8d8-393e3418bf29",
+    "createdDate": "2017-01-20T19:46:25Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "05883300-976a-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "42efc8b3-fbdf-44aa-9bd0-41cd433ac5ad",
+    "createdDate": "2017-01-20T19:47:50Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "05883300-976a-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "9464b9ce-5a70-4848-94e5-8a77111368ee",
+    "createdDate": "2017-01-20T19:48:04Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "05883300-976a-11e6-ae22-56b6b6499611"
+  },
+  {
+    "id": "d8a68a80-4f04-4370-9521-a28bdc6415b0",
+    "createdDate": "2017-01-01T00:45:39Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "d0b61d97-b979-4d1f-90c1-7b43b6a6a877",
+    "createdDate": "2017-01-01T01:02:03Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "f9eea83f-f681-4555-92fe-6c701557e450",
+    "createdDate": "2017-01-01T01:53:43Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "fd575c05-c469-4bb4-b5d3-4e8937a8c1ff"
+  },
+  {
+    "id": "1eb59dfa-0e39-4335-abef-25ac0ffed1eb",
+    "createdDate": "2017-02-26T02:39:24Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "43781939-1402-4ad2-9b3e-0c336662fab9",
+    "createdDate": "2017-02-26T03:07:25Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "8a76d856-558a-4645-be65-39dd437426e5",
+    "createdDate": "2017-02-26T03:50:31Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "c6ce0209-6caf-4f40-bea8-01ce529fdc67"
+  },
+  {
+    "id": "36134d08-af78-4e70-9d79-6b7c900cdfa7",
+    "createdDate": "2017-03-26T04:13:59Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "d14f1e0b-9577-4333-bb99-68ea9bc02f7a",
+    "createdDate": "2017-03-26T04:20:42Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "7000227b-3ea7-416a-bc2f-365debc07233",
+    "createdDate": "2017-03-26T04:24:00Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "074a49af-12c3-429f-b5da-ed3f9e65787c"
+  },
+  {
+    "id": "528a3328-c4fc-4859-8850-04740e0532e9",
+    "createdDate": "2017-04-26T23:00:28Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "b5ac5b68-4850-4ea4-80ce-91c4867745a6",
+    "createdDate": "2017-04-26T23:32:40Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "3b73bb81-424f-4432-9048-f21727b31a52",
+    "createdDate": "2017-04-26T23:54:36Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "b235dc46-7f19-4ef7-9240-6f43e6db0513"
+  },
+  {
+    "id": "8780ef45-4d1e-4d89-98d2-d7e7663bf077",
+    "createdDate": "2017-04-10T04:35:35Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "6167e65c-6f56-4aeb-bff5-fdfe84e01a21"
+  },
+  {
+    "id": "69331dd9-4811-4070-9dbc-3c00592e9338",
+    "createdDate": "2017-04-12T13:58:53Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d"
+  },
+  {
+    "id": "d68a88d8-1f3c-4958-9a2b-e5aaecc14f23",
+    "createdDate": "2017-04-12T14:02:09Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d"
+  },
+  {
+    "id": "b09ea7cb-739c-4fa5-ae92-d1b7f7794320",
+    "createdDate": "2017-04-12T14:15:23Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d"
+  },
+  {
+    "id": "cad34520-9427-4bc2-bb8c-a0883619f69e",
+    "createdDate": "2017-04-12T14:20:46Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d"
+  },
+  {
+    "id": "282fe5d8-11af-4ae1-9c6a-3548e4f8b7b7",
+    "createdDate": "2017-04-12T14:29:33Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "RELEASED",
+    "emergency": "false",
+    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d"
+  },
+  {
+    "id": "5d47e557-d44b-4997-9096-682b39737a75",
+    "createdDate": "2017-01-14T16:07:28Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3"
+  },
+  {
+    "id": "a9cc7db9-5b7d-4bd2-bdfa-ff5fcbbca289",
+    "createdDate": "2017-01-14T16:25:43Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3"
+  },
+  {
+    "id": "645fe003-9f0b-4599-8bbd-5933108a4233",
+    "createdDate": "2017-01-14T16:55:20Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3"
+  },
+  {
+    "id": "aedb81c2-82db-4ff7-b41b-aec75faef388",
+    "createdDate": "2017-01-14T17:05:49Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3"
+  },
+  {
+    "id": "e41dfccf-34bd-4f3b-9c6c-645a776798f9",
+    "createdDate": "2017-01-14T17:10:42Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "RELEASED",
+    "emergency": "false",
+    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3"
+  },
+  {
+    "id": "059c8874-a8e9-4a4e-8ea8-8b4221ae1354",
+    "createdDate": "2017-07-20T17:30:56Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a"
+  },
+  {
+    "id": "b7cbd128-23a8-41f5-9755-94cfc3cd09c9",
+    "createdDate": "2017-07-20T17:31:45Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "false",
+    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a"
+  },
+  {
+    "id": "1befacbe-e05c-4df5-bb16-ea5e9f889789",
+    "createdDate": "2017-07-20T17:32:02Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "false",
+    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a"
+  },
+  {
+    "id": "39090002-ffcf-48b8-ad60-56f1c4170ab5",
+    "createdDate": "2017-07-20T17:33:07Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "false",
+    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a"
+  },
+  {
+    "id": "49cd1446-6fe0-4f60-bbb4-559f5a5dbddd",
+    "createdDate": "2017-07-20T17:33:52Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "RELEASED",
+    "emergency": "false",
+    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a"
+  },
+  {
+    "id": "530d3f8b-d71e-4278-b914-1b3af0b32b61",
+    "createdDate": "2017-01-29T13:14:18Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "true",
+    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662"
+  },
+  {
+    "id": "68beea33-98e1-4dcc-b77a-582a390e7e01",
+    "createdDate": "2017-01-29T13:20:38Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SUBMITTED",
+    "emergency": "true",
+    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662"
+  },
+  {
+    "id": "6dd571b3-6037-47c7-a47c-a280b723d0d8",
+    "createdDate": "2017-01-29T13:24:26Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "AUTHORIZED",
+    "emergency": "true",
+    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662"
+  },
+  {
+    "id": "3430beb8-bd62-44a9-9561-ce67589ab0a7",
+    "createdDate": "2017-01-29T13:27:45Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "APPROVED",
+    "emergency": "true",
+    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662"
+  },
+  {
+    "id": "43051dd2-7a07-4151-b30c-e1db8fd0725d",
+    "createdDate": "2017-01-29T13:30:30Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "RELEASED",
+    "emergency": "true",
+    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662"
+  },
+  {
+    "id": "22d8b3af-3466-440a-9dda-394f7d15e5a3",
+    "createdDate": "2017-04-15T12:28:42Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "INITIATED",
+    "emergency": "false",
+    "requisitionId": "122508c9-f77b-4401-8dd7-00272c7f7919"
+  },
+  {
+    "id": "96855492-f0f6-4db0-ade2-fc17461c3143",
+    "createdDate": "2017-04-17T12:48:33Z",
+    "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
+    "status": "SKIPPED",
+    "emergency": "false",
+    "requisitionId": "122508c9-f77b-4401-8dd7-00272c7f7919"
   }
 ]

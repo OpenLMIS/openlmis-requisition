@@ -328,11 +328,13 @@
     "maxPeriodsOfStock": 10,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 2.13
+    "pricePerPack": 2.13,
+    "approvedQuantity": 250,
+    "remarks": ""
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
-    "orderableId": "7b9b66e0-f008-4c38-93ec-7a5f4868cca9",
+    "orderableId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
     "requisition": { "id": "8c7f1a6d-d139-483a-ad60-4288016f3d23" },
     "stockOnHand": 29400,
     "beginningBalance": 1000,
@@ -344,7 +346,9 @@
     "maxPeriodsOfStock": 10,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 2.13
+    "pricePerPack": 2.13,
+    "approvedQuantity": 35000,
+    "remarks": ""
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
@@ -382,7 +386,7 @@
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
-    "orderableId": "bac90734-6e58-426e-849b-331286ec77d2",
+    "orderableId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
     "requisition": { "id": "122508c9-f77b-4401-8dd7-00272c7f7919" },
     "stockOnHand": 30000,
     "beginningBalance": 1000,
@@ -398,7 +402,7 @@
   },
   {
     "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
-    "orderableId": "c9e65f02-f84f-4ba2-85f7-e2cb6f0989af",
+    "orderableId": "23819693-0670-4c4b-b400-28e009b86b51",
     "requisition": { "id": "122508c9-f77b-4401-8dd7-00272c7f7919" },
     "stockOnHand": 30000,
     "beginningBalance": 1000,
@@ -626,5 +630,44 @@
     "adjustedConsumption": 60,
     "averageConsumption": 60,
     "pricePerPack": 25.46
+  },
+  {
+    "id": "68a95688-a8dc-11e7-abc4-cec278b6b50a",
+    "orderableId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
+    "requisition": { "id": "05883300-976a-11e6-ae22-56b6b6499611" },
+    "beginningBalance": 100,
+    "totalReceivedQuantity": 0,
+    "totalLossesAndAdjustments": 0,
+    "stockOnHand": 90,
+    "requestedQuantity": 0,
+    "requestedQuantityExplanation": "we need more",
+    "totalConsumedQuantity": 10,
+    "remarks": "",
+    "approvedQuantity": 1278,
+    "totalStockoutDays": 0,
+    "maxPeriodsOfStock": 5.5,
+    "skipped": "false",
+    "nonFullSupply": false,
+    "pricePerPack": 3.16
+  },
+  {
+    "id": "1ec3aa2c-a8dd-11e7-abc4-cec278b6b50a",
+    "orderableId": "7f7b83db-580d-4269-88d2-7f9c80a591a9",
+    "requisition": { "id": "2a5a3b0c-9769-11e6-ae22-56b6b6499611" },
+    "stockOnHand": 1000,
+    "beginningBalance": 400,
+    "totalReceivedQuantity": 800,
+    "requestedQuantity": 800,
+    "totalConsumedQuantity": 1200,
+    "requestedQuantityExplanation": "Some test explanation",
+    "totalStockoutDays": 0,
+    "maxPeriodsOfStock": 2,
+    "skipped": "false",
+    "nonFullSupply": false,
+    "adjustedConsumption": 1200,
+    "averageConsumption": 1200,
+    "pricePerPack": 20.77,
+    "remarks": "",
+    "approvedQuantity": 800
   }
 ]

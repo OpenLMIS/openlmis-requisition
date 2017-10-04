@@ -74,12 +74,22 @@ This demo data, requisition.requisitions.json and .requisition_line_items.json, 
 example requisitions in different statuses. To truly demo the software well, it may be helpful
 to log in and approve these to clear them out before beginning your demo.
 
-1. Family Planning
-  * 9 requisitions in many statuses: Initiated, Released, Authorized, Approved, and Skipped
-2. Essential Meds 
-  * 4 requisitions in these statuses: Released, Authorized, and Approved
-
-Currently, all those requisitions are Normal, not Emergency requisitions.
+|Program        |Facility                |Period |Status    |Emergency|
+|---------------|------------------------|-------|----------|---------|
+|Essential Meds |Balaka District Hospital|2017Q1 |APPROVED  | false   |
+|Essential Meds |Balaka District Hospital|2017Q2 |RELEASED  | false   |
+|Essential Meds |Balaka District Hospital|2017Q3 |RELEASED  | false   |
+|Essential Meds |Kankao Health Facility  |2017Q1 |APPROVED  | false   |
+|Family Planning|Balaka District Hospital|2017Q1 |APPROVED  | false   |
+|Family Planning|Balaka District Hospital|2017Q2 |AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Jan2017|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Feb2017|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Mar2017|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Apr2017|INITIATED | false   |
+|Family Planning|Kankao Health Facility  |2017Q1 |RELEASED  | true    |
+|Family Planning|Kankao Health Facility  |2017Q1 |RELEASED  | false   |
+|Family Planning|Kankao Health Facility  |2017Q2 |SKIPPED   | false   |
+|Family Planning|Kankao Health Facility  |2017Q3 |APPROVED  | false   |
 
 Facilities, Programs, Products, Requisition Groups and User Roles & Rights come from the
 [Reference Data service's demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/demo-data).
