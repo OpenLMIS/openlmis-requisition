@@ -178,22 +178,25 @@ public class RequisitionService {
   public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
                               boolean emergency,
                               List<StockAdjustmentReason> stockAdjustmentReasons) {
+    Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("BUILD_REQUISITION");
     Requisition requisition = RequisitionBuilder.newRequisition(
         facilityId, programId, emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
+    profiler.start("FIND_PROCESSING_PERIOD");
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
 
-    Collection<ApprovedProductDto> approvedProducts =
-        approvedProductReferenceDataService.getApprovedProducts(
-            facilityId, programId, true);
-
+    profiler.start("FIND_REQUISITION_TEMPLATE");
     RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
 
+    profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     int numberOfPreviousPeriodsToAverage;
     List<Requisition> previousRequisitions;
     // numberOfPeriodsToAverage is always >= 2 or null
@@ -210,20 +213,32 @@ public class RequisitionService {
       numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
 
+    profiler.start("GET_POD");
     ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
 
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    Collection<ApprovedProductDto> approvedProducts =
+        approvedProductReferenceDataService.getApprovedProducts(
+            facilityId, programId, true);
+
+    profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
         numberOfPreviousPeriodsToAverage, pod, authenticationHelper.getCurrentUser().getId());
 
+    profiler.start("SET_AVAIL_FULL_SUPPLY");
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
         .getApprovedProducts(facilityId, programId, false)
         .stream()
         .map(ap -> ap.getOrderable().getId())
         .collect(Collectors.toSet()));
 
+    profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
 
+    profiler.start("SAVE");
     requisitionRepository.save(requisition);
+
+    profiler.stop().log();
     return requisition;
   }
 
@@ -601,15 +616,28 @@ public class RequisitionService {
                                                            String filterBy,
                                                            Pageable pageable,
                                                            Collection<UUID> userManagedFacilities) {
+    Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("FIND_DESIRED_UUIDS");
     List<UUID> desiredUuids = findDesiredUuids(filterValues, filterBy);
+
+    profiler.start("SEARCH_APPROVED_REQUISITIONS");
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
 
+    profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
         requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities);
 
+    profiler.start("SORT");
     responseList.sort(new RequisitionForConvertComparator(pageable));
-    return Pagination.getPage(responseList, pageable);
+
+    profiler.start("PAGINATE");
+    Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(responseList, pageable);
+
+    profiler.stop().log();
+    return page;
   }
 
   /**
