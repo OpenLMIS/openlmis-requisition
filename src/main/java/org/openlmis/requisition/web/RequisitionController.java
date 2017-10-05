@@ -514,7 +514,7 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(required = false) String filterBy,
       Pageable pageable) {
     XLOGGER.entry(filterBy, filterValue, pageable);
-    Profiler profiler = new Profiler("GET_REQUSITIONS_FOR_CONVERT");
+    Profiler profiler = new Profiler("GET_REQUISITIONS_FOR_CONVERT");
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_USER");
