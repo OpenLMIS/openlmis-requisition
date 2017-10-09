@@ -162,7 +162,7 @@ public class RequisitionController extends BaseRequisitionController {
     List<StockAdjustmentReason> stockAdjustmentReasons =
         getStockAdjustmentReasons(programId, facility);
 
-    profiler.start("INITITATE_REQUISITION");
+    profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
         program.getId(), facility.getId(), suggestedPeriod, emergency, stockAdjustmentReasons);
 
@@ -297,13 +297,26 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
+    XLOGGER.entry(requisitionId);
+    Profiler profiler = new Profiler("GET_REQUISITION");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CHECK_PERM_REQUISITION_VIEW");
     permissionService.canViewRequisition(requisitionId).throwExceptionIfHasErrors();
+
+    profiler.start("FIND_ONE_REQUISITION");
     Requisition requisition = requisitionRepository.findOne(requisitionId);
     if (requisition == null) {
+      profiler.stop().log();
       throw new ContentNotFoundMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     } else {
-      return requisitionDtoBuilder.build(requisition);
+      profiler.start("REQUISITION_DTO_BUILD");
+      RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
+      
+      profiler.stop().log();
+      XLOGGER.exit(requisitionDto);
+      return requisitionDto;
     }
   }
 
@@ -386,14 +399,29 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
+    XLOGGER.entry(requisitionId);
+    Profiler profiler = new Profiler("APPROVE_REQUISITION");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("FIND_ONE_REQUISITION");
     Requisition requisition = requisitionRepository.findOne(requisitionId);
+
+    profiler.start("GET_USER_ID");
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
+    profiler.start("CHECK_PERM_REQUISITION_APPROVE");
     requisitionService.validateCanApproveRequisition(requisition, requisitionId, userId)
         .throwExceptionIfHasErrors();
+
+    profiler.start("VALIDATE_REQUISITION");
     validateFields(validator, requisition).throwExceptionIfHasErrors();
 
-    return doApprove(requisition, userId);
+    profiler.start("DO_APPROVE");
+    BasicRequisitionDto requisitionDto = doApprove(requisition, userId);
+    
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
+    return requisitionDto;
   }
 
   /**
