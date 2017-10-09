@@ -33,6 +33,9 @@ import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.utils.Message;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +54,9 @@ import java.util.UUID;
 @Controller
 public class BatchRequisitionController extends BaseRequisitionController {
 
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
+      BatchRequisitionController.class);
+
   @Autowired
   private MessageService messageService;
 
@@ -61,10 +67,17 @@ public class BatchRequisitionController extends BaseRequisitionController {
   @ResponseBody
   public ResponseEntity<RequisitionsProcessingStatusDto> retrieveAll(
       @RequestParam(value = "id") List<UUID> uuids) {
+
+    XLOGGER.entry(uuids);
+    Profiler profiler = new Profiler("BATCH_RETRIEVE_ALL_REQUISITIONS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
 
+    profiler.start("CHECK_PERM_AND_BUILD_DTO");
     for (Requisition requisition : requisitions) {
       ValidationResult accessCheck = permissionService.canViewRequisition(requisition);
       if (accessCheck.hasErrors()) {
@@ -76,8 +89,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
       }
     }
 
+    profiler.start("REMOVE_SKIPPED_PRODUCTS");
     processingStatus.removeSkippedProducts();
-    return buildResponse(processingStatus);
+
+    profiler.start("BUILD_RESPONSE");
+    ResponseEntity response = buildResponse(processingStatus);
+
+    profiler.stop().log();
+    XLOGGER.exit(processingStatus);
+    return response;
   }
 
   /**
@@ -88,9 +108,16 @@ public class BatchRequisitionController extends BaseRequisitionController {
   public ResponseEntity<RequisitionsProcessingStatusDto> approve(
       @RequestParam(value = "id") List<UUID> uuids) {
 
+    XLOGGER.entry(uuids);
+    Profiler profiler = new Profiler("BATCH_APPROVE_ALL_REQUISITIONS");
+    profiler.setLogger(XLOGGER);
+
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
+
+    profiler.start("GET_USER_ID");
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
+    profiler.start("FIND_VALIDATE_AND_APPROVE_REQUISITIONS");
     for (UUID requisitionId : uuids) {
       Requisition requisition = requisitionRepository.findOne(requisitionId);
 
@@ -110,7 +137,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
           new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
     }
 
-    return buildResponse(processingStatus);
+    profiler.start("BUILD_RESPONSE");
+    ResponseEntity response = buildResponse(processingStatus);
+
+    profiler.stop().log();
+    XLOGGER.exit(processingStatus);
+    return response;
   }
 
   /**
@@ -121,8 +153,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
   public ResponseEntity<RequisitionsProcessingStatusDto> update(
       @RequestBody List<ApproveRequisitionDto> dtos) {
 
+    XLOGGER.entry(dtos);
+    Profiler profiler = new Profiler("BATCH_SAVE_ALL_REQUISITIONS");
+    profiler.setLogger(XLOGGER);
+
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
 
+    profiler.start("FIND_VALIDATE_AND_SAVE_REQUISITIONS");
     for (ApproveRequisitionDto dto : dtos) {
       ValidationResult result = requisitionService.validateCanSaveRequisition(dto.getId());
       if (addValidationErrors(processingStatus, result, dto.getId())) {
@@ -144,8 +181,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
             new ApproveRequisitionDto(doUpdate(requisitionToUpdate, requisition)));
     }
 
+    profiler.start("REMOVE_SKIPPED_PRODUCTS");
     processingStatus.removeSkippedProducts();
-    return buildResponse(processingStatus);
+
+    profiler.start("BUILD_RESPONSE");
+    ResponseEntity response = buildResponse(processingStatus);
+
+    profiler.stop().log();
+    XLOGGER.exit(processingStatus);
+    return response;
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
