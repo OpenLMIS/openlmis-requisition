@@ -76,6 +76,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.openlmis.requisition.utils.RightName;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -84,6 +87,8 @@ import org.openlmis.requisition.utils.RightName;
 @NoArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
+
+  private static XLogger LOGGER = XLoggerFactory.getXLogger(Requisition.class);
 
   public static final String FACILITY_ID = "facilityId";
   public static final String PROGRAM_ID = "programId";
@@ -271,9 +276,13 @@ public class Requisition extends BaseTimestampedEntity {
       int numberOfPreviousPeriodsToAverage,
       ProofOfDeliveryDto proofOfDelivery,
       UUID initiator) {
+
+    Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
+    profiler.setLogger(LOGGER);
     this.template = template;
     this.previousRequisitions = previousRequisitions;
 
+    profiler.start("SET_LINE_ITEMS");
     setRequisitionLineItems(
         products
             .stream()
@@ -281,6 +290,7 @@ public class Requisition extends BaseTimestampedEntity {
             .collect(Collectors.toList())
     );
 
+    profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
     // Firstly, if we display the column ...
     // ... and if the previous requisition exists ...
@@ -307,6 +317,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     // Secondly, if Proof Of Delivery exists and it is submitted ...
+    profiler.start("SET_RECV_QTY");
     if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
       // .. for each line from the current requisition ...
       if (nonSkippedFullSupplyItems == null) {
@@ -334,11 +345,15 @@ public class Requisition extends BaseTimestampedEntity {
       });
     }
 
+    profiler.start("SET_PREV_ADJ_CONSUMPTION");
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
 
     status = RequisitionStatus.INITIATED;
 
+    profiler.start("SET_STATUS_CHANGES");
     statusChanges.add(StatusChange.newStatusChange(this, initiator));
+
+    profiler.stop().log();
   }
 
   /**
