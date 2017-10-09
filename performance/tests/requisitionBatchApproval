@@ -20,7 +20,7 @@ scenarios:
             jsonpath: $.access_token
   search-requisitions:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}&program=${program_id}
+      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status&program=${program_id}
         method: GET
         label: SearchRequisitions
         headers:
@@ -76,8 +76,17 @@ scenarios:
             def batchResponse = new JsonSlurper().parseText(response);
 
             batchResponse.requisitionDtos.each { req ->
-              req.requisitionLineItems.eachWithIndex { line, index ->
-                line.approvedQuantity = Math.round(line.approvedQuantity / 2)
+              req.requisitionLineItems.eachWithIndex { line, index -> {
+                  if (line.skipped != null) {
+                    if (line.approvedQuantity != null) {
+                      line.approvedQuantity = Math.round(line.approvedQuantity / 2)
+                    } else {
+                      line.approvedQuantity = (index + 1) * 10
+                    }
+                  } else {
+                    line.approvedQuantity = null
+                  }
+                }
               }
             }
             log.info(batchResponse.toString())
