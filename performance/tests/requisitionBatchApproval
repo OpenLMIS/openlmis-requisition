@@ -20,7 +20,7 @@ scenarios:
             jsonpath: $.access_token
   search-requisitions:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status&program=${program_id}
+      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}&program=${program_id}
         method: GET
         label: SearchRequisitions
         headers:
