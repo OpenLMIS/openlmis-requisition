@@ -1,0 +1,108 @@
+execution:
+  - concurrency: 1
+    iterations: 1
+    scenario: batch-workflow
+
+scenarios:
+  get-user-token:
+    requests:
+      - url: ${__P(base-uri)}/api/oauth/token
+        method: POST
+        label: GetUserToken
+        headers:
+          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+        body:
+          grant_type: password
+          username: ${__P(username)}
+          password: ${__P(password)}
+        extract-jsonpath:
+          access_token:
+            jsonpath: $.access_token
+  search-requisitions:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=IN_APPROVAL&program=${program_id}
+        method: GET
+        label: SearchRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        extract-jsonpath:
+          requisitions_id:
+            jsonpath: $.content.[:${number_of_req}].id
+        jsr223:
+          script-text: |
+            log.info(prev.getUrlAsString())
+            log.info(prev.getResponseDataAsString())
+
+            def builder = new StringBuilder();
+            vars.get("requisitions_id").split(",").eachWithIndex { id, idx ->
+              builder.append("&id=")
+              builder.append(id.replaceAll(/"|\[|\]/, ""))
+            }
+            vars.put("requisitions_id", builder.toString())
+            log.info(vars.get("requisitions_id"))
+  get-requisitions:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions?retrieveAll${requisitions_id}
+        method: GET
+        label: GetRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          script-text: |
+            log.info(prev.getUrlAsString())
+            log.info(prev.getResponseDataAsString())
+  update-requisitions:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions?saveAll${requisitions_id}
+        method: PUT
+        label: UpdateRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          execute: before
+          script-text: |
+            import groovy.json.JsonSlurper
+            import groovy.json.JsonOutput
+
+            def response = prev.getResponseDataAsString();
+            log.info(response)
+
+            def batchResponse = new JsonSlurper().parseText(response);
+
+            batchResponse.requisitionDtos.each { req ->
+              req.requisitionLineItems.eachWithIndex { line, index ->
+                line.approvedQuantity = Math.round(line.approvedQuantity / 2)
+              }
+            }
+            log.info(batchResponse.toString())
+
+            vars.put("requisitions", JsonOutput.toJson(batchResponse.requisitionDtos));
+        body: ${requisitions}
+  approve-requisitions:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions?approveAll${requisitions_id}
+        method: POST
+        label: ApproveRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+        jsr223:
+          script-text: |
+            log.info(prev.getUrlAsString())
+            log.info(prev.getResponseDataAsString())
+  batch-workflow:
+    variables:
+      # Essential Meds
+      program_id: 10845cb9-d365-4aaa-badd-b4fa39c6a26a
+      number_of_req: 10
+    requests:
+      - include-scenario: get-user-token
+      - include-scenario: search-requisitions
+      - include-scenario: get-requisitions
+      - include-scenario: update-requisitions
+      - include-scenario: approve-requisitions
