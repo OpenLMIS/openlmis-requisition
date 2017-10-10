@@ -7,6 +7,9 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3076](https://openlmis.atlassian.net/browse/OLMIS-3076): Exclude emergency from previous requisitions, remove regular requisition only if it is newest.
 * [OLMIS-3201](https://openlmis.atlassian.net/browse/OLMIS-3201): Removed stock out days validation.
 
+Improve demo data:
+* [OLMIS-3202](https://openlmis.atlassian.net/browse/OLMIS-3202): Modified requisition template for EM program to match Malawi columns.
+
 5.0.0 / 2017-09-01
 ==================
 
