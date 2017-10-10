@@ -33,6 +33,9 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -41,6 +44,9 @@ import org.springframework.stereotype.Service;
 @SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class PermissionService {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(PermissionService.class);
+
   private static final String REQUISITION_BASE = "REQUISITION_";
 
   public static final String REQUISITION_CREATE = REQUISITION_BASE + "CREATE";
@@ -268,17 +274,33 @@ public class PermissionService {
   }
 
   private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
+    XLOGGER.entry(rightName, program, facility, warehouse);
+    Profiler profiler = new Profiler("HAS_PERMISSION");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("GET_AUTHENTICATION");
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
             .getAuthentication();
     if (authentication.isClientOnly()) {
       return true;
     }
+
+    profiler.start("GET_CURRENT_USER");
     UserDto user = authenticationHelper.getCurrentUser();
+
+    profiler.start("GET_RIGHT");
     RightDto right = authenticationHelper.getRight(rightName);
+
+    profiler.start("CHECK_HAS_RIGHT");
     ResultDto<Boolean> result = userReferenceDataService.hasRight(
         user.getId(), right.getId(), program, facility, warehouse
     );
-    return null != result && result.getResult();
+
+    boolean returnResult = null != result && result.getResult();
+
+    profiler.stop().log();
+    XLOGGER.exit(returnResult);
+    return returnResult;
   }
 
   /**

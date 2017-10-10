@@ -76,10 +76,22 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition) {
+    XLOGGER.entry(requisition);
+    Profiler profiler = new Profiler("REQUISITION_DTO_BUILD_WITHOUT_FACILITY_PROGRAM");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("GET_FACILITY");
     FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
+
+    profiler.start("GET_PROGRAM");
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
-    return build(requisition, facility, program);
+    profiler.start("CALL_REQUISITION_DTO_BUILD");
+    RequisitionDto requisitionDto = build(requisition, facility, program);
+
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
+    return requisitionDto;
   }
 
   /**

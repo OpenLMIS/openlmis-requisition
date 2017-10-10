@@ -194,7 +194,7 @@ public abstract class BaseRequisitionController extends BaseController {
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder.build(requisition);
 
     profiler.stop().log();
-    XLOGGER.exit();
+    XLOGGER.exit(basicRequisitionDto);
     return basicRequisitionDto;
   }
 
