@@ -48,6 +48,8 @@ import java.util.Set;
 @SuppressWarnings("PMD.TooManyMethods")
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
+  private static final int DAYS_IN_MONTH = 30;
+
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
