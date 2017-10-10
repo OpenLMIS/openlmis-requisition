@@ -18,10 +18,17 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -46,16 +53,16 @@ import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public abstract class BaseRequisitionController extends BaseController {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(BaseRequisitionController.class);
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
   protected static final String REQUISITION = "requisition";
@@ -139,11 +146,18 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   protected BasicRequisitionDto doApprove(Requisition requisition, UUID userId) {
+    XLOGGER.entry(requisition, userId);
+    Profiler profiler = new Profiler("DO_APPROVE");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CHECK_IF_PERIOD_IS_VALID");
     checkIfPeriodIsValid(requisition);
 
+    profiler.start("GET_SUPERVISORY_NODE");
     SupervisoryNodeDto supervisoryNodeDto =
         supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
+    profiler.start("SET_PARENT_NODE_ID");
     UUID parentNodeId = null;
     if (supervisoryNodeDto != null) {
       SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
@@ -153,20 +167,35 @@ public abstract class BaseRequisitionController extends BaseController {
     }
 
     if (parentNodeId == null) {
+      profiler.start("SUBMIT_STOCK_EVENT");
       stockEventStockManagementService.submit(
           stockEventBuilder.fromRequisition(requisition)
       );
     }
 
-    requisition.approve(parentNodeId, orderableReferenceDataService.findByIds(
-        getLineItemOrderableIds(requisition)), userId);
+    profiler.start("GET_ORDERABLES");
+    Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(
+        getLineItemOrderableIds(requisition));
 
+    profiler.start("APPROVE_REQUISITION_ENTITY");
+    requisition.approve(parentNodeId, orderables, userId);
+
+    profiler.start("SAVE_STATUS_MESSAGE");
     saveStatusMessage(requisition);
 
+    profiler.start("SAVE_REQUISITION_TO_REPO");
     requisitionRepository.save(requisition);
+
+    profiler.start("PROCESS_STATUS_CHANGE");
     requisitionStatusProcessor.statusChange(requisition);
-    logger.debug("Requisition with id " + requisition.getId() + " approved");
-    return basicRequisitionDtoBuilder.build(requisition);
+
+    logger.debug("Requisition with id {} approved", requisition.getId());
+    profiler.start("BUILD_REQUISITION_DTO");
+    BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder.build(requisition);
+
+    profiler.stop().log();
+    XLOGGER.exit();
+    return basicRequisitionDto;
   }
 
   protected void saveStatusMessage(Requisition requisition) {
