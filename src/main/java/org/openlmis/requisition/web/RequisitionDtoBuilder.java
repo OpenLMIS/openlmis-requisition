@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static org.openlmis.requisition.dto.ReasonDto.newInstance;
 
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -127,9 +128,14 @@ public class RequisitionDtoBuilder {
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()));
 
-    profiler.start("SET_LINE_ITEMS");
+    profiler.start("GET_LINE_ITEMS");
+    List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
+
+    profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisition.getRequisitionLineItems());
+        requisitionExportHelper.exportToDtos(requisitionLineItems);
+
+    profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
     profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
