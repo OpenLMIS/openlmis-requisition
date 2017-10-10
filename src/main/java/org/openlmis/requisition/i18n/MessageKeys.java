@@ -131,6 +131,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".initiate.requisitionGroupProgramScheduleWithProgramAndFacilityNotFound";
   public static final String ERROR_FIELD_IS_CALCULATED = ERROR_PREFIX
       + ".validation.fieldIsCalculated";
+  public static final String ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD =
+      ERROR_PREFIX + ".validation.stockoutDaysCantBeGreaterThanLengthOfPeriod";
   public static final String ERROR_ONLY_AVAILABLE_FOR_APPROVAL = ERROR_PREFIX
       + ".validation.onlyAvailableForApproval";
   public static final String ERROR_IS_INVARIANT = ERROR_PREFIX
