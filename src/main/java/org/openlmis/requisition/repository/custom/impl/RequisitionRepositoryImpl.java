@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +29,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -41,6 +44,7 @@ import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
@@ -91,12 +95,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     CriteriaQuery<Requisition> requisitionQuery = builder.createQuery(Requisition.class);
     requisitionQuery = prepareQuery(requisitionQuery, facilityId, programId, initiatedDateFrom,
         initiatedDateTo, processingPeriodId, supervisoryNodeId, requisitionStatuses, emergency,
-        userPermissionStrings, false);
+        userPermissionStrings, false, pageable);
 
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
     countQuery = prepareQuery(countQuery, facilityId, programId, initiatedDateFrom,
         initiatedDateTo, processingPeriodId, supervisoryNodeId, requisitionStatuses, emergency,
-        userPermissionStrings, true);
+        userPermissionStrings, true, pageable);
 
     Long count = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -228,7 +232,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       Set<RequisitionStatus> requisitionStatuses,
       Boolean emergency,
       List<String> userPermissionStrings,
-      boolean count) {
+      boolean count,
+      Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
@@ -291,6 +296,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     query.where(predicate);
 
     query.distinct(true);
+
+    if (!count && pageable != null && pageable.getSort() != null) {
+      query = addSortProperties(query, root, pageable);
+    }
 
     return query;
   }
@@ -360,5 +369,31 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     }
 
     return predicateToUse;
+  }
+
+  private <T> CriteriaQuery<T> addSortProperties(CriteriaQuery<T> query,
+                                                 Root root, Pageable pageable) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    List<Order> orders = new ArrayList<>();
+    Iterator<Sort.Order> iterator = pageable.getSort().iterator();
+
+    Sort.Order order;
+    while (iterator.hasNext()) {
+      order = iterator.next();
+      String property = order.getProperty();
+
+      Path path;
+      if (SUPPLYING_FACILITY.equals(property)) {
+        path = root.join(SUPPLYING_FACILITY, JoinType.LEFT).get("name");
+      } else {
+        path = root.get(property);
+      }
+      if (order.isAscending()) {
+        orders.add(builder.asc(path));
+      } else {
+        orders.add(builder.desc(path));
+      }
+    }
+    return query.orderBy(orders);
   }
 }
