@@ -29,7 +29,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -380,18 +379,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     Sort.Order order;
     while (iterator.hasNext()) {
       order = iterator.next();
-      String property = order.getProperty();
-
-      Path path;
-      if (SUPPLYING_FACILITY.equals(property)) {
-        path = root.join(SUPPLYING_FACILITY, JoinType.LEFT).get("name");
-      } else {
-        path = root.get(property);
-      }
       if (order.isAscending()) {
-        orders.add(builder.asc(path));
+        orders.add(builder.asc(root.get(order.getProperty())));
       } else {
-        orders.add(builder.desc(path));
+        orders.add(builder.desc(root.get(order.getProperty())));
       }
     }
     return query.orderBy(orders);
