@@ -66,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -465,6 +466,60 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(0, results.getTotalElements());
+  }
+
+  @Test
+  public void searchShouldUseSortProperties() {
+    Requisition requisitionToCopy = requisitions.get(1);
+
+    pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
+        Sort.Direction.ASC, "createdDate");
+
+    Requisition requisition = new Requisition(requisitionToCopy.getFacilityId(),
+        requisitionToCopy.getProgramId(), requisitionToCopy.getProcessingPeriodId(),
+        requisitionToCopy.getStatus(), requisitionToCopy.getEmergency());
+    requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
+    requisition.setTemplate(testTemplate);
+    requisition.setNumberOfMonthsInPeriod(1);
+    requisition.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    requisition.setEmergency(true);
+    repository.save(requisition);
+
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+        requisitionToCopy.getFacilityId(),
+        requisitionToCopy.getProgramId(),
+        null,
+        null,
+        requisitionToCopy.getProcessingPeriodId(),
+        requisitionToCopy.getSupervisoryNodeId(),
+        EnumSet.of(requisitionToCopy.getStatus()),
+        requisitionToCopy.getEmergency(),
+        userPermissionStrings,
+        pageRequest).getContent();
+
+    assertEquals(2, receivedRequisitions.size());
+    assertTrue(receivedRequisitions.get(0).getCreatedDate()
+        .compareTo(receivedRequisitions.get(1).getCreatedDate()) < 0);
+
+    pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
+        Sort.Direction.DESC, "createdDate");
+
+    receivedRequisitions = repository.searchRequisitions(
+        requisitionToCopy.getFacilityId(),
+        requisitionToCopy.getProgramId(),
+        null,
+        null,
+        requisitionToCopy.getProcessingPeriodId(),
+        requisitionToCopy.getSupervisoryNodeId(),
+        EnumSet.of(requisitionToCopy.getStatus()),
+        requisitionToCopy.getEmergency(),
+        userPermissionStrings,
+        pageRequest).getContent();
+
+    assertEquals(2, receivedRequisitions.size());
+    assertTrue(receivedRequisitions.get(0).getCreatedDate()
+        .compareTo(receivedRequisitions.get(1).getCreatedDate()) > 0);
   }
 
   private StockAdjustmentReason generateStockAdjustmentReason() {

@@ -1,6 +1,9 @@
 5.0.1 / WIP
 ==================
 
+Improvements:
+* [OLMIS-3544](https://openlmis.atlassian.net/browse/OLMIS-3544): Added sort to requisition search endpoint.
+
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3126](https://openlmis.atlassian.net/browse/OLMIS-3126): Fix unable to batch save when skip is disabled in Requisition Template.
 * [OLMIS-3215](https://openlmis.atlassian.net/browse/OLMIS-3215): Do not allow for status change (submit/authorize/approve) when period end after today.
