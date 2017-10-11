@@ -31,6 +31,7 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -167,10 +168,11 @@ public abstract class BaseRequisitionController extends BaseController {
     }
 
     if (parentNodeId == null) {
+      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
+      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
+
       profiler.start("SUBMIT_STOCK_EVENT");
-      stockEventStockManagementService.submit(
-          stockEventBuilder.fromRequisition(requisition)
-      );
+      stockEventStockManagementService.submit(stockEventDto);
     }
 
     profiler.start("GET_ORDERABLES");

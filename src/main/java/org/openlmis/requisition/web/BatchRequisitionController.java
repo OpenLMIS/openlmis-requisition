@@ -18,7 +18,10 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
-
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -27,6 +30,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
@@ -45,11 +49,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 @Controller
 public class BatchRequisitionController extends BaseRequisitionController {
@@ -161,14 +160,19 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     profiler.start("FIND_VALIDATE_AND_SAVE_REQUISITIONS");
     for (ApproveRequisitionDto dto : dtos) {
+      profiler.start("VALIDATE_AND_CHECK_SAVE_REQUISITION");
       ValidationResult result = requisitionService.validateCanSaveRequisition(dto.getId());
       if (addValidationErrors(processingStatus, result, dto.getId())) {
         continue;
       }
 
+      profiler.start("FIND_REQUISITION");
       Requisition requisitionToUpdate = requisitionRepository.findOne(dto.getId());
+
+      profiler.start("BUILD_REQUISITION");
       Requisition requisition = buildRequisition(dto, requisitionToUpdate);
 
+      profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
       result = requisitionVersionValidator.validateRequisitionTimestamps(
           requisition, requisitionToUpdate);
       result.addValidationResult(validateFields(draftValidator, requisition));
@@ -177,8 +181,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
         continue;
       }
 
-      processingStatus.addProcessedRequisition(
-            new ApproveRequisitionDto(doUpdate(requisitionToUpdate, requisition)));
+      profiler.start("DO_UPDATE");
+      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
+
+      profiler.start("ADD_PROCESSED_REQUISITION");
+      processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));
     }
 
     profiler.start("REMOVE_SKIPPED_PRODUCTS");

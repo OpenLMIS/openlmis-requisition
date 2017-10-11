@@ -17,6 +17,14 @@ package org.openlmis.requisition.utils;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -33,20 +41,16 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @Component
 public class StockEventBuilder {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(StockEventBuilder.class);
 
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
@@ -76,13 +80,19 @@ public class StockEventBuilder {
    * @return  the create physical inventory draft
    */
   public StockEventDto fromRequisition(Requisition requisition) {
+    XLOGGER.entry(requisition);
+    Profiler profiler = new Profiler("BUILD_STOCK_EVENT_FROM_REQUISITION");
+    profiler.setLogger(XLOGGER);
+
     LOGGER.debug("Building stock events for requisition: {}", requisition.getId());
 
+    profiler.start("GET_STOCK_CARDS");
     List<StockCardDto> stockCards = stockCardService.getStockCards(requisition.getFacilityId(),
         requisition.getProgramId()).stream().filter(stockCard -> stockCard.getLot() == null)
         .collect(Collectors.toList());
 
-    return StockEventDto
+    profiler.start("BUILD_STOCK_EVENT");
+    StockEventDto stockEventDto = StockEventDto
         .builder()
         .facilityId(requisition.getFacilityId())
         .programId(requisition.getProgramId())
@@ -95,6 +105,10 @@ public class StockEventBuilder {
             stockCards
         ))
         .build();
+
+    profiler.stop().log();
+    XLOGGER.exit(stockEventDto);
+    return stockEventDto;
   }
 
   private List<StockEventLineItemDto> fromLineItems(
@@ -123,14 +137,22 @@ public class StockEventBuilder {
   private List<StockEventAdjustmentDto> getStockAdjustments(RequisitionLineItem lineItem,
       List<StockAdjustmentReason> reasons, Map<String, RequisitionTemplateColumn> columnsMap,
       List<StockCardDto> stockCards) {
+
+    XLOGGER.entry(lineItem, reasons, columnsMap, stockCards);
+
+    Profiler profiler = new Profiler("GET_STOCK_ADJUSTMENTS");
+    profiler.setLogger(XLOGGER);
+
     List<StockEventAdjustmentDto> stockAdjustments = new ArrayList<>();
 
+    profiler.start("TOTAL_LOSSES_AND_ADJUSTMENTS");
     if (existsAndIsDisplayed(columnsMap.get(TOTAL_LOSSES_AND_ADJUSTMENTS))) {
       stockAdjustments = lineItem.getStockAdjustments().stream()
           .map(stockAdjustment -> fromStockAdjustment(stockAdjustment, reasons))
           .collect(Collectors.toList());
     }
 
+    profiler.start("TOTAL_CONSUMED_QUANTITY");
     if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
@@ -139,6 +161,7 @@ public class StockEventBuilder {
       );
     }
 
+    profiler.start("TOTAL_RECEIVED_QUANTITY");
     if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
@@ -147,6 +170,7 @@ public class StockEventBuilder {
       );
     }
 
+    profiler.start("GET_STOCK_CARD_FROM_LINE_ITEM");
     StockCardDto stockCard = stockCards.stream().filter(stockCardDto -> stockCardDto.getOrderable()
         .getId().equals(lineItem.getOrderableId())).findFirst().orElse(null);
 
@@ -160,6 +184,7 @@ public class StockEventBuilder {
     int beginningBalance =
         lineItem.getBeginningBalance() == null ? 0 : lineItem.getBeginningBalance();
 
+    profiler.start("INCLUDE_BEGINNING_BALANCE_EXCESS");
     if (shouldIncludeBeginningBalanceExcess(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(beginningBalance - stockCard.getStockOnHand())
@@ -167,6 +192,7 @@ public class StockEventBuilder {
           .build());
     }
 
+    profiler.start("INCLUDE_BEGINNING_BALANCE_INSUFFICIENCY");
     if (shouldIncludeBeginningBalanceInsufficiency(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(stockCard.getStockOnHand() - beginningBalance)
@@ -174,6 +200,8 @@ public class StockEventBuilder {
           .build());
     }
 
+    profiler.stop().log();
+    XLOGGER.exit(stockAdjustments);
     return stockAdjustments;
   }
 
