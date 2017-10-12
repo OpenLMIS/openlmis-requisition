@@ -45,6 +45,9 @@ public class TestDataInitializer implements CommandLineRunner {
   @Value(value = PERF_DATA_PATH + "StockAdjustments300k.csv")
   private Resource stockAdjustments;
   
+  @Value(value = PERF_DATA_PATH + "StockAdjustmentReasons.csv")
+  private Resource stockAdjustmentReasons;
+
   @Value(value = DB_MIGRATION_PATH
       + "20170822230153657__generate_requisition_permission_strings.sql")
   private Resource generateRequisitionPermissionStrings;
@@ -64,7 +67,8 @@ public class TestDataInitializer implements CommandLineRunner {
     r2db.insertToDbFromCsv("requisition.requisitions", requisitions);
     r2db.insertToDbFromCsv("requisition.requisition_line_items", requisitionLineItems);
     r2db.insertToDbFromCsv("requisition.stock_adjustments", stockAdjustments);
-    
+    r2db.insertToDbFromCsv("requisition.stock_adjustment_reasons", stockAdjustmentReasons);
+
     template.update("DELETE FROM requisition.requisition_permission_strings;");
     r2db.updateDbFromSqlSingle(generateRequisitionPermissionStrings);
 
