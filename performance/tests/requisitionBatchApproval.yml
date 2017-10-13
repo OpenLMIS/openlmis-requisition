@@ -35,20 +35,17 @@ scenarios:
             log.info(prev.getResponseDataAsString())
 
             def builder = new StringBuilder();
-            def id_list = []
             vars.get("requisitions_id").split(",").eachWithIndex { id, idx ->
               builder.append("&id=")
               def clean_id = id.replaceAll(/"|\[|\]/, "")
               builder.append(clean_id)
-              id_list.add(clean_id)
+              vars.put("reqid_" + (idx + 1), clean_id)
             }
             vars.put("requisitions_id", builder.toString())
-            vars.putObject("id_list", id_list)
             log.info(vars.get("requisitions_id"))
-            log.info(vars.getObject("id_list").toString())
   prepare-requisitions:
     requests:
-      - foreach: id in id_list
+      - foreach: id in reqid
         do:
         - url: ${__P(base-uri)}/api/requisitions/${id}
           method: GET
@@ -82,7 +79,7 @@ scenarios:
               }
 
               vars.put("requisition", JsonOutput.toJson(requisition));
-        - url: ${__P(base-uri)}/api/requisitions/{id}
+        - url: ${__P(base-uri)}/api/requisitions/${id}
           method: PUT
           label: UpdateRequisition
           headers:
