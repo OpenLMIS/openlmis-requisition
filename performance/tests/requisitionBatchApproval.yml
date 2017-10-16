@@ -47,6 +47,17 @@ scenarios:
     requests:
       - foreach: id in reqid
         do:
+        - url: ${__P(base-uri)}/api/requisitions/${id}/reject
+          method: PUT
+          label: RejectRequisition
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+          body: {}
+          jsr223:
+            script-text: |
+              log.info(prev.getUrlAsString())
+              log.info(prev.getResponseDataAsString())
         - url: ${__P(base-uri)}/api/requisitions/${id}
           method: GET
           label: GetRequisitionToUpdate
@@ -66,16 +77,51 @@ scenarios:
               def jsonSlurper = new JsonSlurper();
               def requisition = jsonSlurper.parseText(response);
 
+              vars.put("requisition", JsonOutput.toJson(requisition));
+        - url: ${__P(base-uri)}/api/requisitions/${id}
+          method: PUT
+          label: UpdateRequisition
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+          body: ${requisition}
+        - url: ${__P(base-uri)}/api/requisitions/${id}
+          method: GET
+          label: PrepareRequisitionToUpdate
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+          jsr223:
+            script-text: |
+              import groovy.json.JsonSlurper;
+              import groovy.json.JsonOutput;
+
+              def response = prev.getResponseDataAsString();
+
+              log.info(prev.getUrlAsString())
+              log.info(prev.getResponseDataAsString())
+
+              def jsonSlurper = new JsonSlurper();
+              def requisition = jsonSlurper.parseText(response);
+
               requisition.requisitionLineItems.eachWithIndex { line, index ->
-                line.skipped = false;
-                line.beginningBalance = (index + 1) * 10;
-                line.totalConsumedQuantity = line.beginningBalance / 2;
-                line.totalReceivedQuantity = line.beginningBalance / 5;
-                line.stockOnHand = line.beginningBalance + line.totalReceivedQuantity - line.totalConsumedQuantity
-                line.requestedQuantity = line.beginningBalance * 2;
-                line.requestedQuantityExplanation = "we need more";
-                line.totalStockoutDays = 0;
-                line.approvedQuantity = (index + 1) * 20
+                log.info('LOSSES')
+                log.info(line.totalLossesAndAdjustments.toString())
+                log.info(line.stockOnHand.toString())
+
+                if (index == 0) {
+                  line.skipped = false
+                } else {
+                  line.skipped = true
+                }
+                line.beginningBalance = Math.abs(line.totalLossesAndAdjustments)
+                line.totalReceivedQuantity = Math.round(line.beginningBalance / 2)
+                line.totalConsumedQuantity = Math.round(line.beginningBalance / 5)
+                line.stockOnHand = line.beginningBalance + line.totalReceivedQuantity + line.totalLossesAndAdjustments - line.totalConsumedQuantity
+                line.requestedQuantity = line.beginningBalance * 2
+                line.requestedQuantityExplanation = "we need more"
+                line.totalStockoutDays = 0
+                log.info(line.stockOnHand.toString())
               }
 
               vars.put("requisition", JsonOutput.toJson(requisition));
@@ -86,6 +132,28 @@ scenarios:
             Authorization: Bearer ${access_token}
             Content-Type: application/json
           body: ${requisition}
+          jsr223:
+            script-text: |
+              log.info(prev.getUrlAsString())
+              log.info(prev.getResponseDataAsString())
+        - url: ${__P(base-uri)}/api/requisitions/${id}/submit
+          method: POST
+          label: SubmitRequisition
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+          body: {}
+          jsr223:
+            script-text: |
+              log.info(prev.getUrlAsString())
+              log.info(prev.getResponseDataAsString())
+        - url: ${__P(base-uri)}/api/requisitions/${id}/authorize
+          method: POST
+          label: AuthorizeRequisition
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+          body: {}
           jsr223:
             script-text: |
               log.info(prev.getUrlAsString())
