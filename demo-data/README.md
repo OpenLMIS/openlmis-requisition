@@ -67,6 +67,26 @@ Defined in requisition.requisition_templates.json and requisition.columns_maps.j
   * Average Consumption
   * Maximum Stock Quantity
   * Calculated Order Quantity
+4. EPI
+  * Product Code
+  * Product Name
+  * Beginning Balance
+  * Total Received Quantity
+  * Total Consumed Quantity (calculated)
+  * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Stockout Days
+  * Stock On Hand
+  * Average Consumption (periods to average from: 3)
+  * Calculated Order Quantity
+  * Price Per Pack
+  * Dispensing Unit
+  * Requested Quantity
+  * Requested Quantity Explanation
+  * Approved Quantity
+  * Remarks
+  * Total
+  * Total Cost
+  * Adjusted Consumption
 
 ## Requisitions
 
@@ -90,6 +110,8 @@ to log in and approve these to clear them out before beginning your demo.
 |Family Planning|Kankao Health Facility  |2017Q1 |RELEASED  | false   |
 |Family Planning|Kankao Health Facility  |2017Q2 |SKIPPED   | false   |
 |Family Planning|Kankao Health Facility  |2017Q3 |APPROVED  | false   |
+|EPI            |Cuamba, Cuamba          |Jan2017|APPROVED  | false   |
+|EPI            |Lurio, Cuamba           |Jan2017|APPROVED  | false   |
 
 Facilities, Programs, Products, Requisition Groups and User Roles & Rights come from the
 [Reference Data service's demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/demo-data).
