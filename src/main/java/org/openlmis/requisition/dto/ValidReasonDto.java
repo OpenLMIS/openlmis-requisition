@@ -15,11 +15,11 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
 import java.util.UUID;
 
 @Getter
@@ -30,4 +30,11 @@ public class ValidReasonDto {
   private UUID programId;
   private UUID facilityTypeId;
   private ReasonDto reason;
+  private Boolean hidden;
+
+  @JsonIgnore
+  public ReasonDto getReasonWithHidden() {
+    reason.setHidden(hidden);
+    return reason;
+  }
 }

@@ -35,6 +35,7 @@ public class ReasonDto extends BaseDto implements Exporter, Importer {
   private ReasonType reasonType;
   private ReasonCategory reasonCategory;
   private Boolean isFreeTextAllowed;
+  private Boolean hidden;
 
   /**
    * Create new list of ReasonDto based on given list of {@link StockAdjustmentReason}

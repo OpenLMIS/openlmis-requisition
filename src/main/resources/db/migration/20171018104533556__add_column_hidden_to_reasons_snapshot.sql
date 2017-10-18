@@ -1,0 +1,1 @@
+ALTER TABLE stock_adjustment_reasons ADD COLUMN hidden boolean;

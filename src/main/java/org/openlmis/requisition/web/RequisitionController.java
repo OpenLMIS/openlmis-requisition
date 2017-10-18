@@ -594,7 +594,7 @@ public class RequisitionController extends BaseRequisitionController {
             .search(programId, facilityDto.getType().getId());
 
     List<ReasonDto> reasonDtos = validReasons.stream()
-        .map(ValidReasonDto::getReason)
+        .map(ValidReasonDto::getReasonWithHidden)
         .collect(Collectors.toList());
 
     return StockAdjustmentReason.newInstance(reasonDtos);

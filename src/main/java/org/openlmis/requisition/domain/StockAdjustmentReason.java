@@ -66,6 +66,8 @@ public class StockAdjustmentReason extends BaseEntity {
   @Column(nullable = false)
   private Boolean isFreeTextAllowed = false;
 
+  private Boolean hidden;
+
   public boolean isCreditReasonType() {
     return getReasonType() == ReasonType.CREDIT;
   }
@@ -107,6 +109,7 @@ public class StockAdjustmentReason extends BaseEntity {
     reason.setReasonCategory(importer.getReasonCategory());
     reason.setReasonType(importer.getReasonType());
     reason.setIsFreeTextAllowed(importer.getIsFreeTextAllowed());
+    reason.setHidden(importer.getHidden());
     return reason;
   }
 
@@ -122,6 +125,7 @@ public class StockAdjustmentReason extends BaseEntity {
     exporter.setReasonCategory(reasonCategory);
     exporter.setReasonType(reasonType);
     exporter.setIsFreeTextAllowed(isFreeTextAllowed);
+    exporter.setHidden(hidden);
   }
 
   public interface Exporter {
@@ -136,6 +140,8 @@ public class StockAdjustmentReason extends BaseEntity {
     void setReasonCategory(ReasonCategory reasonCategory);
 
     void setIsFreeTextAllowed(Boolean isFreeTextAllowed);
+
+    void setHidden(Boolean hidden);
   }
 
   public interface Importer {
@@ -150,6 +156,8 @@ public class StockAdjustmentReason extends BaseEntity {
     ReasonCategory getReasonCategory();
 
     Boolean getIsFreeTextAllowed();
+
+    Boolean getHidden();
   }
 }
 

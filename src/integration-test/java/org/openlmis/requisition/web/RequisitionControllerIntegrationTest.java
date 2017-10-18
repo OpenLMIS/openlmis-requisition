@@ -1543,7 +1543,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     reasonDto.setName("simple name");
 
     ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
-    when(validReasonDto.getReason()).thenReturn(reasonDto);
+    when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);
 
     doReturn(singletonList(validReasonDto))
         .when(validReasonStockmanagementService).search(anyUuid(), anyUuid());
