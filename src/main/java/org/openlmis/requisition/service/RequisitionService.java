@@ -36,16 +36,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
@@ -100,6 +90,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -283,7 +284,7 @@ public class RequisitionService {
     if (requisition == null) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
-    } else if (!requisition.isPreAuthorize()) {
+    } else if (!(requisition.isPreAuthorize() || requisition.getStatus().isSkipped())) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_WRONG_STATUS);
     } else if (!requisition.getEmergency() && !isRequisitionNewest(requisition)) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);

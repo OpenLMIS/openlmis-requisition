@@ -65,4 +65,8 @@ public enum RequisitionStatus {
   public boolean isAuthorized() {
     return value >= 3;
   }
+
+  public boolean isSkipped() {
+    return value == -1;
+  }
 }

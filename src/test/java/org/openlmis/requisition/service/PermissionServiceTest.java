@@ -31,7 +31,6 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_DEL
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +57,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -266,6 +266,27 @@ public class PermissionServiceTest {
   public void cannotDeleteInitiatedRequisitionWhenHasNoCreateRight() {
     hasRight(requisitionDeleteRightId, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+
+    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+        REQUISITION_CREATE);
+  }
+
+  @Test
+  public void shouldDeleteSkippedRequisitionWhenHasCreateRight() {
+    hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionCreateRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
+
+    permissionService.canDeleteRequisition(requisitionId);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+  }
+
+  @Test
+  public void shouldNotDeleteSkippedRequisitionWhenHasNoCreateRight() {
+    hasRight(requisitionDeleteRightId, true);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
     expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
         REQUISITION_CREATE);

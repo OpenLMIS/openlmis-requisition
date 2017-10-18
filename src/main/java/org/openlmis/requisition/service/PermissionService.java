@@ -20,9 +20,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -40,6 +37,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Service
@@ -159,7 +160,7 @@ public class PermissionService {
       if (permissionCheck.hasErrors()) {
         return permissionCheck;
       }
-      if (requisition.getStatus().isSubmittable()) {
+      if (requisition.getStatus().isSubmittable() || requisition.getStatus().isSkipped()) {
         return checkPermission(REQUISITION_CREATE, requisition);
       } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
         return checkPermission(REQUISITION_AUTHORIZE, requisition);

@@ -44,18 +44,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -122,6 +111,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -260,13 +262,17 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldDeleteRequisitionIfItIsInitiated() {
-    requisition.setStatus(INITIATED);
-    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-        .thenReturn(Collections.emptyList());
-    stubRecentRequisition();
+    validateRequisitionDeleteWithStatus(INITIATED);
+  }
 
-    requisitionService.delete(requisition.getId());
-    verify(requisitionRepository).delete(requisition);
+  @Test
+  public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
+    validateRequisitionDeleteWithStatus(SUBMITTED);
+  }
+
+  @Test
+  public void shouldDeleteRequisitionWhenStatusIsSkipped() {
+    validateRequisitionDeleteWithStatus(SKIPPED);
   }
 
   @Test
@@ -292,17 +298,6 @@ public class RequisitionServiceTest {
     when(requisitionRepository
         .searchRequisitions(secondPeriod.getId(), facilityId, programId, false))
         .thenReturn(Collections.emptyList());
-
-    requisitionService.delete(requisition.getId());
-    verify(requisitionRepository).delete(requisition);
-  }
-
-  @Test
-  public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
-    requisition.setStatus(SUBMITTED);
-    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-        .thenReturn(Collections.emptyList());
-    stubRecentRequisition();
 
     requisitionService.delete(requisition.getId());
     verify(requisitionRepository).delete(requisition);
@@ -1104,6 +1099,7 @@ public class RequisitionServiceTest {
     int pageNumber = 0;
     Pageable pageable = mockPageable();
 
+
     setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
         null, null, supplyingDepots, pageable, pageSize, pageNumber);
 
@@ -1401,6 +1397,16 @@ public class RequisitionServiceTest {
 
     // then
     assertTrue(resultSet.equals(nonFullSupplySet));
+  }
+
+  private void validateRequisitionDeleteWithStatus(RequisitionStatus status) {
+    requisition.setStatus(status);
+    when(statusMessageRepository.findByRequisitionId(requisition.getId()))
+        .thenReturn(Collections.emptyList());
+    stubRecentRequisition();
+
+    requisitionService.delete(requisition.getId());
+    verify(requisitionRepository).delete(requisition);
   }
 
   private List<FacilityDto> mockSupplyingDepot(UUID supplyingDepotId) {
