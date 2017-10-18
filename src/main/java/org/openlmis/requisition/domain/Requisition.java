@@ -411,6 +411,15 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Checks whether the requisition status allows for its deletion.
+   *
+   * @return true if the requisition status is within those that allow deletion; false otherwise
+   */
+  public boolean isDeletable() {
+    return isPreAuthorize() || status.isSkipped();
+  }
+
+  /**
    * Approves given requisition.
    *
    * @param parentNodeId supervisoryNodeDto parent node of the supervisoryNode for this requisition.

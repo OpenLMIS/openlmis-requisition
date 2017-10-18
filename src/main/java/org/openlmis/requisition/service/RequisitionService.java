@@ -284,7 +284,7 @@ public class RequisitionService {
     if (requisition == null) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
           requisitionId));
-    } else if (!(requisition.isPreAuthorize() || requisition.getStatus().isSkipped())) {
+    } else if (!requisition.isDeletable()) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_WRONG_STATUS);
     } else if (!requisition.getEmergency() && !isRequisitionNewest(requisition)) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);

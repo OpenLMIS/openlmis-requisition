@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -1019,6 +1020,33 @@ public class RequisitionTest {
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.RELEASED,
         releaserId);
+  }
+
+  @Test
+  public void shouldProperlyRecognizeDeletableRequisition() {
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    assertTrue(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.REJECTED);
+    assertTrue(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.SKIPPED);
+    assertTrue(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    assertTrue(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    assertFalse(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.IN_APPROVAL);
+    assertFalse(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    assertFalse(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.RELEASED);
+    assertFalse(requisition.isDeletable());
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
