@@ -43,6 +43,7 @@ import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -660,6 +661,25 @@ public class RequisitionService {
     orderFulfillmentService.create(orders);
   }
 
+  /**
+   * Saves status message of a requisition if its draft is not empty.
+   */
+  public void saveStatusMessage(Requisition requisition) {
+    if (isNotBlank(requisition.getDraftStatusMessage())) {
+      StatusChange statusChange = requisition.getStatusChanges().stream().filter(
+          sc -> requisition.getStatus().equals(sc.getStatus()))
+          .findFirst().orElse(null);
+      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
+          statusChange,
+          authenticationHelper.getCurrentUser().getId(),
+          authenticationHelper.getCurrentUser().getFirstName(),
+          authenticationHelper.getCurrentUser().getLastName(),
+          requisition.getDraftStatusMessage());
+      statusMessageRepository.save(newStatusMessage);
+      requisition.setDraftStatusMessage("");
+    }
+  }
+
   private boolean isRequisitionNewest(Requisition requisition) {
     UUID recentRequisitionId = findRecentRegularRequisition(
         requisition.getProgramId(), requisition.getFacilityId()).getId();
@@ -812,17 +832,5 @@ public class RequisitionService {
                                                            ProcessingPeriodDto period) {
     return requisitionRepository.searchRequisitions(
         period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
-  }
-
-  private void saveStatusMessage(Requisition requisition) {
-    if (isNotBlank(requisition.getDraftStatusMessage())) {
-      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          authenticationHelper.getCurrentUser().getId(),
-          authenticationHelper.getCurrentUser().getFirstName(),
-          authenticationHelper.getCurrentUser().getLastName(),
-          requisition.getDraftStatusMessage());
-      statusMessageRepository.save(newStatusMessage);
-      requisition.setDraftStatusMessage("");
-    }
   }
 }

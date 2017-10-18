@@ -12,6 +12,10 @@
       "type": "string",
       "title": "requisitionId"
     },
+    "statusChangeId": {
+      "type": "string",
+      "title": "statusChangeId"
+    },
     "authorId": {
       "type": "string",
       "title": "authorId"
@@ -27,6 +31,7 @@
   },
   "required": [
     "requisitionId",
+    "statusChangeId",
     "status",
     "body"
   ]
