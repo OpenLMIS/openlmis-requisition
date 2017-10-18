@@ -150,9 +150,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String MESSAGE = "message";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String SUPERVISORY_NODE = "supervisoryNode";
-  static final String PROCESSING_PERIOD = "processingPeriod";
-  static final String INITIATED_DATE_FROM = "initiatedDateFrom";
-  static final String INITIATED_DATE_TO = "initiatedDateTo";
+  private static final String PROCESSING_PERIOD = "processingPeriod";
+  private static final String INITIATED_DATE_FROM = "initiatedDateFrom";
+  private static final String INITIATED_DATE_TO = "initiatedDateTo";
   private static final String SORT = "sort";
   private static final String FILTER_VALUE = "filterValue";
   private static final String FILTER_BY = "filterBy";
@@ -1541,6 +1541,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     reasonDto.setDescription("simple description");
     reasonDto.setIsFreeTextAllowed(false);
     reasonDto.setName("simple name");
+    reasonDto.setHidden(false);
 
     ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
     when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);

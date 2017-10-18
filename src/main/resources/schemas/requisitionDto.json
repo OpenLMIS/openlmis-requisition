@@ -15,7 +15,8 @@
     "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
     "draftStatusMessage": { "type": "string", "title": "draftStatusMessage" },
     "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"schemas/requisitionLineItemDto.json" }, "uniqueItems": false },
-    "datePhysicalStockCountCompleted": { "type": "string", "title": "datePhysicalStockCountCompleted" }
+    "datePhysicalStockCountCompleted": { "type": "string", "title": "datePhysicalStockCountCompleted" },
+    "stockAdjustmentReasons": { "type": "array", "title": "stockAdjustmentReasons", "items": { "type": "object", "$ref":"schemas/stockAdjustmentReason.json" }, "uniqueItems": true }
   },
   "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
 }
