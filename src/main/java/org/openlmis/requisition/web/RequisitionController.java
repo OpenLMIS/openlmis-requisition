@@ -233,7 +233,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     requisition.submit(orderableReferenceDataService.findByIds(
             getLineItemOrderableIds(requisition)), user.getId());
-    saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);
@@ -515,7 +515,7 @@ public class RequisitionController extends BaseRequisitionController {
         requisition.getProgramId(), requisition.getFacilityId()).getId();
     requisition.setSupervisoryNodeId(supervisoryNode);
 
-    saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
     requisitionStatusProcessor.statusChange(requisition);

@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -108,8 +109,12 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
   private StatusMessage generateStatusMessage(Requisition requisition) {
     UUID messageId = UUID.randomUUID();
 
+    StatusChange change = new StatusChange();
+    change.setId(UUID.randomUUID());
+
     StatusMessage message = new StatusMessage();
     message.setId(messageId);
+    message.setStatusChange(change);
     message.setRequisition(requisition);
     message.setStatus(requisition.getStatus());
     message.setAuthorId(UUID.randomUUID());

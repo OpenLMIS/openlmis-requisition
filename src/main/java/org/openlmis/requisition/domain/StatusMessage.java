@@ -32,6 +32,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -46,6 +47,12 @@ public class StatusMessage extends BaseTimestampedEntity {
   @Getter
   @Setter
   private Requisition requisition;
+
+  @OneToOne(cascade = {CascadeType.ALL})
+  @JoinColumn(name = "statusChangeId", nullable = false, unique = true)
+  @Getter
+  @Setter
+  private StatusChange statusChange;
 
   @Getter
   @Setter
@@ -71,9 +78,10 @@ public class StatusMessage extends BaseTimestampedEntity {
   @Setter
   private String body;
 
-  private StatusMessage(Requisition requisition, UUID authorId, String authorFirstName,
-                        String authorLastName, String body) {
+  private StatusMessage(Requisition requisition, StatusChange statusChange, UUID authorId,
+                        String authorFirstName, String authorLastName, String body) {
     this.requisition = Objects.requireNonNull(requisition);
+    this.statusChange = Objects.requireNonNull(statusChange);
     this.authorId = authorId;
     this.authorFirstName = authorFirstName;
     this.authorLastName = authorLastName;
@@ -81,10 +89,11 @@ public class StatusMessage extends BaseTimestampedEntity {
     this.body = Objects.requireNonNull(body);
   }
   
-  public static StatusMessage newStatusMessage(Requisition requisition, UUID authorId,
-                                               String authorFirstName, String authorLastName,
-                                               String body) {
-    return new StatusMessage(requisition, authorId, authorFirstName, authorLastName, body);
+  public static StatusMessage newStatusMessage(Requisition requisition, StatusChange statusChange,
+                                               UUID authorId, String authorFirstName,
+                                               String authorLastName, String body) {
+    return new StatusMessage(requisition, statusChange, authorId,
+        authorFirstName, authorLastName, body);
   }
 
   /**
@@ -98,6 +107,7 @@ public class StatusMessage extends BaseTimestampedEntity {
     exporter.setAuthorFirstName(authorFirstName);
     exporter.setAuthorLastName(authorLastName);
     exporter.setRequisitionId(requisition.getId());
+    exporter.setStatusChangeId(statusChange.getId());
     exporter.setStatus(status);
     exporter.setBody(body);
     exporter.setCreatedDate(getCreatedDate());
@@ -114,6 +124,8 @@ public class StatusMessage extends BaseTimestampedEntity {
     void setAuthorLastName(String authorLastName);
 
     void setRequisitionId(UUID requisitionId);
+
+    void setStatusChangeId(UUID statusChangeId);
 
     void setBody(String body);
     

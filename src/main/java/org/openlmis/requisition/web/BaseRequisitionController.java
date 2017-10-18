@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 
 import java.time.LocalDate;
@@ -26,7 +25,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -183,7 +181,7 @@ public abstract class BaseRequisitionController extends BaseController {
     requisition.approve(parentNodeId, orderables, userId);
 
     profiler.start("SAVE_STATUS_MESSAGE");
-    saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition);
 
     profiler.start("SAVE_REQUISITION_TO_REPO");
     requisitionRepository.save(requisition);
@@ -198,18 +196,6 @@ public abstract class BaseRequisitionController extends BaseController {
     profiler.stop().log();
     XLOGGER.exit(basicRequisitionDto);
     return basicRequisitionDto;
-  }
-
-  protected void saveStatusMessage(Requisition requisition) {
-    if (isNotBlank(requisition.getDraftStatusMessage())) {
-      StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          authenticationHelper.getCurrentUser().getId(),
-          authenticationHelper.getCurrentUser().getFirstName(),
-          authenticationHelper.getCurrentUser().getLastName(),
-          requisition.getDraftStatusMessage());
-      statusMessageRepository.save(newStatusMessage);
-      requisition.setDraftStatusMessage("");
-    }
   }
 
   protected Set<UUID> getLineItemOrderableIds(Requisition requisition) {

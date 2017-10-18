@@ -2,6 +2,7 @@
   {
     "id": "86c9bc14-866b-4f94-8e74-3c0cc379fa81",
     "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde"},
+    "statusChange": { "id": "a0aa7e51-2d69-41cb-8986-f3eaa267c0d4"},
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "Body of a status message.",
     "status": "AUTHORIZED",
@@ -10,6 +11,7 @@
   {
     "id": "b9a1583d-f2eb-438d-b645-1ff97481a703",
     "requisition": { "id": "21d138bc-f2c2-4188-adf3-a3aae381abde"},
+    "statusChange": { "id": "702fe2cc-dc7a-4cd7-9267-ae6afb0c3c85"},
     "authorId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "body": "This should be good.",
     "status": "SUBMITTED",
