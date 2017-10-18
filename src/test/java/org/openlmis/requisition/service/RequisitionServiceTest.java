@@ -51,6 +51,7 @@ import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -60,6 +61,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -132,6 +134,9 @@ public class RequisitionServiceTest {
   private static final UUID PERIOD_ID = UUID.randomUUID();
   private Requisition requisition;
   private RequisitionDto requisitionDto;
+
+  @Mock
+  private StatusChange statusChange;
 
   @Mock
   private RequisitionLineItem lineItem1;
@@ -307,7 +312,7 @@ public class RequisitionServiceTest {
   public void shouldDeleteStatusMessagesWhenDeletingRequisition() {
     requisition.setStatus(INITIATED);
     List<StatusMessage> statusMessages = Collections.singletonList(
-        StatusMessage.newStatusMessage(requisition, null, null, null, "Message 1"));
+        StatusMessage.newStatusMessage(requisition, statusChange, null, null, null, "Message 1"));
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(statusMessages);
     stubRecentRequisition();
@@ -1397,6 +1402,43 @@ public class RequisitionServiceTest {
 
     // then
     assertTrue(resultSet.equals(nonFullSupplySet));
+  }
+
+  @Test
+  public void shouldSaveStatusMessage() {
+    // given
+    Requisition requisition = generateRequisition();
+    StatusChange statusChange = new StatusChange();
+    statusChange.setRequisition(requisition);
+    statusChange.setStatus(RequisitionStatus.AUTHORIZED);
+    requisition.setStatusChanges(Collections.singletonList(statusChange));
+    requisition.setDraftStatusMessage("some_message");
+
+    // when
+    requisitionService.saveStatusMessage(requisition);
+
+    // then
+    ArgumentCaptor<StatusMessage> captor = ArgumentCaptor.forClass(StatusMessage.class);
+    verify(statusMessageRepository).save(captor.capture());
+    StatusMessage savedMessage = captor.getValue();
+    assertEquals(statusChange, savedMessage.getStatusChange());
+    assertEquals("", requisition.getDraftStatusMessage());
+  }
+
+  @Test
+  public void shouldNotSaveStatusMessageIfDraftIsNullOrEmpty() {
+    // given
+    Requisition requisition = generateRequisition();
+    requisition.setDraftStatusMessage(null);
+
+    // when
+    requisitionService.saveStatusMessage(requisition);
+
+    requisition.setDraftStatusMessage("");
+    requisitionService.saveStatusMessage(requisition);
+
+    // then
+    verify(statusMessageRepository, never()).save(any(StatusMessage.class));
   }
 
   private void validateRequisitionDeleteWithStatus(RequisitionStatus status) {

@@ -25,6 +25,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,11 @@ public class StatusChange extends BaseTimestampedEntity {
   @Getter
   @Setter
   private Requisition requisition;
+
+  @OneToOne(mappedBy = "statusChange")
+  @Getter
+  @Setter
+  private StatusMessage statusMessage;
 
   @Getter
   @Setter
@@ -71,6 +77,7 @@ public class StatusChange extends BaseTimestampedEntity {
   public void export(StatusChange.Exporter exporter) {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setStatus(status);
+    exporter.setStatusMessage(statusMessage);
     exporter.setAuthorId(authorId);
   }
 
@@ -79,6 +86,8 @@ public class StatusChange extends BaseTimestampedEntity {
     void setCreatedDate(ZonedDateTime createdDate);
 
     void setStatus(RequisitionStatus status);
+
+    void setStatusMessage(StatusMessage statusMessage);
 
     void setAuthorId(UUID authorId);
   }

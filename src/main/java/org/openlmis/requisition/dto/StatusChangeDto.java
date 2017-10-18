@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StatusMessage;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,9 +35,21 @@ public class StatusChangeDto implements StatusChange.Exporter {
 
   @Getter
   @Setter
+  private StatusMessageDto statusMessageDto;
+
+  @Getter
+  @Setter
   private UUID authorId;
 
   @Getter
   @Setter
   private ZonedDateTime createdDate;
+
+  @Override
+  public void setStatusMessage(StatusMessage statusMessage) {
+    if (statusMessage != null) {
+      statusMessageDto = new StatusMessageDto();
+      statusMessage.export(statusMessageDto);
+    }
+  }
 }

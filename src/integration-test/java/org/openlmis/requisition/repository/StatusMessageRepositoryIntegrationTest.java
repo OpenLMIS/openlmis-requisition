@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,6 +37,9 @@ public class StatusMessageRepositoryIntegrationTest
 
   @Autowired
   StatusMessageRepository repository;
+
+  @Autowired
+  StatusChangeRepository statusChangeRepository;
   
   @Autowired
   RequisitionRepository requisitionRepository;
@@ -54,8 +58,11 @@ public class StatusMessageRepositoryIntegrationTest
   }
 
   StatusMessage generateInstance() {
-    return StatusMessage.newStatusMessage(requisition, userId, userFirstName, userLastName,
-        "Status Message");
+    StatusChange statusChange = StatusChange.newStatusChange(requisition, userId);
+    statusChangeRepository.save(statusChange);
+
+    return StatusMessage.newStatusMessage(requisition, statusChange,
+        userId, userFirstName, userLastName,"Status Message");
   }
   
   @Before

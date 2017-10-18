@@ -33,6 +33,7 @@ import java.util.UUID;
 public class StatusMessageDto implements StatusMessage.Exporter {
   private UUID id;
   private UUID requisitionId;
+  private UUID statusChangeId;
   private UUID authorId;
   private String authorFirstName;
   private String authorLastName;
