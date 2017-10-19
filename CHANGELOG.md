@@ -4,6 +4,7 @@
 Improvements:
 * [OLMIS-3544](https://openlmis.atlassian.net/browse/OLMIS-3544): Added sort to requisition search endpoint.
 * [OLMIS-3246](https://openlmis.atlassian.net/browse/OLMIS-3246): Added field hidden to stock adjustment reasons.
+* [OLMIS-3233](https://openlmis.atlassian.net/browse/OLMIS-3233): Added ability to delete requisitions with "skipped" status.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3126](https://openlmis.atlassian.net/browse/OLMIS-3126): Fix unable to batch save when skip is disabled in Requisition Template.
