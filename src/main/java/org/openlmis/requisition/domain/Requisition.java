@@ -53,6 +53,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -584,6 +585,17 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
     exporter.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
+  }
+
+  /**
+   * Find latest status change by date created.
+   *
+   * @return recent status change
+   */
+  public StatusChange getLatestStatusChange() {
+    return statusChanges.stream()
+        .max(Comparator.comparing(BaseTimestampedEntity::getCreatedDate))
+        .orElse(null);
   }
 
   /**

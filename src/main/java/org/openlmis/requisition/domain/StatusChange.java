@@ -53,6 +53,11 @@ public class StatusChange extends BaseTimestampedEntity {
   @Type(type = UUID_TYPE)
   private UUID authorId;
 
+  @Getter
+  @Setter
+  @Type(type = UUID_TYPE)
+  private UUID previousStatusChangeId;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   @Getter
@@ -62,6 +67,10 @@ public class StatusChange extends BaseTimestampedEntity {
   private StatusChange(Requisition requisition, UUID authorId) {
     this.requisition = Objects.requireNonNull(requisition);
     this.authorId = authorId;
+    StatusChange previousChange = requisition.getLatestStatusChange();
+    if (previousChange != null) {
+      this.previousStatusChangeId = previousChange.getId();
+    }
     this.status = Objects.requireNonNull(requisition.getStatus());
   }
 
@@ -79,6 +88,7 @@ public class StatusChange extends BaseTimestampedEntity {
     exporter.setStatus(status);
     exporter.setStatusMessage(statusMessage);
     exporter.setAuthorId(authorId);
+    exporter.setPreviousStatusChangeId(previousStatusChangeId);
   }
 
   public interface Exporter {
@@ -90,5 +100,7 @@ public class StatusChange extends BaseTimestampedEntity {
     void setStatusMessage(StatusMessage statusMessage);
 
     void setAuthorId(UUID authorId);
+
+    void setPreviousStatusChangeId(UUID previousStatusChangeId);
   }
 }

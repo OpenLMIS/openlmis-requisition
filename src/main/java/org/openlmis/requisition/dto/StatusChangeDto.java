@@ -43,6 +43,10 @@ public class StatusChangeDto implements StatusChange.Exporter {
 
   @Getter
   @Setter
+  private UUID previousStatusChangeId;
+
+  @Getter
+  @Setter
   private ZonedDateTime createdDate;
 
   @Override

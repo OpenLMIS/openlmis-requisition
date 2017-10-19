@@ -54,6 +54,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1047,6 +1048,45 @@ public class RequisitionTest {
 
     requisition.setStatus(RequisitionStatus.RELEASED);
     assertFalse(requisition.isDeletable());
+  }
+
+  @Test
+  public void shouldFindLatestStatusChange() {
+    // given
+    List<StatusChange> statusChanges = Arrays.asList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID()),
+        StatusChange.newStatusChange(requisition, UUID.randomUUID()),
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())
+    );
+    ZonedDateTime expectedDate = ZonedDateTime.now();
+    ZonedDateTime dt = expectedDate;
+    for (StatusChange statusChange : statusChanges) {
+      statusChange.setCreatedDate(dt);
+      dt = dt.minusDays(1);
+    }
+    requisition.setStatusChanges(statusChanges);
+
+    // when
+    StatusChange latestStatusChange = requisition.getLatestStatusChange();
+
+    // then
+    assertEquals(expectedDate, latestStatusChange.getCreatedDate());
+  }
+
+  @Test
+  public void shouldSetPreviousStatusChangeId() {
+    // given
+    UUID expectedId = UUID.randomUUID();
+    StatusChange firstStatusChange = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    firstStatusChange.setId(expectedId);
+    firstStatusChange.setCreatedDate(ZonedDateTime.now());
+    requisition.setStatusChanges(Collections.singletonList(firstStatusChange));
+
+    // when
+    StatusChange statusChange = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+
+    // then
+    assertEquals(expectedId, statusChange.getPreviousStatusChangeId());
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
