@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX req_line_reason ON stock_adjustments(reasonid, requisitionlineitemid);

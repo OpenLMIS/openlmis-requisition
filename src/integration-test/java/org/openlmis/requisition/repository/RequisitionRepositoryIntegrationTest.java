@@ -29,16 +29,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -54,6 +45,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -67,6 +59,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -520,6 +524,28 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(2, receivedRequisitions.size());
     assertTrue(receivedRequisitions.get(0).getCreatedDate()
         .compareTo(receivedRequisitions.get(1).getCreatedDate()) > 0);
+  }
+
+  @Test(expected = PersistenceException.class)
+  public void shouldNotAllowMultipleReasonsOfTheSameTypeInSingleLineItem() {
+    UUID reasonId = UUID.randomUUID();
+
+    StockAdjustment adjustment1 = new StockAdjustment();
+    adjustment1.setReasonId(reasonId);
+    adjustment1.setQuantity(2);
+
+    StockAdjustment adjustment2 = new StockAdjustment();
+    adjustment2.setReasonId(reasonId);
+    adjustment2.setQuantity(5);
+
+    Requisition requisition = generateInstance();
+    RequisitionLineItem lineItem = new RequisitionLineItem();
+    lineItem.setStockAdjustments(Lists.newArrayList(adjustment1, adjustment2));
+    requisition.setRequisitionLineItems(Lists.newArrayList(lineItem));
+
+    repository.save(requisition);
+
+    entityManager.flush();
   }
 
   private StockAdjustmentReason generateStockAdjustmentReason() {

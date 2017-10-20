@@ -36,12 +36,6 @@
     "requisitionlineitem": { "id": "ac49b686-c74c-4684-a635-d777ee298cd2" }
   },
   {
-    "id": "7b220781-520b-4538-b32d-8a6066963eea",
-    "reasonId": "e3fc3cf3-da18-44b0-a220-77c985202e06",
-    "quantity": 15,
-    "requisitionlineitem": { "id": "ac49b686-c74c-4684-a635-d777ee298cd2" }
-  },
-  {
     "id": "61692031-b2c8-4a8a-8eb2-1a643b10ea91",
     "reasonId": "c1fc3cf3-da18-44b0-a220-77c985202e06",
     "quantity": 10,
