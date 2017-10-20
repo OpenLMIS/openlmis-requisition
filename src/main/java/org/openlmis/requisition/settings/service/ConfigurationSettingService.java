@@ -15,20 +15,49 @@
 
 package org.openlmis.requisition.settings.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import lombok.NoArgsConstructor;
+import java.util.UUID;
 
 @Service
 @NoArgsConstructor
 public class ConfigurationSettingService {
 
+  private static final String RESONS_SUFFIX = "reasons.";
+  private static final String CONSUMED = RESONS_SUFFIX + "consumed";
+  private static final String RECEIPTS = RESONS_SUFFIX + "receipts";
+  private static final String BEGINNING_BALANCE_EXCESS = RESONS_SUFFIX + "beginningBalanceExcess";
+  private static final String BEGINNING_BALANCE_INSUFFICIENCY =
+      RESONS_SUFFIX + "beginningBalanceInsufficiency";
+
   @Value("${authorization.skip}")
   private String skipAuthorizationSetting;
 
+  @Autowired
+  private Environment env;
+
   public boolean getSkipAuthorization() {
     return getBoolean(skipAuthorizationSetting);
+  }
+
+  public UUID getReasonIdForConsumed() {
+    return UUID.fromString(env.getProperty(CONSUMED));
+  }
+
+  public UUID getReasonIdForReceipts() {
+    return UUID.fromString(env.getProperty(RECEIPTS));
+  }
+
+  public UUID getReasonIdForBeginningBalanceExcess() {
+    return UUID.fromString(env.getProperty(BEGINNING_BALANCE_EXCESS));
+  }
+
+  public UUID getReasonIdForBeginningBalanceInsufficiency() {
+    return UUID.fromString(env.getProperty(BEGINNING_BALANCE_INSUFFICIENCY));
   }
 
   private boolean getBoolean(String value) {

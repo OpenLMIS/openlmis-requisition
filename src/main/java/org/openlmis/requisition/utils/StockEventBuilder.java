@@ -19,7 +19,6 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_A
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +38,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -54,13 +54,6 @@ public class StockEventBuilder {
 
   private static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  private static final String CONSUMED = "CONSUMED";
-  private static final String RECEIPTS = "RECEIPTS";
-  private static final String BEGINNING_BALANCE_EXCESS = "BEGINNING_BALANCE_EXCESS";
-  private static final String BEGINNING_BALANCE_INSUFFICIENCY = "BEGINNING_BALANCE_INSUFFICIENCY";
-  private static final String REASON_ID_SUFFIX = "_REASON_ID";
-
-  private static final Map<String, UUID> defaultReasons = getDefaultReasons();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StockEventBuilder.class);
 
@@ -72,6 +65,9 @@ public class StockEventBuilder {
 
   @Autowired
   private StockCardStockManagementService stockCardService;
+
+  @Autowired
+  private ConfigurationSettingService settings;
 
   /**
    * Builds a physical inventory draft DTO from the given requisition.
@@ -153,19 +149,19 @@ public class StockEventBuilder {
     }
 
     profiler.start("TOTAL_CONSUMED_QUANTITY");
-    if (shouldInclude(columnsMap.get(TOTAL_CONSUMED_QUANTITY), CONSUMED, reasons)) {
+    if (shouldIncludeConsumed(reasons, columnsMap)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
-          .reason(getReasonById(getReasonId(CONSUMED), reasons))
+          .reason(getReasonById(settings.getReasonIdForConsumed(), reasons))
           .build()
       );
     }
 
     profiler.start("TOTAL_RECEIVED_QUANTITY");
-    if (shouldInclude(columnsMap.get(TOTAL_RECEIVED_QUANTITY), RECEIPTS, reasons)) {
+    if (shouldIncludeReceipts(reasons, columnsMap)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
-          .reason(getReasonById(getReasonId(RECEIPTS), reasons))
+          .reason(getReasonById(settings.getReasonIdForReceipts(), reasons))
           .build()
       );
     }
@@ -188,7 +184,7 @@ public class StockEventBuilder {
     if (shouldIncludeBeginningBalanceExcess(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(beginningBalance - stockCard.getStockOnHand())
-          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons))
+          .reason(getReasonById(settings.getReasonIdForBeginningBalanceExcess(), reasons))
           .build());
     }
 
@@ -196,7 +192,7 @@ public class StockEventBuilder {
     if (shouldIncludeBeginningBalanceInsufficiency(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(stockCard.getStockOnHand() - beginningBalance)
-          .reason(getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons))
+          .reason(getReasonById(settings.getReasonIdForBeginningBalanceInsufficiency(), reasons))
           .build());
     }
 
@@ -213,6 +209,18 @@ public class StockEventBuilder {
         .build();
   }
 
+  private boolean shouldIncludeConsumed(List<StockAdjustmentReason> reasons,
+                                        Map<String, RequisitionTemplateColumn> columnsMap) {
+    return shouldInclude(
+        columnsMap.get(TOTAL_CONSUMED_QUANTITY), settings.getReasonIdForConsumed(), reasons);
+  }
+
+  private boolean shouldIncludeReceipts(List<StockAdjustmentReason> reasons,
+                                        Map<String, RequisitionTemplateColumn> columnsMap) {
+    return shouldInclude(
+        columnsMap.get(TOTAL_RECEIVED_QUANTITY), settings.getReasonIdForReceipts(), reasons);
+  }
+
   private LocalDate getOccurredDate(Requisition requisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null) {
       return requisition.getDatePhysicalStockCountCompleted();
@@ -227,14 +235,9 @@ public class StockEventBuilder {
     return periodReferenceDataService.findOne(requisition.getProcessingPeriodId()).getEndDate();
   }
 
-  private boolean shouldInclude(RequisitionTemplateColumn column, String reason,
+  private boolean shouldInclude(RequisitionTemplateColumn column, UUID reason,
                                 List<StockAdjustmentReason> reasons) {
-    return existsAndIsDisplayed(column) && getReasonById(getReasonId(reason), reasons) != null;
-  }
-
-  private boolean shouldIncludeConsumed(RequisitionTemplateColumn column, String reason,
-                                List<StockAdjustmentReason> reasons) {
-    return column != null && getReasonById(getReasonId(reason), reasons) != null;
+    return existsAndIsDisplayed(column) && getReasonById(reason, reasons) != null;
   }
 
   private boolean shouldIncludeBeginningBalanceExcess(StockCardDto stockCard,
@@ -242,7 +245,7 @@ public class StockEventBuilder {
                                                       List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
         && beginningBalance > stockCard.getStockOnHand()
-        && getReasonById(getReasonId(BEGINNING_BALANCE_EXCESS), reasons) != null;
+        && getReasonById(settings.getReasonIdForBeginningBalanceExcess(), reasons) != null;
 
     LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
                     + " Including excess adjustment: {}",
@@ -258,7 +261,7 @@ public class StockEventBuilder {
                                                              List<StockAdjustmentReason> reasons) {
     boolean shouldInclude = stockCard != null && stockCard.getStockOnHand() != null
         && beginningBalance < stockCard.getStockOnHand()
-        && getReasonById(getReasonId(BEGINNING_BALANCE_INSUFFICIENCY), reasons) != null;
+        && getReasonById(settings.getReasonIdForBeginningBalanceInsufficiency(), reasons) != null;
 
     LOGGER.debug("Beginning balance: {}, SOH in Stock Management: {}."
                     + " Including insufficiency adjustment: {}",
@@ -277,24 +280,6 @@ public class StockEventBuilder {
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
     return column != null && column.getIsDisplayed();
-  }
-
-  private UUID getReasonId(String reason) {
-    String reasonId = System.getenv(reason + REASON_ID_SUFFIX);
-    return reasonId != null ? UUID.fromString(reasonId) : defaultReasons.get(reason);
-  }
-
-  private static Map<String, UUID> getDefaultReasons() {
-    Map<String, UUID> defaultReasons = new HashMap<>();
-
-    defaultReasons.put(CONSUMED, UUID.fromString("b5c27da7-bdda-4790-925a-9484c5dfb594"));
-    defaultReasons.put(RECEIPTS, UUID.fromString("313f2f5f-0c22-4626-8c49-3554ef763de3"));
-    defaultReasons.put(BEGINNING_BALANCE_EXCESS,
-        UUID.fromString("84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"));
-    defaultReasons.put(BEGINNING_BALANCE_INSUFFICIENCY,
-        UUID.fromString("f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"));
-
-    return defaultReasons;
   }
 
 }

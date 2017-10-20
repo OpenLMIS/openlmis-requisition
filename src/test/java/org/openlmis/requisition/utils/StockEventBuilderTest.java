@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -45,10 +46,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -60,19 +58,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(StockEventBuilder.class)
+@RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class StockEventBuilderTest {
 
   private static final LocalDate DATE_PHYSICAL_STOCK_COUNT_COMPLETED = LocalDate.now().minusDays(3);
   private static final LocalDate PERIOD_END_DATE = LocalDate.now().minusDays(1);
-  private static final String RECEIPTS_REASON_ID = "RECEIPTS_REASON_ID";
-  private static final String CONSUMED_REASON_ID = "CONSUMED_REASON_ID";
-  private static final String BEGINNING_BALANCE_EXCESS_REASON_ID =
-      "BEGINNING_BALANCE_EXCESS_REASON_ID";
-  private static final String BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID =
-      "BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID";
   private static final ZoneId ZONE_ID = ZoneId.systemDefault();
 
   private Requisition requisition;
@@ -117,6 +108,9 @@ public class StockEventBuilderTest {
   @Mock
   private StockCardStockManagementService stockCardStockManagementService;
 
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
+
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
 
@@ -125,15 +119,14 @@ public class StockEventBuilderTest {
     preparePeriod();
     prepareRequisitionDto();
 
-    PowerMockito.mockStatic(System.class);
-    PowerMockito.when(System.getenv(RECEIPTS_REASON_ID))
-        .thenReturn(receiptsReason.getReasonId().toString());
-    PowerMockito.when(System.getenv(CONSUMED_REASON_ID))
-        .thenReturn(consumedReason.getReasonId().toString());
-    PowerMockito.when(System.getenv(BEGINNING_BALANCE_EXCESS_REASON_ID))
-        .thenReturn(beginningBalanceExcess.getReasonId().toString());
-    PowerMockito.when(System.getenv(BEGINNING_BALANCE_INSUFFICIENCY_REASON_ID))
-        .thenReturn(beginningBalanceInsufficiency.getReasonId().toString());
+    when(configurationSettingService.getReasonIdForReceipts())
+        .thenReturn(receiptsReason.getReasonId());
+    when(configurationSettingService.getReasonIdForConsumed())
+        .thenReturn(consumedReason.getReasonId());
+    when(configurationSettingService.getReasonIdForBeginningBalanceExcess())
+        .thenReturn(beginningBalanceExcess.getReasonId());
+    when(configurationSettingService.getReasonIdForBeginningBalanceInsufficiency())
+        .thenReturn(beginningBalanceInsufficiency.getReasonId());
 
     when(dateHelper.getZone()).thenReturn(ZONE_ID);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
@@ -189,17 +182,6 @@ public class StockEventBuilderTest {
   }
 
   @Test
-  public void itShouldNotIncludeReceiptsIfTheReasonIdIsNotGivenInEnv() throws Exception {
-    PowerMockito.when(System.getenv(RECEIPTS_REASON_ID)).thenReturn(null);
-
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
-
-    assertThat(result.getLineItems().size()).isGreaterThan(0);
-    result.getLineItems()
-        .forEach(lineItem -> assertThat(containsReason(lineItem, receiptsReason)).isFalse());
-  }
-
-  @Test
   public void itShouldIncludeConsumedIfTotalConsumedQuantityIsDisplayed() throws Exception {
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
@@ -233,17 +215,6 @@ public class StockEventBuilderTest {
   @Test
   public void itShouldNotIncludeConsumedIfTheReasonDoesNotExist() throws Exception {
     reasons.remove(consumedReason);
-
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
-
-    assertThat(result.getLineItems().size()).isGreaterThan(0);
-    result.getLineItems()
-        .forEach(lineItem -> assertThat(containsReason(lineItem, consumedReason)).isFalse());
-  }
-
-  @Test
-  public void itShouldNotIncludeConsumedIfTheReasonIdIsNotGivenInEnv() throws Exception {
-    PowerMockito.when(System.getenv(CONSUMED_REASON_ID)).thenReturn(null);
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
@@ -414,6 +385,16 @@ public class StockEventBuilderTest {
   }
 
   @Test
+  public void itShouldNotIncludeBeginningBalanceExcessIfStockCardIsNull() {
+    lineItemOneDto.setBeginningBalance(20);
+    stockCards.clear();
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
+  }
+
+  @Test
   public void
       itShouldIncludeBeginningBalanceInsufficiencyIfBeginningBalanceIsLowerThanStockOnHand() {
     lineItemTwoDto.setBeginningBalance(33);
@@ -424,6 +405,16 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(4))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
             ReasonDto.newInstance(beginningBalanceExcess), 3));
+  }
+
+  @Test
+  public void itShouldNotIncludeBeginningBalanceInsufficiencyIfStockCardIsNull() {
+    lineItemOneDto.setBeginningBalance(20);
+    stockCards.clear();
+
+    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+
+    assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
   }
 
   private RequisitionLineItem prepareLineItemOneDto() {
