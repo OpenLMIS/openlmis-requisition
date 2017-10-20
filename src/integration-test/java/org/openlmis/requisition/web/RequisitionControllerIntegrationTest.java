@@ -101,6 +101,7 @@ import org.openlmis.requisition.utils.PageImplRepresentation;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -209,6 +210,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @MockBean
+  private ReasonsValidator reasonsValidator;
+
   @Autowired
   private MessageService messageService;
 
@@ -217,7 +221,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID facilityTypeId = UUID.randomUUID();
-  
+
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
@@ -909,6 +913,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     assertEquals(requisition.getId(), result.getId());
     verify(facilityReferenceDataService).findOne(facilityId);
     verify(validReasonStockmanagementService).search(programId, facilityTypeId);
+
+    verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
         .initiate(programId, facilityId, periodId, false, stockAdjustmentReasons);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -1532,7 +1538,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
     return right;
   }
-  
+
   private void mockReasons() {
     ReasonDto reasonDto = new ReasonDto();
     reasonDto.setId(UUID.randomUUID());
@@ -1546,8 +1552,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
     when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);
 
-    doReturn(singletonList(validReasonDto))
-        .when(validReasonStockmanagementService).search(anyUuid(), anyUuid());
+    when(validReasonStockmanagementService.search(anyUuid(), anyUuid()))
+        .thenReturn(singletonList(validReasonDto));
     stockAdjustmentReasons = singletonList(StockAdjustmentReason.newInstance(reasonDto));
   }
 

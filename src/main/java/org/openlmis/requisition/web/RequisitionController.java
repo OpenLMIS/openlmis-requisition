@@ -60,6 +60,7 @@ import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
+import org.openlmis.requisition.validate.ReasonsValidator;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -113,6 +114,9 @@ public class RequisitionController extends BaseRequisitionController {
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
 
+  @Autowired
+  private ReasonsValidator reasonsValidator;
+
   /**
    * Allows creating new requisitions.
    *
@@ -165,6 +169,9 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
         program.getId(), facility.getId(), suggestedPeriod, emergency, stockAdjustmentReasons);
+
+    profiler.start("VALIDATE_REASONS");
+    reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());
 
     profiler.start("Build DTO");
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(newRequisition, facility, program);
