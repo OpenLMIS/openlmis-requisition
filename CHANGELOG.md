@@ -4,6 +4,7 @@
 Improvements:
 * [OLMIS-3544](https://openlmis.atlassian.net/browse/OLMIS-3544): Added sort to requisition search endpoint.
 * [OLMIS-3246](https://openlmis.atlassian.net/browse/OLMIS-3246): Added field hidden to stock adjustment reasons.
+  * During work on this ticket also added validations for all special reasons from Stock are valid reasons.
 * [OLMIS-3233](https://openlmis.atlassian.net/browse/OLMIS-3233): Added ability to delete requisitions with "skipped" status.
 
 Bug fixes added in a backwards-compatible manner:

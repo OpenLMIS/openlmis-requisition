@@ -758,7 +758,8 @@
     "isFreeTextAllowed":false,
     "id":"75506d14-2ede-4247-a528-444e2c7a42cf",
     "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
-    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594"
+    "reasonId":"b5c27da7-bdda-4790-925a-9484c5dfb594",
+    "hidden": true
   },
   {
     "name":"Receipts",
@@ -768,7 +769,8 @@
     "isFreeTextAllowed":false,
     "id":"bbb99bbb-82d3-4464-b849-fae57735c8db",
     "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
-    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3"
+    "reasonId":"313f2f5f-0c22-4626-8c49-3554ef763de3",
+    "hidden": true
   },
   {
     "name":"Beginning Balance Excess",
@@ -778,7 +780,8 @@
     "isFreeTextAllowed":false,
     "id":"560bb3c0-9353-49aa-b8cf-189a7c1dad2b",
     "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
-    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac"
+    "reasonId":"84eb13c3-3e54-4687-8a5f-a9f20dcd0dac",
+    "hidden": true
   },
   {
     "name":"Beginning Balance Insufficiency",
@@ -788,6 +791,7 @@
     "isFreeTextAllowed":false,
     "id":"9ab42536-4f40-4134-8448-431d25a70c59",
     "requisitionId":"b235dc46-7f19-4ef7-9240-6f43e6db0513",
-    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82"
+    "reasonId":"f8bb41e2-ab43-4781-ae7a-7bf3b5116b82",
+    "hidden": true
   }
 ]
