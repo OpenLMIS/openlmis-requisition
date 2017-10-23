@@ -15,16 +15,6 @@
 
 package org.openlmis.requisition.utils;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -34,6 +24,12 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 public class RequisitionExportHelper {
