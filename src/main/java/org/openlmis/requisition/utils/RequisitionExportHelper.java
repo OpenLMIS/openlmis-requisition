@@ -17,11 +17,14 @@ package org.openlmis.requisition.utils;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -53,17 +56,21 @@ public class RequisitionExportHelper {
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_ORDERABLE_IDS_FROM_LINE_ITEMS");
-    Set<UUID> orderableIds = requisitionLineItems.stream()
-        .map(RequisitionLineItem::getOrderableId)
-        .collect(Collectors.toSet());
+
+    Set<UUID> orderableIds = new HashSet<>(requisitionLineItems.size());
+    for (RequisitionLineItem lineItem : requisitionLineItems) {
+      orderableIds.add(lineItem.getOrderableId());
+    }
 
     profiler.start("FIND_ORDERABLES_BY_IDS");
     List<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
 
     profiler.start("CONVERT_LINE_ITEMS_TO_DTOS");
-    List<RequisitionLineItemDto> requisitionLineItemDtos = requisitionLineItems.stream()
-        .map(item -> exportToDto(item, orderables))
-        .collect(toList());
+    List<RequisitionLineItemDto> requisitionLineItemDtos =
+        new ArrayList<>(requisitionLineItems.size());
+    for (RequisitionLineItem lineItem : requisitionLineItems) {
+      requisitionLineItemDtos.add(exportToDto(lineItem, orderables));
+    }
 
     profiler.stop().log();
     XLOGGER.exit(requisitionLineItemDtos);
