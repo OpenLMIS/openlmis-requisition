@@ -1,0 +1,1 @@
+ALTER TABLE status_messages ADD CONSTRAINT status_change_id_unique UNIQUE (statusChangeId) DEFERRABLE INITIALLY DEFERRED;

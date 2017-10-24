@@ -16,24 +16,33 @@
 package org.openlmis.requisition.repository;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.UUID;
 
 public class StatusMessageRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<StatusMessage> {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Autowired
   StatusMessageRepository repository;
@@ -46,6 +55,9 @@ public class StatusMessageRepositoryIntegrationTest
   
   @Autowired
   RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  EntityManager entityManager;
   
   private RequisitionTemplate requisitionTemplate;
   private Requisition requisition;
@@ -100,5 +112,22 @@ public class StatusMessageRepositoryIntegrationTest
     //then
     assertThat(foundStatusMessages.size(), is(1));
     assertEquals(statusMessage, foundStatusMessages.get(0));
+  }
+
+  @Test
+  @Rollback(false)
+  public void shouldFailToSaveWithDuplicateStatusChange() {
+    expectedException.expectCause(isA(ConstraintViolationException.class));
+
+    // given
+    StatusMessage statusMessage = this.generateInstance();
+    repository.save(statusMessage);
+
+    StatusMessage duplicateStatusMessage = this.generateInstance();
+    duplicateStatusMessage.setStatusChange(statusMessage.getStatusChange());
+
+    // when
+    repository.save(duplicateStatusMessage);
+    entityManager.flush();
   }
 }
