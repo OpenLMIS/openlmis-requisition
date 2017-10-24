@@ -32,7 +32,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.test.annotation.Commit;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -115,7 +115,7 @@ public class StatusMessageRepositoryIntegrationTest
   }
 
   @Test
-  @Rollback(false)
+  @Commit
   public void shouldFailToSaveWithDuplicateStatusChange() {
     expectedException.expectCause(isA(ConstraintViolationException.class));
 

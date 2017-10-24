@@ -1410,8 +1410,12 @@ public class RequisitionServiceTest {
     Requisition requisition = generateRequisition();
     StatusChange statusChange = new StatusChange();
     statusChange.setRequisition(requisition);
-    statusChange.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setStatusChanges(Collections.singletonList(statusChange));
+
+    StatusChange anotherStatusChange = new StatusChange();
+    anotherStatusChange.setId(UUID.randomUUID());
+    anotherStatusChange.setCreatedDate(ZonedDateTime.now());
+
+    requisition.setStatusChanges(Arrays.asList(statusChange, anotherStatusChange));
     requisition.setDraftStatusMessage("some_message");
 
     // when
@@ -1422,6 +1426,34 @@ public class RequisitionServiceTest {
     verify(statusMessageRepository).save(captor.capture());
     StatusMessage savedMessage = captor.getValue();
     assertEquals(statusChange, savedMessage.getStatusChange());
+    assertEquals("", requisition.getDraftStatusMessage());
+  }
+
+  @Test
+  public void shouldSaveStatusMessageWithAStatusChangeThatWasAlreadyPersisted() {
+    // given
+    Requisition requisition = generateRequisition();
+    StatusChange statusChange = new StatusChange();
+    statusChange.setId(UUID.randomUUID());
+    statusChange.setRequisition(requisition);
+    statusChange.setCreatedDate(ZonedDateTime.now().minusDays(1));
+
+    StatusChange anotherStatusChange = new StatusChange();
+    anotherStatusChange.setId(UUID.randomUUID());
+    statusChange.setRequisition(requisition);
+    anotherStatusChange.setCreatedDate(ZonedDateTime.now());
+
+    requisition.setStatusChanges(Arrays.asList(statusChange, anotherStatusChange));
+    requisition.setDraftStatusMessage("some_message");
+
+    // when
+    requisitionService.saveStatusMessage(requisition);
+
+    // then
+    ArgumentCaptor<StatusMessage> captor = ArgumentCaptor.forClass(StatusMessage.class);
+    verify(statusMessageRepository).save(captor.capture());
+    StatusMessage savedMessage = captor.getValue();
+    assertEquals(anotherStatusChange, savedMessage.getStatusChange());
     assertEquals("", requisition.getDraftStatusMessage());
   }
 

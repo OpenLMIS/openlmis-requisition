@@ -594,7 +594,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public StatusChange getLatestStatusChange() {
     return statusChanges.stream()
-        .max(Comparator.comparing(BaseTimestampedEntity::getCreatedDate))
+        .max(Comparator.comparing(BaseTimestampedEntity::getCreatedDate,
+            Comparator.nullsFirst(Comparator.naturalOrder())))
         .orElse(null);
   }
 

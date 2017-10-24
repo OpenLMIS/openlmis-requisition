@@ -666,9 +666,12 @@ public class RequisitionService {
    */
   public void saveStatusMessage(Requisition requisition) {
     if (isNotBlank(requisition.getDraftStatusMessage())) {
+      // find the status change we are about to add. If it's already persisted,
+      // get the latest one by date created
       StatusChange statusChange = requisition.getStatusChanges().stream().filter(
-          sc -> requisition.getStatus().equals(sc.getStatus()))
-          .findFirst().orElse(null);
+          sc -> sc.getId() == null)
+          .findFirst()
+          .orElse(requisition.getLatestStatusChange());
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
           statusChange,
           authenticationHelper.getCurrentUser().getId(),
