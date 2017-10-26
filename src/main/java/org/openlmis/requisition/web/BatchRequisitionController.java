@@ -91,8 +91,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
+    profiler.start("FIND_ALL_PROGRAMS_FOR_REQUISITIONS");
     Map<UUID, ProgramDto> programs = getUuidProgramDtoMap(requisitions);
+    profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
     Map<UUID, FacilityDto> facilities = getUuidFacilityDtoMap(requisitions);
+    profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");
     Map<UUID, OrderableDto> orderables = getUuidOrderableDtoMap(requisitions);
 
     profiler.start("CHECK_PERM_AND_BUILD_DTO");
