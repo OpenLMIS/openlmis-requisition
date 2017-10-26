@@ -40,7 +40,7 @@ public class FacilityDto extends MinimalFacilityDto {
   private FacilityTypeDto type;
 
   /**
-   * Get zone with given level number by traversing up geographicZone hierachy if needed.
+   * Get zone with given level number by traversing up geographicZone hierarchy if needed.
    * @return zone of the facility with given level number.
    */
   @JsonIgnore

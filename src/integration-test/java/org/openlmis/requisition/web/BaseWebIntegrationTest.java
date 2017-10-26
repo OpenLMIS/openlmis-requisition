@@ -34,7 +34,9 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.ObjectMapperConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
-
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -44,11 +46,14 @@ import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,18 +64,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
-
 import javax.annotation.PostConstruct;
 
 
@@ -87,6 +86,7 @@ public abstract class BaseWebIntegrationTest {
   protected static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
+  protected static final UUID NON_FULL_SUPPLY_PRODUCT_ID = UUID.randomUUID();
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
@@ -102,6 +102,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected PeriodReferenceDataService periodReferenceDataService;
+
+  @MockBean(name = "programReferenceDataService")
+  protected ProgramReferenceDataService programReferenceDataService;
 
   protected RestAssuredClient restAssured;
 
@@ -162,7 +165,7 @@ public abstract class BaseWebIntegrationTest {
 
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition(
-        UUID.randomUUID(), UUID.randomUUID(), generateProcessingPeriod(), requisitionStatus, true);
+        UUID.randomUUID(), generateProgram(), generateProcessingPeriod(), requisitionStatus, true);
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
@@ -170,7 +173,8 @@ public abstract class BaseWebIntegrationTest {
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setTemplate(generateRequisitionTemplate());
     requisition.setEmergency(false);
-    requisition.setAvailableNonFullSupplyProducts(Collections.emptySet());
+    requisition.setAvailableNonFullSupplyProducts(
+        Collections.singleton(NON_FULL_SUPPLY_PRODUCT_ID));
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
@@ -203,7 +207,15 @@ public abstract class BaseWebIntegrationTest {
     return template;
   }
 
-  protected final UUID generateProcessingPeriod() {
+  protected OrderableDto generateOrderable(UUID id) {
+    OrderableDto orderable = new OrderableDto();
+
+    orderable.setId(id);
+
+    return orderable;
+  }
+
+  private UUID generateProcessingPeriod() {
     ProcessingPeriodDto period = new ProcessingPeriodDto();
 
     period.setId(UUID.randomUUID());
@@ -212,6 +224,16 @@ public abstract class BaseWebIntegrationTest {
     when(periodReferenceDataService.findOne(eq(period.getId()))).thenReturn(period);
 
     return period.getId();
+  }
+
+  private UUID generateProgram() {
+    ProgramDto program = new ProgramDto();
+
+    program.setId(UUID.randomUUID());
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+
+    return program.getId();
   }
 
   protected void mockExternalAuthorization() {

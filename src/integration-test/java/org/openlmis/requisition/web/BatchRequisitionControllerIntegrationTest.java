@@ -20,14 +20,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
@@ -41,6 +43,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -48,6 +51,7 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
+import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -60,7 +64,6 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.StockEventBuilder;
@@ -73,6 +76,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -108,9 +112,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean
   private RequisitionVersionValidator requisitionVersionValidator;
 
-  @MockBean(name = "programReferenceDataService")
-  private ProgramReferenceDataService programReferenceDataService;
-
   @MockBean
   private StockEventStockManagementService stockEventStockManagementService;
 
@@ -126,6 +127,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private List<Requisition> requisitions;
   private List<ApproveRequisitionDto> approveRequisitions;
   private List<UUID> requisitionIds;
+  private Map<UUID, OrderableDto> orderablesMap;
 
   @Before
   public void setUp() {
@@ -134,6 +136,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
     mockStockEventServiceResponses();
+
+    doReturn(program)
+        .when(programReferenceDataService)
+        .findOne(any(UUID.class));
 
     requisitions = Lists.newArrayList(
         generateRequisition(RequisitionStatus.AUTHORIZED),
@@ -159,21 +165,29 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
-    doReturn(Collections.emptyList())
+    List<OrderableDto> orderables =
+        Collections.singletonList(generateOrderable(NON_FULL_SUPPLY_PRODUCT_ID));
+    doReturn(orderables)
         .when(orderableReferenceDataService)
-        .findByIds(anySetOf(UUID.class));
+        .findByIds(Collections.singleton(NON_FULL_SUPPLY_PRODUCT_ID));
+
+    orderablesMap = orderables.stream()
+        .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
 
     doReturn(false)
         .when(program)
         .getEnableDatePhysicalStockCountCompleted();
 
-    doReturn(program)
-        .when(programReferenceDataService)
-        .findOne(any(UUID.class));
-
-    doReturn(Collections.emptyList())
+    List<FacilityDto> facilityList = requisitions.stream()
+        .map(r -> {
+          FacilityDto facilityDto = new FacilityDto();
+          facilityDto.setId(r.getFacilityId());
+          return facilityDto;
+        })
+        .collect(Collectors.toList());
+    doReturn(facilityList)
         .when(facilityReferenceDataService)
-        .search(anySetOf(UUID.class));
+        .search(requisitions.stream().map(Requisition::getFacilityId).collect(Collectors.toSet()));
   }
 
   // GET /api/requisitions?retrieveAll&id={}&id={}&id={}
@@ -187,6 +201,22 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
     Response response = get(RETRIEVE_ALL, requisitionIds);
     checkResponseBody(response);
+
+    ArgumentCaptor<ProcessingPeriodDto> periodCaptor =
+        ArgumentCaptor.forClass(ProcessingPeriodDto.class);
+    ArgumentCaptor<ProgramDto> programCaptor = ArgumentCaptor.forClass(ProgramDto.class);
+    ArgumentCaptor<FacilityDto> facilityCaptor = ArgumentCaptor.forClass(FacilityDto.class);
+
+    requisitions.forEach(req -> {
+      verify(requisitionDtoBuilder)
+          .build(eq(req), facilityCaptor.capture(), programCaptor.capture(),
+              eq(orderablesMap), periodCaptor.capture());
+
+      assertEquals(req.getProcessingPeriodId(), periodCaptor.getValue().getId());
+      assertEquals(req.getProgramId(), programCaptor.getValue().getId());
+      assertEquals(req.getFacilityId(), facilityCaptor.getValue().getId());
+    });
+
   }
 
   @Test
