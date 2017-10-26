@@ -38,6 +38,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -47,16 +51,18 @@ import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class RequisitionValidator extends AbstractRequisitionValidator {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionValidator.class);
+
   static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
       + " the calculated value.";
   static final String VALUE_NOT_FOUND = " could not be found.";
@@ -69,12 +75,18 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   @Override
   public void validate(Object target, Errors errors) {
+    XLOGGER.entry(target, errors);
+    Profiler profiler = new Profiler("VALIDATE_WITH_REQUISITION_VALIDATOR");
+    profiler.setLogger(XLOGGER);
+
     Requisition requisition = (Requisition) target;
 
+    profiler.start("CHECK_FOR_NON_SKIPPED_LINE_ITEMS");
     if (isEmpty(requisition.getNonSkippedRequisitionLineItems())) {
       rejectValue(errors, REQUISITION_LINE_ITEMS,
           new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS));
     } else {
+      profiler.start("VALIDATE_LINE_ITEMS");
       for (RequisitionLineItem item : requisition.getNonSkippedRequisitionLineItems()) {
         if (item.isNonFullSupply()) {
           validateNonFullSupplyLineItem(errors, requisition, item);
@@ -85,57 +97,90 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
     }
 
     if (predicate.exec(requisition.getProgramId())) {
+      profiler.start("VALIDATE_PHYSICAL_STOCK_COUNT");
       validateDatePhysicalStockCountCompleted(errors, requisition);
     }
+    
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
   private void validateNonFullSupplyLineItem(Errors errors, Requisition requisition,
                                              RequisitionLineItem item) {
+    XLOGGER.entry(errors, requisition, item);
+    Profiler profiler = new Profiler("VALIDATE_NON_FULL_SUPPLY_LINE_ITEM");
+    profiler.setLogger(XLOGGER);
+
     RequisitionTemplate template = requisition.getTemplate();
 
+    profiler.start("VALIDATE_REQUESTED_QUANTITY");
     rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
         REQUESTED_QUANTITY);
 
+    profiler.start("VALIDATE_REQUESTED_QUANTITY_EXPLANATION");
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
         REQUESTED_QUANTITY_EXPLANATION);
 
+    profiler.start("VALIDATE_APPROVED_QUANTITY");
     validateApprovedQuantity(errors, template, requisition, item);
+    
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
   private void validateFullSupplyLineItem(Errors errors, Requisition requisition,
                                           RequisitionLineItem item) {
+    XLOGGER.entry(errors, requisition, item);
+    Profiler profiler = new Profiler("VALIDATE_FULL_SUPPLY_LINE_ITEM");
+    profiler.setLogger(XLOGGER);
+
     RequisitionTemplate template = requisition.getTemplate();
 
+    profiler.start("VALIDATE_BEGINNING_BALANCE");
     rejectIfNullOrNegative(errors, template, item.getBeginningBalance(),
         BEGINNING_BALANCE);
 
+    profiler.start("VALIDATE_TOTAL_RECEIVED_QUANTITY");
     rejectIfNullOrNegative(errors, template, item.getTotalReceivedQuantity(),
         TOTAL_RECEIVED_QUANTITY);
 
+    profiler.start("VALIDATE_STOCK_ON_HAND");
     rejectIfNullOrNegative(errors, template, item.getStockOnHand(),
         STOCK_ON_HAND);
 
+    profiler.start("VALIDATE_TOTAL_CONSUMED_QUANTITY");
     rejectIfNullOrNegative(errors, template, item.getTotalConsumedQuantity(),
         TOTAL_CONSUMED_QUANTITY);
 
+    profiler.start("VALIDATE_TOTAL_STOCKOUT_DAYS");
     rejectIfNullOrNegative(errors, template, item.getTotalStockoutDays(),
         TOTAL_STOCKOUT_DAYS);
 
+    profiler.start("VALIDATE_TOTAL_COLUMN");
     rejectIfNullOrNegative(errors, template, item.getTotal(), TOTAL_COLUMN);
 
+    profiler.start("VALIDATE_APPROVED_QUANTITY");
     validateApprovedQuantity(errors, template, requisition, item);
 
+    profiler.start("VALIDATE_REQUESTED_QUANTITY_EXPLANATION");
     checkTemplate(errors, template, item.getRequestedQuantityExplanation(),
         REQUESTED_QUANTITY_EXPLANATION);
 
+    profiler.start("VALIDATE_NUMBER_OF_NEW_PATIENTS_ADDED");
     rejectIfLessThanZero(errors, template, item.getNumberOfNewPatientsAdded(),
         NUMBER_OF_NEW_PATIENTS_ADDED);
 
+    profiler.start("VALIDATE_CALCULATIONS");
     validateCalculations(errors, template, item);
 
+    profiler.start("VALIDATE_REQUESTED_QUANTITY_AND_EXPLANATION");
     validateRequestedQuantityAndExplanation(errors, item, template);
 
+    profiler.start("VALIDATE_STOCK_ADJUSTMENTS");
     validateStockAdjustments(errors, requisition, item);
+    
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
   private void validateRequestedQuantityAndExplanation(Errors errors, RequisitionLineItem item,
