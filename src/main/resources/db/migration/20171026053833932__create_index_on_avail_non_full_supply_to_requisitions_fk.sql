@@ -1,0 +1,1 @@
+CREATE INDEX ON requisition.available_non_full_supply_products (requisitionid);
