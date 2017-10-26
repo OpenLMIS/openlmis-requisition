@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -50,6 +50,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -57,17 +58,17 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
-import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -115,6 +116,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @MockBean
   private StockEventBuilder stockEventBuilder;
+
+  @MockBean(name = "facilityReferenceDataService")
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
   private ProgramDto program;
@@ -166,6 +170,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     doReturn(program)
         .when(programReferenceDataService)
         .findOne(any(UUID.class));
+
+    doReturn(Collections.emptyList())
+        .when(facilityReferenceDataService)
+        .search(anySetOf(UUID.class));
   }
 
   // GET /api/requisitions?retrieveAll&id={}&id={}&id={}
@@ -362,6 +370,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
+        .willAnswer(new BuildRequisitionDtoAnswer());
+    given(requisitionDtoBuilder
+        .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class),
+            anyMapOf(UUID.class, OrderableDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());

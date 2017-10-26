@@ -15,16 +15,16 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -43,6 +43,20 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
   @Override
   protected Class<FacilityDto[]> getArrayResultClass() {
     return FacilityDto[].class;
+  }
+
+  /**
+   * This method retrieves Facilities for given ids.
+   *
+   * @param facilityIds list of facility ids.
+   * @return List of FacilityDtos with similar code or name.
+   */
+  public List<FacilityDto> search(Set<UUID> facilityIds) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("id", facilityIds);
+
+    return findAll("", parameters);
   }
 
   /**

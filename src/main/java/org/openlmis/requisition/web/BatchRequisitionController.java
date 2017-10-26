@@ -18,10 +18,6 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -30,12 +26,18 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
+import org.openlmis.requisition.dto.BasicOrderableDto;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -49,6 +51,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class BatchRequisitionController extends BaseRequisitionController {
@@ -58,6 +69,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private MessageService messageService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -74,17 +91,25 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
-    RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
+    Map<UUID, ProgramDto> programs = getUuidProgramDtoMap(requisitions);
+    Map<UUID, FacilityDto> facilities = getUuidFacilityDtoMap(requisitions);
+    Map<UUID, OrderableDto> orderables = getUuidOrderableDtoMap(requisitions);
 
     profiler.start("CHECK_PERM_AND_BUILD_DTO");
+    RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
     for (Requisition requisition : requisitions) {
       ValidationResult accessCheck = permissionService.canViewRequisition(requisition);
       if (accessCheck.hasErrors()) {
         processingStatus.addProcessingError(new RequisitionErrorMessage(requisition.getId(),
-                localizeMessage(accessCheck.getError().getMessage())));
+            localizeMessage(accessCheck.getError().getMessage())));
       } else {
         processingStatus.addProcessedRequisition(
-            new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
+            new ApproveRequisitionDto(
+                requisitionDtoBuilder.build(
+                    requisition,
+                    facilities.get(requisition.getFacilityId()),
+                    programs.get(requisition.getProgramId()),
+                    orderables)));
       }
     }
 
@@ -92,7 +117,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     processingStatus.removeSkippedProducts();
 
     profiler.start("BUILD_RESPONSE");
-    ResponseEntity response = buildResponse(processingStatus);
+    ResponseEntity<RequisitionsProcessingStatusDto> response = buildResponse(processingStatus);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -264,5 +289,49 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private Message.LocalizedMessage localizeMessage(Message message) {
     return message == null ? null : messageService.localize(message);
+  }
+
+  private Map<UUID, FacilityDto> getUuidFacilityDtoMap(List<Requisition> requisitions) {
+    Set<UUID> facilityIds = requisitions.stream()
+        .map(Requisition::getFacilityId)
+        .collect(Collectors.toSet());
+
+    List<FacilityDto> list = facilityReferenceDataService.search(facilityIds);
+
+    Map<UUID, FacilityDto> facilities = new HashMap<>(facilityIds.size());
+    for (FacilityDto facility : list) {
+      facilities.put(facility.getId(), facility);
+    }
+
+    return facilities;
+  }
+
+  private Map<UUID, ProgramDto> getUuidProgramDtoMap(List<Requisition> requisitions) {
+    Set<UUID> programIds = requisitions.stream()
+        .map(Requisition::getProgramId)
+        .collect(Collectors.toSet());
+
+    Map<UUID, ProgramDto> programs = new HashMap<>(programIds.size());
+    for (UUID programId : programIds) {
+      programs.put(programId, programReferenceDataService.findOne(programId));
+    }
+    return programs;
+  }
+
+  private Map<UUID, OrderableDto> getUuidOrderableDtoMap(List<Requisition> requisitions) {
+    Set<UUID> orderableIds = requisitions.stream()
+        .map(Requisition::getRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .map(RequisitionLineItem::getOrderableId)
+        .collect(Collectors.toSet());
+
+    orderableIds.addAll(requisitions.stream()
+        .map(Requisition::getAvailableNonFullSupplyProducts)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet()));
+
+    return orderableReferenceDataService.findByIds(orderableIds)
+        .stream()
+        .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
   }
 }

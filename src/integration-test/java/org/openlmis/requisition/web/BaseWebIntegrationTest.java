@@ -67,6 +67,7 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -169,6 +170,7 @@ public abstract class BaseWebIntegrationTest {
     requisition.setRequisitionLineItems(new ArrayList<>());
     requisition.setTemplate(generateRequisitionTemplate());
     requisition.setEmergency(false);
+    requisition.setAvailableNonFullSupplyProducts(Collections.emptySet());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;

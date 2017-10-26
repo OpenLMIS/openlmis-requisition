@@ -45,15 +45,15 @@ public final class RequestHelper {
     UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
 
     if (parameters != null) {
-      parameters.forEach(e -> {
+      parameters.forEach(e -> e.getValue().forEach(one -> {
         try {
           builder.queryParam(e.getKey(),
-                  UriUtils.encodeQueryParam(String.valueOf(e.getValue()),
-                          StandardCharsets.UTF_8.name()));
+              UriUtils.encodeQueryParam(String.valueOf(one),
+                  StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException ex) {
           throw new EncodingException(ex);
         }
-      });
+      }));
     }
 
     return builder.build(true).toUri();

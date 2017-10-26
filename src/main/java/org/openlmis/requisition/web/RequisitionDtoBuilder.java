@@ -17,10 +17,12 @@ package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.dto.ReasonDto.newInstance;
 
+import org.apache.commons.collections.MapUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -34,10 +36,12 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -88,7 +92,7 @@ public class RequisitionDtoBuilder {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
     profiler.start("CALL_REQUISITION_DTO_BUILD");
-    RequisitionDto requisitionDto = build(requisition, facility, program);
+    RequisitionDto requisitionDto = build(requisition, facility, program, null);
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
@@ -103,6 +107,18 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility, ProgramDto program) {
+    return build(requisition, facility, program, null);
+  }
+
+  /**
+   * Create a new instance of RequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
+   * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public RequisitionDto build(Requisition requisition, FacilityDto facility,
+                              ProgramDto program, Map<UUID, OrderableDto> orderables) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
       XLOGGER.exit();
@@ -133,18 +149,26 @@ public class RequisitionDtoBuilder {
 
     profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisitionLineItems);
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables);
 
     profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
     profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
-    if (null != requisition.getAvailableNonFullSupplyProducts()) {
-      requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
-              orderableReferenceDataService.findByIds(
-                      requisition.getAvailableNonFullSupplyProducts())));
+    if (requisition.getAvailableNonFullSupplyProducts() != null) {
+      if (MapUtils.isEmpty(orderables)) {
+        requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
+            orderableReferenceDataService.findByIds(
+                requisition.getAvailableNonFullSupplyProducts())));
+      } else {
+        for (UUID productId : requisition.getAvailableNonFullSupplyProducts()) {
+          Set<OrderableDto> orderableDtos =
+              new HashSet<>(requisition.getAvailableNonFullSupplyProducts().size());
+          orderableDtos.add(orderables.get(productId));
+          requisitionDto.setAvailableNonFullSupplyProducts(orderableDtos);
+        }
+      }
     }
-
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisitionDto.setStockAdjustmentReasons(newInstance(requisition.getStockAdjustmentReasons()));
 

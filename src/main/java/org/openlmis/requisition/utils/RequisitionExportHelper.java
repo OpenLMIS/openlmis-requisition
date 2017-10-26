@@ -16,6 +16,7 @@
 package org.openlmis.requisition.utils;
 
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -27,9 +28,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class RequisitionExportHelper {
@@ -45,27 +47,46 @@ public class RequisitionExportHelper {
    * @param requisitionLineItems List of RequisitionLineItems to be exported to Dto
    * @return list of RequisitionLineItemDtos
    */
-  public List<RequisitionLineItemDto> exportToDtos(
-      List<RequisitionLineItem> requisitionLineItems) {
+  public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems) {
+    return exportToDtos(requisitionLineItems, null);
+  }
+
+  /**
+   * Return list of RequisitionLineItemDtos for a given RequisitionLineItem.
+   *
+   * @param requisitionLineItems List of RequisitionLineItems to be exported to Dto
+   * @param orderables Map of Orderables by id
+   * @return list of RequisitionLineItemDtos
+   */
+  public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems,
+                                                   Map<UUID, OrderableDto> orderables) {
     XLOGGER.entry(requisitionLineItems);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEMS_TO_DTOS");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("GET_ORDERABLE_IDS_FROM_LINE_ITEMS");
+    Map<UUID, OrderableDto> orderablesForLines;
+    if (orderables == null) {
+      profiler.start("GET_ORDERABLE_IDS_FROM_LINE_ITEMS");
+      Set<UUID> orderableIds = new HashSet<>(requisitionLineItems.size());
+      for (RequisitionLineItem lineItem : requisitionLineItems) {
+        orderableIds.add(lineItem.getOrderableId());
+      }
 
-    Set<UUID> orderableIds = new HashSet<>(requisitionLineItems.size());
-    for (RequisitionLineItem lineItem : requisitionLineItems) {
-      orderableIds.add(lineItem.getOrderableId());
+      profiler.start("FIND_ORDERABLES_BY_IDS");
+      orderablesForLines =
+          orderableReferenceDataService.findByIds(orderableIds)
+              .stream()
+              .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
+
+    } else {
+      orderablesForLines = orderables;
     }
-
-    profiler.start("FIND_ORDERABLES_BY_IDS");
-    List<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
 
     profiler.start("CONVERT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtos =
         new ArrayList<>(requisitionLineItems.size());
     for (RequisitionLineItem lineItem : requisitionLineItems) {
-      requisitionLineItemDtos.add(exportToDto(lineItem, orderables));
+      requisitionLineItemDtos.add(exportToDto(lineItem, orderablesForLines));
     }
 
     profiler.stop().log();
@@ -74,7 +95,7 @@ public class RequisitionExportHelper {
   }
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
-                                             List<OrderableDto> orderables) {
+                                             Map<UUID, OrderableDto> orderables) {
     XLOGGER.entry(requisitionLineItem, orderables);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
@@ -83,11 +104,10 @@ public class RequisitionExportHelper {
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
 
     profiler.start("GET_LINE_ITEM_ORDERABLE_FROM_ORDERABLES");
-    Optional<OrderableDto> orderableDto = orderables.stream().filter(
-        orderable -> orderable.getId().equals(requisitionLineItem.getOrderableId())).findAny();
+    OrderableDto orderableDto = orderables.get(requisitionLineItem.getOrderableId());
 
     profiler.start("EXPORT_TO_DTO");
-    requisitionLineItem.export(dto, orderableDto.orElse(null));
+    requisitionLineItem.export(dto, orderableDto);
 
     profiler.stop().log();
     XLOGGER.exit(dto);
