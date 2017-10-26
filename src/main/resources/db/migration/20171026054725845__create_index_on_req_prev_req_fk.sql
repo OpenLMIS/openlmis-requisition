@@ -1,0 +1,1 @@
+CREATE INDEX ON requisition.requisitions_previous_requisitions (requisitionid);
