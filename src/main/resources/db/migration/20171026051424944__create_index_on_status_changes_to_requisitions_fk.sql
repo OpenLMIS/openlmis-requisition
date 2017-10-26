@@ -1,0 +1,1 @@
+CREATE INDEX on status_changes (requisitionid);
