@@ -23,6 +23,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -92,7 +93,7 @@ public class RequisitionDtoBuilder {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
     profiler.start("CALL_REQUISITION_DTO_BUILD");
-    RequisitionDto requisitionDto = build(requisition, facility, program, null);
+    RequisitionDto requisitionDto = build(requisition, facility, program, null, null);
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
@@ -107,7 +108,7 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility, ProgramDto program) {
-    return build(requisition, facility, program, null);
+    return build(requisition, facility, program, null, null);
   }
 
   /**
@@ -118,7 +119,8 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility,
-                              ProgramDto program, Map<UUID, OrderableDto> orderables) {
+                              ProgramDto program, Map<UUID, OrderableDto> orderables,
+                              ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
       XLOGGER.exit();
@@ -141,8 +143,13 @@ public class RequisitionDtoBuilder {
     }
     requisitionDto.setFacility(facility);
     requisitionDto.setProgram(program);
-    requisitionDto.setProcessingPeriod(periodService.getPeriod(
-        requisition.getProcessingPeriodId()));
+
+    if (period != null) {
+      requisitionDto.setProcessingPeriod(period);
+    } else {
+      requisitionDto.setProcessingPeriod(
+          periodService.getPeriod(requisition.getProcessingPeriodId()));
+    }
 
     profiler.start("GET_LINE_ITEMS");
     List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();

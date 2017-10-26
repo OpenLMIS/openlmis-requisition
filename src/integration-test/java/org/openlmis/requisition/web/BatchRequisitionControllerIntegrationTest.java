@@ -373,7 +373,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class),
-            anyMapOf(UUID.class, OrderableDto.class)))
+            anyMapOf(UUID.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());
