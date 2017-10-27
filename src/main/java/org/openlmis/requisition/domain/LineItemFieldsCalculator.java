@@ -139,7 +139,7 @@ public final class LineItemFieldsCalculator {
    * Calculates Adjusted Consumption (N) value and returns it.
    * The formula is N = RoundUp(C * ((M * 30) / ((M * 30) - X)))
    * C = Total Consumed Quantity
-   * M = Months in the previous period
+   * M = Months in the period (integer)
    * N = Adjusted Consumption
    * X = Total Stockout Days
    * If non-stockout days is zero the formula is N = C
