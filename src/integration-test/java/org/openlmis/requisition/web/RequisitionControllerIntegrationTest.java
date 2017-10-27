@@ -47,7 +47,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -112,6 +112,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1425,6 +1428,37 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertEquals("facilityCode", orders.get(1).getProperty());
     assertEquals(Sort.Direction.ASC, orders.get(1).getDirection());
+  }
+
+  @Test
+  public void shouldPassTotalNumberOfRequisitionsForApprovalInResponse() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    long totalElements = 14L;
+    Pageable pageable = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, 1);
+
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+    given(requisitionService.getRequisitionsForApproval(
+        eq(userId), eq(null), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, pageable, totalElements));
+
+    // when
+    PageImplRepresentation result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 1)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    // then
+    assertEquals(1, result.getContent().size());
+    assertEquals(totalElements, result.getTotalElements());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

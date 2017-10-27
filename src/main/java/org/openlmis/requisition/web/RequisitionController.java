@@ -22,14 +22,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -82,6 +74,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Controller
@@ -455,7 +455,9 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("BUILD_DTO_LIST");
     Page<BasicRequisitionDto> dtoPage = Pagination.getPage(
-        basicRequisitionDtoBuilder.build(approvalRequisitions.getContent()), pageable);
+        basicRequisitionDtoBuilder.build(approvalRequisitions.getContent()),
+        pageable,
+        approvalRequisitions.getTotalElements());
 
     profiler.stop().log();
     XLOGGER.exit();
