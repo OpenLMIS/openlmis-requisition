@@ -17,6 +17,8 @@ package org.openlmis.requisition.web;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.MinimalFacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -58,10 +60,60 @@ public class BasicRequisitionDtoBuilder {
    * Create a new instance of BasicRequisitionDto based on data from {@link Requisition}.
    *
    * @param requisition instance used to create {@link BasicRequisitionDto} (can be {@code null})
+   * @param facilities  list of minimal facilities that will be filtered to find one
+   *                    for new {@link BasicRequisitionDto}, if list does not contains proper value
+   *                    it will be fetched  from ReferenceData service
+   * @param programs    list of programs that will be filtered to find one
+   *                    for new {@link BasicRequisitionDto}, if list does not contains proper value
+   *                    it will be fetched  from ReferenceData service
+   * @return new instance of {@link BasicRequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public BasicRequisitionDto build(Requisition requisition,
+                                   Collection<MinimalFacilityDto> facilities,
+                                   Collection<ProgramDto> programs) {
+    MinimalFacilityDto foundFacility = null;
+    ProgramDto foundProgram = null;
+
+    for (MinimalFacilityDto facility : facilities) {
+      if (requisition.getFacilityId().equals(facility.getId())) {
+        foundFacility = facility;
+      }
+    }
+
+    for (ProgramDto program : programs) {
+      if (requisition.getFacilityId().equals(program.getId())) {
+        foundProgram = program;
+      }
+    }
+
+    return build(requisition, foundFacility, foundProgram);
+  }
+
+  /**
+   * Create a new instance of BasicRequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link BasicRequisitionDto} (can be {@code null})
    * @return new instance of {@link BasicRequisitionDto}. {@code null} if passed argument is {@code
    * null}.
    */
   public BasicRequisitionDto build(Requisition requisition) {
+    return build(requisition, (MinimalFacilityDto) null, (ProgramDto) null);
+  }
+
+  /**
+   * Create a new instance of BasicRequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link BasicRequisitionDto} (can be {@code null})
+   * @param facility    minimal facility that will be assigned to new {@link BasicRequisitionDto}
+   *                    if {@code null} it will be fetched from ReferenceData service
+   * @param program     program that will be assigned to new {@link BasicRequisitionDto}
+   *                    if {@code null} it will be fetched from ReferenceData service
+   * @return new instance of {@link BasicRequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public BasicRequisitionDto build(Requisition requisition, MinimalFacilityDto facility,
+                                   ProgramDto program) {
     XLOGGER.entry(requisition);
     if (null == requisition) {
       XLOGGER.exit();
@@ -76,8 +128,16 @@ public class BasicRequisitionDtoBuilder {
     requisition.export(requisitionDto);
 
     profiler.start("SET_SUB_RESOURCES");
-    requisitionDto.setFacility(facilityReferenceDataService.findOne(requisition.getFacilityId()));
-    requisitionDto.setProgram(programReferenceDataService.findOne(requisition.getProgramId()));
+
+    if (facility == null) {
+      facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
+    }
+    requisitionDto.setFacility(facility);
+
+    if (program == null) {
+      program = programReferenceDataService.findOne(requisition.getProgramId());
+    }
+    requisitionDto.setProgram(program);
 
     requisitionDto.setProcessingPeriod(periodService.getPeriod(
         requisition.getProcessingPeriodId()
@@ -87,5 +147,4 @@ public class BasicRequisitionDtoBuilder {
     XLOGGER.exit(requisitionDto);
     return requisitionDto;
   }
-
 }

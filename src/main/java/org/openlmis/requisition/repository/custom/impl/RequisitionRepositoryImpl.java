@@ -15,25 +15,10 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.SQLQuery;
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.PostgresUUIDType;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -44,9 +29,39 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-@SuppressWarnings("PMD.CyclomaticComplexity")
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
+
+  private static final String SEARCH_APPROVED_SQL = "SELECT"
+      + " r.id AS req_id, r.emergency AS req_emergency,"
+      + " r.facilityid AS facility_id, r.programid AS program_id, r.processingperiodid as period_id"
+      + " FROM requisition.requisitions r"
+      + " WHERE r.status = 'APPROVED'";
 
   private static final String FACILITY_ID = "facilityId";
   private static final String PROGRAM_ID = "programId";
@@ -154,27 +169,23 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterBy     Field used to filter: "programName","facilityCode","facilityName" or
-   *                     "all".
-   * @param desiredUuids Desired UUID list.
-   * @return List of requisitions.
+   * @param filterBy    Field used to filter: programName, facilityCode, facilityName or all.
+   * @param facilityIds Desired facility UUID list.
+   * @param programIds  Desired program UUID list.
+   * @return List of requisitions with required fields for convert.
    */
   @Override
-  public List<Requisition> searchApprovedRequisitions(String filterBy, List<UUID> desiredUuids) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Requisition> criteriaQuery = builder.createQuery(Requisition.class);
+  public List<Requisition> searchApprovedRequisitions(String filterBy,
+                                                      Collection<UUID> facilityIds,
+                                                      Collection<UUID> programIds) {
+    Query query = createQuery(filterBy, facilityIds, programIds);
+    addScalars(query);
 
-    Root<Requisition> root = criteriaQuery.from(Requisition.class);
+    // hibernate always returns a list of array of objects
+    @SuppressWarnings("unchecked")
+    List<Object[]> list = Collections.checkedList(query.getResultList(), Object[].class);
 
-    Path<UUID> facility = root.get(FACILITY_ID);
-    Path<UUID> program = root.get(PROGRAM_ID);
-
-    Predicate predicate = setFiltering(filterBy, builder, root, facility, program, desiredUuids);
-
-    criteriaQuery = criteriaQuery.where(predicate);
-    List<Requisition> results = entityManager.createQuery(criteriaQuery).getResultList();
-
-    return results;
+    return list.stream().map(this::toRequisition).collect(Collectors.toList());
   }
 
   /**
@@ -332,27 +343,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return query.where(predicate);
   }
 
-  private Predicate setFiltering(String filterBy, CriteriaBuilder builder, Root<Requisition> root,
-      Path<UUID> facility, Path<UUID> program, List<UUID> desiredUuids) {
-
-    //Add first important filter
-    Predicate predicate = builder.equal(root.get(STATUS), RequisitionStatus.APPROVED);
-
-    if (filterBy != null && !filterBy.isEmpty()) {
-      //Add second important filter
-      Predicate predicateFilterBy = builder.disjunction();
-
-      if (!desiredUuids.isEmpty()) {
-        predicateFilterBy = builder.or(predicateFilterBy, facility.in(desiredUuids));
-        predicateFilterBy = builder.or(predicateFilterBy, program.in(desiredUuids));
-      }
-      //Connector filters
-      predicate = builder.and(predicate, predicateFilterBy);
-    }
-
-    return predicate;
-  }
-
   private Predicate filterByStatuses(CriteriaBuilder builder, Predicate predicate,
       Set<RequisitionStatus> requisitionStatuses,
       Root<Requisition> root) {
@@ -386,5 +376,69 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       }
     }
     return query.orderBy(orders);
+  }
+
+  private Query createQuery(String filterBy, Collection<UUID> facilityIds,
+                            Collection<UUID> programIds) {
+    StringBuilder builder = new StringBuilder(SEARCH_APPROVED_SQL);
+
+    if (!StringUtils.isEmpty(filterBy)) {
+      String facilities = null;
+      String programs = null;
+
+      if (!CollectionUtils.isEmpty(facilityIds)) {
+        facilities = String.format("r.facilityid in %s", mergeIds(facilityIds));
+      }
+
+      if (!CollectionUtils.isEmpty(programIds)) {
+        programs = String.format("r.programid in %s", mergeIds(programIds));
+      }
+
+      if (facilities != null && programs != null) {
+        builder.append(String.format(" AND (%s OR %s)", facilities, programs));
+      } else if (facilities != null) {
+        builder.append(String.format(" AND %s", facilities));
+      } else if (programs != null) {
+        builder.append(String.format(" AND %s", programs));
+      }
+    }
+
+    return entityManager.createNativeQuery(builder.toString());
+  }
+
+  private void addScalars(Query query) {
+    SQLQuery sql = query.unwrap(SQLQuery.class);
+    sql.addScalar("req_id", PostgresUUIDType.INSTANCE);
+    sql.addScalar("req_emergency", BooleanType.INSTANCE);
+    sql.addScalar("facility_id", PostgresUUIDType.INSTANCE);
+    sql.addScalar("program_id", PostgresUUIDType.INSTANCE);
+    sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
+  }
+
+  private String mergeIds(Collection<UUID> ids) {
+    StringBuilder idsBuilder = new StringBuilder("(");
+    String prefix = "";
+
+    for (UUID facilityId : ids) {
+      idsBuilder.append(prefix);
+      idsBuilder.append(facilityId);
+      prefix = ",";
+    }
+    idsBuilder.append(')');
+
+    return idsBuilder.toString();
+  }
+
+  private Requisition toRequisition(Object[] values) {
+
+    Requisition requisition = new Requisition();
+
+    requisition.setId((UUID) values[0]);
+    requisition.setEmergency((Boolean) values[1]);
+    requisition.setFacilityId((UUID) values[2]);
+    requisition.setProgramId((UUID) values[3]);
+    requisition.setProcessingPeriodId((UUID) values[4]);
+
+    return requisition;
   }
 }

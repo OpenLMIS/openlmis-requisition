@@ -15,27 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
@@ -91,6 +70,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -102,6 +82,27 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -621,16 +622,22 @@ public class RequisitionService {
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
 
-    profiler.start("FIND_DESIRED_UUIDS");
-    List<UUID> desiredUuids = findDesiredUuids(filterValues, filterBy);
+    profiler.start("FIND_DESIRED_PROGRAMS");
+    Collection<ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
+
+    profiler.start("FIND_DESIRED_FACILITIES");
+    Collection<MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
 
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     List<Requisition> requisitionsList =
-        requisitionRepository.searchApprovedRequisitions(filterBy, desiredUuids);
+        requisitionRepository.searchApprovedRequisitions(filterBy,
+            programs.stream().map(ProgramDto::getId).collect(Collectors.toList()),
+            facilities.stream().map(MinimalFacilityDto::getId).collect(Collectors.toList()));
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities);
+        requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities,
+            facilities, programs);
 
     profiler.start("SORT");
     responseList.sort(new RequisitionForConvertComparator(pageable));
@@ -754,29 +761,14 @@ public class RequisitionService {
     return requisitionLineItems;
   }
 
-  private List<UUID> findDesiredUuids(List<String> filterValues, String filterBy) {
-    List<UUID> uuidsToReturn = new ArrayList<>();
-    filterValues = filterValues == null ? Collections.EMPTY_LIST : filterValues;
-
-    Collection<ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
-    Collection<MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
-
-    facilities.forEach(facilityDto -> uuidsToReturn.add(facilityDto.getId()));
-    programs.forEach(programDto -> uuidsToReturn.add(programDto.getId()));
-
-    return uuidsToReturn;
-  }
-
   private Collection<ProgramDto> findProgramsWithFilter(String filterBy,
                                                         List<String> filterValues) {
-    boolean filterAll = isFilterAll(filterBy);
     List<ProgramDto> foundPrograms = new ArrayList<>();
 
-    if (filterAll || "programName".equalsIgnoreCase(filterBy)) {
-      if (filterValues.isEmpty()) {
-        return programReferenceDataService.findAll();
-      }
-
+    if (CollectionUtils.isEmpty(filterValues) || (!isFilterAll(filterBy)
+        && !"programName".equalsIgnoreCase(filterBy))) {
+      return programReferenceDataService.findAll();
+    } else {
       for (String expression : filterValues) {
         foundPrograms.addAll(programReferenceDataService.search(expression));
       }
@@ -787,25 +779,17 @@ public class RequisitionService {
 
   private Collection<MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
                                                                   List<String> filterValues) {
-    boolean filterAll = isFilterAll(filterBy);
-    boolean filterByCode = "facilityCode".equals(filterBy);
-    boolean filterByName = "facilityName".equals(filterBy);
-
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
 
-    if ((filterAll || filterByCode || filterByName) && filterValues.isEmpty()) {
+    if (CollectionUtils.isEmpty(filterValues) || (!"facilityCode".equals(filterBy)
+        && !"facilityName".equals(filterBy) && !isFilterAll(filterBy))) {
       foundFacilities.addAll(facilityReferenceDataService.findAll());
-    }
-
-    for (String expression : filterValues) {
-      if (filterAll || filterByCode) {
+    } else {
+      for (String expression : filterValues) {
         foundFacilities.addAll(facilityReferenceDataService.search(
-            expression, null, null, false));
-      }
-
-      if (filterAll || filterByName) {
-        foundFacilities.addAll(facilityReferenceDataService.search(
-            null, expression, null, false));
+            isFilterAll(filterBy) || "facilityCode".equals(filterBy) ? expression : null,
+            isFilterAll(filterBy) || "facilityName".equals(filterBy) ? expression : null,
+            null, false));
       }
     }
 

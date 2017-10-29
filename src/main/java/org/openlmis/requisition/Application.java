@@ -168,5 +168,4 @@ public class Application {
   public Clock clock() {
     return Clock.system(ZoneId.of(timeZoneId));
   }
-
 }

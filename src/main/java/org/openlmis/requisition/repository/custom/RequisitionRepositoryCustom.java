@@ -15,15 +15,17 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public interface RequisitionRepositoryCustom {
 
@@ -43,7 +45,8 @@ public interface RequisitionRepositoryCustom {
                                        Boolean emergency);
 
   List<Requisition> searchApprovedRequisitions(String filterBy,
-                                               List<UUID> desiredUuids);
+                                               Collection<UUID> facilityIds,
+                                               Collection<UUID> programIds);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair> programNodePairs, Pageable pageable);

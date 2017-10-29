@@ -15,13 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.powermock.api.mockito.PowerMockito.when;
-
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +27,16 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 public class RequisitionForConvertBuilderTest {
@@ -72,7 +73,8 @@ public class RequisitionForConvertBuilderTest {
 
     //when
     List<RequisitionWithSupplyingDepotsDto> result = requisitionForConvertBuilder
-        .buildRequisitions(Lists.newArrayList(requisition, requisition2), userManagedDepots);
+        .buildRequisitions(Lists.newArrayList(requisition, requisition2), userManagedDepots,
+            Collections.emptyList(), Collections.emptyList());
 
     //then
     //we have 2 requisition representations
@@ -94,7 +96,8 @@ public class RequisitionForConvertBuilderTest {
         requisition1.getProgramId(), requisition1.getSupervisoryNodeId());
 
     requisitionForConvertBuilder.buildRequisitions(
-        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>());
+        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
+        Collections.emptyList(), Collections.emptyList());
 
     // Should hit ref data once and then use cache
     verify(facilityReferenceDataService, times(1))
@@ -109,7 +112,8 @@ public class RequisitionForConvertBuilderTest {
     Requisition requisition3 = mockRequisition();
 
     requisitionForConvertBuilder.buildRequisitions(
-        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>());
+        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
+        Collections.emptyList(), Collections.emptyList());
 
     // Should hit ref data three times - for each requisition
     verify(facilityReferenceDataService, times(3))
