@@ -419,9 +419,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     StringBuilder idsBuilder = new StringBuilder("(");
     String prefix = "";
 
-    for (UUID facilityId : ids) {
+    for (UUID id : ids) {
       idsBuilder.append(prefix);
-      idsBuilder.append(facilityId);
+      idsBuilder.append("'" + id + "'");
       prefix = ",";
     }
     idsBuilder.append(')');
