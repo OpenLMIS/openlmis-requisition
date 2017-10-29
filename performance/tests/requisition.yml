@@ -8,6 +8,9 @@ execution:
   - concurrency: 1
     hold-for: 2m
     scenario: get-requisitions-for-approval
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-requisitions-for-convert
 
 scenarios:
   get-user-token:
@@ -272,8 +275,18 @@ scenarios:
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
+  get-requisitions-for-convert:
+      requests:
+        - include-scenario: get-user-token
+        - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?page=0&size=10
+          method: GET
+          label: GetAPageOfTenRequisitionsForConvert
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
 
 reporting:
     - module: passfail
       criteria:
         90% of convert a requisition to an order fail to get in 3000 milliseconds: p90 of ConvertRequisitionToOrder>3000ms
+        90% of get requisition for convert fail to get in 3000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>5000ms
