@@ -37,6 +37,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
+import org.assertj.core.util.Lists;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -44,6 +45,7 @@ import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -69,6 +71,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 
@@ -86,7 +89,7 @@ public abstract class BaseWebIntegrationTest {
   protected static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
-  protected static final UUID NON_FULL_SUPPLY_PRODUCT_ID = UUID.randomUUID();
+  protected static final UUID LINE_ITEM_PRODUCT_ID = UUID.randomUUID();
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
@@ -170,11 +173,10 @@ public abstract class BaseWebIntegrationTest {
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setRequisitionLineItems(new ArrayList<>());
+    requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));
     requisition.setTemplate(generateRequisitionTemplate());
     requisition.setEmergency(false);
-    requisition.setAvailableNonFullSupplyProducts(
-        Collections.singleton(NON_FULL_SUPPLY_PRODUCT_ID));
+    requisition.setAvailableNonFullSupplyProducts(Collections.emptySet());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
@@ -213,6 +215,13 @@ public abstract class BaseWebIntegrationTest {
     orderable.setId(id);
 
     return orderable;
+  }
+
+  private List<RequisitionLineItem> generateRequisitionLineItems(Requisition requisition) {
+    RequisitionLineItem lineItem = new RequisitionLineItem();
+    lineItem.setOrderableId(LINE_ITEM_PRODUCT_ID);
+    lineItem.setRequisition(requisition);
+    return Lists.newArrayList(lineItem);
   }
 
   private UUID generateProcessingPeriod() {

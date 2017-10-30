@@ -459,8 +459,7 @@ public class RequisitionLineItem extends BaseEntity {
   public void updatePacksToShip(Collection<OrderableDto> products) {
     this.packsToShip = products.stream()
         .filter(product -> product.getId().equals(getOrderableId()))
-        .map(product -> getOrderQuantity() != null
-            ? product.packsToOrder(getOrderQuantity()) : null)
+        .map(product -> product.packsToOrder(getOrderQuantity()))
         .findFirst()
         .orElse(null);
   }
@@ -494,7 +493,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template) {
-    if (template.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)) {
+    if (template.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY)) {
       if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
         int calculated = calculateTotalConsumedQuantity(this);
         if (getTotalConsumedQuantity() != null
@@ -512,7 +511,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Total field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetTotal(RequisitionTemplate template) {
-    if (template.isColumnDisplayed(TOTAL_COLUMN)) {
+    if (template.isColumnInTemplateAndDisplayed(TOTAL_COLUMN)) {
       int calculated = calculateTotal(this);
       if (getTotal() != null
           && !Objects.equals(getTotal(), calculated)) {
@@ -526,7 +525,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Stock On Hand field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetStockOnHand(RequisitionTemplate template) {
-    if (template.isColumnDisplayed(STOCK_ON_HAND)) {
+    if (template.isColumnInTemplateAndDisplayed(STOCK_ON_HAND)) {
       if (template.isColumnCalculated(STOCK_ON_HAND)) {
         int calculated = calculateStockOnHand(this);
         if (getStockOnHand() != null
@@ -573,7 +572,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Maximum Stock Quantity field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetMaximumStockQuantity(RequisitionTemplate template) {
-    if (template.isColumnDisplayed(MAXIMUM_STOCK_QUANTITY)) {
+    if (template.isColumnInTemplateAndDisplayed(MAXIMUM_STOCK_QUANTITY)) {
       int calculated = calculateMaximumStockQuantity(this, template);
       if (getMaximumStockQuantity() != null
           && !Objects.equals(getMaximumStockQuantity(), calculated)) {
@@ -587,7 +586,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Calculated Order Quantity field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template) {
-    if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+    if (template.isColumnInTemplateAndDisplayed(CALCULATED_ORDER_QUANTITY)) {
       int calculated = calculateCalculatedOrderQuantity(this, template);
       if (getCalculatedOrderQuantity() != null
           && !Objects.equals(getCalculatedOrderQuantity(), calculated)) {

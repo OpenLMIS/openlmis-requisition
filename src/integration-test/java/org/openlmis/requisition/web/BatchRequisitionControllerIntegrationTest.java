@@ -167,10 +167,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
     List<OrderableDto> orderables =
-        Collections.singletonList(generateOrderable(NON_FULL_SUPPLY_PRODUCT_ID));
+        Collections.singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID));
     doReturn(orderables)
         .when(orderableReferenceDataService)
-        .findByIds(Collections.singleton(NON_FULL_SUPPLY_PRODUCT_ID));
+        .findByIds(Collections.singleton(LINE_ITEM_PRODUCT_ID));
 
     orderablesMap = orderables.stream()
         .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
@@ -210,7 +210,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     requisitions.forEach(req -> {
       verify(requisitionDtoBuilder)
           .build(eq(req), facilityCaptor.capture(), isNull(ProgramDto.class),
-              anyMapOf(UUID.class, OrderableDto.class), periodCaptor.capture(), eq(true));
+              eq(orderablesMap), periodCaptor.capture(), eq(true));
 
       assertEquals(req.getProcessingPeriodId(), periodCaptor.getValue().getId());
       assertEquals(req.getFacilityId(), facilityCaptor.getValue().getId());
