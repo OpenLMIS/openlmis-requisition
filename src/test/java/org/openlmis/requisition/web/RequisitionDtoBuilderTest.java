@@ -35,6 +35,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonCategory;
@@ -45,6 +46,7 @@ import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
 import java.time.LocalDate;
@@ -81,6 +83,15 @@ public class RequisitionDtoBuilderTest {
   @Mock
   private ProgramDto programDto;
 
+  @Mock
+  private OrderableDto orderableDto;
+
+  @Mock
+  private RequisitionLineItemDto requisitionLineItemDto;
+
+  @Mock
+  private OrderableReferenceDataService orderableReferenceDataService;
+
   @InjectMocks
   private RequisitionDtoBuilder requisitionDtoBuilder = new RequisitionDtoBuilder();
 
@@ -94,13 +105,14 @@ public class RequisitionDtoBuilderTest {
   private UUID processingPeriodUuid = UUID.randomUUID();
   private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
+  private UUID orderableId = UUID.randomUUID();
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    when(requisitionExportHelper.exportToDtos(anyListOf(RequisitionLineItem.class)))
-        .thenReturn(lineItemDtos);
+    lineItemDtos = new ArrayList<>();
+    lineItemDtos.add(requisitionLineItemDto);
 
     requisition = buildRequisition();
   }
@@ -110,11 +122,14 @@ public class RequisitionDtoBuilderTest {
     when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facilityDto);
     when(programReferenceDataService.findOne(programUuid)).thenReturn(programDto);
     when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(requisitionExportHelper
+        .exportToDtos(Collections.singletonList(requisitionLineItem), null, false))
+        .thenReturn(lineItemDtos);
+    when(orderableReferenceDataService
+        .findByIds(Collections.singleton(orderableId)))
+        .thenReturn(Collections.singletonList(orderableDto));
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-
-    verify(requisitionExportHelper)
-        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class), eq(false));
 
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
@@ -130,8 +145,43 @@ public class RequisitionDtoBuilderTest {
     assertEquals(
         requisition.getDatePhysicalStockCountCompleted(),
         requisitionDto.getDatePhysicalStockCountCompleted());
+    assertEquals(requisition.getStatus(), requisitionDto.getStatus());
+    assertNotNull(requisitionDto.getModifiedDate());
+    assertEquals(Collections.singleton(orderableDto),
+        requisitionDto.getAvailableNonFullSupplyProducts());
 
     assertReasonsEquals(requisitionDto.getStockAdjustmentReasons());
+  }
+
+  @Test
+  public void shouldBuildBatchDtoFromRequisition() {
+    Map<UUID, OrderableDto> orderables = Collections.singletonMap(UUID.randomUUID(), orderableDto);
+    when(requisitionExportHelper
+        .exportToDtos(Collections.singletonList(requisitionLineItem), orderables, true))
+        .thenReturn(lineItemDtos);
+
+    RequisitionDto requisitionDto =
+        requisitionDtoBuilder
+            .buildBatch(requisition, facilityDto,
+                orderables, processingPeriodDto);
+
+    assertNotNull(requisitionDto);
+    assertEquals(requisition.getId(), requisitionDto.getId());
+    assertEquals(RequisitionTemplateDto.newInstance(requisition.getTemplate()).getId(),
+        requisitionDto.getTemplate().getId());
+    assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
+    assertEquals(facilityDto, requisitionDto.getFacility());
+    assertEquals(processingPeriodDto, requisitionDto.getProcessingPeriod());
+    assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
+    assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
+    assertEquals(requisition.getStatus(), requisitionDto.getStatus());
+    assertNotNull(requisitionDto.getModifiedDate());
+
+    assertNull(requisitionDto.getDatePhysicalStockCountCompleted());
+    assertNull(requisitionDto.getSupervisoryNode());
+    assertNull(requisitionDto.getProgram());
+    assertNull(requisitionDto.getStockAdjustmentReasons());
+    assertNull(requisitionDto.getAvailableNonFullSupplyProducts());
   }
 
   @Test
@@ -163,6 +213,7 @@ public class RequisitionDtoBuilderTest {
     requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    requisition.setAvailableNonFullSupplyProducts(Collections.singleton(orderableId));
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
     requisition.setStockAdjustmentReasons(Collections.singletonList(reason));
