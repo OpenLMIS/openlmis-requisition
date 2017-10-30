@@ -548,6 +548,42 @@ public class RequisitionRepositoryIntegrationTest
     entityManager.flush();
   }
 
+  @Test
+  public void shouldGetAllApprovedRequisitions() {
+    Requisition requisition1 = generateInstance();
+    requisition1.setStatus(RequisitionStatus.APPROVED);
+    Requisition requisition2 = generateInstance();
+    requisition2.setStatus(RequisitionStatus.APPROVED);
+
+    requisition1 = repository.save(requisition1);
+    requisition2 = repository.save(requisition2);
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions(null, null, null);
+
+    assertEquals(2, requisitions.size());
+    assertTrue(requisitions.get(0).getId().equals(requisition1.getId())
+        || requisitions.get(0).getId().equals(requisition2.getId()));
+    assertTrue(requisitions.get(1).getId().equals(requisition1.getId())
+        || requisitions.get(1).getId().equals(requisition2.getId()));
+  }
+
+  @Test
+  public void shouldFilterApprovedRequisitions() {
+    Requisition requisition1 = generateInstance();
+    requisition1.setStatus(RequisitionStatus.APPROVED);
+    Requisition requisition2 = generateInstance();
+    requisition2.setStatus(RequisitionStatus.APPROVED);
+
+    requisition1 = repository.save(requisition1);
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("some text",
+        Collections.singletonList(requisition1.getFacilityId()),
+        Collections.singletonList(requisition1.getProgramId()));
+
+    assertEquals(1, requisitions.size());
+    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+  }
+
   private StockAdjustmentReason generateStockAdjustmentReason() {
     StockAdjustmentReason reason = new StockAdjustmentReason();
     reason.setReasonId(UUID.randomUUID());
