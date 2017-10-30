@@ -15,6 +15,27 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
+import static org.springframework.util.CollectionUtils.isEmpty;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Requisition;
@@ -71,7 +92,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,27 +102,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -631,8 +630,8 @@ public class RequisitionService {
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy,
-            programs.stream().map(ProgramDto::getId).collect(Collectors.toList()),
-            facilities.stream().map(MinimalFacilityDto::getId).collect(Collectors.toList()));
+            facilities.stream().map(MinimalFacilityDto::getId).collect(Collectors.toList()),
+            programs.stream().map(ProgramDto::getId).collect(Collectors.toList()));
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
@@ -781,8 +780,8 @@ public class RequisitionService {
                                                                   List<String> filterValues) {
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
 
-    if (CollectionUtils.isEmpty(filterValues) || (!"facilityCode".equals(filterBy)
-        && !"facilityName".equals(filterBy) && !isFilterAll(filterBy))) {
+    if (CollectionUtils.isEmpty(filterValues) || (!"facilityCode".equalsIgnoreCase(filterBy)
+        && !"facilityName".equalsIgnoreCase(filterBy) && !isFilterAll(filterBy))) {
       foundFacilities.addAll(facilityReferenceDataService.findAll());
     } else {
       for (String expression : filterValues) {
