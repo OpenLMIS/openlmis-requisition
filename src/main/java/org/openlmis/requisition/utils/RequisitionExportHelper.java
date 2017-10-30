@@ -48,7 +48,7 @@ public class RequisitionExportHelper {
    * @return list of RequisitionLineItemDtos
    */
   public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems) {
-    return exportToDtos(requisitionLineItems, null);
+    return exportToDtos(requisitionLineItems, null, false);
   }
 
   /**
@@ -59,7 +59,8 @@ public class RequisitionExportHelper {
    * @return list of RequisitionLineItemDtos
    */
   public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems,
-                                                   Map<UUID, OrderableDto> orderables) {
+                                                   Map<UUID, OrderableDto> orderables,
+                                                   boolean batch) {
     XLOGGER.entry(requisitionLineItems);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEMS_TO_DTOS");
     profiler.setLogger(XLOGGER);
@@ -86,7 +87,7 @@ public class RequisitionExportHelper {
     List<RequisitionLineItemDto> requisitionLineItemDtos =
         new ArrayList<>(requisitionLineItems.size());
     for (RequisitionLineItem lineItem : requisitionLineItems) {
-      requisitionLineItemDtos.add(exportToDto(lineItem, orderablesForLines));
+      requisitionLineItemDtos.add(exportToDto(lineItem, orderablesForLines, batch));
     }
 
     profiler.stop().log();
@@ -95,7 +96,8 @@ public class RequisitionExportHelper {
   }
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
-                                             Map<UUID, OrderableDto> orderables) {
+                                             Map<UUID, OrderableDto> orderables,
+                                             boolean batch) {
     XLOGGER.entry(requisitionLineItem, orderables);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
@@ -107,7 +109,12 @@ public class RequisitionExportHelper {
     OrderableDto orderableDto = orderables.get(requisitionLineItem.getOrderableId());
 
     profiler.start("EXPORT_TO_DTO");
-    requisitionLineItem.export(dto, orderableDto);
+    if (batch) {
+      requisitionLineItem.basicExport(dto, orderableDto);
+    } else {
+      requisitionLineItem.export(dto, orderableDto);
+    }
+
 
     profiler.stop().log();
     XLOGGER.exit(dto);

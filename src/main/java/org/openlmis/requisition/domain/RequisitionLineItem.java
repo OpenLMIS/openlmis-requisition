@@ -360,7 +360,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param exporter exporter to export to
    */
   public void export(Exporter exporter, OrderableDto orderableDto) {
-    exporter.setId(id);
+    basicExport(exporter, orderableDto);
     exporter.setBeginningBalance(beginningBalance);
     exporter.setTotalReceivedQuantity(totalReceivedQuantity);
     exporter.setTotalLossesAndAdjustments(totalLossesAndAdjustments);
@@ -369,22 +369,31 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalConsumedQuantity(totalConsumedQuantity);
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
-    exporter.setApprovedQuantity(approvedQuantity);
     exporter.setStockAdjustments(stockAdjustments);
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
-    exporter.setOrderable(orderableDto);
-    exporter.setPricePerPack(pricePerPack);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
-    exporter.setTotalCost(totalCost);
-    exporter.setSkipped(skipped);
     exporter.setAdjustedConsumption(adjustedConsumption);
     exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
     exporter.setMaximumStockQuantity(maximumStockQuantity);
     exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void basicExport(Exporter exporter, OrderableDto orderableDto) {
+    exporter.setId(id);
+    exporter.setOrderable(orderableDto);
+    exporter.setApprovedQuantity(approvedQuantity);
+    exporter.setPricePerPack(pricePerPack);
+    exporter.setTotalCost(totalCost);
+    exporter.setSkipped(skipped);
   }
 
   /**
@@ -548,7 +557,7 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Adjusted Consumption field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
-                                                 Integer monthsInThePeriod) {
+                                                  Integer monthsInThePeriod) {
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
 

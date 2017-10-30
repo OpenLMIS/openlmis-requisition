@@ -588,6 +588,18 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void basicExport(Requisition.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setModifiedDate(getModifiedDate());
+    exporter.setStatus(status);
+    exporter.setEmergency(emergency);
+  }
+
+  /**
    * Find latest status change by date created.
    *
    * @return recent status change

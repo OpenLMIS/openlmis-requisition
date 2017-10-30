@@ -27,6 +27,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -204,16 +205,14 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
     ArgumentCaptor<ProcessingPeriodDto> periodCaptor =
         ArgumentCaptor.forClass(ProcessingPeriodDto.class);
-    ArgumentCaptor<ProgramDto> programCaptor = ArgumentCaptor.forClass(ProgramDto.class);
     ArgumentCaptor<FacilityDto> facilityCaptor = ArgumentCaptor.forClass(FacilityDto.class);
 
     requisitions.forEach(req -> {
       verify(requisitionDtoBuilder)
-          .build(eq(req), facilityCaptor.capture(), programCaptor.capture(),
-              eq(orderablesMap), periodCaptor.capture());
+          .build(eq(req), facilityCaptor.capture(), isNull(ProgramDto.class),
+              anyMapOf(UUID.class, OrderableDto.class), periodCaptor.capture(), eq(true));
 
       assertEquals(req.getProcessingPeriodId(), periodCaptor.getValue().getId());
-      assertEquals(req.getProgramId(), programCaptor.getValue().getId());
       assertEquals(req.getFacilityId(), facilityCaptor.getValue().getId());
     });
 
@@ -403,7 +402,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class),
-            anyMapOf(UUID.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
+            anyMapOf(UUID.class, OrderableDto.class), any(ProcessingPeriodDto.class), eq(true)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());

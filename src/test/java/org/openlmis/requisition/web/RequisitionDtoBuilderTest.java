@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -113,7 +114,7 @@ public class RequisitionDtoBuilderTest {
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
     verify(requisitionExportHelper)
-        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class));
+        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class), eq(false));
 
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
@@ -142,7 +143,7 @@ public class RequisitionDtoBuilderTest {
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
     verify(requisitionExportHelper)
-        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class));
+        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class), eq(false));
 
     assertNotNull(requisitionDto);
     assertNull(requisitionDto.getFacility());

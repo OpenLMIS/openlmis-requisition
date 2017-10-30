@@ -30,7 +30,6 @@ import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
@@ -39,7 +38,6 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -76,9 +74,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
   private PeriodService periodService;
 
   /**
@@ -96,8 +91,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
-    profiler.start("FIND_ALL_PROGRAMS_FOR_REQUISITIONS");
-    Map<UUID, ProgramDto> programs = getUuidProgramDtoMap(requisitions);
     profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
     Map<UUID, FacilityDto> facilities = getUuidFacilityDtoMap(requisitions);
     profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");
@@ -118,9 +111,10 @@ public class BatchRequisitionController extends BaseRequisitionController {
                 requisitionDtoBuilder.build(
                     requisition,
                     facilities.get(requisition.getFacilityId()),
-                    programs.get(requisition.getProgramId()),
+                    null,
                     orderables,
-                    periods.get(requisition.getProcessingPeriodId()))));
+                    periods.get(requisition.getProcessingPeriodId()),
+                    true)));
       }
     }
 
@@ -330,29 +324,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return periods;
   }
 
-  private Map<UUID, ProgramDto> getUuidProgramDtoMap(List<Requisition> requisitions) {
-    Set<UUID> programIds = requisitions.stream()
-        .map(Requisition::getProgramId)
-        .collect(Collectors.toSet());
-
-    Map<UUID, ProgramDto> programs = new HashMap<>(programIds.size());
-    for (UUID programId : programIds) {
-      programs.put(programId, programReferenceDataService.findOne(programId));
-    }
-    return programs;
-  }
-
   private Map<UUID, OrderableDto> getUuidOrderableDtoMap(List<Requisition> requisitions) {
     Set<UUID> orderableIds = requisitions.stream()
         .map(Requisition::getRequisitionLineItems)
         .flatMap(Collection::stream)
         .map(RequisitionLineItem::getOrderableId)
         .collect(Collectors.toSet());
-
-    orderableIds.addAll(requisitions.stream()
-        .map(Requisition::getAvailableNonFullSupplyProducts)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toSet()));
 
     return orderableReferenceDataService.findByIds(orderableIds)
         .stream()
