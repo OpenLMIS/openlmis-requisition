@@ -28,7 +28,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,8 +60,8 @@ public class RequisitionForConvertBuilder {
    */
   public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(List<Requisition> requisitions,
                                                  Collection<UUID> userManagedFacilities,
-                                                 Collection<MinimalFacilityDto> minimalFacilities,
-                                                 Collection<ProgramDto> programs) {
+                                                 Map<UUID, MinimalFacilityDto> minimalFacilities,
+                                                 Map<UUID, ProgramDto> programs) {
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     Map<RightsFor, List<FacilityDto>> cache = new HashMap<>();
@@ -75,7 +74,8 @@ public class RequisitionForConvertBuilder {
 
       if (!facilities.isEmpty()) {
         BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
-            minimalFacilities, programs);
+            minimalFacilities.getOrDefault(requisition.getFacilityId(), null),
+            programs.getOrDefault(requisition.getProgramId(), null));
         responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
       }
     }

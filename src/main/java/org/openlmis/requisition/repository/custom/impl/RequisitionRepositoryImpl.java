@@ -59,7 +59,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   private static final String SEARCH_APPROVED_SQL = "SELECT"
       + " r.id AS req_id, r.emergency AS req_emergency,"
-      + " r.facilityid AS facility_id, r.programid AS program_id, r.processingperiodid as period_id"
+      + " r.facilityid AS facility_id, r.programid AS program_id,"
+      + " r.processingperiodid as period_id, r.supervisorynodeid as node_id"
       + " FROM requisition.requisitions r"
       + " WHERE r.status = 'APPROVED'";
 
@@ -413,6 +414,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     sql.addScalar("facility_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("program_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
+    sql.addScalar("node_id", PostgresUUIDType.INSTANCE);
   }
 
   private String mergeIds(Collection<UUID> ids) {
@@ -438,6 +440,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     requisition.setFacilityId((UUID) values[2]);
     requisition.setProgramId((UUID) values[3]);
     requisition.setProcessingPeriodId((UUID) values[4]);
+    requisition.setSupervisoryNodeId((UUID) values[5]);
 
     return requisition;
   }

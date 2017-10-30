@@ -98,9 +98,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -622,16 +624,16 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
 
     profiler.start("FIND_DESIRED_PROGRAMS");
-    Collection<ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
+    Map<UUID, ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
 
     profiler.start("FIND_DESIRED_FACILITIES");
-    Collection<MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
+    Map<UUID, MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
 
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     List<Requisition> requisitionsList =
         requisitionRepository.searchApprovedRequisitions(filterBy,
-            facilities.stream().map(MinimalFacilityDto::getId).collect(Collectors.toList()),
-            programs.stream().map(ProgramDto::getId).collect(Collectors.toList()));
+            facilities.keySet(),
+            programs.keySet());
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
@@ -760,23 +762,23 @@ public class RequisitionService {
     return requisitionLineItems;
   }
 
-  private Collection<ProgramDto> findProgramsWithFilter(String filterBy,
-                                                        List<String> filterValues) {
+  private Map<UUID, ProgramDto> findProgramsWithFilter(String filterBy,
+                                                       List<String> filterValues) {
     List<ProgramDto> foundPrograms = new ArrayList<>();
 
     if (CollectionUtils.isEmpty(filterValues) || (!isFilterAll(filterBy)
         && !"programName".equalsIgnoreCase(filterBy))) {
-      return programReferenceDataService.findAll();
+      foundPrograms = programReferenceDataService.findAll();
     } else {
       for (String expression : filterValues) {
         foundPrograms.addAll(programReferenceDataService.search(expression));
       }
     }
 
-    return foundPrograms;
+    return foundPrograms.stream().collect(Collectors.toMap(ProgramDto::getId, Function.identity()));
   }
 
-  private Collection<MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
+  private Map<UUID, MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
                                                                   List<String> filterValues) {
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
 
@@ -792,7 +794,8 @@ public class RequisitionService {
       }
     }
 
-    return foundFacilities;
+    return foundFacilities.stream()
+        .collect(Collectors.toMap(MinimalFacilityDto::getId, Function.identity()));
   }
 
   private boolean isFilterAll(String filterBy) {

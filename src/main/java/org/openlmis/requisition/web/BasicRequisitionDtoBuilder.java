@@ -27,7 +27,6 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,40 +53,6 @@ public class BasicRequisitionDtoBuilder {
    */
   public List<BasicRequisitionDto> build(Collection<Requisition> requisitions) {
     return requisitions.stream().map(this::build).collect(Collectors.toList());
-  }
-
-  /**
-   * Create a new instance of BasicRequisitionDto based on data from {@link Requisition}.
-   *
-   * @param requisition instance used to create {@link BasicRequisitionDto} (can be {@code null})
-   * @param facilities  list of minimal facilities that will be filtered to find one
-   *                    for new {@link BasicRequisitionDto}, if list does not contains proper value
-   *                    it will be fetched  from ReferenceData service
-   * @param programs    list of programs that will be filtered to find one
-   *                    for new {@link BasicRequisitionDto}, if list does not contains proper value
-   *                    it will be fetched  from ReferenceData service
-   * @return new instance of {@link BasicRequisitionDto}. {@code null} if passed argument is {@code
-   * null}.
-   */
-  public BasicRequisitionDto build(Requisition requisition,
-                                   Collection<MinimalFacilityDto> facilities,
-                                   Collection<ProgramDto> programs) {
-    MinimalFacilityDto foundFacility = null;
-    ProgramDto foundProgram = null;
-
-    for (MinimalFacilityDto facility : facilities) {
-      if (requisition.getFacilityId().equals(facility.getId())) {
-        foundFacility = facility;
-      }
-    }
-
-    for (ProgramDto program : programs) {
-      if (requisition.getFacilityId().equals(program.getId())) {
-        foundProgram = program;
-      }
-    }
-
-    return build(requisition, foundFacility, foundProgram);
   }
 
   /**

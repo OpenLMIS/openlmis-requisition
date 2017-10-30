@@ -74,7 +74,7 @@ public class RequisitionForConvertBuilderTest {
     //when
     List<RequisitionWithSupplyingDepotsDto> result = requisitionForConvertBuilder
         .buildRequisitions(Lists.newArrayList(requisition, requisition2), userManagedDepots,
-            Collections.emptyList(), Collections.emptyList());
+            Collections.emptyMap(), Collections.emptyMap());
 
     //then
     //we have 2 requisition representations
@@ -97,7 +97,7 @@ public class RequisitionForConvertBuilderTest {
 
     requisitionForConvertBuilder.buildRequisitions(
         Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
-        Collections.emptyList(), Collections.emptyList());
+        Collections.emptyMap(), Collections.emptyMap());
 
     // Should hit ref data once and then use cache
     verify(facilityReferenceDataService, times(1))
@@ -113,7 +113,7 @@ public class RequisitionForConvertBuilderTest {
 
     requisitionForConvertBuilder.buildRequisitions(
         Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
-        Collections.emptyList(), Collections.emptyList());
+        Collections.emptyMap(), Collections.emptyMap());
 
     // Should hit ref data three times - for each requisition
     verify(facilityReferenceDataService, times(3))
