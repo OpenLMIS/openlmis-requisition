@@ -12,6 +12,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3126](https://openlmis.atlassian.net/browse/OLMIS-3126): Fix unable to batch save when skip is disabled in Requisition Template.
 * [OLMIS-3215](https://openlmis.atlassian.net/browse/OLMIS-3215): Do not allow for status change (submit/authorize/approve) when period end after today.
 * [OLMIS-3076](https://openlmis.atlassian.net/browse/OLMIS-3076): Exclude emergency from previous requisitions, remove regular requisition only if it is newest.
+* [OLMIS-3320](https://openlmis.atlassian.net/browse/OLMIS-3320): Improved requisitions for convert endpoint performance.
 
 Improve demo data:
 * [OLMIS-3202](https://openlmis.atlassian.net/browse/OLMIS-3202): Modified requisition template for EM program to match Malawi columns.
