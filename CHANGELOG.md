@@ -6,6 +6,7 @@ Improvements:
 * [OLMIS-3246](https://openlmis.atlassian.net/browse/OLMIS-3246): Added field hidden to stock adjustment reasons.
   * During work on this ticket also added validations for all special reasons from Stock are valid reasons.
 * [OLMIS-3233](https://openlmis.atlassian.net/browse/OLMIS-3233): Added ability to delete requisitions with "skipped" status.
+* [OLMIS-3351](https://openlmis.atlassian.net/browse/OLMIS-3351): Improve performance of batch retrieveAll.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3126](https://openlmis.atlassian.net/browse/OLMIS-3126): Fix unable to batch save when skip is disabled in Requisition Template.
