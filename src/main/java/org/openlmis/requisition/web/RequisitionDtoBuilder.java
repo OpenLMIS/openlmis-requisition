@@ -93,7 +93,7 @@ public class RequisitionDtoBuilder {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
     profiler.start("CALL_REQUISITION_DTO_BUILD");
-    RequisitionDto requisitionDto = build(requisition, facility, program, null, null, false);
+    RequisitionDto requisitionDto = build(requisition, facility, program, null, null);
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
@@ -108,7 +108,7 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility, ProgramDto program) {
-    return build(requisition, facility, program, null, null, false);
+    return build(requisition, facility, program, null, null);
   }
 
   /**
@@ -120,7 +120,7 @@ public class RequisitionDtoBuilder {
    */
   public RequisitionDto build(Requisition requisition, FacilityDto facility,
                               ProgramDto program, Map<UUID, OrderableDto> orderables,
-                              ProcessingPeriodDto period, boolean batch) {
+                              ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
       XLOGGER.exit();
@@ -132,11 +132,9 @@ public class RequisitionDtoBuilder {
     RequisitionDto requisitionDto = new RequisitionDto();
 
     profiler.start("EXPORT");
-    if (batch) {
-      requisition.basicExport(requisitionDto);
-    } else {
-      requisition.export(requisitionDto);
-    }
+
+    requisition.export(requisitionDto);
+
     profiler.start("SET_SUB_RESOURCES");
     requisitionDto.setTemplate(
         BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
@@ -145,9 +143,7 @@ public class RequisitionDtoBuilder {
       facility.setSupportedPrograms(null);
     }
     requisitionDto.setFacility(facility);
-    if (!batch) {
-      requisitionDto.setProgram(program);
-    }
+    requisitionDto.setProgram(program);
     if (period != null) {
       requisitionDto.setProcessingPeriod(period);
     } else {
@@ -160,34 +156,85 @@ public class RequisitionDtoBuilder {
 
     profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, batch);
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, false);
 
     profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
-    if (!batch) {
-      profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
-      if (requisition.getAvailableNonFullSupplyProducts() != null) {
-        if (MapUtils.isEmpty(orderables)) {
-          requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
-              orderableReferenceDataService.findByIds(
-                  requisition.getAvailableNonFullSupplyProducts())));
-        } else {
-          for (UUID productId : requisition.getAvailableNonFullSupplyProducts()) {
-            Set<OrderableDto> orderableDtos =
-                new HashSet<>(requisition.getAvailableNonFullSupplyProducts().size());
-            orderableDtos.add(orderables.get(productId));
-            requisitionDto.setAvailableNonFullSupplyProducts(orderableDtos);
-          }
+    profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
+    if (requisition.getAvailableNonFullSupplyProducts() != null) {
+      if (MapUtils.isEmpty(orderables)) {
+        requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
+            orderableReferenceDataService.findByIds(
+                requisition.getAvailableNonFullSupplyProducts())));
+      } else {
+        for (UUID productId : requisition.getAvailableNonFullSupplyProducts()) {
+          Set<OrderableDto> orderableDtos =
+              new HashSet<>(requisition.getAvailableNonFullSupplyProducts().size());
+          orderableDtos.add(orderables.get(productId));
+          requisitionDto.setAvailableNonFullSupplyProducts(orderableDtos);
         }
       }
-      profiler.start("SET_STOCK_ADJ_REASONS");
-      requisitionDto.setStockAdjustmentReasons(
-          newInstance(requisition.getStockAdjustmentReasons()));
     }
+    profiler.start("SET_STOCK_ADJ_REASONS");
+    requisitionDto.setStockAdjustmentReasons(
+        newInstance(requisition.getStockAdjustmentReasons()));
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
     return requisitionDto;
+  }
+
+  /**
+   * Create a new instance of RequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
+   * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public RequisitionDto buildBatch(Requisition requisition, FacilityDto facility,
+                                   Map<UUID, OrderableDto> orderables,
+                                   ProcessingPeriodDto period) {
+    XLOGGER.entry(requisition, facility);
+    if (null == requisition) {
+      XLOGGER.exit();
+      return null;
+    }
+    Profiler profiler = new Profiler("REQUISITION_DTO_BUILD");
+    profiler.setLogger(XLOGGER);
+
+    RequisitionDto requisitionDto = new RequisitionDto();
+
+    requisition.basicExport(requisitionDto);
+
+    profiler.start("SET_SUB_RESOURCES");
+    requisitionDto.setTemplate(
+        BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
+
+    if (facility != null) {
+      facility.setSupportedPrograms(null);
+    }
+    requisitionDto.setFacility(facility);
+    if (period != null) {
+      requisitionDto.setProcessingPeriod(period);
+    } else {
+      requisitionDto.setProcessingPeriod(
+          periodService.getPeriod(requisition.getProcessingPeriodId()));
+    }
+
+    profiler.start("GET_LINE_ITEMS");
+    List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
+
+    profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
+    List<RequisitionLineItemDto> requisitionLineItemDtoList =
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, true);
+
+    profiler.start("SET_LINE_ITEMS");
+    requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
+
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
+    return requisitionDto;
+
   }
 
 }

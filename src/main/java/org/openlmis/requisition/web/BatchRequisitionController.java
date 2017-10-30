@@ -108,13 +108,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
       } else {
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(
-                requisitionDtoBuilder.build(
+                requisitionDtoBuilder.buildBatch(
                     requisition,
                     facilities.get(requisition.getFacilityId()),
-                    null,
                     orderables,
-                    periods.get(requisition.getProcessingPeriodId()),
-                    true)));
+                    periods.get(requisition.getProcessingPeriodId()))));
       }
     }
 
