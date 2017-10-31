@@ -246,7 +246,6 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     requisition.setEmergency(false);
     requisition.setSupplyingFacility(UUID.randomUUID());
     requisition.setSupervisoryNode(UUID.randomUUID());
-    requisition.setStatusChanges(Collections.emptyList());
 
     return requisition;
   }

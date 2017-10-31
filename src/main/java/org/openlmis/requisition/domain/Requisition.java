@@ -580,8 +580,12 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setStatus(status);
-    if (exporter.provideStatusChanges()) {
-      exporter.setStatusChanges(statusChanges);
+    if (exporter.provideStatusChangeExporter().isPresent()) {
+      for (StatusChange statusChange : statusChanges) {
+        StatusChange.Exporter providedExporter = exporter.provideStatusChangeExporter().get();
+        statusChange.export(providedExporter);
+        exporter.addStatusChange(providedExporter);
+      }
     }
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
@@ -736,8 +740,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStatus(RequisitionStatus status);
 
-    void setStatusChanges(List<StatusChange> statusChanges);
-
     void setEmergency(Boolean emergency);
 
     void setSupplyingFacility(UUID supplyingFacility);
@@ -752,7 +754,9 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStockAdjustmentReasons(List<ReasonDto> reasonDto);
 
-    boolean provideStatusChanges();
+    Optional<StatusChange.Exporter> provideStatusChangeExporter();
+
+    void addStatusChange(StatusChange.Exporter providedExporter);
   }
 
   public interface Importer {

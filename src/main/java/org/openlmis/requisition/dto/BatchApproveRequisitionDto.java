@@ -15,21 +15,19 @@
 
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openlmis.requisition.domain.StatusChange;
-import java.util.List;
+import java.util.Optional;
 
 public class BatchApproveRequisitionDto extends RequisitionDto {
 
-  @JsonIgnore
   @Override
-  public void setStatusChanges(List<StatusChange> statusChanges) {
+  public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
     throw new IllegalStateException("The " + getClass().getName()
         + " does not provide status changes export");
   }
 
   @Override
-  public boolean provideStatusChanges() {
-    return false;
+  public Optional<StatusChange.Exporter> provideStatusChangeExporter() {
+    return Optional.empty();
   }
 }

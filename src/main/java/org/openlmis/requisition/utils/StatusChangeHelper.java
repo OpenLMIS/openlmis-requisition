@@ -15,9 +15,8 @@
 
 package org.openlmis.requisition.utils;
 
-import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
-
+import org.openlmis.requisition.dto.StatusChangeDto;
 import java.util.Map;
 
 public class StatusChangeHelper {
@@ -30,7 +29,7 @@ public class StatusChangeHelper {
    * @param statusChange  the status change
    */
   public static void addOrUpdate(Map<String, StatusLogEntry> statusLogEntries,
-                                 StatusChange statusChange) {
+                                 StatusChangeDto statusChange) {
     StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
     // Only add entry if none exists or existing one has later date
     if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {

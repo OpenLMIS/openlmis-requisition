@@ -25,9 +25,8 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
-
+import org.openlmis.requisition.dto.StatusChangeDto;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,7 @@ import java.util.UUID;
 
 public class StatusChangeHelperTest {
 
-  private StatusChange statusChange;
+  private StatusChangeDto statusChange;
 
   private Map<String, StatusLogEntry> statustLogEntries;
 
@@ -50,7 +49,7 @@ public class StatusChangeHelperTest {
     statustLogEntries.put(SUBMITTED.name(), new StatusLogEntry(authorId, submitDate));
     statustLogEntries.put(AUTHORIZED.name(), new StatusLogEntry(authorId, authorizeDate));
 
-    statusChange = mock(StatusChange.class);
+    statusChange = mock(StatusChangeDto.class);
   }
 
   @Test

@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Setter
@@ -54,14 +55,9 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   private BasicProgramDto program;
 
   @Override
-  public void setStatusChanges(List<StatusChange> statusChanges) {
-    if (statusChanges == null) {
-      return;
-    }
-
-    for (StatusChange statusChange : statusChanges) {
-      StatusChangeHelper.addOrUpdate(this.statusChanges, statusChange);
-    }
+  public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
+    StatusChangeDto statusChangeDto = (StatusChangeDto) statusChangeExporter;
+    StatusChangeHelper.addOrUpdate(this.statusChanges, statusChangeDto);
   }
 
   @Override
@@ -100,7 +96,7 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   }
 
   @Override
-  public boolean provideStatusChanges() {
-    return true;
+  public Optional<StatusChange.Exporter> provideStatusChangeExporter() {
+    return Optional.of(new StatusChangeDto());
   }
 }
