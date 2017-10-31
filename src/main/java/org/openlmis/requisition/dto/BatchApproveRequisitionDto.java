@@ -24,7 +24,8 @@ public class BatchApproveRequisitionDto extends RequisitionDto {
   @JsonIgnore
   @Override
   public void setStatusChanges(List<StatusChange> statusChanges) {
-    throw new IllegalStateException("The dto does not provide status changes export");
+    throw new IllegalStateException("The " + getClass().getName()
+        + " does not provide status changes export");
   }
 
   @Override

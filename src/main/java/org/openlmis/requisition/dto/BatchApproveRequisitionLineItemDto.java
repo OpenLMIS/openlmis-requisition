@@ -24,13 +24,15 @@ public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
   @JsonIgnore
   @Override
   public void setPreviousAdjustedConsumptions(List<Integer> previousAdjustedConsumptions) {
-    throw new IllegalStateException("The dto does not provide stock adjustments export");
+    throw new IllegalStateException("The " + getClass().getName()
+        + " does not provide stock adjustments export");
   }
 
   @JsonIgnore
   @Override
   public void setStockAdjustments(List<StockAdjustment> stockAdjustments) {
-    throw new IllegalStateException("The dto does not provide stock adjustments export");
+    throw new IllegalStateException("The " + getClass().getName()
+        + " does not provide stock adjustments export");
   }
 
   @Override
