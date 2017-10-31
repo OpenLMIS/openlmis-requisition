@@ -1,1 +1,3 @@
-CREATE INDEX ON requisition_line_items (requisitionid);
+CREATE INDEX requisition_line_items_requisitionid_idx ON requisition_line_items (requisitionid);
+
+CLUSTER requisition.requisition_line_items USING requisition_line_items_requisitionid_idx;
