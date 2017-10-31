@@ -43,7 +43,6 @@ import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
