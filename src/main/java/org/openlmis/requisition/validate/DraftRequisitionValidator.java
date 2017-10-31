@@ -26,6 +26,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_M
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -33,6 +34,7 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DateHelper;
@@ -43,7 +45,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @SuppressWarnings("PMD.TooManyMethods")
@@ -83,6 +89,8 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, savedRequisition, i));
     }
+
+    validateIfReasonExists(errors, requisition, savedRequisition);
   }
 
   private void validateDatePhysicalStockCountCompleted(Errors errors,
@@ -189,5 +197,20 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         ? !requisition.getDatePhysicalStockCountCompleted()
         .isEqual(savedRequisition.getDatePhysicalStockCountCompleted())
         : savedRequisition.getDatePhysicalStockCountCompleted() != null;
+  }
+
+  private void validateIfReasonExists(Errors errors, Requisition requisition,
+                                      Requisition savedRequisition) {
+    Map<UUID, StockAdjustmentReason> reasons = savedRequisition.getStockAdjustmentReasons().stream()
+        .collect(Collectors.toMap(StockAdjustmentReason::getReasonId, Function.identity()));
+
+    requisition.getRequisitionLineItems().stream()
+        .flatMap(i -> i.getStockAdjustments().stream())
+        .forEach(a -> {
+          if (reasons.get(a.getReasonId()) == null) {
+            rejectValue(errors, RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS,
+                new Message(ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST, a.getReasonId()));
+          }
+        });
   }
 }

@@ -13,6 +13,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3215](https://openlmis.atlassian.net/browse/OLMIS-3215): Do not allow for status change (submit/authorize/approve) when period end after today.
 * [OLMIS-3076](https://openlmis.atlassian.net/browse/OLMIS-3076): Exclude emergency from previous requisitions, remove regular requisition only if it is newest.
 * [OLMIS-3320](https://openlmis.atlassian.net/browse/OLMIS-3320): Improved requisitions for convert endpoint performance.
+* [OLMIS-3404](https://openlmis.atlassian.net/browse/OLMIS-3404): Added validation for sending reasons in line item adjustments that are not present on available reason list in requisition.
 
 Improve demo data:
 * [OLMIS-3202](https://openlmis.atlassian.net/browse/OLMIS-3202): Modified requisition template for EM program to match Malawi columns.

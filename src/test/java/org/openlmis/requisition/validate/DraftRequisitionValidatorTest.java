@@ -31,6 +31,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_M
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 
 import org.junit.Assert;
@@ -45,6 +46,8 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
@@ -58,6 +61,7 @@ import org.springframework.validation.Errors;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -340,6 +344,34 @@ public class DraftRequisitionValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfAdjustmentReasonIsNotPresentInAvailableReasonList() {
+    requisition.setRequisitionLineItems(Collections.singletonList(
+        getRequisitionLineItemWithStockAdjustment()));
+
+    Message message = new Message(ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST);
+    String msg = "reason not in available reason list";
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(msg));
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS), contains(msg));
+  }
+
+  @Test
+  public void shouldNotRejectIfAdjustmentReasonIsPresentInAvailableReasonList() {
+    RequisitionLineItem lineItem = getRequisitionLineItemWithStockAdjustment();
+    requisition.setRequisitionLineItems(Collections.singletonList(lineItem));
+
+    StockAdjustmentReason reason = new StockAdjustmentReason();
+    reason.setReasonId(lineItem.getStockAdjustments().get(0).getReasonId());
+    requisition.setStockAdjustmentReasons(Collections.singletonList(reason));
+
+    draftRequisitionValidator.validate(requisition, errors);
+
+    verify(errors, times(0)).rejectValue(anyString(), anyString());
+  }
+
+  @Test
   @PrepareForTest(RequisitionStatus.class)
   public void shouldRejectIfDatePhysicalStockCountCompletedMismatchAfterRequisitionWasAuthorized() {
     Requisition savedRequisition = mockStockCountDateMismatch();
@@ -420,6 +452,13 @@ public class DraftRequisitionValidatorTest {
     RequisitionLineItem lineItem = generateLineItem();
     lineItem.setApprovedQuantity(1);
     lineItem.setRemarks("Remarks");
+    return lineItem;
+  }
+
+  private RequisitionLineItem getRequisitionLineItemWithStockAdjustment() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setStockAdjustments(Collections.singletonList(
+        new StockAdjustment(UUID.randomUUID(), 10)));
     return lineItem;
   }
 
