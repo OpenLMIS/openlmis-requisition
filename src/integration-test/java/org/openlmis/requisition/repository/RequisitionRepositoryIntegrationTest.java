@@ -29,7 +29,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -59,7 +58,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +66,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 
@@ -552,29 +549,49 @@ public class RequisitionRepositoryIntegrationTest
   public void shouldGetAllApprovedRequisitions() {
     Requisition requisition1 = generateInstance();
     requisition1.setStatus(RequisitionStatus.APPROVED);
+    requisition1.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition1, UUID.randomUUID())));
+    requisition1 = repository.save(requisition1);
+
     Requisition requisition2 = generateInstance();
     requisition2.setStatus(RequisitionStatus.APPROVED);
-
-    requisition1 = repository.save(requisition1);
+    requisition2.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition2, UUID.randomUUID())));
     requisition2 = repository.save(requisition2);
 
     List<Requisition> requisitions = repository.searchApprovedRequisitions(null, null, null);
 
     assertEquals(2, requisitions.size());
-    assertTrue(requisitions.get(0).getId().equals(requisition1.getId())
-        || requisitions.get(0).getId().equals(requisition2.getId()));
-    assertTrue(requisitions.get(1).getId().equals(requisition1.getId())
-        || requisitions.get(1).getId().equals(requisition2.getId()));
+    for (Requisition r : requisitions) {
+      assertTrue(r.getId().equals(requisition1.getId())
+          || r.getId().equals(requisition2.getId()));
+      assertNotNull(r.getEmergency());
+      assertNotNull(r.getFacilityId());
+      assertNotNull(r.getProgramId());
+      assertNotNull(r.getProcessingPeriodId());
+      assertNotNull(r.getStatusChanges());
+    }
   }
 
   @Test
   public void shouldFilterApprovedRequisitions() {
     Requisition requisition1 = generateInstance();
     requisition1.setStatus(RequisitionStatus.APPROVED);
+    requisition1.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition1, UUID.randomUUID())));
+    requisition1 = repository.save(requisition1);
+
     Requisition requisition2 = generateInstance();
     requisition2.setStatus(RequisitionStatus.APPROVED);
+    requisition2.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition2, UUID.randomUUID())));
+    repository.save(requisition2);
 
-    requisition1 = repository.save(requisition1);
+    Requisition requisition3 = generateInstance();
+    requisition3.setStatus(RequisitionStatus.SUBMITTED);
+    requisition3.setFacilityId(requisition1.getFacilityId());
+    requisition3.setProgramId(requisition1.getProgramId());
+    repository.save(requisition3);
 
     List<Requisition> requisitions = repository.searchApprovedRequisitions("some text",
         Collections.singletonList(requisition1.getFacilityId()),

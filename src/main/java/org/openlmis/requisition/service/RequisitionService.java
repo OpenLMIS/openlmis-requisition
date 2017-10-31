@@ -766,8 +766,9 @@ public class RequisitionService {
                                                        List<String> filterValues) {
     List<ProgramDto> foundPrograms = new ArrayList<>();
 
-    if (CollectionUtils.isEmpty(filterValues) || (!isFilterAll(filterBy)
-        && !"programName".equalsIgnoreCase(filterBy))) {
+    if (CollectionUtils.isEmpty(filterValues)
+        || (!isFilterAll(filterBy)
+          && !"programName".equalsIgnoreCase(filterBy))) {
       foundPrograms = programReferenceDataService.findAll();
     } else {
       for (String expression : filterValues) {
@@ -782,8 +783,10 @@ public class RequisitionService {
                                                                   List<String> filterValues) {
     Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
 
-    if (CollectionUtils.isEmpty(filterValues) || (!"facilityCode".equalsIgnoreCase(filterBy)
-        && !"facilityName".equalsIgnoreCase(filterBy) && !isFilterAll(filterBy))) {
+    if (CollectionUtils.isEmpty(filterValues)
+        || (!"facilityCode".equalsIgnoreCase(filterBy)
+          && !"facilityName".equalsIgnoreCase(filterBy)
+          && !isFilterAll(filterBy))) {
       foundFacilities.addAll(facilityReferenceDataService.findAll());
     } else {
       for (String expression : filterValues) {
@@ -799,7 +802,7 @@ public class RequisitionService {
   }
 
   private boolean isFilterAll(String filterBy) {
-    return "all".equals(filterBy);
+    return "all".equalsIgnoreCase(filterBy);
   }
 
   private List<Requisition> getRecentRegularRequisitions(Requisition requisition, int amount) {

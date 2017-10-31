@@ -20,6 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMP
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -44,6 +45,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
+@AllArgsConstructor
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
   public static final String SOURCE = "Source ";

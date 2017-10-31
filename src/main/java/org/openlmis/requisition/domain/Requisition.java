@@ -26,6 +26,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -86,6 +87,7 @@ import org.slf4j.profiler.Profiler;
 @TypeName("Requisition")
 @Table(name = "requisitions")
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
 
@@ -98,7 +100,6 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String STOCK_ON_HAND = "stockOnHand";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY = "emergency";
-  public static final String MODIFIED_DATE = "modifiedDate";
   public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
       "datePhysicalStockCountCompleted";
 

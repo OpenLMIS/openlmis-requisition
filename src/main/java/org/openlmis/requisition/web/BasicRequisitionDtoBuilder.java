@@ -63,7 +63,7 @@ public class BasicRequisitionDtoBuilder {
    * null}.
    */
   public BasicRequisitionDto build(Requisition requisition) {
-    return build(requisition, (MinimalFacilityDto) null, (ProgramDto) null);
+    return build(requisition, null, null);
   }
 
   /**

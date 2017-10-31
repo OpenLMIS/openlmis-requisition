@@ -19,9 +19,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.PostgresUUIDType;
+import org.hibernate.type.ZonedDateTimeType;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Pagination;
@@ -31,17 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -53,6 +44,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
@@ -60,9 +61,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String SEARCH_APPROVED_SQL = "SELECT"
       + " r.id AS req_id, r.emergency AS req_emergency,"
       + " r.facilityid AS facility_id, r.programid AS program_id,"
-      + " r.processingperiodid as period_id, r.supervisorynodeid as node_id"
+      + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
+      + " s.createdDate as approved_date"
       + " FROM requisition.requisitions r"
-      + " WHERE r.status = 'APPROVED'";
+      + " INNER JOIN requisition.status_changes s ON r.id = s.requisitionid"
+      + " WHERE r.status = 'APPROVED'"
+      + " AND s.status = 'APPROVED'";
 
   private static final String FACILITY_ID = "facilityId";
   private static final String PROGRAM_ID = "programId";
@@ -415,6 +419,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     sql.addScalar("program_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("node_id", PostgresUUIDType.INSTANCE);
+    sql.addScalar("approved_date", ZonedDateTimeType.INSTANCE);
   }
 
   private String mergeIds(Collection<UUID> ids) {
@@ -441,6 +446,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     requisition.setProgramId((UUID) values[3]);
     requisition.setProcessingPeriodId((UUID) values[4]);
     requisition.setSupervisoryNodeId((UUID) values[5]);
+
+    StatusChange statusChange = new StatusChange();
+    statusChange.setCreatedDate((ZonedDateTime) values[6]);
+    statusChange.setStatus(RequisitionStatus.APPROVED);
+    requisition.setStatusChanges(Collections.singletonList(statusChange));
 
     return requisition;
   }
