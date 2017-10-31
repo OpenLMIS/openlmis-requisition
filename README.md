@@ -125,6 +125,19 @@ $ export spring_profiles_active=demo-data,performance-data
 $ gradle bootRun
 ```
 
+### Refresh DB
+
+If the service is being deployed against a database which has data, and that data has been modified
+outside of the operation of the Service (or sometimes when upgrading this Service), you'll want
+to run the Service at least once with the following profile:
+
+```
+spring_profiles_active=refresh-db
+```
+
+This will ensure that the database works well with this Service, including:
+* Run the audit log initializer which ensures everything in the database has an audit log.
+
 ## Production by Spring Profile
 
 By default when this service is started, it will clean its schema in the database before migrating
