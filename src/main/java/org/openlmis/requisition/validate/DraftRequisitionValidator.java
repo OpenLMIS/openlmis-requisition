@@ -208,7 +208,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
         .flatMap(i -> i.getStockAdjustments().stream())
         .forEach(a -> {
           if (reasons.get(a.getReasonId()) == null) {
-            rejectValue(errors, RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS,
+            rejectValue(errors, REQUISITION_LINE_ITEMS,
                 new Message(ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST, a.getReasonId()));
           }
         });

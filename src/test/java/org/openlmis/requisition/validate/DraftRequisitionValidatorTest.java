@@ -21,6 +21,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -33,6 +34,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
+import static org.openlmis.requisition.validate.AbstractRequisitionValidator.REQUISITION_LINE_ITEMS;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -186,7 +188,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    verify(errors).rejectValue(eq(REQUISITION_LINE_ITEMS),
         contains(ERROR_FIELD_IS_CALCULATED));
   }
 
@@ -203,7 +205,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    verify(errors).rejectValue(eq(REQUISITION_LINE_ITEMS),
         contains(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
   }
 
@@ -229,11 +231,11 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    verify(errors).rejectValue(eq(REQUISITION_LINE_ITEMS),
         contains(RequisitionLineItem.APPROVED_QUANTITY
             + " is only available during the approval step of the requisition process."));
 
-    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+    verify(errors).rejectValue(eq(REQUISITION_LINE_ITEMS),
         contains(RequisitionLineItem.REMARKS_COLUMN
             + " is only available during the approval step of the requisition process."));
   }
@@ -248,7 +250,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(any(), any());
+    verify(errors, never()).rejectValue(any(), any());
     assertFalse(errors.hasErrors());
   }
 
@@ -262,7 +264,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(any(), any());
+    verify(errors, never()).rejectValue(any(), any());
     assertFalse(errors.hasErrors());
   }
 
@@ -291,7 +293,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(any(), any());
+    verify(errors, never()).rejectValue(any(), any());
   }
 
   @Test
@@ -313,7 +315,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -322,7 +324,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -331,7 +333,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -340,7 +342,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -354,7 +356,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors).rejectValue(eq(RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS), contains(msg));
+    verify(errors).rejectValue(eq(REQUISITION_LINE_ITEMS), contains(msg));
   }
 
   @Test
@@ -368,7 +370,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -393,7 +395,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -404,7 +406,7 @@ public class DraftRequisitionValidatorTest {
 
     draftRequisitionValidator.validate(requisition, errors);
 
-    verify(errors, times(0)).rejectValue(anyString(), anyString());
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
