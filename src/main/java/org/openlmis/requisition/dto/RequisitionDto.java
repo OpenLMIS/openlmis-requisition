@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -115,6 +116,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     );
   }
 
+  @JsonIgnore
   @Override
   public void setStatusChanges(List<StatusChange> statusChanges) {
     if (statusChanges == null) {
