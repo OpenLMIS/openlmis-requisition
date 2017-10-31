@@ -180,10 +180,10 @@ public class RequisitionLineItemTest {
     item.setApprovedQuantity(4);
 
     // when
-    Integer quantity = item.getOrderQuantity();
+    int quantity = item.getOrderQuantity();
 
     // then
-    assertEquals(4, quantity.intValue());
+    assertEquals(4, quantity);
   }
 
   @Test
@@ -195,10 +195,10 @@ public class RequisitionLineItemTest {
     item.setApprovedQuantity(null);
 
     // when
-    Integer quantity = item.getOrderQuantity();
+    int quantity = item.getOrderQuantity();
 
     // then
-    assertEquals(5, quantity.intValue());
+    assertEquals(5, quantity);
   }
 
   @Test
@@ -212,10 +212,10 @@ public class RequisitionLineItemTest {
     item.setRequestedQuantity(null);
 
     // when
-    Integer quantity = item.getOrderQuantity();
+    int quantity = item.getOrderQuantity();
 
     // then
-    assertEquals(0, quantity.intValue());
+    assertEquals(0, quantity);
   }
 
   @Test
@@ -229,10 +229,10 @@ public class RequisitionLineItemTest {
     item.setRequestedQuantity(5);
 
     // when
-    Integer quantity = item.getOrderQuantity();
+    int quantity = item.getOrderQuantity();
 
     // then
-    assertEquals(5, quantity.intValue());
+    assertEquals(5, quantity);
   }
 
   @Test
