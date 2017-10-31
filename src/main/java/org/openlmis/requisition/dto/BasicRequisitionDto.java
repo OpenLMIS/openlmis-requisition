@@ -98,4 +98,9 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   public void setStockAdjustmentReasons(List<ReasonDto> reasonDto) {
     // unsupported operation
   }
+
+  @Override
+  public boolean provideStatusChanges() {
+    return true;
+  }
 }

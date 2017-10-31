@@ -579,24 +579,14 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setStatus(status);
-    exporter.setStatusChanges(statusChanges);
+    if (exporter.provideStatusChanges()) {
+      exporter.setStatusChanges(statusChanges);
+    }
     exporter.setEmergency(emergency);
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
     exporter.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
-  }
-
-  /**
-   * Export this object to the specified exporter (DTO).
-   *
-   * @param exporter exporter to export to
-   */
-  public void basicExport(Requisition.Exporter exporter) {
-    exporter.setId(id);
-    exporter.setModifiedDate(getModifiedDate());
-    exporter.setStatus(status);
-    exporter.setEmergency(emergency);
   }
 
   /**
@@ -760,6 +750,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setDatePhysicalStockCountCompleted(LocalDate localDate);
 
     void setStockAdjustmentReasons(List<ReasonDto> reasonDto);
+
+    boolean provideStatusChanges();
   }
 
   public interface Importer {

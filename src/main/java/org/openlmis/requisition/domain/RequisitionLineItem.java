@@ -360,7 +360,12 @@ public class RequisitionLineItem extends BaseEntity {
    * @param exporter exporter to export to
    */
   public void export(Exporter exporter, OrderableDto orderableDto) {
-    basicExport(exporter, orderableDto);
+    exporter.setId(id);
+    exporter.setOrderable(orderableDto);
+    exporter.setApprovedQuantity(approvedQuantity);
+    exporter.setPricePerPack(pricePerPack);
+    exporter.setTotalCost(totalCost);
+    exporter.setSkipped(skipped);
     exporter.setBeginningBalance(beginningBalance);
     exporter.setTotalReceivedQuantity(totalReceivedQuantity);
     exporter.setTotalLossesAndAdjustments(totalLossesAndAdjustments);
@@ -369,31 +374,21 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalConsumedQuantity(totalConsumedQuantity);
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
-    exporter.setStockAdjustments(stockAdjustments);
+    if (exporter.provideStockAdjustments()) {
+      exporter.setStockAdjustments(stockAdjustments);
+    }
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setAdjustedConsumption(adjustedConsumption);
-    exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
+    if (exporter.providePreviousAdjustedConsumptions()) {
+      exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
+    }
     exporter.setMaximumStockQuantity(maximumStockQuantity);
     exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
-  }
-
-  /**
-   * Export this object to the specified exporter (DTO).
-   *
-   * @param exporter exporter to export to
-   */
-  public void basicExport(Exporter exporter, OrderableDto orderableDto) {
-    exporter.setId(id);
-    exporter.setOrderable(orderableDto);
-    exporter.setApprovedQuantity(approvedQuantity);
-    exporter.setPricePerPack(pricePerPack);
-    exporter.setTotalCost(totalCost);
-    exporter.setSkipped(skipped);
   }
 
   /**
@@ -656,6 +651,10 @@ public class RequisitionLineItem extends BaseEntity {
     void setMaximumStockQuantity(Integer maximumStockQuantity);
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
+
+    boolean provideStockAdjustments();
+
+    boolean providePreviousAdjustedConsumptions();
   }
 
   public interface Importer {

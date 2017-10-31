@@ -176,9 +176,9 @@ public class RequisitionDtoBuilderTest {
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(requisition.getStatus(), requisitionDto.getStatus());
     assertNotNull(requisitionDto.getModifiedDate());
+    assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
+    assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
 
-    assertNull(requisitionDto.getDatePhysicalStockCountCompleted());
-    assertNull(requisitionDto.getSupervisoryNode());
     assertNull(requisitionDto.getProgram());
     assertNull(requisitionDto.getStockAdjustmentReasons());
     assertNull(requisitionDto.getAvailableNonFullSupplyProducts());

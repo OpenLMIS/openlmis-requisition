@@ -20,6 +20,7 @@ import static org.openlmis.requisition.dto.ReasonDto.newInstance;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
+import org.openlmis.requisition.dto.BatchApproveRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -166,9 +167,9 @@ public class RequisitionDtoBuilder {
     Profiler profiler = new Profiler("REQUISITION_DTO_BUILD");
     profiler.setLogger(XLOGGER);
 
-    RequisitionDto requisitionDto = new RequisitionDto();
+    RequisitionDto requisitionDto = new BatchApproveRequisitionDto();
 
-    requisition.basicExport(requisitionDto);
+    requisition.export(requisitionDto);
 
     profiler.start("SET_SUB_RESOURCES");
     setSubResources(requisition, facility, period, requisitionDto, null);

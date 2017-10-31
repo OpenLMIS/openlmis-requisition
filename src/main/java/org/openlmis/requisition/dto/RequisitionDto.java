@@ -132,4 +132,9 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     statusChange.export(statusChangeDto);
     this.statusHistory.add(statusChangeDto);
   }
+
+  @Override
+  public boolean provideStatusChanges() {
+    return true;
+  }
 }

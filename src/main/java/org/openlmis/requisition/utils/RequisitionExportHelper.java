@@ -17,6 +17,7 @@ package org.openlmis.requisition.utils;
 
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicOrderableDto;
+import org.openlmis.requisition.dto.BatchApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -95,6 +96,7 @@ public class RequisitionExportHelper {
     return requisitionLineItemDtos;
   }
 
+
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
                                              Map<UUID, OrderableDto> orderables,
                                              boolean batch) {
@@ -102,19 +104,19 @@ public class RequisitionExportHelper {
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("CONSTRUCT_REQUISITION_LINE_ITEM_DTO");
-    RequisitionLineItemDto dto = new RequisitionLineItemDto();
-
     profiler.start("GET_LINE_ITEM_ORDERABLE_FROM_ORDERABLES");
-    OrderableDto orderableDto = orderables.get(requisitionLineItem.getOrderableId());
+    final OrderableDto orderableDto = orderables.get(requisitionLineItem.getOrderableId());
 
-    profiler.start("EXPORT_TO_DTO");
+    profiler.start("CONSTRUCT_REQUISITION_LINE_ITEM_DTO");
+    RequisitionLineItemDto dto;
     if (batch) {
-      requisitionLineItem.basicExport(dto, orderableDto);
+      dto = new BatchApproveRequisitionLineItemDto();
     } else {
-      requisitionLineItem.export(dto, orderableDto);
+      dto = new RequisitionLineItemDto();
     }
 
+    profiler.start("EXPORT_TO_DTO");
+    requisitionLineItem.export(dto, orderableDto);
 
     profiler.stop().log();
     XLOGGER.exit(dto);

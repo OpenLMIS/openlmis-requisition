@@ -99,4 +99,14 @@ public class RequisitionLineItemDto extends BaseDto
       this.stockAdjustments = null;
     }
   }
+
+  @Override
+  public boolean provideStockAdjustments() {
+    return true;
+  }
+
+  @Override
+  public boolean providePreviousAdjustedConsumptions() {
+    return true;
+  }
 }
