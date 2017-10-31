@@ -18,6 +18,7 @@ package org.openlmis.requisition.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openlmis.requisition.domain.StockAdjustment;
 import java.util.List;
+import java.util.Optional;
 
 public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
 
@@ -28,20 +29,18 @@ public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
         + " does not provide stock adjustments export");
   }
 
-  @JsonIgnore
   @Override
-  public void setStockAdjustments(List<StockAdjustment> stockAdjustments) {
+  public void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter) {
     throw new IllegalStateException("The " + getClass().getName()
         + " does not provide stock adjustments export");
   }
 
-  @Override
-  public boolean provideStockAdjustments() {
-    return false;
+  public Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter() {
+    return Optional.empty();
   }
 
   @Override
-  public boolean providePreviousAdjustedConsumptions() {
+  public boolean supportsPreviousAdjustedConsumptions() {
     return false;
   }
 }

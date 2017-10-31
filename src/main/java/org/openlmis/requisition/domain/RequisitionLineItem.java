@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -374,15 +375,20 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalConsumedQuantity(totalConsumedQuantity);
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
-    if (exporter.provideStockAdjustments()) {
-      exporter.setStockAdjustments(stockAdjustments);
+    if (exporter.provideStockAdjustmentExporter().isPresent()) {
+      for (StockAdjustment stockAdjustment : stockAdjustments) {
+        StockAdjustment.Exporter providedExporter = exporter.provideStockAdjustmentExporter().get();
+        stockAdjustment.export(providedExporter);
+        exporter.addStockAdjustment(providedExporter);
+      }
+
     }
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
     exporter.setNumberOfNewPatientsAdded(numberOfNewPatientsAdded);
     exporter.setAdjustedConsumption(adjustedConsumption);
-    if (exporter.providePreviousAdjustedConsumptions()) {
+    if (exporter.supportsPreviousAdjustedConsumptions()) {
       exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
     }
     exporter.setMaximumStockQuantity(maximumStockQuantity);
@@ -622,8 +628,6 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setApprovedQuantity(Integer approvedQuantity);
 
-    void setStockAdjustments(List<StockAdjustment> stockAdjustments);
-
     void setTotalStockoutDays(Integer totalStockoutDays);
 
     void setTotal(Integer total);
@@ -652,9 +656,11 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
 
-    boolean provideStockAdjustments();
+    Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter();
 
-    boolean providePreviousAdjustedConsumptions();
+    boolean supportsPreviousAdjustedConsumptions();
+
+    void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter);
   }
 
   public interface Importer {

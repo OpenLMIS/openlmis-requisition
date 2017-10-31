@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -68,7 +69,7 @@ public class RequisitionLineItemDto extends BaseDto
   private Integer calculatedOrderQuantity;
 
   @JsonProperty
-  private List<StockAdjustmentDto> stockAdjustments;
+  private List<StockAdjustmentDto> stockAdjustments = new ArrayList<>();
 
   @JsonIgnore
   @Override
@@ -82,31 +83,17 @@ public class RequisitionLineItemDto extends BaseDto
     return stockAdjustmentImporters;
   }
 
-  @JsonIgnore
   @Override
-  public void setStockAdjustments(List<StockAdjustment> stockAdjustments) {
-    if (stockAdjustments != null) {
-      List<StockAdjustmentDto> stockAdjustmentDtos = new ArrayList<>();
+  public void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter) {
+    stockAdjustments.add((StockAdjustmentDto) stockAdjustmentExporter);
+  }
 
-      for (StockAdjustment stockAdjustment : stockAdjustments) {
-        StockAdjustmentDto stockAdjustmentDto = new StockAdjustmentDto();
-        stockAdjustment.export(stockAdjustmentDto);
-        stockAdjustmentDtos.add(stockAdjustmentDto);
-      }
-
-      this.stockAdjustments = stockAdjustmentDtos;
-    } else {
-      this.stockAdjustments = null;
-    }
+  public Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter() {
+    return Optional.of(new StockAdjustmentDto());
   }
 
   @Override
-  public boolean provideStockAdjustments() {
-    return true;
-  }
-
-  @Override
-  public boolean providePreviousAdjustedConsumptions() {
+  public boolean supportsPreviousAdjustedConsumptions() {
     return true;
   }
 }
