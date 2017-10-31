@@ -74,8 +74,8 @@ public class RequisitionForConvertBuilder {
 
       if (!facilities.isEmpty()) {
         BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
-            minimalFacilities.getOrDefault(requisition.getFacilityId(), null),
-            programs.getOrDefault(requisition.getProgramId(), null));
+            minimalFacilities.get(requisition.getFacilityId()),
+            programs.get(requisition.getProgramId()));
         responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
       }
     }
