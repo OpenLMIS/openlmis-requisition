@@ -44,10 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -200,13 +198,14 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateIfReasonExists(Errors errors, Requisition requisition,
                                       Requisition savedRequisition) {
-    Map<UUID, StockAdjustmentReason> reasons = savedRequisition.getStockAdjustmentReasons().stream()
-        .collect(Collectors.toMap(StockAdjustmentReason::getReasonId, Function.identity()));
+    Set<UUID> reasons = savedRequisition.getStockAdjustmentReasons().stream()
+        .map(StockAdjustmentReason::getReasonId)
+        .collect(Collectors.toSet());
 
     requisition.getRequisitionLineItems().stream()
         .flatMap(i -> i.getStockAdjustments().stream())
         .forEach(a -> {
-          if (reasons.get(a.getReasonId()) == null) {
+          if (!reasons.contains(a.getReasonId())) {
             rejectValue(errors, REQUISITION_LINE_ITEMS,
                 new Message(ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST, a.getReasonId()));
           }
