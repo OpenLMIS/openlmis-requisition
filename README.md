@@ -155,6 +155,19 @@ This will set the similarly named environment variable and limit the profile in 
 expected use-case for this is when this service is deployed through the
 [Reference Distribution](https://github.com/openlmis/openlmis-ref-distro).
 
+## Database Clustering on a Schedule
+
+In order to improve performance on some database tables, a scheduled task has 
+been added to this Service, which will perform clustering on those tables. In 
+order to use this, set the following environment variables:
+
+* **DB_CLUSTERING_ENABLED** - Boolean that determines if the clustering tasks 
+should be run. Set to true or false; false if not set.
+
+* **DB_CLUSTERING_CRON_EXP** - A cron expression that determines on what 
+schedule the clustering tasks are run. See the Spring [documentation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) to know the format.
+
+
 ## Environment variables
 
 Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
