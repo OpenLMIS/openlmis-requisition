@@ -40,6 +40,9 @@ import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -50,6 +53,7 @@ import java.util.Locale;
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
 @EntityScan(basePackageClasses = {BaseEntity.class})
+@EnableScheduling
 public class Application {
   private Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -71,6 +75,12 @@ public class Application {
 
   @Value("${time.zoneId}")
   private String timeZoneId;
+
+  @Autowired
+  private JdbcTemplate template;
+  
+  @Value("${db.clustering.enabled}")
+  private boolean dbClusteringEnabled;
 
   /**
    * Creates new LocaleResolver.
@@ -166,5 +176,20 @@ public class Application {
   @Bean
   public Clock clock() {
     return Clock.system(ZoneId.of(timeZoneId));
+  }
+
+  /**
+   * Clusters database tables to improve performance. This is run periodically based on the cron 
+   * expression.
+   */
+  @Scheduled(cron = "${db.clustering.cron.expression}")
+  public void clusterDatabase() {
+
+    if (dbClusteringEnabled) {
+      logger.info("Clustering requisition_line_items");
+      template.execute("CLUSTER requisition.requisition_line_items"
+          + " USING requisition_line_items_requisitionid_idx;");
+      logger.info("Finished clustering requisition_line_items");
+    }
   }
 }
