@@ -1,4 +1,4 @@
-openlmis-config/blob/test/.env# OpenLMIS Requisition Service
+# OpenLMIS Requisition Service
 This repository holds the files for the OpenLMIS Requisition Independent Service.
 
 ## Prerequisites
