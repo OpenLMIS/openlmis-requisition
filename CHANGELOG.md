@@ -1,3 +1,9 @@
+5.1.1 / WIP
+===========
+
+Bug fixes added in a backwards-compatible manner:
+* [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
+
 5.1.0 / 2017-11-09
 ==================
 

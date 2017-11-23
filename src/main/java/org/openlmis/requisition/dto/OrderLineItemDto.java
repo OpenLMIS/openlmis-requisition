@@ -35,7 +35,6 @@ public class OrderLineItemDto {
   private OrderableDto orderable;
   private Long orderedQuantity;
   private Long filledQuantity;
-  private Long approvedQuantity;
   private Long packsToShip;
 
   /**
@@ -48,13 +47,8 @@ public class OrderLineItemDto {
     OrderLineItemDto orderLineItem = new OrderLineItemDto();
     orderLineItem.setOrderable(productDto);
     orderLineItem.setFilledQuantity(0L);
-    orderLineItem.setApprovedQuantity(lineItem.getApprovedQuantity().longValue());
+    orderLineItem.setOrderedQuantity(lineItem.getApprovedQuantity().longValue());
     orderLineItem.setPacksToShip(lineItem.getPacksToShip());
-    if (lineItem.getRequestedQuantity() != null) {
-      orderLineItem.setOrderedQuantity(lineItem.getRequestedQuantity().longValue());
-    } else {
-      orderLineItem.setOrderedQuantity(lineItem.getCalculatedOrderQuantity().longValue());
-    }
 
     return orderLineItem;
   }
