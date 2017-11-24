@@ -57,10 +57,6 @@ public class RequisitionLineItemDataBuilder {
   private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
   private boolean nonFullSupply = false;
 
-  private Money asMoney(Number value) {
-    return Money.of(CurrencyUnit.of(CURRENCY_CODE), value.doubleValue());
-  }
-
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
@@ -77,4 +73,9 @@ public class RequisitionLineItemDataBuilder {
 
     return lineItem;
   }
+
+  private Money asMoney(Number value) {
+    return Money.of(CurrencyUnit.of(CURRENCY_CODE), value.doubleValue());
+  }
+  
 }
