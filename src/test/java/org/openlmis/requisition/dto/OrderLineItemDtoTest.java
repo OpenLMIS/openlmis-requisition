@@ -26,7 +26,7 @@ import org.openlmis.requisition.domain.RequisitionLineItem;
 public class OrderLineItemDtoTest {
 
   @Test
-  public void shouldCreateOrderLineItemBasedOnRequisitionLineItem() throws Exception {
+  public void shouldCreateOrderLineItemBasedOnRequisitionLineItem() {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder().build();
     OrderableDto product = new OrderableDto();
 
