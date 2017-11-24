@@ -24,6 +24,7 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Parameter;
@@ -59,6 +60,7 @@ import javax.persistence.Table;
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_line_items")
+@AllArgsConstructor
 public class RequisitionLineItem extends BaseEntity {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
