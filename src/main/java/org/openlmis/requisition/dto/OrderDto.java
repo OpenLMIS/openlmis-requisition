@@ -49,4 +49,5 @@ public class OrderDto {
   private List<OrderLineItemDto> orderLineItems;
   private List<StatusMessageDto> statusMessages;
   private List<StatusChangeDto> statusChanges;
+  private UUID lastUpdaterId;
 }

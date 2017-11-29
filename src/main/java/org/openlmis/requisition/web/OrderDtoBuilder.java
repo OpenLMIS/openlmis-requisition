@@ -106,6 +106,8 @@ public class OrderDtoBuilder {
 
     order.setCreatedBy(user);
 
+    order.setLastUpdaterId(user.getId());
+
     return order;
   }
 
