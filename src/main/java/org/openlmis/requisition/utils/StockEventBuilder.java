@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
-import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
@@ -152,7 +152,7 @@ public class StockEventBuilder {
     if (shouldIncludeConsumed(reasons, columnsMap)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
-          .reason(getReasonById(settings.getReasonIdForConsumed(), reasons))
+          .reasonId(getReasonById(settings.getReasonIdForConsumed(), reasons))
           .build()
       );
     }
@@ -161,7 +161,7 @@ public class StockEventBuilder {
     if (shouldIncludeReceipts(reasons, columnsMap)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
-          .reason(getReasonById(settings.getReasonIdForReceipts(), reasons))
+          .reasonId(getReasonById(settings.getReasonIdForReceipts(), reasons))
           .build()
       );
     }
@@ -184,7 +184,7 @@ public class StockEventBuilder {
     if (shouldIncludeBeginningBalanceExcess(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(beginningBalance - stockCard.getStockOnHand())
-          .reason(getReasonById(settings.getReasonIdForBeginningBalanceExcess(), reasons))
+          .reasonId(getReasonById(settings.getReasonIdForBeginningBalanceExcess(), reasons))
           .build());
     }
 
@@ -192,7 +192,7 @@ public class StockEventBuilder {
     if (shouldIncludeBeginningBalanceInsufficiency(stockCard, beginningBalance, reasons)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(stockCard.getStockOnHand() - beginningBalance)
-          .reason(getReasonById(settings.getReasonIdForBeginningBalanceInsufficiency(), reasons))
+          .reasonId(getReasonById(settings.getReasonIdForBeginningBalanceInsufficiency(), reasons))
           .build());
     }
 
@@ -205,7 +205,7 @@ public class StockEventBuilder {
       StockAdjustment stockAdjustment, List<StockAdjustmentReason> reasons) {
     return StockEventAdjustmentDto.builder()
         .quantity(stockAdjustment.getQuantity())
-        .reason(getReasonById(stockAdjustment.getReasonId(), reasons))
+        .reasonId(getReasonById(stockAdjustment.getReasonId(), reasons))
         .build();
   }
 
@@ -272,10 +272,13 @@ public class StockEventBuilder {
     return shouldInclude;
   }
 
-  private ReasonDto getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
-    return ReasonDto.newInstance(reasons.stream()
-        .filter(reasonDto -> reasonDto.getReasonId().equals(reasonId))
-        .findFirst().orElse(null));
+  private UUID getReasonById(UUID reasonId, List<StockAdjustmentReason> reasons) {
+    return reasons
+        .stream()
+        .map(StockAdjustmentReason::getReasonId)
+        .filter(id -> Objects.equals(id, reasonId))
+        .findFirst()
+        .orElse(null);
   }
 
   private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {

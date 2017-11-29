@@ -38,7 +38,6 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
@@ -56,7 +55,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -231,18 +229,18 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(0)), 24));
+            reasons.get(0).getReasonId(), 24));
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(1))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(2)), 25));
+            reasons.get(2).getReasonId(), 25));
 
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(4);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(0))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(1)), 37));
+            reasons.get(1).getReasonId(), 37));
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(1))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(3)), 38));
+            reasons.get(3).getReasonId(), 38));
   }
 
   @Test
@@ -255,18 +253,18 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(4)), 23));
+            reasons.get(4).getReasonId(), 23));
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(1))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(5)), 22));
+            reasons.get(5).getReasonId(), 22));
 
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(0))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(4)), 36));
+            reasons.get(4).getReasonId(), 36));
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(1))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(reasons.get(5)), 35));
+            reasons.get(5).getReasonId(), 35));
   }
 
   @Test
@@ -381,7 +379,7 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(4))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(beginningBalanceInsufficiency), 10));
+            beginningBalanceInsufficiency.getReasonId(), 10));
   }
 
   @Test
@@ -404,7 +402,7 @@ public class StockEventBuilderTest {
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(4))
         .isEqualToComparingFieldByFieldRecursively(new StockEventAdjustmentDto(
-            ReasonDto.newInstance(beginningBalanceExcess), 3));
+            beginningBalanceExcess.getReasonId(), 3));
   }
 
   @Test
@@ -530,10 +528,10 @@ public class StockEventBuilderTest {
 
   private boolean containsReason(StockEventLineItemDto lineItem,
                                  StockAdjustmentReason reason) {
-    return lineItem.getStockAdjustments().stream()
-        .filter(stockAdjustment -> stockAdjustment.getReason().equals(
-            ReasonDto.newInstance(reason)))
-        .collect(Collectors.toList()).size() > 0;
+    return lineItem
+        .getStockAdjustments()
+        .stream()
+        .anyMatch(stockAdjustment -> stockAdjustment.getReasonId().equals(reason.getReasonId()));
   }
 
   private void preparePeriod() {

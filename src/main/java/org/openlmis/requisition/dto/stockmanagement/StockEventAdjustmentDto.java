@@ -15,14 +15,14 @@
 
 package org.openlmis.requisition.dto.stockmanagement;
 
-import lombok.ToString;
-import org.openlmis.requisition.dto.ReasonDto;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -31,6 +31,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @ToString
 public class StockEventAdjustmentDto {
-  private ReasonDto reason;
+  private UUID reasonId;
   private Integer quantity;
 }
