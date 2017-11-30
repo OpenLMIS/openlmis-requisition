@@ -15,26 +15,13 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import java.util.UUID;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 
-@EqualsAndHashCode
-public final class ObjectReferenceDto {
+public class ObjectReferenceDtoTest {
 
-  @Getter
-  private final UUID id;
-
-  @Getter
-  private final String href;
-
-  private ObjectReferenceDto() {
-    this(null);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(ObjectReferenceDto.class).verify();
   }
-
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
-  }
-
 }

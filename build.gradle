@@ -76,6 +76,7 @@ dependencies {
     testCompile "org.javassist:javassist:3.20.0-GA"
     testCompile "org.powermock:powermock-module-junit4:1.6.5"
     testCompile "com.github.tomakehurst:wiremock:1.58"
+    testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
 }
 
 idea {
