@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
 import org.openlmis.requisition.dto.StatusChangeDto;
@@ -106,7 +107,7 @@ public class OrderDtoBuilder {
 
     order.setCreatedBy(user);
 
-    order.setLastUpdaterId(user.getId());
+    order.setLastUpdater(new ObjectReferenceDto(user.getId()));
 
     return order;
   }

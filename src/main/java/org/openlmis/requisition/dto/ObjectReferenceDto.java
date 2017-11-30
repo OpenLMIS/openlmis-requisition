@@ -15,39 +15,26 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderDto {
-  private UUID id;
-  private UUID externalId;
-  private Boolean emergency;
-  private FacilityDto facility;
-  private ProcessingPeriodDto processingPeriod;
-  private ZonedDateTime createdDate;
-  private UserDto createdBy;
-  private ProgramDto program;
-  private FacilityDto requestingFacility;
-  private FacilityDto receivingFacility;
-  private FacilityDto supplyingFacility;
-  private String orderCode;
-  private OrderStatus status;
-  private BigDecimal quotedCost;
-  private List<OrderLineItemDto> orderLineItems;
-  private List<StatusMessageDto> statusMessages;
-  private List<StatusChangeDto> statusChanges;
-  private ObjectReferenceDto lastUpdater;
+@EqualsAndHashCode
+public class ObjectReferenceDto {
+
+  @Getter
+  private final UUID id;
+
+  @Getter
+  private final String href;
+
+  private ObjectReferenceDto() {
+    this(null);
+  }
+
+  public ObjectReferenceDto(UUID id) {
+    this.id = id;
+    this.href = null;
+  }
+
 }
