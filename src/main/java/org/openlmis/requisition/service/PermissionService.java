@@ -34,6 +34,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,9 @@ public class PermissionService {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Value("${auth.server.clientId}")
+  private String serviceTokenClientId;
 
   /**
    * Checks if current user has permission to initiate a requisition.
@@ -275,15 +279,38 @@ public class PermissionService {
   }
 
   private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
-    XLOGGER.entry(rightName, program, facility, warehouse);
+    return hasPermission(rightName, program, facility, warehouse, true, true, false);
+  }
+
+  private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse,
+                                boolean allowUserTokens, boolean allowServiceTokens,
+                                boolean allowApiKey) {
+    XLOGGER.entry(
+        rightName, program, facility, warehouse,
+        allowUserTokens, allowServiceTokens, allowApiKey
+    );
     Profiler profiler = new Profiler("HAS_PERMISSION");
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_AUTHENTICATION");
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
-            .getAuthentication();
-    if (authentication.isClientOnly()) {
-      return true;
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
+        .getContext()
+        .getAuthentication();
+
+    Boolean result = authentication.isClientOnly()
+        ? checkServiceToken(allowServiceTokens, allowApiKey, authentication)
+        : checkUserToken(rightName, program, facility, warehouse, allowUserTokens, profiler);
+
+    profiler.stop().log();
+    XLOGGER.exit(result);
+
+    return result;
+  }
+
+  private boolean checkUserToken(String rightName, UUID program, UUID facility, UUID warehouse,
+                                 boolean allowUserTokens, Profiler profiler) {
+    if (!allowUserTokens) {
+      return false;
     }
 
     profiler.start("GET_CURRENT_USER");
@@ -297,11 +324,15 @@ public class PermissionService {
         user.getId(), right.getId(), program, facility, warehouse
     );
 
-    boolean returnResult = null != result && result.getResult();
+    return null != result && result.getResult();
+  }
 
-    profiler.stop().log();
-    XLOGGER.exit(returnResult);
-    return returnResult;
+  private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
+                                    OAuth2Authentication authentication) {
+    String clientId = authentication.getOAuth2Request().getClientId();
+    boolean isServiceToken = serviceTokenClientId.equals(clientId);
+
+    return isServiceToken ? allowServiceTokens : allowApiKey;
   }
 
   /**

@@ -15,7 +15,9 @@
 
 package org.openlmis.requisition.service;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -23,6 +25,10 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
+import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asApiKey;
+import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asClient;
+import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asService;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -50,11 +56,10 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,8 +110,10 @@ public class PermissionServiceTest {
   private Requisition requisition;
 
   private SecurityContext securityContext;
+
   private OAuth2Authentication trustedClient;
   private OAuth2Authentication userClient;
+  private OAuth2Authentication apiKeyClient;
 
   private UUID userId = UUID.randomUUID();
   private UUID requisitionCreateRightId = UUID.randomUUID();
@@ -126,8 +133,10 @@ public class PermissionServiceTest {
   public void setUp() {
     securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
-    trustedClient = new OAuth2Authentication(mock(OAuth2Request.class), null);
-    userClient = new OAuth2Authentication(mock(OAuth2Request.class), mock(Authentication.class));
+
+    trustedClient = asService();
+    userClient = asClient("admin");
+    apiKeyClient = asApiKey();
 
     convertToOrderDto.setRequisitionId(requisitionId);
     convertToOrderDto.setSupplyingDepotId(facilityId);
@@ -164,6 +173,8 @@ public class PermissionServiceTest {
         manageRequisitionTemplateRight);
 
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
+
+    ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
   }
 
   @Test
@@ -380,20 +391,47 @@ public class PermissionServiceTest {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
 
     // Requisition permissions
-    permissionService.canViewRequisition(requisitionId);
-    permissionService.canInitOrAuthorizeRequisition(programId, facilityId);
-    permissionService.canInitRequisition(programId, facilityId);
-    permissionService.canApproveRequisition(requisitionId);
-    permissionService.canAuthorizeRequisition(requisitionId);
-    permissionService.canDeleteRequisition(requisitionId);
-    permissionService.canSubmitRequisition(requisitionId);
-    permissionService.canUpdateRequisition(requisitionId);
-    permissionService.canConvertToOrder(convertToOrderDtos);
+    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(
+        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
+        is(true)
+    );
+    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(true));
+    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(true));
 
     // Report permissions
-    permissionService.canViewReports();
-    permissionService.canEditReportTemplates();
-    permissionService.canManageRequisitionTemplate();
+    assertThat(permissionService.canViewReports().isSuccess(), is(true));
+    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(true));
+    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(true));
+  }
+
+  @Test
+  public void apiKeyTokensShouldNotHaveAllThePermissions() {
+    when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
+
+    // Requisition permissions
+    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(
+        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
+        is(false)
+    );
+    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
+    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
+
+    // Report permissions
+    assertThat(permissionService.canViewReports().isSuccess(), is(false));
+    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(false));
+    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(false));
   }
   
   @Test
