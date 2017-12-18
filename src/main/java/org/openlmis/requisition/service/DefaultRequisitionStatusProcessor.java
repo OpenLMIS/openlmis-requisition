@@ -17,8 +17,11 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
@@ -36,6 +39,9 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
   @Autowired
   private ApprovedRequisitionNotifier approvedRequisitionNotifier;
 
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
   /**
    * Process requisition status change.
    * @param requisition a requisition that has just changed its status
@@ -49,6 +55,7 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
     }
 
     if (requisition.isApprovable()) {
+      assignInitialSupervisoryNode(requisition);
       approvalNotifier.notifyApprovers(requisition);
     }
 
@@ -56,4 +63,13 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
       approvedRequisitionNotifier.notifyClerks(requisition);
     }
   }
+
+  private void assignInitialSupervisoryNode(Requisition requisition) {
+    if (requisition.getSupervisoryNodeId() == null) {
+      UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
+          requisition.getProgramId(), requisition.getFacilityId()).getId();
+      requisition.setSupervisoryNodeId(supervisoryNode);
+    }
+  }
+
 }

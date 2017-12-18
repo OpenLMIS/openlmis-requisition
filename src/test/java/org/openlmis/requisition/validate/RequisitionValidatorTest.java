@@ -49,10 +49,10 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -74,9 +74,6 @@ public class RequisitionValidatorTest {
   private MessageService messageService;
   @Mock
   private RequisitionRepository requisitionRepository;
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -633,7 +630,6 @@ public class RequisitionValidatorTest {
     when(requisition.getTemplate()).thenReturn(requisitionTemplate);
 
     when(requisitionRepository.findOne(any())).thenReturn(requisition);
-    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
     when(predicate.exec(any(UUID.class))).thenReturn(true);
   }
 

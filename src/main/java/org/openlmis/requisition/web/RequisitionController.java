@@ -17,7 +17,6 @@ package org.openlmis.requisition.web;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_AUTHORIZATION_TO_BE_SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -47,7 +46,6 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -89,9 +87,6 @@ import java.util.stream.Collectors;
 public class RequisitionController extends BaseRequisitionController {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionController.class);
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private PeriodService periodService;
@@ -237,9 +232,10 @@ public class RequisitionController extends BaseRequisitionController {
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
     UserDto user = authenticationHelper.getCurrentUser();
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
 
     requisition.submit(orderableReferenceDataService.findByIds(
-            getLineItemOrderableIds(requisition)), user.getId());
+            getLineItemOrderableIds(requisition)), user.getId(), program.getSkipAuthorization());
     requisitionService.saveStatusMessage(requisition);
 
     requisitionRepository.save(requisition);
@@ -495,12 +491,7 @@ public class RequisitionController extends BaseRequisitionController {
   public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     permissionService.canAuthorizeRequisition(requisitionId).throwExceptionIfHasErrors();
 
-    if (configurationSettingService.getSkipAuthorization()) {
-      throw new ValidationMessageException(new Message(ERROR_AUTHORIZATION_TO_BE_SKIPPED));
-    }
-
     Requisition requisition = requisitionRepository.findOne(requisitionId);
-
     if (requisition == null) {
       throw new ContentNotFoundMessageException(
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
@@ -519,10 +510,6 @@ public class RequisitionController extends BaseRequisitionController {
 
     requisition.authorize(orderableReferenceDataService.findByIds(
             getLineItemOrderableIds(requisition)), user.getId());
-
-    UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
-        requisition.getProgramId(), requisition.getFacilityId()).getId();
-    requisition.setSupervisoryNodeId(supervisoryNode);
 
     requisitionService.saveStatusMessage(requisition);
 

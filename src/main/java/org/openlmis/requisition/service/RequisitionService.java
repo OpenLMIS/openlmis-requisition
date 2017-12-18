@@ -74,7 +74,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -92,6 +91,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,9 +111,6 @@ import java.util.stream.Collectors;
 public class RequisitionService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -500,10 +497,9 @@ public class RequisitionService {
           MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId);
     }
 
-    if (configurationSettingService.getSkipAuthorization() ? requisition.getStatus()
-        != RequisitionStatus.SUBMITTED : !requisition.isApprovable()) {
+    if (!requisition.isApprovable()) {
       return ValidationResult.failedValidation(MessageKeys
-          .ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED, requisition.getId());
+          .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
     }
 
     RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);

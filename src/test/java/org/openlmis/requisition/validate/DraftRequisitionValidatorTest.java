@@ -51,7 +51,6 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
@@ -59,6 +58,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.validation.Errors;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -76,9 +76,6 @@ public class DraftRequisitionValidatorTest {
 
   @Mock
   private RequisitionRepository requisitionRepository;
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -444,8 +441,6 @@ public class DraftRequisitionValidatorTest {
   }
 
   private void mockRepositoriesAndObjects() {
-    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
-
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
   }
 

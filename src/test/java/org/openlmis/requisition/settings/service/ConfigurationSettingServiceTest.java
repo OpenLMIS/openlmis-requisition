@@ -15,42 +15,53 @@
 
 package org.openlmis.requisition.settings.service;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.core.env.Environment;
+
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationSettingServiceTest {
+
+  private static final String RESONS_SUFFIX = "reasons.";
+  private static final String CONSUMED = RESONS_SUFFIX + "consumed";
+  private static final String RECEIPTS = RESONS_SUFFIX + "receipts";
+  private static final String BEGINNING_BALANCE_EXCESS = RESONS_SUFFIX + "beginningBalanceExcess";
+  private static final String BEGINNING_BALANCE_INSUFFICIENCY =
+      RESONS_SUFFIX + "beginningBalanceInsufficiency";
+
+  @Mock
+  private Environment env;
 
   @InjectMocks
   private ConfigurationSettingService configurationSettingService;
 
   @Test
-  public void shouldReturnSkipAuthorizationAsTrueIfTrue() {
-    // given
-    ReflectionTestUtils.setField(configurationSettingService, "skipAuthorizationSetting", "true");
+  public void shouldProperlyParseUuidsFromEnv() {
+    final String consumed = "e3e512c9-5a40-4fbb-a598-d405bbed8bf0";
+    final String receipts = "33de864f-56d8-4310-a288-3d1fbb33f18c";
+    final String beginningBalanceExcess = "f448aabf-879c-411e-92b0-cdfa1096e67f";
+    final String beginningBalanceInsufficiency = "1d4bc2f9-6454-4bda-b028-aac98b29d87d";
 
-    // when
-    boolean result = configurationSettingService.getSkipAuthorization();
+    doReturn(consumed).when(env).getProperty(CONSUMED);
+    doReturn(receipts).when(env).getProperty(RECEIPTS);
+    doReturn(beginningBalanceExcess).when(env).getProperty(BEGINNING_BALANCE_EXCESS);
+    doReturn(beginningBalanceInsufficiency).when(env).getProperty(BEGINNING_BALANCE_INSUFFICIENCY);
 
-    // then
-    assertTrue(result);
+    assertEquals(UUID.fromString(consumed), configurationSettingService.getReasonIdForConsumed());
+    assertEquals(UUID.fromString(receipts), configurationSettingService.getReasonIdForReceipts());
+    assertEquals(UUID.fromString(beginningBalanceExcess),
+        configurationSettingService.getReasonIdForBeginningBalanceExcess());
+    assertEquals(UUID.fromString(beginningBalanceInsufficiency),
+        configurationSettingService.getReasonIdForBeginningBalanceInsufficiency());
   }
 
-  @Test
-  public void shouldReturnSkipAuthorizationAsFalseIfNotTrue() {
-    // given
-    ReflectionTestUtils.setField(configurationSettingService, "skipAuthorizationSetting", "false");
 
-    // when
-    boolean result = configurationSettingService.getSkipAuthorization();
-
-    // then
-    assertFalse(result);
-  }
 }

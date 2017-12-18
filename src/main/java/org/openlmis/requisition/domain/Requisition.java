@@ -26,10 +26,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -48,6 +45,15 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionHelper;
+import org.openlmis.requisition.utils.RightName;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -63,6 +69,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -77,10 +84,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.openlmis.requisition.utils.RightName;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
-import org.slf4j.profiler.Profiler;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -359,11 +362,11 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits given requisition.
+   * Submits this requisition.
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Collection<OrderableDto> products, UUID submitter) {
+  public void submit(Collection<OrderableDto> products, UUID submitter, boolean skipAuthorize) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -371,20 +374,27 @@ public class Requisition extends BaseTimestampedEntity {
 
     if (RequisitionHelper.areFieldsNotFilled(template,
         getNonSkippedFullSupplyRequisitionLineItems())) {
-      throw new ValidationMessageException(
-          new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
+      throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
 
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
 
     status = RequisitionStatus.SUBMITTED;
-    
     statusChanges.add(StatusChange.newStatusChange(this, submitter));
+
+    if (skipAuthorize) {
+      LOGGER.debug("Skipping authorize step.");
+      populateApprovedQuantity();
+      status = RequisitionStatus.AUTHORIZED;
+
+      RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(),
+          RequisitionLineItem::resetData);
+    }
   }
 
   /**
-   * Authorize given Requisition.
+   * Authorize this Requisition.
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */

@@ -25,5 +25,6 @@ public class ProgramDto extends BasicProgramDto {
   private Boolean active;
   private Boolean periodsSkippable;
   private Boolean showNonFullSupplyTab;
+  private Boolean skipAuthorization;
   private Boolean enableDatePhysicalStockCountCompleted;
 }

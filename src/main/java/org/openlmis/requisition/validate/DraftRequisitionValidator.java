@@ -30,20 +30,21 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQU
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import com.google.common.collect.Sets;
+
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import java.util.HashSet;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,9 +54,6 @@ import java.util.stream.Collectors;
 public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private static final int DAYS_IN_MONTH = 30;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -137,13 +135,9 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateApprovalFields(Errors errors, Requisition requisition,
                                       RequisitionLineItem item) {
-    Set<RequisitionStatus> expectedStatuses = new HashSet<>();
-    expectedStatuses.add(RequisitionStatus.IN_APPROVAL);
-    if (configurationSettingService.getSkipAuthorization()) {
-      expectedStatuses.add(RequisitionStatus.SUBMITTED);
-    } else {
-      expectedStatuses.add(RequisitionStatus.AUTHORIZED);
-    }
+    Set<RequisitionStatus> expectedStatuses =
+        Sets.newHashSet(RequisitionStatus.AUTHORIZED, RequisitionStatus.IN_APPROVAL);
+
     rejectIfInvalidStatusAndNotNull(errors, requisition, item.getApprovedQuantity(),
         expectedStatuses, new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.APPROVED_QUANTITY));

@@ -16,11 +16,11 @@
 package org.openlmis.requisition.settings.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import lombok.NoArgsConstructor;
+
 import java.util.UUID;
 
 @Service
@@ -34,15 +34,8 @@ public class ConfigurationSettingService {
   private static final String BEGINNING_BALANCE_INSUFFICIENCY =
       RESONS_SUFFIX + "beginningBalanceInsufficiency";
 
-  @Value("${authorization.skip}")
-  private String skipAuthorizationSetting;
-
   @Autowired
   private Environment env;
-
-  public boolean getSkipAuthorization() {
-    return getBoolean(skipAuthorizationSetting);
-  }
 
   public UUID getReasonIdForConsumed() {
     return UUID.fromString(env.getProperty(CONSUMED));
@@ -58,9 +51,5 @@ public class ConfigurationSettingService {
 
   public UUID getReasonIdForBeginningBalanceInsufficiency() {
     return UUID.fromString(env.getProperty(BEGINNING_BALANCE_INSUFFICIENCY));
-  }
-
-  private boolean getBoolean(String value) {
-    return Boolean.parseBoolean(value);
   }
 }

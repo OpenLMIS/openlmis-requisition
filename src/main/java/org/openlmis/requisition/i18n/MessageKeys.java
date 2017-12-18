@@ -78,8 +78,8 @@ public abstract class MessageKeys {
       + ".idMismatch";
   public static final String ERROR_NO_SUBMITTED_REQUISITIONS = ERROR_PREFIX
       + ".submittedRequisitionsNotFound";
-  public static final String ERROR_REQUISITION_MUST_BE_AUTHORIZED_OR_SUBMITTED = ERROR_PREFIX
-      + ".approve.requisitionMustBeAuthorizedOrSubmittedIfSkipped";
+  public static final String ERROR_REQUISITION_MUST_BE_AUTHORIZED = ERROR_PREFIX
+      + ".approve.requisitionMustBeAuthorized";
   public static final String ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION = ERROR_PREFIX
       + ".approve.noPermissionForSupervisoryNode";
   public static final String ERROR_PERIOD_END_DATE_WRONG = ERROR_PREFIX

@@ -38,17 +38,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
@@ -58,6 +52,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 @Component
 public class RequisitionValidator extends AbstractRequisitionValidator {
 
@@ -66,9 +65,6 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
   static final String VALUE_IS_INCORRECTLY_CALCULATED = " has incorrect value, it does not match"
       + " the calculated value.";
   static final String VALUE_NOT_FOUND = " could not be found.";
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -226,10 +222,7 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
 
   private void validateApprovedQuantity(Errors errors, RequisitionTemplate template,
                                         Requisition requisition, RequisitionLineItem item) {
-    if (requisition.isApprovable()
-        || (configurationSettingService.getSkipAuthorization()
-        && requisition.getStatus() == RequisitionStatus.SUBMITTED)) {
-
+    if (requisition.isApprovable()) {
       rejectIfNull(errors, template, item.getApprovedQuantity(),
           APPROVED_QUANTITY);
       rejectIfLessThanZero(errors, template, item.getApprovedQuantity(),

@@ -15,8 +15,35 @@
 
 package org.openlmis.requisition.service;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
+import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
+import static org.openlmis.requisition.domain.RequisitionStatus.REJECTED;
+import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -98,32 +125,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.RequisitionStatus.IN_APPROVAL;
-import static org.openlmis.requisition.domain.RequisitionStatus.REJECTED;
-import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -717,7 +718,6 @@ public class RequisitionServiceTest {
   public void shouldFailValidationIfRequisitionIsInIncorrectState() {
     when(permissionService.canApproveRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.success());
-    when(configurationSettingService.getSkipAuthorization()).thenReturn(false);
     requisition.setStatus(INITIATED);
 
     ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,

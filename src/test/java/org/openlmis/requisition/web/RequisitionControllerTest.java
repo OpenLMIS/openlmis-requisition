@@ -42,6 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.ProgramDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -64,6 +65,7 @@ import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.DateHelper;
@@ -172,6 +174,9 @@ public class RequisitionControllerTest {
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Mock
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
   private DateHelper dateHelper;
 
   @InjectMocks
@@ -240,7 +245,21 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
+    // we do not update in this endpoint
+    verify(initiatedRequsition, never())
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+  }
+
+  @Test
+  public void shouldDirectlyAuthorizeInitiatedRequisitionIfAuthorizeStepSkipped() {
+    mockDependenciesForSubmit();
+    ProgramDto programDto = new ProgramDtoDataBuilder().buildWithSkippedAuthorizationStep();
+    doReturn(programDto).when(programReferenceDataService).findOne(any(UUID.class));
+
+    requisitionController.submitRequisition(uuid1);
+
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(true));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -256,7 +275,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -272,7 +291,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class));
+    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -515,6 +534,8 @@ public class RequisitionControllerTest {
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
+        new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep());
     when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
   }
 
@@ -582,7 +603,7 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyBoolean());
-    verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class));
+    verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class), anyBoolean());
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
