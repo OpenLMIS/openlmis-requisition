@@ -4,6 +4,8 @@
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
 * [OLMIS-3295](https://openlmis.atlassian.net/browse/OLMIS-3295): Updated stock event structure to match new stock management API  
+* [OLMIS-3135](https://openlmis.atlassian.net/browse/OLMIS-3135): Handle API Key requests.
+  * For now all requests are blocked.
 
 5.1.0 / 2017-11-09
 ==================
