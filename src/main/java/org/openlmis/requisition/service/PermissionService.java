@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
@@ -73,6 +74,9 @@ public class PermissionService {
 
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
+
+  @Value("${auth.server.clientId.apiKey.prefix}")
+  private String apiKeyPrefix;
 
   /**
    * Checks if current user has permission to initiate a requisition.
@@ -330,9 +334,16 @@ public class PermissionService {
   private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
                                     OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
-    boolean isServiceToken = serviceTokenClientId.equals(clientId);
 
-    return isServiceToken ? allowServiceTokens : allowApiKey;
+    if (serviceTokenClientId.equals(clientId)) {
+      return allowServiceTokens;
+    }
+
+    if (startsWith(clientId, apiKeyPrefix)) {
+      return allowApiKey;
+    }
+
+    return false;
   }
 
   /**
