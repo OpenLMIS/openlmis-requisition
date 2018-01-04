@@ -413,6 +413,31 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void serviceLevelTokensShouldNotHaveAnyPermissionIfIdsDoesNotMatch() {
+    ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", "untrusted-client");
+    when(securityContext.getAuthentication()).thenReturn(trustedClient);
+
+    assertThat(
+        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
+        is(false)
+    );
+
+    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
+    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
+
+    // Report permissions
+    assertThat(permissionService.canViewReports().isSuccess(), is(false));
+    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(false));
+    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(false));
+  }
+
+  @Test
   public void apiKeyTokensShouldNotHaveAllThePermissions() {
     when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
 
