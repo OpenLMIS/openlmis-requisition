@@ -414,8 +414,7 @@ public class PermissionServiceTest {
 
   @Test
   public void serviceLevelTokensShouldNotHaveAnyPermissionIfIdsDoesNotMatch() {
-    ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", "untrusted-client");
-    when(securityContext.getAuthentication()).thenReturn(trustedClient);
+    when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
 
     assertThat(
         permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
