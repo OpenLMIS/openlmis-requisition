@@ -27,12 +27,15 @@ import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Pagination;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -57,6 +61,8 @@ import javax.persistence.criteria.Root;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionRepositoryImpl.class);
 
   private static final String SEARCH_APPROVED_SQL = "SELECT"
       + " r.id AS req_id, r.emergency AS req_emergency,"
@@ -183,6 +189,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   public List<Requisition> searchApprovedRequisitions(String filterBy,
                                                       Collection<UUID> facilityIds,
                                                       Collection<UUID> programIds) {
+    XLOGGER.entry(filterBy, facilityIds, programIds);
     Query query = createQuery(filterBy, facilityIds, programIds);
     addScalars(query);
 
@@ -190,7 +197,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     @SuppressWarnings("unchecked")
     List<Object[]> list = Collections.checkedList(query.getResultList(), Object[].class);
 
-    return list.stream().map(this::toRequisition).collect(Collectors.toList());
+    List<Requisition> requisitions = list.stream().map(this::toRequisition)
+        .collect(Collectors.toList());
+
+    XLOGGER.exit(requisitions);
+    return requisitions;
   }
 
   /**

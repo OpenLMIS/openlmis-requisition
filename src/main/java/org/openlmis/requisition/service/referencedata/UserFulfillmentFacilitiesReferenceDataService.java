@@ -17,6 +17,8 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -24,6 +26,10 @@ import java.util.UUID;
 
 @Service
 public class UserFulfillmentFacilitiesReferenceDataService extends FacilityReferenceDataService {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
+      UserFulfillmentFacilitiesReferenceDataService.class
+  );
 
   @Override
   protected String getUrl() {
@@ -38,9 +44,14 @@ public class UserFulfillmentFacilitiesReferenceDataService extends FacilityRefer
    * @return a collection of facilities the user has fulfillment rights for
    */
   public Collection<FacilityDto> getFulfillmentFacilities(UUID userUuid, UUID rightUuid) {
-    return findAll(
+    XLOGGER.entry(userUuid, rightUuid);
+
+    Collection<FacilityDto> facilities = findAll(
         userUuid + "/fulfillmentFacilities",
         RequestParameters.init().set("rightId", rightUuid)
     );
+
+    XLOGGER.exit(facilities);
+    return facilities;
   }
 }
