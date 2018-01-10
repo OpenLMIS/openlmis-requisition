@@ -21,13 +21,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
-import org.openlmis.requisition.service.AuthService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Component;
 import java.util.UUID;
 
@@ -40,9 +37,6 @@ public class AuthenticationHelper {
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
 
-  @Autowired
-  private AuthService authService;
-
   /**
    * Method returns current user based on Spring context
    * and fetches his data from reference-data service.
@@ -51,12 +45,8 @@ public class AuthenticationHelper {
    * @throws AuthenticationMessageException if user cannot be found.
    */
   public UserDto getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) authentication.getDetails();
-    UUID userToken = UUID.fromString(details.getTokenValue());
-
-    UUID userId = authService.getReferencedataUserId(userToken);
-
+    UUID userId =
+        (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     UserDto user = userReferenceDataService.findOne(userId);
 
     if (user == null) {

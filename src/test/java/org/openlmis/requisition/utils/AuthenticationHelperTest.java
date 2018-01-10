@@ -32,13 +32,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
-import org.openlmis.requisition.service.AuthService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,24 +48,15 @@ public class AuthenticationHelperTest {
   @Mock
   private RightReferenceDataService rightReferenceDataService;
 
-  @Mock
-  private AuthService authService;
-
   @InjectMocks
   private AuthenticationHelper authenticationHelper;
 
-  @Mock
-  private OAuth2AuthenticationDetails authenticationDetails;
-  private UUID token = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
 
   @Before
   public void setUp() {
-    when(authenticationDetails.getTokenValue()).thenReturn(token.toString());
-
     Authentication authentication = mock(Authentication.class);
-    when(authentication.getPrincipal()).thenReturn("username");
-    when(authentication.getDetails()).thenReturn(authenticationDetails);
+    when(authentication.getPrincipal()).thenReturn(userId);
 
     SecurityContext securityContext = mock(SecurityContext.class);
     when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -78,8 +67,8 @@ public class AuthenticationHelperTest {
   @Test
   public void shouldReturnUser() {
     // given
-    when(authService.getReferencedataUserId(token)).thenReturn(userId);
-    when(userReferenceDataService.findOne(userId)).thenReturn(mock(UserDto.class));
+    UserDto userMock = mock(UserDto.class);
+    when(userReferenceDataService.findOne(userId)).thenReturn(userMock);
 
     // when
     UserDto user = authenticationHelper.getCurrentUser();
