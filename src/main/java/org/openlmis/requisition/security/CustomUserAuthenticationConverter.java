@@ -37,7 +37,7 @@ public class CustomUserAuthenticationConverter implements UserAuthenticationConv
   }
 
   /**
-   * @inheritDoc.
+   * {@inheritDoc}.
    */
   public Authentication extractAuthentication(Map<String, ?> map) {
     if (map.containsKey("referenceDataUserId")) {
