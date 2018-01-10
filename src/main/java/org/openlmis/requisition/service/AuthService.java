@@ -30,10 +30,13 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.UUID;
+import javax.validation.constraints.NotNull;
 
 @Service
 public class AuthService {
   private static final String ACCESS_TOKEN = "access_token";
+  private static final String REFERENCEDATA_USER_ID = "referenceDataUserId";
 
   @Value("${auth.server.clientId}")
   private String clientId;
@@ -43,6 +46,9 @@ public class AuthService {
 
   @Value("${auth.server.authorizationUrl}")
   private String authorizationUrl;
+
+  @Value("${auth.server.url}")
+  private String checkTokenUrl;
 
   private RestOperations restTemplate = new RestTemplate();
 
@@ -77,6 +83,21 @@ public class AuthService {
   @CacheEvict(cacheNames = "token", allEntries = true)
   public void clearTokenCache() {
     // Intentionally blank
+  }
+
+  /**
+   * Gets reference data user id from Auth based on token.
+   */
+  public UUID getReferencedataUserId(@NotNull UUID token) {
+    RequestParameters params = RequestParameters
+        .init()
+        .set("token", token);
+
+    ResponseEntity<?> response = restTemplate.exchange(
+        createUri(checkTokenUrl, params), HttpMethod.GET,
+        new HttpEntity<>(new HttpHeaders()), Object.class);
+
+    return UUID.fromString(((Map<String, String>) response.getBody()).get(REFERENCEDATA_USER_ID));
   }
 
   void setRestTemplate(RestOperations restTemplate) {
