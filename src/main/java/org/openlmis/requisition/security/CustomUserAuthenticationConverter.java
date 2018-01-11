@@ -32,6 +32,8 @@ import java.util.UUID;
  */
 public class CustomUserAuthenticationConverter implements UserAuthenticationConverter {
 
+  public static final String REFERENCE_DATA_USER_ID = "referenceDataUserId";
+
   public Map<String, ?> convertUserAuthentication(Authentication authentication) {
     throw new IllegalArgumentException("Convert User Authentication is not supported");
   }
@@ -40,8 +42,8 @@ public class CustomUserAuthenticationConverter implements UserAuthenticationConv
    * {@inheritDoc}.
    */
   public Authentication extractAuthentication(Map<String, ?> map) {
-    if (map.containsKey("referenceDataUserId")) {
-      UUID principal = UUID.fromString((String)map.get("referenceDataUserId"));
+    if (map.containsKey(REFERENCE_DATA_USER_ID)) {
+      UUID principal = UUID.fromString((String)map.get(REFERENCE_DATA_USER_ID));
       Collection<? extends GrantedAuthority> authorities = getAuthorities(map);
       return new UsernamePasswordAuthenticationToken(principal, "N/A", authorities);
     }
