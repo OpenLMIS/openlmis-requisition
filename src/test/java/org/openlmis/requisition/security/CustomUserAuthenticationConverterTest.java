@@ -33,10 +33,13 @@ import java.util.UUID;
 public class CustomUserAuthenticationConverterTest {
 
   private UserAuthenticationConverter userAuthenticationConverter;
+  private UUID userId = UUID.randomUUID();
 
   @Before
   public void setUp() {
     userAuthenticationConverter = new CustomUserAuthenticationConverter();
+    userId = UUID.randomUUID();
+
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -46,7 +49,6 @@ public class CustomUserAuthenticationConverterTest {
 
   @Test
   public void shouldExtractAuthenticationWithPrincipalWithoutAuthorities() {
-    UUID userId = UUID.randomUUID();
     Authentication authentication = userAuthenticationConverter.extractAuthentication(
         ImmutableMap.of(REFERENCE_DATA_USER_ID, userId.toString()));
 
@@ -56,7 +58,6 @@ public class CustomUserAuthenticationConverterTest {
 
   @Test
   public void shouldExtractAuthenticationWithPrincipalAndCommaSeparatedAuthorities() {
-    UUID userId = UUID.randomUUID();
     Authentication authentication = userAuthenticationConverter.extractAuthentication(
         ImmutableMap.of(
             REFERENCE_DATA_USER_ID, userId.toString(),
@@ -68,7 +69,6 @@ public class CustomUserAuthenticationConverterTest {
 
   @Test
   public void shouldExtractAuthenticationWithPrincipalAndCollectionAuthorities() {
-    UUID userId = UUID.randomUUID();
     Authentication authentication = userAuthenticationConverter.extractAuthentication(
         ImmutableMap.of(
             REFERENCE_DATA_USER_ID, userId.toString(),
@@ -80,14 +80,10 @@ public class CustomUserAuthenticationConverterTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotExtractAuthenticationWhenAuthoritiesAreNotInSupportedFormat() {
-    UUID userId = UUID.randomUUID();
-    Authentication authentication = userAuthenticationConverter.extractAuthentication(
+    userAuthenticationConverter.extractAuthentication(
         ImmutableMap.of(
             REFERENCE_DATA_USER_ID, userId.toString(),
             UserAuthenticationConverter.AUTHORITIES, 10));
-
-    checkAuthentication(userId, authentication);
-    assertEquals(2, authentication.getAuthorities().size());
   }
 
   @Test
