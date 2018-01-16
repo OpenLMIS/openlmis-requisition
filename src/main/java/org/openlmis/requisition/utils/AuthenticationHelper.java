@@ -45,8 +45,7 @@ public class AuthenticationHelper {
    * @throws AuthenticationMessageException if user cannot be found.
    */
   public UserDto getCurrentUser() {
-    UUID userId =
-        (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     UserDto user = userReferenceDataService.findOne(userId);
 
     if (user == null) {
