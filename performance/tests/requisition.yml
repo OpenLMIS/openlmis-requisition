@@ -51,7 +51,7 @@ scenarios:
             }
       - if: '${periods_count} == 0'
         then:
-          - url: ${__P(base-uri)}/api/processingPeriods/searchByScheduleAndDate?processingScheduleId=${schedule_id}
+          - url: ${__P(base-uri)}/api/processingPeriods/?processingScheduleId=${schedule_id}
             method: GET
             label: GetPeriodsByScheduleId
             headers:

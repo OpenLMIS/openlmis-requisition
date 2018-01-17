@@ -7,6 +7,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3135](https://openlmis.atlassian.net/browse/OLMIS-3135): Handle API Key requests.
   * For now all requests are blocked.
 * [OLMIS-3778](https://openlmis.atlassian.net/browse/OLMIS-3778): Fixed Requisition service checked rights of a wrong user
+* [OLMIS-2695](https://openlmis.atlassian.net/browse/OLMIS-2695): Handle new version of processing period search endpoint
 
 5.1.0 / 2017-11-09
 ==================

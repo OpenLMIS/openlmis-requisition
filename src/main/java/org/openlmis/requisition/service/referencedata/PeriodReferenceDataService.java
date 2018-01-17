@@ -52,9 +52,10 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     RequestParameters parameters = RequestParameters
         .init()
         .set("processingScheduleId", processingScheduleId)
-        .set("startDate", startDate);
+        .set("startDate", startDate)
+        .set("size", 2000);
 
-    return findAll("searchByScheduleAndDate", parameters);
+    return getPage("", parameters).getContent();
   }
 
   /**
@@ -69,8 +70,9 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     RequestParameters parameters = RequestParameters
         .init()
         .set("programId", programId)
-        .set("facilityId", facilityId);
+        .set("facilityId", facilityId)
+        .set("size", 2000);
     
-    return findAll("search", parameters);
+    return getPage("", parameters).getContent();
   }
 }
