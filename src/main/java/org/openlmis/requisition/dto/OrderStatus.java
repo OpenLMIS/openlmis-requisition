@@ -17,9 +17,7 @@ package org.openlmis.requisition.dto;
 
 public enum OrderStatus {
   ORDERED,
-  IN_TRANSIT,
-  PICKING,
-  PICKED,
+  FULFILLING,
   SHIPPED,
   RECEIVED,
   TRANSFER_FAILED,
