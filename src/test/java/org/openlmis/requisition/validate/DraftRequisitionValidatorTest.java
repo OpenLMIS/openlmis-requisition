@@ -130,7 +130,7 @@ public class DraftRequisitionValidatorTest {
     Message message1 = new Message(ERROR_IS_INVARIANT, Requisition.PROGRAM_ID);
     Message message2 = new Message(ERROR_IS_INVARIANT, Requisition.FACILITY_ID);
     Message message3 = new Message(ERROR_IS_INVARIANT, Requisition.PROCESSING_PERIOD_ID);
-    Message message4 = new Message(ERROR_IS_INVARIANT, Requisition.EMERGENCY);
+    Message message4 = new Message(ERROR_IS_INVARIANT, Requisition.EMERGENCY_FIELD);
     Message message6 = new Message(ERROR_IS_INVARIANT, Requisition.SUPERVISORY_NODE_ID);
 
     when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
@@ -152,7 +152,7 @@ public class DraftRequisitionValidatorTest {
         contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.PROCESSING_PERIOD_ID),
         contains(ERROR_IS_INVARIANT));
-    verify(errors).rejectValue(eq(Requisition.EMERGENCY),
+    verify(errors).rejectValue(eq(Requisition.EMERGENCY_FIELD),
         contains(ERROR_IS_INVARIANT));
     verify(errors).rejectValue(eq(Requisition.SUPERVISORY_NODE_ID),
         contains(ERROR_IS_INVARIANT));

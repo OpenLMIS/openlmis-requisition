@@ -11,6 +11,7 @@ Bug fixes added in a backwards-compatible manner:
 
 Improvements:
 * [OLMIS-3955](https://openlmis.atlassian.net/browse/OLMIS-3955): Renamed PICKING order status to FULFILLING. Removed PICKED and IN_TRANSIT.
+* [OLMIS-3925](https://openlmis.atlassian.net/browse/OLMIS-3925): Updated requisition approval process to stop at an intermediate supervisory node that has a supply line for the requisition's program.
 
 5.1.0 / 2017-11-09
 ==================

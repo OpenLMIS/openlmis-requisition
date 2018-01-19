@@ -16,7 +16,7 @@
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
-import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
+import static org.openlmis.requisition.domain.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
@@ -115,7 +115,7 @@ public class DraftRequisitionValidator extends AbstractRequisitionValidator {
     rejectIfValueChanged(errors, requisition.getProcessingPeriodId(),
         savedRequisition.getProcessingPeriodId(), PROCESSING_PERIOD_ID);
     rejectIfValueChanged(errors, requisition.getEmergency(),
-        savedRequisition.getEmergency(), EMERGENCY);
+        savedRequisition.getEmergency(), EMERGENCY_FIELD);
     rejectIfValueChanged(errors, requisition.getSupervisoryNodeId(),
         savedRequisition.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
   }

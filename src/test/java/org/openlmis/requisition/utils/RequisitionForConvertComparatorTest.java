@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.Requisition.EMERGENCY;
+import static org.openlmis.requisition.domain.Requisition.EMERGENCY_FIELD;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -71,23 +71,23 @@ public class RequisitionForConvertComparatorTest {
   @Test
   public void shouldCompareBySingleField() {
     // given
-    Sort sort = new Sort(new Sort.Order(DESC, EMERGENCY));
+    Sort sort = new Sort(new Sort.Order(DESC, EMERGENCY_FIELD));
 
     // when
     sortBy(sort);
 
     // then
-    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
 
-    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
 
-    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
 
-    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
 
-    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
 
-    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
   }
 
   @Test
@@ -98,27 +98,27 @@ public class RequisitionForConvertComparatorTest {
     // when
     sortBy(sort);
 
-    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(0).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F2")));
 
-    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(1).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F4")));
 
-    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(2).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F6")));
 
-    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(3).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F1")));
 
-    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(4).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F3")));
 
-    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(5).getRequisition().getFacility(),
         hasProperty(CODE, equalTo("F5")));
   }
@@ -128,27 +128,27 @@ public class RequisitionForConvertComparatorTest {
     // when
     sortBy(null);
 
-    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(0).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(0).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("A")));
 
-    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(1).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(1).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("B")));
 
-    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY, equalTo(true)));
+    assertThat(requisitions.get(2).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(true)));
     assertThat(requisitions.get(2).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("C")));
 
-    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(3).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(3).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("A")));
 
-    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(4).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(4).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("B")));
 
-    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY, equalTo(false)));
+    assertThat(requisitions.get(5).getRequisition(), hasProperty(EMERGENCY_FIELD, equalTo(false)));
     assertThat(requisitions.get(5).getRequisition().getProgram(),
         hasProperty(NAME, equalTo("C")));
   }

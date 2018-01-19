@@ -23,6 +23,7 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -34,6 +35,7 @@ import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
@@ -50,6 +52,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import java.time.LocalDate;
@@ -112,6 +115,9 @@ public abstract class BaseRequisitionController extends BaseController {
   protected StockEventBuilder stockEventBuilder;
 
   @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Autowired
@@ -140,7 +146,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
-    logger.debug("Saved requisition with id: " + requisitionToUpdate.getId());
+    logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
     return requisitionDtoBuilder.build(requisitionToUpdate);
   }
 
@@ -157,15 +163,17 @@ public abstract class BaseRequisitionController extends BaseController {
         supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
     profiler.start("SET_PARENT_NODE_ID");
-    UUID parentNodeId = null;
+    UUID supervisoryNodeId = null;
     if (supervisoryNodeDto != null) {
       SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
-      if (parentNode != null) {
-        parentNodeId = parentNode.getId();
+      Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
+          requisition.getProgramId(), requisition.getSupervisoryNodeId());
+      if (CollectionUtils.isEmpty(supplyLines) && parentNode != null) {
+        supervisoryNodeId = parentNode.getId();
       }
     }
 
-    if (parentNodeId == null) {
+    if (supervisoryNodeId == null) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
       StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
 
@@ -178,7 +186,7 @@ public abstract class BaseRequisitionController extends BaseController {
         getLineItemOrderableIds(requisition));
 
     profiler.start("APPROVE_REQUISITION_ENTITY");
-    requisition.approve(parentNodeId, orderables, userId);
+    requisition.approve(supervisoryNodeId, orderables, userId);
 
     profiler.start("SAVE_STATUS_MESSAGE");
     requisitionService.saveStatusMessage(requisition);

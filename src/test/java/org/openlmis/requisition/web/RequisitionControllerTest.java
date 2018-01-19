@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +53,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
@@ -67,6 +69,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.validate.DraftRequisitionValidator;
@@ -175,6 +178,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Mock
   private DateHelper dateHelper;
@@ -407,6 +413,57 @@ public class RequisitionControllerTest {
     verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+  }
+
+  @Test
+  public void shouldApproveAuthorizedRequisitionWithParentNodeAndWithoutSupplyLineForProgram() {
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+
+    when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
+        authorizedRequsition.getSupervisoryNodeId())).thenReturn(null);
+
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class));
+
+    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
+
+    verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+  }
+
+  @Test
+  public void shouldApproveAuthorizedRequisitionWithParentNodeAndSupplyLineForProgram() {
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+
+    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
+    when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
+        authorizedRequsition.getSupervisoryNodeId())).thenReturn(Arrays.asList(supplyLineDto));
+
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class));
+
+    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
   }
 
   @Test

@@ -94,7 +94,7 @@ import javax.persistence.Table;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
 
-  private static XLogger LOGGER = XLoggerFactory.getXLogger(Requisition.class);
+  private static final XLogger LOGGER = XLoggerFactory.getXLogger(Requisition.class);
 
   public static final String FACILITY_ID = "facilityId";
   public static final String PROGRAM_ID = "programId";
@@ -102,7 +102,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
   public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
-  public static final String EMERGENCY = "emergency";
+  public static final String EMERGENCY_FIELD = "emergency";
   public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
       "datePhysicalStockCountCompleted";
 
@@ -434,15 +434,16 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Approves given requisition.
    *
-   * @param parentNodeId supervisoryNodeDto parent node of the supervisoryNode for this requisition.
-   * @param products orderable products that will be used by line items to update packs to ship.
+   * @param nodeId    supervisoryNodeDto node of the supervisoryNode that has
+   *                  a supply line for the requisition's program.
+   * @param products  orderable products that will be used by line items to update packs to ship.
    */
-  public void approve(UUID parentNodeId, Collection<OrderableDto> products, UUID approver) {
-    if (parentNodeId == null) {
+  public void approve(UUID nodeId, Collection<OrderableDto> products, UUID approver) {
+    if (nodeId == null) {
       status = RequisitionStatus.APPROVED;
     } else {
       status = RequisitionStatus.IN_APPROVAL;
-      supervisoryNodeId = parentNodeId;
+      supervisoryNodeId = nodeId;
     }
 
     updateConsumptions();

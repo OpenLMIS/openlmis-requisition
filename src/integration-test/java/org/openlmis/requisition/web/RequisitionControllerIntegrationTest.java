@@ -161,6 +161,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String FILTER_VALUE = "filterValue";
   private static final String FILTER_BY = "filterBy";
   private static final String PAGE = "page";
+  private static final String FACILITY_CODE_ASC = "facilityCode,asc";
 
   @MockBean
   private StatusMessageRepository statusMessageRepository;
@@ -236,8 +237,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockReasons();
   }
 
-  // GET /api/requisitions/{id}
-
   @Test
   public void shouldGetChosenRequisition() {
     // given
@@ -301,8 +300,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
-
-  // DELETE /api/requisitions/{id}
 
   @Test
   public void shouldDeleteRequisition() {
@@ -1152,7 +1149,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("programId", UUID.randomUUID())
         .queryParam("facilityId", UUID.randomUUID())
-        .queryParam("emergency", false)
+        .queryParam(EMERGENCY, false)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(PERIODS_FOR_INITIATE_URL)
@@ -1239,7 +1236,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     List<String> filterValue = Lists.newArrayList("Hospital");
     String filterBy = "facilityName";
-    String sortBy = "facilityCode,asc";
     int size = 10;
     int page = 0;
 
@@ -1252,7 +1248,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
-        .queryParam(SORT, sortBy)
+        .queryParam(SORT, FACILITY_CODE_ASC)
         .queryParam(PAGE, page)
         .queryParam(SIZE, size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1284,7 +1280,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     List<String> filterValue = Lists.newArrayList("Essential Meds", "Family Planning");
     String filterBy = "programName";
-    String sortBy = "facilityCode,asc";
     int size = 10;
     int page = 0;
 
@@ -1297,7 +1292,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
-        .queryParam(SORT, sortBy)
+        .queryParam(SORT, FACILITY_CODE_ASC)
         .queryParam(PAGE, page)
         .queryParam(SIZE, size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1344,7 +1339,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
         .queryParam(SORT, "emergency,desc")
-        .queryParam(SORT, "facilityCode,asc")
+        .queryParam(SORT, FACILITY_CODE_ASC)
         .queryParam(PAGE, page)
         .queryParam(SIZE, size)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1363,7 +1358,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     assertEquals(2, orders.size());
 
-    assertEquals(Requisition.EMERGENCY, orders.get(0).getProperty());
+    assertEquals(Requisition.EMERGENCY_FIELD, orders.get(0).getProperty());
     assertEquals(Sort.Direction.DESC, orders.get(0).getDirection());
 
     assertEquals("facilityCode", orders.get(1).getProperty());
