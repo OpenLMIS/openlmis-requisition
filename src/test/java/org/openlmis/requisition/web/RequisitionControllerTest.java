@@ -35,7 +35,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -400,6 +399,7 @@ public class RequisitionControllerTest {
     SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
 
     setUpApprover();
 
@@ -410,7 +410,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
+    verify(authorizedRequsition, times(1)).approve(eq(parentNode), any(),
+        eq(Collections.emptyList()), any());
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -426,6 +427,7 @@ public class RequisitionControllerTest {
 
     when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
         authorizedRequsition.getSupervisoryNodeId())).thenReturn(null);
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
 
     setUpApprover();
 
@@ -436,7 +438,7 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNodeId), any(), any());
+    verify(authorizedRequsition, times(1)).approve(eq(parentNode), any(), eq(null), any());
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -452,7 +454,9 @@ public class RequisitionControllerTest {
 
     SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
     when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
-        authorizedRequsition.getSupervisoryNodeId())).thenReturn(Arrays.asList(supplyLineDto));
+        authorizedRequsition.getSupervisoryNodeId())).thenReturn(
+            Collections.singletonList(supplyLineDto));
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
     setUpApprover();
 
@@ -463,12 +467,18 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
+    verify(authorizedRequsition, times(1)).approve(eq(parentNode), any(),
+        eq(Collections.singletonList(supplyLineDto)), any());
   }
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
-    mockSupervisoryNode();
+    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
+    when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
+        authorizedRequsition.getSupervisoryNodeId())).thenReturn(
+        Collections.singletonList(supplyLineDto));
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
     setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -478,7 +488,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(null), any(), any());
+    verify(authorizedRequsition, times(1)).approve(eq(null), any(),
+        eq(Collections.singletonList(supplyLineDto)), any());
   }
 
   /*

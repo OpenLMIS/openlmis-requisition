@@ -52,7 +52,6 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import java.time.LocalDate;
@@ -162,31 +161,31 @@ public abstract class BaseRequisitionController extends BaseController {
     SupervisoryNodeDto supervisoryNodeDto =
         supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
+    SupervisoryNodeDto parentNode = null;
+
     profiler.start("SET_PARENT_NODE_ID");
-    UUID supervisoryNodeId = null;
     if (supervisoryNodeDto != null) {
-      SupervisoryNodeDto parentNode = supervisoryNodeDto.getParentNode();
-      Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
-          requisition.getProgramId(), requisition.getSupervisoryNodeId());
-      if (CollectionUtils.isEmpty(supplyLines) && parentNode != null) {
-        supervisoryNodeId = parentNode.getId();
-      }
-    }
-
-    if (supervisoryNodeId == null) {
-      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
-      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
-
-      profiler.start("SUBMIT_STOCK_EVENT");
-      stockEventStockManagementService.submit(stockEventDto);
+      parentNode = supervisoryNodeDto.getParentNode();
     }
 
     profiler.start("GET_ORDERABLES");
     Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(
         getLineItemOrderableIds(requisition));
 
+    profiler.start("GET_SUPPLY_LINES");
+    Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId());
+
     profiler.start("APPROVE_REQUISITION_ENTITY");
-    requisition.approve(supervisoryNodeId, orderables, userId);
+    requisition.approve(parentNode, orderables, supplyLines, userId);
+
+    if (requisition.getStatus().isApproved()) {
+      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
+      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
+
+      profiler.start("SUBMIT_STOCK_EVENT");
+      stockEventStockManagementService.submit(stockEventDto);
+    }
 
     profiler.start("SAVE_STATUS_MESSAGE");
     requisitionService.saveStatusMessage(requisition);

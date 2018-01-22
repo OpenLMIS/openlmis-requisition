@@ -48,6 +48,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -161,7 +162,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
+    requisition.approve(parentNode, Collections.emptyList(), Collections.emptyList(),
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -172,7 +174,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
+    requisition.approve(parentNode, Collections.emptyList(), Collections.emptyList(),
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -182,8 +185,10 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
+    SupplyLineDto supplyLine = mock(SupplyLineDto.class);
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
+    requisition.approve(parentNode, Collections.emptyList(), Collections.singletonList(supplyLine),
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -193,8 +198,10 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
+    SupplyLineDto supplyLine = mock(SupplyLineDto.class);
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), UUID.randomUUID());
+    requisition.approve(parentNode, Collections.emptyList(), Collections.singletonList(supplyLine),
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -472,7 +479,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(0, amount.doubleValue(), 0);
+    assertEquals(0, 0, amount.doubleValue());
   }
 
   @Test
@@ -485,7 +492,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(2, amount.doubleValue(), 0);
+    assertEquals(2, 0, amount.doubleValue());
   }
 
   @Test
@@ -498,7 +505,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(1, amount.doubleValue(), 0);
+    assertEquals(1, 0, amount.doubleValue());
   }
 
   @Test
@@ -511,7 +518,7 @@ public class RequisitionTest {
     BigDecimal amount = result.getAmount();
 
     // then
-    assertEquals(1, amount.doubleValue(), 0);
+    assertEquals(1, 0, amount.doubleValue());
   }
 
   @Test
@@ -764,7 +771,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(null, Collections.singletonList(product), UUID.randomUUID());
+    requisition.approve(null, Collections.singletonList(product), Collections.emptyList(),
+        UUID.randomUUID());
 
     // then
     assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
@@ -860,7 +868,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(null, Collections.emptyList(), UUID.randomUUID());
+    requisition.approve(null, Collections.emptyList(), Collections.emptyList(),
+        UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -1019,7 +1028,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.approve(null, Collections.emptyList(), approverId);
+    requisition.approve(null, Collections.emptyList(), Collections.emptyList(), approverId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.APPROVED,
         approverId);

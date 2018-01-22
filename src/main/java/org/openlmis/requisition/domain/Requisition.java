@@ -42,6 +42,8 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionHelper;
@@ -84,6 +86,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.springframework.util.CollectionUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -434,16 +437,18 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Approves given requisition.
    *
-   * @param nodeId    supervisoryNodeDto node of the supervisoryNode that has
-   *                  a supply line for the requisition's program.
-   * @param products  orderable products that will be used by line items to update packs to ship.
+   * @param parentNode  supervisoryNodeDto parent node of the supervisoryNode for this requisition.
+   * @param products    orderable products that will be used by line items to update packs to ship.
+   * @param supplyLines supplyLineDtos of the supervisoryNode that has
+   *                    a supply line for the requisition's program.
    */
-  public void approve(UUID nodeId, Collection<OrderableDto> products, UUID approver) {
-    if (nodeId == null) {
-      status = RequisitionStatus.APPROVED;
-    } else {
+  public void approve(SupervisoryNodeDto parentNode, Collection<OrderableDto> products,
+      Collection<SupplyLineDto> supplyLines, UUID approver) {
+    if (CollectionUtils.isEmpty(supplyLines) && parentNode != null) {
       status = RequisitionStatus.IN_APPROVAL;
-      supervisoryNodeId = nodeId;
+      supervisoryNodeId = parentNode.getId();
+    } else {
+      status = RequisitionStatus.APPROVED;
     }
 
     updateConsumptions();

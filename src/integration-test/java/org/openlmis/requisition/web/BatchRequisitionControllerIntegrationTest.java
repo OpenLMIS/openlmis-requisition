@@ -65,6 +65,7 @@ import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionValidator;
@@ -120,6 +121,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @MockBean(name = "facilityReferenceDataService")
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @MockBean
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Mock
   private ProgramDto program;
@@ -190,8 +194,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .search(requisitions.stream().map(Requisition::getFacilityId).collect(Collectors.toSet()));
   }
 
-  // GET /api/requisitions?retrieveAll&id={}&id={}&id={}
-
   @Test
   public void shouldRetrieveAll() throws Exception {
     requisitions.forEach(requisition ->
@@ -230,8 +232,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     Response response = get(RETRIEVE_ALL, requisitionIds);
     checkErrorResponseBody(response, 400);
   }
-
-  // POST /api/requisitions?approveAll&id={}&id={}&id={}
 
   @Test
   public void shouldApproveAll() throws Exception {
