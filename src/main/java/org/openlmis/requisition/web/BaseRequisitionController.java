@@ -162,10 +162,15 @@ public abstract class BaseRequisitionController extends BaseController {
         supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
     SupervisoryNodeDto parentNode = null;
+    UUID parentNodeId = null;
 
     profiler.start("SET_PARENT_NODE_ID");
     if (supervisoryNodeDto != null) {
       parentNode = supervisoryNodeDto.getParentNode();
+    }
+
+    if (parentNode != null) {
+      parentNodeId = parentNode.getId();
     }
 
     profiler.start("GET_ORDERABLES");
@@ -177,7 +182,7 @@ public abstract class BaseRequisitionController extends BaseController {
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
 
     profiler.start("APPROVE_REQUISITION_ENTITY");
-    requisition.approve(parentNode, orderables, supplyLines, userId);
+    requisition.approve(parentNodeId, orderables, supplyLines, userId);
 
     if (requisition.getStatus().isApproved()) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");

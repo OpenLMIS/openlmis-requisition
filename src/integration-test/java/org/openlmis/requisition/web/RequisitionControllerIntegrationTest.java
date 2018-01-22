@@ -1025,8 +1025,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid(), anyUuid());
-    doNothing().when(requisition).approve(any(SupervisoryNodeDto.class),
-        anyCollectionOf(OrderableDto.class), anyCollectionOf(SupplyLineDto.class), anyUuid());
+    doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -1079,8 +1079,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).approve(any(SupervisoryNodeDto.class),
-        anyCollectionOf(OrderableDto.class), anyCollectionOf(SupplyLineDto.class), anyUuid());
+    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1107,8 +1107,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             requisitionId, "")));
 
     // then
-    verify(requisition, never()).approve(any(SupervisoryNodeDto.class),
-        anyCollectionOf(OrderableDto.class), anyCollectionOf(SupplyLineDto.class), anyUuid());
+    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

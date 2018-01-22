@@ -162,7 +162,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode, Collections.emptyList(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyList(), Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -174,7 +174,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode, Collections.emptyList(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyList(), Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -187,8 +187,8 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = mock(SupplyLineDto.class);
 
-    requisition.approve(parentNode, Collections.emptyList(), Collections.singletonList(supplyLine),
-        UUID.randomUUID());
+    requisition.approve(parentNode.getId(), Collections.emptyList(),
+        Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -200,8 +200,8 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = mock(SupplyLineDto.class);
 
-    requisition.approve(parentNode, Collections.emptyList(), Collections.singletonList(supplyLine),
-        UUID.randomUUID());
+    requisition.approve(parentNode.getId(), Collections.emptyList(),
+        Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
