@@ -15,13 +15,9 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -32,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.OrderStatus.RECEIVED;
 
 import com.google.common.collect.Lists;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.Before;
@@ -48,7 +43,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,9 +52,6 @@ import java.util.UUID;
 @RunWith(Parameterized.class)
 public class OrderFulfillmentServiceParameterizedTest
     extends BaseFulfillmentServiceTest<OrderDto> {
-
-  private static final String URI_QUERY_NAME = "name";
-  private static final String URI_QUERY_VALUE = "value";
 
   @Override
   protected BaseCommunicationService<OrderDto> getService() {
@@ -165,16 +156,4 @@ public class OrderFulfillmentServiceParameterizedTest
     assertAuthHeader(entityCaptor.getValue());
     assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
-
-  private void assertQueryParameter(List<NameValuePair> parse, String field, Object value) {
-    if (null != value) {
-      assertThat(parse, hasItem(allOf(
-          hasProperty(URI_QUERY_NAME, is(field)),
-          hasProperty(URI_QUERY_VALUE, is(value.toString())))
-      ));
-    } else {
-      assertThat(parse, not(hasItem(hasProperty(URI_QUERY_NAME, is(field)))));
-    }
-  }
-
 }

@@ -16,8 +16,12 @@
 package org.openlmis.requisition.service;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -28,6 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.http.NameValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,12 +52,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationServiceTest<T> {
   protected static final String TOKEN = UUID.randomUUID().toString();
+  private static final String URI_QUERY_NAME = "name";
+  private static final String URI_QUERY_VALUE = "value";
 
   @Mock
   protected RestTemplate restTemplate;
@@ -219,6 +227,17 @@ public abstract class BaseCommunicationServiceTest<T> {
             is(singletonList("Bearer " + TOKEN)));
   }
 
+  protected void assertQueryParameter(List<NameValuePair> parse, String field, Object value) {
+    if (null != value) {
+      assertThat(parse, hasItem(allOf(
+          hasProperty(URI_QUERY_NAME, is(field)),
+          hasProperty(URI_QUERY_VALUE, is(value.toString())))
+      ));
+    } else {
+      assertThat(parse, not(hasItem(hasProperty(URI_QUERY_NAME, is(field)))));
+    }
+  }
+
   private void mockAuth() {
     when(authService.obtainAccessToken()).thenReturn(TOKEN);
   }
@@ -226,5 +245,4 @@ public abstract class BaseCommunicationServiceTest<T> {
   private void checkAuth() {
     verify(authService, atLeastOnce()).obtainAccessToken();
   }
-
 }
