@@ -34,5 +34,6 @@ public class SupportedProgramDto {
   private boolean periodsSkippable;
   private boolean showNonFullSupplyTab;
   private boolean supportActive;
+  private boolean supportLocallyFulfilled;
   private LocalDate supportStartDate;
 }

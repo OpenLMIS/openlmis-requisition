@@ -13,22 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.apache.commons.lang.RandomStringUtils;
+import org.openlmis.requisition.dto.SupplyLineDto;
 
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ConvertToOrderDto {
-  private UUID requisitionId;
-  private UUID supplyingDepotId;
+public class SupplyLineDtoDataBuilder {
+  private UUID id = UUID.randomUUID();
+  private UUID supervisoryNode = UUID.randomUUID();
+  private String description = RandomStringUtils.randomAlphanumeric(5);
+  private UUID program = UUID.randomUUID();
+  private UUID supplyingFacility = UUID.randomUUID();
+
+  public SupplyLineDto build() {
+    return new SupplyLineDto(id, supervisoryNode, description, program, supplyingFacility);
+  }
 }

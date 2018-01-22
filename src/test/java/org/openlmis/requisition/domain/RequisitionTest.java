@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
+import org.openlmis.requisition.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -192,7 +193,7 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
-    SupplyLineDto supplyLine = mock(SupplyLineDto.class);
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     requisition.approve(parentNode.getId(), Collections.emptyList(),
         Collections.singletonList(supplyLine), UUID.randomUUID());
@@ -205,7 +206,7 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
-    SupplyLineDto supplyLine = mock(SupplyLineDto.class);
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     requisition.approve(parentNode.getId(), Collections.emptyList(),
         Collections.singletonList(supplyLine), UUID.randomUUID());

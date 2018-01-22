@@ -78,7 +78,6 @@ import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceD
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -174,9 +173,6 @@ public class RequisitionService {
 
   @Autowired
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
-
-  @Autowired
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -711,15 +707,13 @@ public class RequisitionService {
    * @param parentNodeId  supervisoryNode that has a supply line for the requisition's program.
    * @param userId        user who approves this requisition.
    * @param orderableIds  orderable products that will be used by line items
-   *                      to update packs to ship.
+ *                      to update packs to ship.
    * @param requisition   requisition to be approved
+   * @param supplyLines
    */
   public void doApprove(UUID parentNodeId, UUID userId, Set<UUID> orderableIds,
-      Requisition requisition) {
+                        Requisition requisition, List<SupplyLineDto> supplyLines) {
     Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
-
-    Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
-        requisition.getProgramId(), requisition.getSupervisoryNodeId());
 
     requisition.approve(parentNodeId, orderables, supplyLines, userId);
   }

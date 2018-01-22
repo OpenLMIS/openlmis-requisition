@@ -42,11 +42,9 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
-import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
@@ -95,16 +93,10 @@ public class RequisitionController extends BaseRequisitionController {
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
-  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-
-  @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
@@ -409,18 +401,18 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ONE_REQUISITION");
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
-    profiler.start("GET_USER_ID");
-    UUID userId = authenticationHelper.getCurrentUser().getId();
+    profiler.start("GET_USER");
+    UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("CHECK_PERM_REQUISITION_APPROVE");
-    requisitionService.validateCanApproveRequisition(requisition, requisitionId, userId)
+    requisitionService.validateCanApproveRequisition(requisition, requisitionId, user.getId())
         .throwExceptionIfHasErrors();
 
     profiler.start("VALIDATE_REQUISITION");
     validateFields(validator, requisition).throwExceptionIfHasErrors();
 
     profiler.start("DO_APPROVE");
-    BasicRequisitionDto requisitionDto = doApprove(requisition, userId);
+    BasicRequisitionDto requisitionDto = doApprove(requisition, user);
     
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);

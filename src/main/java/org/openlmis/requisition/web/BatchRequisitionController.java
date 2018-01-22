@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -33,11 +34,11 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.PeriodService;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -69,9 +71,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private MessageService messageService;
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private PeriodService periodService;
@@ -141,15 +140,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
 
-    profiler.start("GET_USER_ID");
-    UUID userId = authenticationHelper.getCurrentUser().getId();
+    profiler.start("GET_USER");
+    UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_VALIDATE_AND_APPROVE_REQUISITIONS");
     for (UUID requisitionId : uuids) {
       Requisition requisition = requisitionRepository.findOne(requisitionId);
 
-      ValidationResult validationResult =
-          requisitionService.validateCanApproveRequisition(requisition, requisitionId, userId);
+      ValidationResult validationResult = requisitionService
+              .validateCanApproveRequisition(requisition, requisitionId, user.getId());
       if (addValidationErrors(processingStatus, validationResult, requisitionId)) {
         continue;
       }
@@ -159,7 +158,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
         continue;
       }
 
-      doApprove(requisition, userId);
+      doApprove(requisition, user);
       processingStatus.addProcessedRequisition(
           new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
     }

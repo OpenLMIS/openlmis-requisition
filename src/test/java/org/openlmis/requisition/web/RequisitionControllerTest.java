@@ -35,6 +35,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,16 +45,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.ProgramDtoDataBuilder;
+import org.openlmis.requisition.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
@@ -64,6 +69,7 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -180,6 +186,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Mock
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
   private DateHelper dateHelper;
@@ -411,7 +420,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition));
+        any(), eq(authorizedRequsition), Collections.emptyList());
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -439,7 +448,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition));
+        any(), eq(authorizedRequsition), Collections.emptyList());
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -453,12 +462,9 @@ public class RequisitionControllerTest {
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
 
-    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
-    when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
-        authorizedRequsition.getSupervisoryNodeId())).thenReturn(
-            Collections.singletonList(supplyLineDto));
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
+    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
     setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -469,17 +475,14 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition));
+        any(), eq(authorizedRequsition), Collections.emptyList());
   }
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
-    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
-    when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
-        authorizedRequsition.getSupervisoryNodeId())).thenReturn(
-        Collections.singletonList(supplyLineDto));
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
+    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
     setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -490,25 +493,22 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition));
+        any(), eq(authorizedRequsition), Collections.emptyList());
   }
 
-  /*
   @Test
-  public void shouldCreatePhysicalInventoryDraftWhenApprovingRequisitionWithoutParentNode() {
-    mockSupervisoryNode();
+  public void shouldAutomaticallyConvertIfLocalFulfillsIsSet() {
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, true);
     setUpApprover();
-    StockEventDto inventoryDraft = mock(StockEventDto.class);
-    when(inventoryDraftBuilder.fromRequisition(authorizedRequsition))
-            .thenReturn(inventoryDraft);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
-    verify(authorizedRequsition).approve(eq(null), any(), any());
-    verify(inventoryDraftBuilder).fromRequisition(authorizedRequsition);
-    verify(inventoryService).save(inventoryDraft);
+    ConvertToOrderDto entry = new ConvertToOrderDto(uuid4, supplyLineDto.getSupplyingFacility());
+    ImmutableList<ConvertToOrderDto> list = ImmutableList.of(entry);
+    verify(requisitionService).convertToOrder(eq(list), any(UserDto.class));
   }
-  */
 
   @Test(expected = PermissionMessageException.class)
   public void shouldNotApproveIfHasNoPermission() {
@@ -688,5 +688,25 @@ public class RequisitionControllerTest {
             any(UUID.class),
             any(UUID.class)))
             .thenReturn(ValidationResult.success());
+  }
+
+  private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills) {
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
+
+    FacilityDto facility = new FacilityDto();
+    facility.setId(supplyLine.getSupplyingFacility());
+
+    SupportedProgramDto supportedProgram = new SupportedProgramDto();
+    supportedProgram.setSupportLocallyFulfilled(locallyFulfills);
+
+    when(supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId()))
+        .thenReturn(Collections.singletonList(supplyLine));
+    when(facilityReferenceDataService.findOne(supplyLine.getSupplyingFacility()))
+        .thenReturn(facility);
+    when(facilitySupportsProgramHelper.getSupportedProgram(facility, requisition.getProgramId()))
+        .thenReturn(supportedProgram);
+
+    return supplyLine;
   }
 }

@@ -19,7 +19,7 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -47,7 +47,7 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
    * @param supervisoryNodeId UUID of the supervisory node
    * @return A list of supply lines matching search criteria
    */
-  public Collection<SupplyLineDto> search(UUID programId, UUID supervisoryNodeId) {
+  public List<SupplyLineDto> search(UUID programId, UUID supervisoryNodeId) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("programId", programId)

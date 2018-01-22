@@ -15,14 +15,20 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
 @Getter
 @Setter
-public class SupplyLineDto {
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+public final class SupplyLineDto {
   private UUID id;
   private UUID supervisoryNode;
   private String description;

@@ -15,20 +15,19 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 
-import java.util.UUID;
+import org.junit.Test;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ConvertToOrderDto {
-  private UUID requisitionId;
-  private UUID supplyingDepotId;
+public class SupplyLineDtoTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(SupplyLineDto.class)
+        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
+        .verify();
+  }
+
 }

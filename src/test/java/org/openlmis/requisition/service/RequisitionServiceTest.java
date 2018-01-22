@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -212,9 +213,6 @@ public class RequisitionServiceTest {
   private RightReferenceDataService rightReferenceDataService;
 
   @Mock
-  private SupplyLineReferenceDataService supplyLineService;
-
-  @Mock
   private OrderFulfillmentService orderFulfillmentService;
 
   @Mock
@@ -264,7 +262,7 @@ public class RequisitionServiceTest {
   private UUID approveRequisitionRightId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
-  private List<String> permissionStrings = Collections.singletonList("validPermissionString");
+  private List<String> permissionStrings = singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
   Requisition previousRequisition;
@@ -312,7 +310,7 @@ public class RequisitionServiceTest {
         .thenReturn(Arrays.asList(processingPeriodDto, secondPeriod));
     when(requisitionRepository
         .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
-        .thenReturn(Collections.singletonList(requisition));
+        .thenReturn(singletonList(requisition));
     when(requisitionRepository
         .searchRequisitions(secondPeriod.getId(), facilityId, programId, false))
         .thenReturn(Collections.emptyList());
@@ -324,7 +322,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldDeleteStatusMessagesWhenDeletingRequisition() {
     requisition.setStatus(INITIATED);
-    List<StatusMessage> statusMessages = Collections.singletonList(
+    List<StatusMessage> statusMessages = singletonList(
         StatusMessage.newStatusMessage(requisition, statusChange, null, null, null, "Message 1"));
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(statusMessages);
@@ -529,11 +527,11 @@ public class RequisitionServiceTest {
     when(requisitionRepository.searchRequisitions(
         null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
         pageRequest))
-        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
+        .thenReturn(Pagination.getPage(singletonList(requisition), pageRequest));
 
     List<Requisition> authorizedRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
-    List<Requisition> expected = Collections.singletonList(requisition);
+    List<Requisition> expected = singletonList(requisition);
 
     assertEquals(expected, authorizedRequisitions);
   }
@@ -545,11 +543,11 @@ public class RequisitionServiceTest {
     when(requisitionRepository.searchRequisitions(
         null, programId, null, null, null, supervisoryNodeId, null, null, permissionStrings,
         pageRequest))
-        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
+        .thenReturn(Pagination.getPage(singletonList(requisition), pageRequest));
 
     List<Requisition> inApprovalRequisitions =
         requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
-    List<Requisition> expected = Collections.singletonList(requisition);
+    List<Requisition> expected = singletonList(requisition);
 
     assertEquals(expected, inApprovalRequisitions);
   }
@@ -821,7 +819,7 @@ public class RequisitionServiceTest {
   public void shouldInitiatePreviousAdjustedConsumptions() {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
-        .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
+        .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
     mockApprovedProduct(PRODUCT_ID, true);
 
@@ -909,7 +907,7 @@ public class RequisitionServiceTest {
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition() {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
-        .thenReturn(Collections.singletonList(new ProcessingPeriodDto()));
+        .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
     mockApprovedProduct(PRODUCT_ID, true);
 
@@ -1054,19 +1052,19 @@ public class RequisitionServiceTest {
     OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
     SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
     when(orderableReferenceDataService.findByIds(any())).thenReturn(
-        Collections.singletonList(fullSupplyOrderable));
-    when(supplyLineService.search(any(), any())).thenReturn(
-        Collections.singletonList(supplyLineDto));
+        singletonList(fullSupplyOrderable));
 
     UUID parentId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     Set<UUID> orderableIds = Collections.singleton(UUID.randomUUID());
 
-    requisitionService.doApprove(parentId, userId, orderableIds, requisitionMock);
+    requisitionService.doApprove(
+        parentId, userId, orderableIds, requisitionMock, singletonList(supplyLineDto)
+    );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
-        eq(Collections.singletonList(fullSupplyOrderable)),
-        eq(Collections.singletonList(supplyLineDto)), eq(userId));
+        eq(singletonList(fullSupplyOrderable)),
+        eq(singletonList(supplyLineDto)), eq(userId));
   }
 
   @Test
@@ -1083,7 +1081,7 @@ public class RequisitionServiceTest {
         null,
         permissionStrings,
         pageRequest))
-        .thenReturn(Pagination.getPage(Collections.singletonList(requisition), pageRequest));
+        .thenReturn(Pagination.getPage(singletonList(requisition), pageRequest));
 
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
         requisition.getFacilityId(),
@@ -1415,8 +1413,8 @@ public class RequisitionServiceTest {
     Requisition requisition = generateRequisition();
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
 
-    List<RequisitionLineItem> fullSupply = Collections.singletonList(lineItem1);
-    List<RequisitionLineItem> nonFullSupply = Collections.singletonList(lineItem2);
+    List<RequisitionLineItem> fullSupply = singletonList(lineItem1);
+    List<RequisitionLineItem> nonFullSupply = singletonList(lineItem2);
 
     setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
 
@@ -1436,8 +1434,8 @@ public class RequisitionServiceTest {
     Requisition requisition = generateRequisition();
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
 
-    List<RequisitionLineItem> fullSupply = Collections.singletonList(lineItem1);
-    List<RequisitionLineItem> nonFullSupply = Collections.singletonList(lineItem2);
+    List<RequisitionLineItem> fullSupply = singletonList(lineItem1);
+    List<RequisitionLineItem> nonFullSupply = singletonList(lineItem2);
 
     setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
 
@@ -1568,7 +1566,7 @@ public class RequisitionServiceTest {
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
       when(facilityReferenceDataService
           .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId()))
-          .thenReturn(Collections.singletonList(facility));
+          .thenReturn(singletonList(facility));
 
       result.add(new ConvertToOrderDto(requisition.getId(), facility.getId()));
     }
@@ -1610,7 +1608,7 @@ public class RequisitionServiceTest {
     reason.setDescription("simple description");
     reason.setIsFreeTextAllowed(false);
     reason.setName("simple name");
-    stockAdjustmentReasons = Collections.singletonList(reason);
+    stockAdjustmentReasons = singletonList(reason);
   }
 
   private List<BasicRequisitionDto> getBasicRequisitionDtoList() {
@@ -1706,11 +1704,11 @@ public class RequisitionServiceTest {
     previousRequisition = new Requisition();
     previousRequisition.setId(UUID.randomUUID());
     previousRequisition
-        .setRequisitionLineItems(Collections.singletonList(previousRequisitionLineItem));
+        .setRequisitionLineItems(singletonList(previousRequisitionLineItem));
 
     when(requisitionRepository
         .searchRequisitions(any(), eq(facilityId), eq(programId), eq(false)))
-        .thenReturn(Collections.singletonList(previousRequisition));
+        .thenReturn(singletonList(previousRequisition));
   }
 
   private void mockNoPreviousRequisition() {
@@ -1739,7 +1737,7 @@ public class RequisitionServiceTest {
     approvedProductDto.setMaxPeriodsOfStock(7.25);
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), eq(fullSupply)))
-        .thenReturn(Collections.singletonList(approvedProductDto));
+        .thenReturn(singletonList(approvedProductDto));
   }
 
   private void mockNonFullSupplyApprovedProduct() {
@@ -1893,14 +1891,14 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.singleton(processingPeriodDto));
     when(requisitionRepository
         .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
-        .thenReturn(Collections.singletonList(requisition));
+        .thenReturn(singletonList(requisition));
   }
 
   private void stubPreviousPeriod() {
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setId(PERIOD_ID);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
-        .thenReturn(Collections.singletonList(periodDto));
+        .thenReturn(singletonList(periodDto));
   }
 
   private void prepareRequisitionIsNotNewest() {
@@ -1910,6 +1908,6 @@ public class RequisitionServiceTest {
     when(newestRequisition.getId()).thenReturn(UUID.randomUUID());
     when(requisitionRepository
         .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
-        .thenReturn(Collections.singletonList(newestRequisition));
+        .thenReturn(singletonList(newestRequisition));
   }
 }

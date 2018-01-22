@@ -16,12 +16,20 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
+import static org.springframework.util.CollectionUtils.isEmpty;
+
+import com.google.common.collect.ImmutableList;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -29,13 +37,16 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
@@ -50,8 +61,10 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,6 +119,9 @@ public abstract class BaseRequisitionController extends BaseController {
   protected StockEventBuilder stockEventBuilder;
 
   @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Autowired
@@ -113,6 +129,12 @@ public abstract class BaseRequisitionController extends BaseController {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  protected FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  protected FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   protected ValidationResult validateFields(AbstractRequisitionValidator validator,
                                             Requisition requisition) {
@@ -138,8 +160,8 @@ public abstract class BaseRequisitionController extends BaseController {
     return requisitionDtoBuilder.build(requisitionToUpdate);
   }
 
-  protected BasicRequisitionDto doApprove(Requisition requisition, UUID userId) {
-    XLOGGER.entry(requisition, userId);
+  protected BasicRequisitionDto doApprove(Requisition requisition, UserDto user) {
+    XLOGGER.entry(requisition, user);
     Profiler profiler = new Profiler("DO_APPROVE");
     profiler.setLogger(XLOGGER);
 
@@ -162,8 +184,11 @@ public abstract class BaseRequisitionController extends BaseController {
       parentNodeId = parentNode.getId();
     }
 
-    requisitionService.doApprove(parentNodeId, userId, getLineItemOrderableIds(requisition),
-        requisition);
+    List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId());
+
+    requisitionService.doApprove(parentNodeId, user.getId(),
+        getLineItemOrderableIds(requisition), requisition, supplyLines);
 
     if (requisition.getStatus().isApproved()) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
@@ -171,6 +196,22 @@ public abstract class BaseRequisitionController extends BaseController {
 
       profiler.start("SUBMIT_STOCK_EVENT");
       stockEventStockManagementService.submit(stockEventDto);
+
+      if (!isEmpty(supplyLines)) {
+        profiler.start("RETRIEVE_SUPPLYING_FACILITY");
+        FacilityDto facility = facilityReferenceDataService
+            .findOne(supplyLines.get(0).getSupplyingFacility());
+
+        profiler.start("FIND_SUPPORTED_PROGRAM_ENTRY");
+        SupportedProgramDto supportedProgram = facilitySupportsProgramHelper
+            .getSupportedProgram(facility, requisition.getProgramId());
+
+        if (supportedProgram.isSupportLocallyFulfilled()) {
+          profiler.start("CONVERT_TO_ORDER");
+          ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
+          requisitionService.convertToOrder(ImmutableList.of(entry), user);
+        }
+      }
     }
 
     profiler.start("SAVE_STATUS_MESSAGE");

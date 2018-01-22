@@ -43,7 +43,6 @@ public class FacilitySupportsProgramHelper {
    */
   public void checkIfFacilitySupportsProgram(UUID facilityId, UUID programId) {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
-
     checkIfFacilitySupportsProgram(facility, programId);
   }
 
@@ -62,12 +61,30 @@ public class FacilitySupportsProgramHelper {
     }
   }
 
-  private boolean isProgramSupported(
-      List<SupportedProgramDto> supportedPrograms, UUID programId) {
-    return supportedPrograms.stream()
-        .anyMatch(supportedProgram -> supportedProgram.getId().equals(programId)
-            && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
-            && dateHelper.isDateBeforeNow(supportedProgram.getSupportStartDate()));
+  /**
+   * Find a supported program entry from the given facility for the given program. If entry does
+   * not exist the {@code null} value will be returned.
+   */
+  public SupportedProgramDto getSupportedProgram(FacilityDto facility, UUID programId) {
+    return facility
+        .getSupportedPrograms()
+        .stream()
+        .filter(supportedProgram -> find(supportedProgram, programId))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private boolean isProgramSupported(List<SupportedProgramDto> supportedPrograms,
+                                     UUID programId) {
+    return supportedPrograms
+        .stream()
+        .anyMatch(supportedProgram -> find(supportedProgram, programId));
+  }
+
+  private boolean find(SupportedProgramDto supportedProgram, UUID programId) {
+    return supportedProgram.getId().equals(programId)
+        && supportedProgram.isSupportActive() && supportedProgram.isProgramActive()
+        && dateHelper.isDateBeforeNow(supportedProgram.getSupportStartDate());
   }
 
 }
