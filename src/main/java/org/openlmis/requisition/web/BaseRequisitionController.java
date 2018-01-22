@@ -20,22 +20,18 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WR
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
@@ -56,7 +52,6 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -87,9 +82,6 @@ public abstract class BaseRequisitionController extends BaseController {
   protected OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
-  protected StatusMessageRepository statusMessageRepository;
-
-  @Autowired
   protected BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   @Autowired
@@ -112,9 +104,6 @@ public abstract class BaseRequisitionController extends BaseController {
 
   @Autowired
   protected StockEventBuilder stockEventBuilder;
-
-  @Autowired
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -173,16 +162,8 @@ public abstract class BaseRequisitionController extends BaseController {
       parentNodeId = parentNode.getId();
     }
 
-    profiler.start("GET_ORDERABLES");
-    Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(
-        getLineItemOrderableIds(requisition));
-
-    profiler.start("GET_SUPPLY_LINES");
-    Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
-        requisition.getProgramId(), requisition.getSupervisoryNodeId());
-
-    profiler.start("APPROVE_REQUISITION_ENTITY");
-    requisition.approve(parentNodeId, orderables, supplyLines, userId);
+    requisitionService.doApprove(parentNodeId, userId, getLineItemOrderableIds(requisition),
+        requisition);
 
     if (requisition.getStatus().isApproved()) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");

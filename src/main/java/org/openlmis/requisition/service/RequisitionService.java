@@ -63,6 +63,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -77,6 +78,7 @@ import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceD
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -172,6 +174,9 @@ public class RequisitionService {
 
   @Autowired
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
+
+  @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -699,6 +704,24 @@ public class RequisitionService {
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
     }
+  }
+
+  /**
+   * Approves requisition.
+   * @param parentNodeId  supervisoryNode that has a supply line for the requisition's program.
+   * @param userId        user who approves this requisition.
+   * @param orderableIds  orderable products that will be used by line items
+   *                      to update packs to ship.
+   * @param requisition   requisition to be approved
+   */
+  public void doApprove(UUID parentNodeId, UUID userId, Set<UUID> orderableIds,
+      Requisition requisition) {
+    Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
+
+    Collection<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId());
+
+    requisition.approve(parentNodeId, orderables, supplyLines, userId);
   }
 
   private boolean isRequisitionNewest(Requisition requisition) {

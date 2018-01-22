@@ -86,6 +86,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -140,6 +141,9 @@ public class RequisitionServiceTest {
   private static final UUID PERIOD_ID = UUID.randomUUID();
   private Requisition requisition;
   private RequisitionDto requisitionDto;
+
+  @Mock
+  private Requisition requisitionMock;
 
   @Mock
   private StatusChange statusChange;
@@ -1043,6 +1047,26 @@ public class RequisitionServiceTest {
 
     // when
     requisitionService.releaseRequisitionsAsOrder(requisitions, user);
+  }
+
+  @Test
+  public void shouldCallApproveRequisition() {
+    OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
+    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
+    when(orderableReferenceDataService.findByIds(any())).thenReturn(
+        Collections.singletonList(fullSupplyOrderable));
+    when(supplyLineService.search(any(), any())).thenReturn(
+        Collections.singletonList(supplyLineDto));
+
+    UUID parentId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    Set<UUID> orderableIds = Collections.singleton(UUID.randomUUID());
+
+    requisitionService.doApprove(parentId, userId, orderableIds, requisitionMock);
+
+    verify(requisitionMock, times(1)).approve(eq(parentId),
+        eq(Collections.singletonList(fullSupplyOrderable)),
+        eq(Collections.singletonList(supplyLineDto)), eq(userId));
   }
 
   @Test

@@ -410,8 +410,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNode.getId()), any(),
-        eq(Collections.emptyList()), any());
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
+        any(), eq(authorizedRequsition));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -438,7 +438,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNode.getId()), any(), eq(null), any());
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
+        any(), eq(authorizedRequsition));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -467,8 +468,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(parentNode.getId()), any(),
-        eq(Collections.singletonList(supplyLineDto)), any());
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
+        any(), eq(authorizedRequsition));
   }
 
   @Test
@@ -488,8 +489,8 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
-    verify(authorizedRequsition, times(1)).approve(eq(null), any(),
-        eq(Collections.singletonList(supplyLineDto)), any());
+    verify(requisitionService, times(1)).doApprove(eq(null), any(),
+        any(), eq(authorizedRequsition));
   }
 
   /*
