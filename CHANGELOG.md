@@ -8,6 +8,7 @@ Bug fixes added in a backwards-compatible manner:
   * For now all requests are blocked.
 * [OLMIS-3778](https://openlmis.atlassian.net/browse/OLMIS-3778): Fixed Requisition service checked rights of a wrong user
 * [OLMIS-2695](https://openlmis.atlassian.net/browse/OLMIS-2695): Handle new version of processing period search endpoint
+* [OLMIS-3941](https://openlmis.atlassian.net/browse/OLMIS-3941): Snapshot ISA for products on requisition initialization
 
 Improvements:
 * [OLMIS-3955](https://openlmis.atlassian.net/browse/OLMIS-3955): Renamed PICKING order status to FULFILLING. Removed PICKED and IN_TRANSIT.
