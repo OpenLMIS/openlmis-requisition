@@ -15,7 +15,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 10,
     "averageConsumption": 10,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "ad4fe511-43ba-4b3c-8ea3-602c469aca6f",
@@ -33,7 +34,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 1200,
     "averageConsumption": 1200,
-    "pricePerPack": 20.77
+    "pricePerPack": 20.77,
+    "idealStockAmount": null
   },
   {
     "id": "f27415c4-7049-46a6-9e59-818990c85390",
@@ -52,7 +54,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 16,
     "averageConsumption": 13,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "05119a44-5f7a-4ad3-b49f-739661304c59",
@@ -70,7 +73,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 100,
     "averageConsumption": 650,
-    "pricePerPack": 20.77
+    "pricePerPack": 20.77,
+    "idealStockAmount": null
   },
   {
     "id": "2efd35db-fa98-4a1a-b711-1aaa9d6b1fcc",
@@ -91,7 +95,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 50,
     "averageConsumption": 50,
-    "pricePerPack": 5.23
+    "pricePerPack": 5.23,
+    "idealStockAmount": null
   },
   {
     "id": "90df5393-16e8-419b-8a36-3f5daf9a0f89",
@@ -112,7 +117,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 200,
     "averageConsumption": 200,
-    "pricePerPack": 15.94
+    "pricePerPack": 15.94,
+    "idealStockAmount": null
   },
   {
     "id": "4b5cde6e-2771-4b64-afd1-5ee4f4452fda",
@@ -133,7 +139,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 10,
     "averageConsumption": 10,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "6e3b9044-eb81-45a9-9567-3461cfa6e1d7",
@@ -154,7 +161,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 500,
     "averageConsumption": 500,
-    "pricePerPack": 30.98
+    "pricePerPack": 30.98,
+    "idealStockAmount": null
   },
   {
     "id": "8e724d8f-d714-409b-baa9-fe732d7175a7",
@@ -175,7 +183,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 50,
     "averageConsumption": 33,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "46c607b1-a8da-40de-93d6-9dcae3a34068",
@@ -196,7 +205,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 200,
     "averageConsumption": 150,
-    "pricePerPack": 20.77
+    "pricePerPack": 20.77,
+    "idealStockAmount": null
   },
   {
     "id": "8c8026b8-0ae8-4adb-b2ca-bfb0dfb030a5",
@@ -215,7 +225,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 0,
     "averageConsumption": 25,
-    "pricePerPack": 5.23
+    "pricePerPack": 5.23,
+    "idealStockAmount": null
   },
   {
     "id": "552eb0f7-fc57-4916-bb54-0c3c9540420a",
@@ -234,7 +245,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 0,
     "averageConsumption": 100,
-    "pricePerPack": 15.94
+    "pricePerPack": 15.94,
+    "idealStockAmount": null
   },
   {
     "id": "bcbd9a7c-6068-40d9-90ab-cb090fd6ed8c",
@@ -253,7 +265,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 0,
     "averageConsumption": 5,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "502eb011-27bc-4f7f-bb1f-6425ae66a5d5",
@@ -272,7 +285,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 0,
     "averageConsumption": 250,
-    "pricePerPack": 30.98
+    "pricePerPack": 30.98,
+    "idealStockAmount": null
   },
   {
     "id": "5b449a32-aedf-4a8b-a9d7-c3b665ad76e2",
@@ -291,7 +305,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 0,
     "averageConsumption": 25,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "89e46600-aa5a-4cc9-8bfd-67be8e907778",
@@ -310,7 +325,8 @@
     "nonFullSupply": true,
     "adjustedConsumption": 0,
     "averageConsumption": 100,
-    "pricePerPack": 4.34
+    "pricePerPack": 4.34,
+    "idealStockAmount": null
   },
 
   {
@@ -330,7 +346,8 @@
     "nonFullSupply": false,
     "pricePerPack": 2.13,
     "approvedQuantity": 250,
-    "remarks": ""
+    "remarks": "",
+    "idealStockAmount": null
   },
   {
     "id": "1d0d970f-c619-40db-ae81-6d8990505502",
@@ -348,7 +365,8 @@
     "nonFullSupply": false,
     "pricePerPack": 2.13,
     "approvedQuantity": 35000,
-    "remarks": ""
+    "remarks": "",
+    "idealStockAmount": null
   },
   {
     "id": "a6d8a940-4172-4fb9-9c5b-2ac238851dab",
@@ -365,7 +383,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "7bfa442a-88c8-4004-917b-fe0d6c979591",
@@ -382,7 +401,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "93f4cbb4-0d10-452c-a05f-04994b028135",
@@ -398,7 +418,8 @@
     "maxPeriodsOfStock": 30,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 5.153
+    "pricePerPack": 5.153,
+    "idealStockAmount": null
   },
   {
     "id": "f2ccd66c-f608-4eaa-8eea-22daba187a5a",
@@ -414,7 +435,8 @@
     "maxPeriodsOfStock": 30,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 4.1344
+    "pricePerPack": 4.1344,
+    "idealStockAmount": null
   },
   {
     "id": "682baaa0-9a68-40a2-97a4-a2cafb8fcce6",
@@ -433,7 +455,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "a2ab1bea-5833-4fa6-9c8f-ea4cba43a6da",
@@ -452,7 +475,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "d2529049-6e96-4ca0-870e-6d9819bfb17d",
@@ -471,7 +495,8 @@
     "maxPeriodsOfStock": 5.5,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 3.16
+    "pricePerPack": 3.16,
+    "idealStockAmount": null
   },
   {
     "id": "818b66c2-27c3-4662-9644-db8da5afacbe",
@@ -490,7 +515,8 @@
     "maxPeriodsOfStock": 10,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 2.13
+    "pricePerPack": 2.13,
+    "idealStockAmount": null
   },
   {
     "id": "982943fe-c8a7-468c-9622-dd1a345ce459",
@@ -509,7 +535,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 5.1
+    "pricePerPack": 5.1,
+    "idealStockAmount": null
   },
   {
     "id": "14e25f19-1857-4ab0-b426-2893cef14663",
@@ -528,7 +555,8 @@
     "maxPeriodsOfStock": 2,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "a9280f48-5d7f-48b8-9064-10e4d4c567fb",
@@ -547,7 +575,8 @@
     "maxPeriodsOfStock": 5.5,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 3.16
+    "pricePerPack": 3.16,
+    "idealStockAmount": null
   },
   {
     "id": "21297efb-af7c-4342-8b00-d15c324d5282",
@@ -566,7 +595,8 @@
     "maxPeriodsOfStock": 10,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 2.13
+    "pricePerPack": 2.13,
+    "idealStockAmount": null
   },
   {
     "id": "a6fc9d99-341c-46e5-87c9-30243a92a671",
@@ -587,7 +617,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 25,
     "averageConsumption": 25,
-    "pricePerPack": 5.23
+    "pricePerPack": 5.23,
+    "idealStockAmount": null
   },
   {
     "id": "129f6d5b-f870-4ba0-b7af-8899d7733b5b",
@@ -608,7 +639,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 220,
     "averageConsumption": 220,
-    "pricePerPack": 15.94
+    "pricePerPack": 15.94,
+    "idealStockAmount": null
   },
   {
     "id": "407fdece-5661-4a06-bd11-dc2d413312c2",
@@ -629,7 +661,8 @@
     "nonFullSupply": false,
     "adjustedConsumption": 60,
     "averageConsumption": 60,
-    "pricePerPack": 25.46
+    "pricePerPack": 25.46,
+    "idealStockAmount": null
   },
   {
     "id": "68a95688-a8dc-11e7-abc4-cec278b6b50a",
@@ -648,7 +681,8 @@
     "maxPeriodsOfStock": 5.5,
     "skipped": "false",
     "nonFullSupply": false,
-    "pricePerPack": 3.16
+    "pricePerPack": 3.16,
+    "idealStockAmount": null
   },
   {
     "id": "1ec3aa2c-a8dd-11e7-abc4-cec278b6b50a",
@@ -668,7 +702,8 @@
     "averageConsumption": 1200,
     "pricePerPack": 20.77,
     "remarks": "",
-    "approvedQuantity": 800
+    "approvedQuantity": 800,
+    "idealStockAmount": null
   },
   {
     "id": "7eb200cb-4967-4acf-8834-696a74b07635",
@@ -692,7 +727,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "a16725ed-b097-4683-9bb2-0324741fe3b8",
@@ -716,7 +752,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "180a0216-3546-4b5e-ba88-120cc9006185",
@@ -740,7 +777,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "c79e0968-0de4-4c07-adac-ee89f74b66f2",
@@ -764,7 +802,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "1cc0e014-7f59-4e61-8fde-c1a7b1842d23",
@@ -788,7 +827,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "68b54e37-b203-4009-a017-dc4534956271",
@@ -812,7 +852,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "7791dc64-c37a-4453-9d0f-1699790d0cd8",
@@ -836,7 +877,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "9657a35e-1190-4971-baf4-732d527457c9",
@@ -860,7 +902,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "00df331a-87fa-462b-a40e-1056af3255d5",
@@ -884,7 +927,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "d3a6ec88-5b8f-4f2f-8f5b-fff96cead623",
@@ -908,7 +952,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "57bb8b4e-2e39-4566-87b9-eb17ba8d14b3",
@@ -932,7 +977,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "b684ed9f-ecfa-43b6-a4ca-cafeb1e5c777",
@@ -956,7 +1002,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "3fb32c85-a776-45f0-9d9d-cb1d932d5927",
@@ -980,7 +1027,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "74593732-e657-4db0-9cc5-4c1cde9c5ea7",
@@ -1004,7 +1052,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "2b9f9ad9-6c22-4486-a390-40432d103e43",
@@ -1028,7 +1077,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "a83dce7a-f576-47c1-ac67-647ec09ce9d8",
@@ -1052,7 +1102,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c"
+    "requisitionId": "c537e925-a518-4f5b-8aef-6f07fd9aa58c",
+    "idealStockAmount": null
   },
   {
     "id": "cb0086b4-7be8-48e0-8b48-723e6db57fb6",
@@ -1076,7 +1127,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "cd15a8b2-36ff-4129-946f-7f6e3f3d8c05",
@@ -1100,7 +1152,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "1835222c-b339-429c-a641-4427e1aad32e",
@@ -1124,7 +1177,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "670fa80b-48d8-4456-80bc-fe90632dcf6f",
@@ -1148,7 +1202,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "f7b5d513-d5c5-49a4-bd86-1319a3e5b05a",
@@ -1172,7 +1227,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "b6418239-fa08-456d-89e5-1b6f8156bdbc",
@@ -1196,7 +1252,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "83a3fd4b-fa07-4788-bc91-45b1e64d204d",
@@ -1220,7 +1277,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "aa88937b-45ed-4488-b8a4-a4e8d534e00d",
@@ -1244,7 +1302,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "7dff0085-3948-43ea-a81c-9ac8b8faf4ca",
@@ -1268,7 +1327,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "ff824840-279c-4afa-944c-2d286f6fcfa3",
@@ -1292,7 +1352,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "978a7623-9668-4db2-b551-2889dff65b7a",
@@ -1316,7 +1377,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "52ea797a-3294-41d0-9fa7-e6a22d1081f3",
@@ -1340,7 +1402,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "0bc38a82-a4dc-4599-9a4d-e440736dae65",
@@ -1364,7 +1427,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "7a762404-cef2-412b-9dfd-5379601b22ed",
@@ -1388,7 +1452,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "c12891b7-9aac-4bed-a87c-2bcb0ac91ef6",
@@ -1412,7 +1477,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "f88f205c-1821-44e6-809f-6ef27bf8d979",
@@ -1436,7 +1502,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36"
+    "requisitionId": "ddfa5b0c-89a6-4973-a47b-cee0d1bf7e36",
+    "idealStockAmount": null
   },
   {
     "id": "d35163a6-98f4-4b21-8c76-568df25cd9a0",
@@ -1460,7 +1527,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   },
   {
     "id": "cd564014-f639-48fd-bf56-debbe74dfe72",
@@ -1484,7 +1552,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   },
   {
     "id": "93b201ad-942c-4a0e-bd0a-8f002218a2e3",
@@ -1508,7 +1577,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   },
   {
     "id": "5ec13936-3cc9-4c88-afcc-b9b636955d5c",
@@ -1532,7 +1602,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   },
   {
     "id": "93ad4347-7fa3-43fd-bcdb-53cf0b1f496f",
@@ -1556,7 +1627,8 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   },
   {
     "id": "ee142aae-2b89-4d90-ab40-12aaa8a3fb7d",
@@ -1580,6 +1652,7 @@
     "totalLossesAndAdjustments": 0,
     "totalReceivedQuantity": 50,
     "totalStockoutDays": 0,
-    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5"
+    "requisitionId": "bc6d01dd-d861-4136-a0a3-2ffbe3cd27c5",
+    "idealStockAmount": null
   }
 ]

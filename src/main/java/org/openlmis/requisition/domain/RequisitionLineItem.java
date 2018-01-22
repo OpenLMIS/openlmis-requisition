@@ -24,9 +24,6 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
@@ -39,6 +36,11 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +48,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -206,6 +209,11 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private boolean nonFullSupply;
 
+  @Column
+  @Setter
+  @Getter
+  private Integer idealStockAmount;
+
   /**
    * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
@@ -240,6 +248,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
     requisitionLineItem.setMaxPeriodsOfStock(importer.getMaxPeriodsOfStock());
     requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
+    requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -397,6 +406,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
+    exporter.setIdealStockAmount(idealStockAmount);
   }
 
   /**
@@ -663,6 +673,8 @@ public class RequisitionLineItem extends BaseEntity {
     boolean supportsPreviousAdjustedConsumptions();
 
     void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter);
+
+    void setIdealStockAmount(Integer idealStockAmount);
   }
 
   public interface Importer {
@@ -713,5 +725,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getMaximumStockQuantity();
 
     Integer getCalculatedOrderQuantity();
+
+    Integer getIdealStockAmount();
   }
 }

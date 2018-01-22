@@ -16,6 +16,7 @@
 package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -27,6 +28,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import org.apache.commons.collections4.MapUtils;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -282,6 +284,7 @@ public class Requisition extends BaseTimestampedEntity {
       List<Requisition> previousRequisitions,
       int numberOfPreviousPeriodsToAverage,
       ProofOfDeliveryDto proofOfDelivery,
+      Map<UUID, Integer> idealStockAmounts,
       UUID initiator) {
 
     Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
@@ -290,12 +293,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.previousRequisitions = previousRequisitions;
 
     profiler.start("SET_LINE_ITEMS");
-    setRequisitionLineItems(
-        products
-            .stream()
-            .map(ftap -> new RequisitionLineItem(this, ftap))
-            .collect(Collectors.toList())
-    );
+    initiateLineItems(products, idealStockAmounts);
 
     profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
@@ -361,6 +359,24 @@ public class Requisition extends BaseTimestampedEntity {
     statusChanges.add(StatusChange.newStatusChange(this, initiator));
 
     profiler.stop().log();
+  }
+
+  private void initiateLineItems(Collection<ApprovedProductDto> products,
+                                 Map<UUID, Integer> idealStockAmounts) {
+    this.requisitionLineItems = new ArrayList<>();
+
+    for (ApprovedProductDto ftap : products) {
+      String commodityType = MapUtils.getString(
+          ftap.getOrderable().getIdentifiers(), "commodityType"
+      );
+      UUID commodityTypeId = isBlank(commodityType) ? null : UUID.fromString(commodityType);
+      Integer amount = null == commodityTypeId ? null : idealStockAmounts.get(commodityTypeId);
+
+      RequisitionLineItem lineItem = new RequisitionLineItem(this, ftap);
+      lineItem.setIdealStockAmount(amount);
+
+      this.requisitionLineItems.add(lineItem);
+    }
   }
 
   /**

@@ -16,6 +16,8 @@
 package org.openlmis.requisition.service;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -41,6 +43,7 @@ import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -56,6 +59,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.openlmis.requisition.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -92,6 +96,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
@@ -129,6 +134,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionServiceTest {
+  private static final String COMMODITY_TYPE = "commodityType";
+  private static final UUID COMMODITY_TYPE_ID = UUID.randomUUID();
 
   private static final UUID PERIOD_ID = UUID.randomUUID();
   private Requisition requisition;
@@ -229,6 +236,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private RequisitionForConvertBuilder requisitionForConvertBuilder;
+
+  @Mock
+  private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -855,6 +865,25 @@ public class RequisitionServiceTest {
     assertEquals(previousRequisition.getId(), previousRequisitionId);
     verify(requisitionRepository).searchRequisitions(
         PERIOD_ID, facilityId, programId, false);
+  }
+
+  @Test
+  public void shouldAssignIdealStockAmount() {
+    prepareForTestInitiate(SETTING);
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
+        .thenReturn(Lists.newArrayList(new IdealStockAmountDtoDataBuilder()
+            .withCommodityTypeId(COMMODITY_TYPE_ID)
+            .build()));
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
+
+    List<RequisitionLineItem> lineItems = initiatedRequisition.getRequisitionLineItems();
+    assertThat(lineItems, hasSize(1));
+    assertThat(lineItems.get(0).getIdealStockAmount(), is(1000));
   }
 
   @Test
@@ -1677,6 +1706,7 @@ public class RequisitionServiceTest {
     OrderableDto orderable = new OrderableDto();
     orderable.setId(productId);
     orderable.setPrograms(Sets.newHashSet(product));
+    orderable.setIdentifiers(ImmutableMap.of(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString()));
 
     ApprovedProductDto approvedProductDto = new ApprovedProductDto();
     approvedProductDto.setId(PRODUCT_ID);
@@ -1778,6 +1808,7 @@ public class RequisitionServiceTest {
     processingPeriodDto = new ProcessingPeriodDto();
     processingPeriodDto.setProcessingSchedule(processingScheduleDto);
     processingPeriodDto.setId(suggestedPeriodId);
+    processingPeriodDto.setDurationInMonths(1);
     when(periodService
         .getPeriod(any()))
         .thenReturn(processingPeriodDto);
@@ -1794,6 +1825,9 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchRequisitions(any(), any(), any(), any()))
         .thenReturn(new ArrayList<>());
+
+    when(idealStockAmountReferenceDataService.search(facilityId, processingPeriodDto.getId()))
+        .thenReturn(Lists.newArrayList());
 
     when(orderDtoBuilder.build(any(Requisition.class), any(UserDto.class)))
         .thenAnswer(new Answer<OrderDto>() {

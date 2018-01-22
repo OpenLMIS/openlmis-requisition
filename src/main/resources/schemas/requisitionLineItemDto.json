@@ -72,6 +72,10 @@
     "averageConsumption": {
       "type": "number",
       "title": "averageConsumption"
+    },
+    "idealStockAmount": {
+      "type": ["number", "null"],
+      "title": "idealStockAmount"
     }
   },
   "required": [

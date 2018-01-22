@@ -16,6 +16,9 @@
 package org.openlmis.requisition.service;
 
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
@@ -50,6 +53,7 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -69,6 +73,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
@@ -103,7 +108,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -166,6 +170,9 @@ public class RequisitionService {
   @Autowired
   private PermissionService permissionService;
 
+  @Autowired
+  private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -215,23 +222,30 @@ public class RequisitionService {
     }
 
     profiler.start("GET_POD");
-    ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
+    final ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
 
     profiler.start("FIND_APPROVED_PRODUCTS");
     Collection<ApprovedProductDto> approvedProducts =
         approvedProductReferenceDataService.getApprovedProducts(
             facilityId, programId, true);
 
+    profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
+    Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
+        .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
+        .stream()
+        .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
+
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
-        numberOfPreviousPeriodsToAverage, pod, authenticationHelper.getCurrentUser().getId());
+        numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
+        authenticationHelper.getCurrentUser().getId());
 
     profiler.start("SET_AVAIL_FULL_SUPPLY");
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
         .getApprovedProducts(facilityId, programId, false)
         .stream()
         .map(ap -> ap.getOrderable().getId())
-        .collect(Collectors.toSet()));
+        .collect(toSet()));
 
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
@@ -344,7 +358,7 @@ public class RequisitionService {
 
       LOGGER.debug("Requisition rejected: {}", requisitionId);
       Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
-              RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+              RequisitionLineItem::getOrderableId).collect(toSet());
       requisition.reject(orderableReferenceDataService.findByIds(orderableIds), userId);
       saveStatusMessage(requisition);
       return requisitionRepository.save(requisition);
@@ -433,7 +447,7 @@ public class RequisitionService {
         .getRoleAssignments(userId)
         .stream()
         .filter(r -> r.getRole().getRights().contains(right))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     if (roleAssignments != null && !roleAssignments.isEmpty()) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
@@ -553,7 +567,7 @@ public class RequisitionService {
     List<Requisition> releasedRequisitions = new ArrayList<>();
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
-        .collect(Collectors.toSet());
+        .collect(toSet());
 
     for (ConvertToOrderDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
@@ -565,7 +579,7 @@ public class RequisitionService {
       Set<UUID> validFacilities = requisitionForConvertBuilder
           .getAvailableSupplyingDepots(requisitionId).stream()
           .filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
-          .collect(Collectors.toSet());
+          .collect(toSet());
 
       if (validFacilities.contains(facilityId)) {
         loadedRequisition.setSupplyingFacilityId(facilityId);
@@ -771,7 +785,7 @@ public class RequisitionService {
       }
     }
 
-    return foundPrograms.stream().collect(Collectors.toMap(ProgramDto::getId, Function.identity()));
+    return foundPrograms.stream().collect(toMap(ProgramDto::getId, Function.identity()));
   }
 
   private Map<UUID, MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
@@ -791,7 +805,7 @@ public class RequisitionService {
     }
 
     return foundFacilities.stream()
-        .collect(Collectors.toMap(MinimalFacilityDto::getId, Function.identity()));
+        .collect(toMap(MinimalFacilityDto::getId, Function.identity()));
   }
 
   private boolean isFilterAll(String filterBy) {

@@ -17,6 +17,7 @@ package org.openlmis.requisition.repository;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -333,7 +334,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, null, UUID.randomUUID());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID());
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

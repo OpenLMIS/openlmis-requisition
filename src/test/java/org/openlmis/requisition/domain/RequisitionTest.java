@@ -16,6 +16,8 @@
 package org.openlmis.requisition.domain;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -32,7 +34,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -53,6 +58,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -60,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -542,7 +549,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, null, UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -564,7 +571,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, Collections.singleton(product1),
-        Collections.emptyList(), 0, null, UUID.randomUUID());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -614,7 +621,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod, UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -656,7 +663,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod, UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -990,7 +997,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
 
     requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null,
-        initiatorId);
+        emptyMap(), initiatorId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
         initiatorId);
@@ -1121,6 +1128,36 @@ public class RequisitionTest {
 
     // then
     assertEquals(expectedId, statusChange.getPreviousStatusChangeId());
+  }
+
+  @Test
+  public void shouldSetIdealStockAmountForLineItems() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+    final UUID commodityTypeId = UUID.randomUUID();
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    OrderableDto orderable = product1.getOrderable();
+    when(orderable.getIdentifiers())
+        .thenReturn(ImmutableMap.of("commodityType", commodityTypeId.toString()));
+
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    Map<UUID, Integer> idealStockAmounts = Maps.newHashMap();
+    idealStockAmounts.put(commodityTypeId, 1000);
+
+    // when
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.initiate(template, asList(product1, product2), emptyList(), 0, null,
+        idealStockAmounts, UUID.randomUUID());
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getIdealStockAmount(), is(1000));
+    assertThat(req.findLineByProductId(productId2).getIdealStockAmount(), is(nullValue()));
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {

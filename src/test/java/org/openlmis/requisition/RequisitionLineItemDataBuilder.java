@@ -56,6 +56,7 @@ public class RequisitionLineItemDataBuilder {
   private List<StockAdjustment> stockAdjustments = Lists.emptyList();
   private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
   private boolean nonFullSupply = false;
+  private Integer idealStockAmount = null;
 
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
@@ -67,7 +68,8 @@ public class RequisitionLineItemDataBuilder {
         requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays, packsToShip,
         skipped, pricePerPack, totalCost, numberOfNewPatientsAdded, adjustedConsumption,
         previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
-        calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock, nonFullSupply
+        calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock, nonFullSupply,
+        idealStockAmount
     );
     lineItem.setId(id);
 

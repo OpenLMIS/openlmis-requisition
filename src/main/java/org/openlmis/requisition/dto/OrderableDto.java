@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +33,7 @@ public class OrderableDto extends BasicOrderableDto {
 
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
+  private Map<String, String> identifiers;
 
   @Builder
   private OrderableDto(UUID id, String productCode, String fullProductName, long netContent,
