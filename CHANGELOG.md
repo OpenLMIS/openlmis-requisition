@@ -1,4 +1,4 @@
-5.1.1 / WIP
+5.2.0 / WIP
 ===========
 
 Bug fixes added in a backwards-compatible manner:
