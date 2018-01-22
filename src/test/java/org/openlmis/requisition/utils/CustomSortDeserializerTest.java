@@ -15,8 +15,11 @@
 
 package org.openlmis.requisition.utils;
 
+import static org.junit.Assert.assertEquals;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
 import java.io.IOException;
@@ -27,17 +30,12 @@ public class CustomSortDeserializerTest {
 
   @Test
   public void shouldDeserializeArraySort() throws IOException {
-    String json = "{"
-        + "\"sort\" : [ {\n"
-        + "\"direction\" : \"DESC\",\n"
-        + "\"property\" : \"startDate\",\n"
-        + "\"ignoreCase\" : false,\n"
-        + "\"nullHandling\" : \"NATIVE\",\n"
-        + "\"ascending\" : false,\n"
-        + "\"descending\" : true\n"
-        + "}]"
-        + "}";
-    deserialize(json);
+    Sort sort = new Sort(new Sort.Order(Sort.Direction.ASC, "startDate"),
+        new Sort.Order(Sort.Direction.DESC, "endDate"));
+    TestObject testObject = new TestObject(sort);
+
+    Sort newSort = deserialize(mapper.writeValueAsString(testObject));
+    assertEquals(sort, newSort);
   }
 
   private Sort deserialize(String json) throws IOException {
@@ -45,6 +43,7 @@ public class CustomSortDeserializerTest {
     return testObject.getSort();
   }
 
+  @AllArgsConstructor
   private static class TestObject {
 
     private Sort sort;
