@@ -61,6 +61,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.IdealStockAmountDtoDataBuilder;
+import org.openlmis.requisition.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -104,7 +105,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
@@ -1050,7 +1050,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldCallApproveRequisition() {
     OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
-    SupplyLineDto supplyLineDto = mock(SupplyLineDto.class);
+    SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().build();
     when(orderableReferenceDataService.findByIds(any())).thenReturn(
         singletonList(fullSupplyOrderable));
 

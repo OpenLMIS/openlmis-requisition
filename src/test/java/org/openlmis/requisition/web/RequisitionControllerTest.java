@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -259,7 +261,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -273,7 +275,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(true));
+    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(true));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -289,7 +291,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -305,7 +307,7 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
@@ -420,7 +422,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), Collections.emptyList());
+        any(), eq(authorizedRequsition), eq(emptyList()));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -448,7 +450,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), Collections.emptyList());
+        any(), eq(authorizedRequsition), eq(null));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
   }
@@ -475,7 +477,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), Collections.emptyList());
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
   }
 
   @Test
@@ -493,7 +495,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), Collections.emptyList());
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
   }
 
   @Test
@@ -672,7 +674,7 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
     verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyBoolean());
-    verify(requisition, never()).submit(eq(Collections.emptyList()), any(UUID.class), anyBoolean());
+    verify(requisition, never()).submit(eq(emptyList()), any(UUID.class), anyBoolean());
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
