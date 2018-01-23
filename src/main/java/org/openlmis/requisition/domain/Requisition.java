@@ -16,7 +16,7 @@
 package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -364,12 +364,13 @@ public class Requisition extends BaseTimestampedEntity {
                                  Map<UUID, Integer> idealStockAmounts) {
     this.requisitionLineItems = new ArrayList<>();
 
-    for (ApprovedProductDto ftap : products) {
-      String commodityType = ftap.getOrderable().getCommodityTypeIdentifier();
-      UUID commodityTypeId = isBlank(commodityType) ? null : UUID.fromString(commodityType);
-      Integer amount = null == commodityTypeId ? null : idealStockAmounts.get(commodityTypeId);
+    for (ApprovedProductDto product : products) {
+      String commodityType = product.getOrderable().getCommodityTypeIdentifier();
+      Integer amount = isNotBlank(commodityType)
+          ? idealStockAmounts.get(UUID.fromString(commodityType))
+          : null;
 
-      RequisitionLineItem lineItem = new RequisitionLineItem(this, ftap);
+      RequisitionLineItem lineItem = new RequisitionLineItem(this, product);
       lineItem.setIdealStockAmount(amount);
 
       this.requisitionLineItems.add(lineItem);
