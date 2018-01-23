@@ -629,7 +629,7 @@ public class RequisitionValidatorTest {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(requisition.getTemplate()).thenReturn(requisitionTemplate);
 
-    when(requisitionRepository.findOne(any())).thenReturn(requisition);
+    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(requisition);
     when(predicate.exec(any(UUID.class))).thenReturn(true);
   }
 

@@ -18,7 +18,7 @@ package org.openlmis.requisition.repository;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @JaversSpringDataAuditable
 public interface RequisitionRepository extends
-    PagingAndSortingRepository<Requisition, UUID>,
+    JpaRepository<Requisition, UUID>,
     RequisitionRepositoryCustom {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 

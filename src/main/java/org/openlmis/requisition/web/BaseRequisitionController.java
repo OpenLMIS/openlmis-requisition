@@ -214,12 +214,6 @@ public abstract class BaseRequisitionController extends BaseController {
       }
     }
 
-    profiler.start("SAVE_STATUS_MESSAGE");
-    requisitionService.saveStatusMessage(requisition);
-
-    profiler.start("SAVE_REQUISITION_TO_REPO");
-    requisitionRepository.save(requisition);
-
     profiler.start("PROCESS_STATUS_CHANGE");
     requisitionStatusProcessor.statusChange(requisition);
 

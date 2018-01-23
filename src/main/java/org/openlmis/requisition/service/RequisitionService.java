@@ -717,6 +717,9 @@ public class RequisitionService {
     Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
 
     requisition.approve(parentNodeId, orderables, supplyLines, userId);
+
+    saveStatusMessage(requisition);
+    requisitionRepository.saveAndFlush(requisition);
   }
 
   private boolean isRequisitionNewest(Requisition requisition) {

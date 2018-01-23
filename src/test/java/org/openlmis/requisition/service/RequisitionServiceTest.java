@@ -1677,7 +1677,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository.searchApprovedRequisitions(filterBy, programIds, facilityIds))
         .thenReturn(requisitions);
 
-    when(requisitionRepository.findOne(any())).thenReturn(mock(Requisition.class));
+    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
 
     List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
     for (BasicRequisitionDto dto : requisitionDtos) {
