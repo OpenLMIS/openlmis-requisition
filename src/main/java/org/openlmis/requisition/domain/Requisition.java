@@ -28,7 +28,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import org.apache.commons.collections4.MapUtils;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -52,6 +51,7 @@ import org.openlmis.requisition.utils.RightName;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
+import org.springframework.util.CollectionUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -87,7 +87,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.springframework.util.CollectionUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -366,9 +365,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.requisitionLineItems = new ArrayList<>();
 
     for (ApprovedProductDto ftap : products) {
-      String commodityType = MapUtils.getString(
-          ftap.getOrderable().getIdentifiers(), "commodityType"
-      );
+      String commodityType = ftap.getOrderable().getCommodityTypeIdentifier();
       UUID commodityTypeId = isBlank(commodityType) ? null : UUID.fromString(commodityType);
       Integer amount = null == commodityTypeId ? null : idealStockAmounts.get(commodityTypeId);
 

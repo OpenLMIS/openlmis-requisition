@@ -15,15 +15,24 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIER;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class OrderableDtoTest {
 
   private OrderableDto orderableDto;
@@ -148,6 +157,38 @@ public class OrderableDtoTest {
 
     assertEquals(programOrderableDtoAfterFind, programOrderableDto);
     assertEquals(programOrderableDtoAfterFind.getProgramId(), programOrderableDto.getProgramId());
+  }
+
+  @Test
+  public void shouldReturnCommodityTypeIdentifier() {
+    String value = UUID.randomUUID().toString();
+    orderableDto.setIdentifiers(ImmutableMap.of(COMMODITY_TYPE_IDENTIFIER, value));
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(value));
+  }
+
+  @Test
+  public void shouldReturnNullIfCommodityTypeIdentifierNotExist() {
+    // null as map
+    orderableDto.setIdentifiers(null);
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(nullValue()));
+
+    // empty map
+    Map<String,String> identifiers = Maps.newHashMap();
+
+    orderableDto.setIdentifiers(identifiers);
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(nullValue()));
+
+    // null value
+    identifiers.put(COMMODITY_TYPE_IDENTIFIER, null);
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(nullValue()));
+
+    // white spaces value
+    identifiers.put(COMMODITY_TYPE_IDENTIFIER, "          ");
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(nullValue()));
+
+    // empty ("") value
+    identifiers.put(COMMODITY_TYPE_IDENTIFIER, "");
+    assertThat(orderableDto.getCommodityTypeIdentifier(), is(nullValue()));
   }
 
   private Set<ProgramOrderableDto> genereteProducts(int instances) {

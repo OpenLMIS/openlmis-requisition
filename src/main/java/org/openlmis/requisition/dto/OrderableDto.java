@@ -15,6 +15,9 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.apache.commons.collections.MapUtils.getString;
+import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +33,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderableDto extends BasicOrderableDto {
+  static final String COMMODITY_TYPE_IDENTIFIER = "commodityType";
 
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
@@ -60,4 +64,13 @@ public class OrderableDto extends BasicOrderableDto {
     }
     return null;
   }
+
+  /**
+   * Returns a value of commodity type identifier. The {@code null} value will be returned if
+   * value does not exist or if it is blank (whitespace, empty ("") or null).
+   */
+  public String getCommodityTypeIdentifier() {
+    return defaultIfBlank(getString(identifiers, COMMODITY_TYPE_IDENTIFIER), null);
+  }
+
 }

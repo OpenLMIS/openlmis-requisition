@@ -34,7 +34,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -1140,8 +1139,8 @@ public class RequisitionTest {
 
     ApprovedProductDto product1 = mockApprovedProduct(productId1);
     OrderableDto orderable = product1.getOrderable();
-    when(orderable.getIdentifiers())
-        .thenReturn(ImmutableMap.of("commodityType", commodityTypeId.toString()));
+    when(orderable.getCommodityTypeIdentifier())
+        .thenReturn(commodityTypeId.toString());
 
     ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
