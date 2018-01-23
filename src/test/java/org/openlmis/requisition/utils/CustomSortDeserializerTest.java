@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import org.junit.Test;
 import org.springframework.data.domain.Sort;
@@ -30,12 +32,25 @@ public class CustomSortDeserializerTest {
 
   @Test
   public void shouldDeserializeArraySort() throws IOException {
-    Sort sort = new Sort(new Sort.Order(Sort.Direction.ASC, "startDate"),
-        new Sort.Order(Sort.Direction.DESC, "endDate"));
-    TestObject testObject = new TestObject(sort);
+    ObjectMapper mapper = new ObjectMapper();
 
-    Sort newSort = deserialize(mapper.writeValueAsString(testObject));
-    assertEquals(sort, newSort);
+    ObjectNode order = mapper.createObjectNode();
+    order.put("direction", "DESC");
+    order.put("property", "startDate");
+    order.put("ignoreCase", false);
+    order.put("nullHandling", "NATIVE");
+    order.put("ascending", false);
+    order.put("descending", true);
+
+    ArrayNode arrayNode = mapper.createArrayNode();
+    arrayNode.add(order);
+
+    ObjectNode testObject = mapper.createObjectNode();
+    testObject.set("sort", arrayNode);
+
+    Sort sort = deserialize(testObject.toString());
+
+    assertEquals(Sort.Direction.DESC, sort.getOrderFor("startDate").getDirection());
   }
 
   private Sort deserialize(String json) throws IOException {
