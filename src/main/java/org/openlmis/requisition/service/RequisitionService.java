@@ -709,7 +709,8 @@ public class RequisitionService {
    * @param orderableIds  orderable products that will be used by line items
  *                      to update packs to ship.
    * @param requisition   requisition to be approved
-   * @param supplyLines
+   * @param supplyLines supplyLineDtos of the supervisoryNode that has
+   *                    a supply line for the requisition's program.
    */
   public void doApprove(UUID parentNodeId, UUID userId, Set<UUID> orderableIds,
                         Requisition requisition, List<SupplyLineDto> supplyLines) {
