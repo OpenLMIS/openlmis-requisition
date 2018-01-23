@@ -1107,5 +1107,17 @@
     "definition": "Maximum stock calculated based on consumption and max stock amounts. Quantified in dispensing units.",
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
+  },
+  {
+    "requisitionTemplateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
+    "key": "idealStockAmount",
+    "name": "idealStockAmount",
+    "label": "Ideal Stock Amount",
+    "indicator": "G",
+    "displayOrder": 24,
+    "isDisplayed": false,
+    "source": 2,
+    "definition": "The Ideal Stock Amount is the target quantity for a specific commodity type, facility, and period.",
+    "requisitionColumnId": "aa0a1a7e-e5cb-4385-b781-943316fa116a"
   }
 ]
