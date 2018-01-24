@@ -27,9 +27,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-public final class SupplyLineDto {
-  private UUID id;
+@EqualsAndHashCode(callSuper = true)
+public final class SupplyLineDto extends BaseDto {
   private UUID supervisoryNode;
   private String description;
   private UUID program;

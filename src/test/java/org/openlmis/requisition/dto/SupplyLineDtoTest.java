@@ -26,6 +26,7 @@ public class SupplyLineDtoTest {
   public void equalsContract() {
     EqualsVerifier
         .forClass(SupplyLineDto.class)
+        .withRedefinedSuperclass()
         .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
         .verify();
   }

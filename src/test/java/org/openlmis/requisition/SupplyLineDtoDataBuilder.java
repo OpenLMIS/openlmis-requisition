@@ -27,7 +27,14 @@ public class SupplyLineDtoDataBuilder {
   private UUID program = UUID.randomUUID();
   private UUID supplyingFacility = UUID.randomUUID();
 
+  /**
+   * Creates new instance of {@link SupplyLineDto}.
+   */
   public SupplyLineDto build() {
-    return new SupplyLineDto(id, supervisoryNode, description, program, supplyingFacility);
+    SupplyLineDto dto = new SupplyLineDto(
+        supervisoryNode, description, program, supplyingFacility
+    );
+    dto.setId(id);
+    return dto;
   }
 }
