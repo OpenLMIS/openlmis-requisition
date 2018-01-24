@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.utils;
+package org.openlmis.requisition.web;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -28,6 +28,8 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.utils.DateHelper;
+
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.UUID;

@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.utils;
+package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
 
@@ -21,13 +21,15 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.utils.DateHelper;
+import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
 @Component
-public class FacilitySupportsProgramHelper {
+class FacilitySupportsProgramHelper {
 
   @Autowired
   FacilityReferenceDataService facilityReferenceDataService;
@@ -41,7 +43,7 @@ public class FacilitySupportsProgramHelper {
    * @param facilityId UUID of the Facility.
    * @param programId UUID of the Program.
    */
-  public void checkIfFacilitySupportsProgram(UUID facilityId, UUID programId) {
+  void checkIfFacilitySupportsProgram(UUID facilityId, UUID programId) {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     checkIfFacilitySupportsProgram(facility, programId);
   }
@@ -52,7 +54,7 @@ public class FacilitySupportsProgramHelper {
    * @param facility Facility.
    * @param programId programId UUID of the Program.
    */
-  public void checkIfFacilitySupportsProgram(FacilityDto facility, UUID programId) {
+  void checkIfFacilitySupportsProgram(FacilityDto facility, UUID programId) {
     List<SupportedProgramDto> supportedPrograms = facility.getSupportedPrograms();
 
     if (!isProgramSupported(supportedPrograms, programId)) {
@@ -65,7 +67,7 @@ public class FacilitySupportsProgramHelper {
    * Find a supported program entry from the given facility for the given program. If entry does
    * not exist the {@code null} value will be returned.
    */
-  public SupportedProgramDto getSupportedProgram(FacilityDto facility, UUID programId) {
+  SupportedProgramDto getSupportedProgram(FacilityDto facility, UUID programId) {
     return facility
         .getSupportedPrograms()
         .stream()

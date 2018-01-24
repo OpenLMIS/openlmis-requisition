@@ -85,7 +85,6 @@ import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
-import org.openlmis.requisition.utils.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.validation.Errors;
 
