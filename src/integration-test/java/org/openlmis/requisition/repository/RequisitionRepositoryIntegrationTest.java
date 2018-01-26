@@ -112,6 +112,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);
+    requisition.setDraftStatusMessage(RandomStringUtils.randomAlphanumeric(500));
     List<StatusChange> statusChanges = new ArrayList<>();
     statusChanges.add(StatusChange.newStatusChange(requisition, UUID.randomUUID()));
     requisition.setStatusChanges(statusChanges);

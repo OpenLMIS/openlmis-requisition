@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.After;
 import org.junit.Before;
@@ -34,9 +35,10 @@ import org.openlmis.requisition.domain.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.UUID;
+
+import javax.persistence.EntityManager;
 
 public class StatusMessageRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<StatusMessage> {
@@ -74,7 +76,7 @@ public class StatusMessageRepositoryIntegrationTest
     statusChangeRepository.save(statusChange);
 
     return StatusMessage.newStatusMessage(requisition, statusChange,
-        userId, userFirstName, userLastName,"Status Message");
+        userId, userFirstName, userLastName, RandomStringUtils.randomAlphanumeric(500));
   }
   
   @Before
