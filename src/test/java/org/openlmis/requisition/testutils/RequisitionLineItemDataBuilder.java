@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition;
+package org.openlmis.requisition.testutils;
 
 import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 

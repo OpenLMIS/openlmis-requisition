@@ -13,34 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition;
+package org.openlmis.requisition.testutils;
 
-import org.openlmis.requisition.dto.IdealStockAmountDto;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.apache.commons.lang.RandomStringUtils;
+import org.openlmis.requisition.dto.SupplyLineDto;
 
 import java.util.UUID;
 
-public class IdealStockAmountDtoDataBuilder {
+public class SupplyLineDtoDataBuilder {
   private UUID id = UUID.randomUUID();
-  private ObjectReferenceDto facility = new ObjectReferenceDto(UUID.randomUUID());
-  private ObjectReferenceDto commodityType = new ObjectReferenceDto(UUID.randomUUID());
-  private ObjectReferenceDto processingPeriod = new ObjectReferenceDto(UUID.randomUUID());
-  private Integer amount = 1000;
-
-  public IdealStockAmountDtoDataBuilder withCommodityTypeId(UUID id) {
-    commodityType = new ObjectReferenceDto(id);
-    return this;
-  }
+  private UUID supervisoryNode = UUID.randomUUID();
+  private String description = RandomStringUtils.randomAlphanumeric(5);
+  private UUID program = UUID.randomUUID();
+  private UUID supplyingFacility = UUID.randomUUID();
 
   /**
-   * Create new instance of {@link IdealStockAmountDto}.
+   * Creates new instance of {@link SupplyLineDto}.
    */
-  public IdealStockAmountDto build() {
-    IdealStockAmountDto dto = new IdealStockAmountDto(
-        facility, commodityType, processingPeriod, amount
+  public SupplyLineDto build() {
+    SupplyLineDto dto = new SupplyLineDto(
+        supervisoryNode, description, program, supplyingFacility
     );
     dto.setId(id);
-
     return dto;
   }
 }

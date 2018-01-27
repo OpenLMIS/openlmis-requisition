@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.openlmis.requisition.RequisitionLineItemDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 
 public class OrderLineItemDtoTest {

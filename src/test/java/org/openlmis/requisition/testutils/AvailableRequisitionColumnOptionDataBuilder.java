@@ -13,28 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition;
+package org.openlmis.requisition.testutils;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 
-import java.util.UUID;
+public class AvailableRequisitionColumnOptionDataBuilder {
 
-public class SupplyLineDtoDataBuilder {
-  private UUID id = UUID.randomUUID();
-  private UUID supervisoryNode = UUID.randomUUID();
-  private String description = RandomStringUtils.randomAlphanumeric(5);
-  private UUID program = UUID.randomUUID();
-  private UUID supplyingFacility = UUID.randomUUID();
+  private AvailableRequisitionColumn requisitionColumn;
+  private String optionName;
+  private String optionLabel;
 
   /**
-   * Creates new instance of {@link SupplyLineDto}.
+   * Builder for {@link AvailableRequisitionColumnOption}.
    */
-  public SupplyLineDto build() {
-    SupplyLineDto dto = new SupplyLineDto(
-        supervisoryNode, description, program, supplyingFacility
-    );
-    dto.setId(id);
-    return dto;
+  public AvailableRequisitionColumnOptionDataBuilder() {
+    requisitionColumn = null;
+    optionName = "option";
+    optionLabel = "Option";
+  }
+
+  /**
+   * Builds {@link AvailableRequisitionColumnOption} instance with test data.
+   */
+  public AvailableRequisitionColumnOption build() {
+    return new AvailableRequisitionColumnOption(requisitionColumn, optionName, optionLabel);
   }
 }

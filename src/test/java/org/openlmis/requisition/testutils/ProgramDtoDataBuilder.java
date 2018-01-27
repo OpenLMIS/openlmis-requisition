@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition;
+package org.openlmis.requisition.testutils;
 
 import org.openlmis.requisition.dto.ProgramDto;
 
@@ -75,4 +75,8 @@ public class ProgramDtoDataBuilder {
     return this;
   }
 
+  public ProgramDtoDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
 }
