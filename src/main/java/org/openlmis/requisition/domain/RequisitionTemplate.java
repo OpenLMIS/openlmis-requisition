@@ -21,11 +21,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 import java.time.ZonedDateTime;
@@ -46,20 +46,21 @@ import javax.persistence.Table;
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
 
-  @Getter
-  @Setter
   @Type(type = UUID_TYPE)
   private UUID programId;
 
-  @Getter
-  @Setter
   private Integer numberOfPeriodsToAverage;
+
+  private boolean populateStockOnHandFromStockCardsEnabled;
 
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
@@ -67,8 +68,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @CollectionTable(
       name = "columns_maps",
       joinColumns = @JoinColumn(name = "requisitionTemplateId"))
-  @Getter
-  @Setter
+
   private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   /**
@@ -272,7 +272,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * Finds a column by column name or throws exception.
    *
    * @param name name of requisition column.
-   * @return {@link RequisitionTemplateColumn} if found column with the given name.
+   * @return {c@link RequisitionTemplateColumn} if found column with the given name.
    */
   public RequisitionTemplateColumn findColumn(String name) {
     RequisitionTemplateColumn column = getRequisitionTemplateColumn(name);
@@ -302,6 +302,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     requisitionTemplate.setCreatedDate(importer.getCreatedDate());
     requisitionTemplate.setModifiedDate(importer.getModifiedDate());
     requisitionTemplate.setProgramId(importer.getProgramId());
+    requisitionTemplate.setPopulateStockOnHandFromStockCardsEnabled(
+        importer.isPopulateStockOnHandFromStockCardsEnabled());
     requisitionTemplate.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
     requisitionTemplate.setColumnsMap(new HashMap<>());
 
@@ -324,6 +326,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setProgramId(programId);
+    exporter.setPopulateStockOnHandFromStockCardsEnabled(populateStockOnHandFromStockCardsEnabled);
     exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
   }
 
@@ -336,9 +339,11 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     UUID getProgramId();
 
+    boolean isPopulateStockOnHandFromStockCardsEnabled();
+
     Integer getNumberOfPeriodsToAverage();
 
-    Map<String, RequisitionTemplateColumnDto> getColumnsMap();
+    Map<String, ? extends RequisitionTemplateColumn.Importer> getColumnsMap();
   }
 
   public interface Exporter {
@@ -349,6 +354,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setModifiedDate(ZonedDateTime modifiedDate);
 
     void setProgramId(UUID programId);
+
+    void setPopulateStockOnHandFromStockCardsEnabled(boolean stockManagementEnabled);
 
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
   }

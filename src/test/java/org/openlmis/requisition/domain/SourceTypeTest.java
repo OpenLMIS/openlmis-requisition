@@ -13,21 +13,20 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.domain;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.ZonedDateTime;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-public class BaseRequisitionTemplateDto extends BaseDto {
+import org.junit.Test;
 
-  private ZonedDateTime createdDate;
+public class SourceTypeTest {
 
-  private ZonedDateTime modifiedDate;
-
-  private Integer numberOfPeriodsToAverage;
+  @Test
+  public void shouldCheckIfSourceIsReferenceType() {
+    assertTrue(SourceType.REFERENCE_DATA.isReferenceSource());
+    assertTrue(SourceType.STOCK_CARDS.isReferenceSource());
+    assertFalse(SourceType.USER_INPUT.isReferenceSource());
+    assertFalse(SourceType.CALCULATED.isReferenceSource());
+  }
 }

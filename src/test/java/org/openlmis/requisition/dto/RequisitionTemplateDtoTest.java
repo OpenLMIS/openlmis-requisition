@@ -15,19 +15,18 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.ZonedDateTime;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-public class BaseRequisitionTemplateDto extends BaseDto {
+public class RequisitionTemplateDtoTest {
 
-  private ZonedDateTime createdDate;
-
-  private ZonedDateTime modifiedDate;
-
-  private Integer numberOfPeriodsToAverage;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(RequisitionTemplateDto.class)
+        .withRedefinedSuperclass()
+        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
+        .verify();
+  }
 }

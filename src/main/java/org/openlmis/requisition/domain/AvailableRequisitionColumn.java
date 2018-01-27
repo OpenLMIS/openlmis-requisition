@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -41,6 +42,7 @@ import javax.persistence.Table;
 @Table(name = "available_requisition_columns", schema = "requisition")
 @Getter
 @Setter
+@AllArgsConstructor
 public class AvailableRequisitionColumn extends BaseEntity {
 
   private String name;

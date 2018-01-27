@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -23,10 +24,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RequisitionTemplateTest {
 
@@ -54,8 +58,7 @@ public class RequisitionTemplateTest {
     RequisitionTemplateColumn column4 = new RequisitionTemplateColumn(columnDefinition);
     column4.setName(COLUMN_NAMES[3]);
     column4.setDisplayOrder(4);
-    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<String,
-        RequisitionTemplateColumn>();
+    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
     columnsMap.put(column1.getName(), column1);
     columnsMap.put(column2.getName(), column2);
     columnsMap.put(column3.getName(), column3);
@@ -118,5 +121,63 @@ public class RequisitionTemplateTest {
 
     expectedException.expectMessage(RequisitionTemplate.OPTION + option.getOptionName()
         + RequisitionTemplate.WARNING_SUFFIX);
+  }
+
+  /*@Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(RequisitionTemplate.class)
+        .withRedefinedSuperclass()
+        .withPrefabValues(RequisitionTemplateColumn.class,
+            new RequisitionTemplateColumnDataBuilder().build(),
+            new RequisitionTemplateColumnDataBuilder().build())
+        .verify();
+  }*/
+
+  @Test
+  public void shouldExportRequisitionTemplate() {
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    requisitionTemplate.export(templateDto);
+
+    assertEquals(requisitionTemplate.getId(), templateDto.getId());
+    assertEquals(requisitionTemplate.getCreatedDate(), templateDto.getCreatedDate());
+    assertEquals(requisitionTemplate.getModifiedDate(), templateDto.getModifiedDate());
+    assertEquals(requisitionTemplate.getProgramId(), templateDto.getProgramId());
+    assertEquals(requisitionTemplate.isPopulateStockOnHandFromStockCardsEnabled(),
+        templateDto.isPopulateStockOnHandFromStockCardsEnabled());
+    assertEquals(requisitionTemplate.getNumberOfPeriodsToAverage(),
+        templateDto.getNumberOfPeriodsToAverage());
+  }
+
+  @Test
+  public void shouldImportRequisitionTemplate() {
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withRequiredColumns()
+        .build();
+    template.export(templateDto);
+    templateDto.setColumnsMap(template.getColumnsMap().entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+          RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDto();
+          entry.getValue().export(dto);
+          return dto;
+        })));
+
+    RequisitionTemplate newTemplate = RequisitionTemplate.newInstance(templateDto);
+
+    assertEquals(templateDto.getId(), newTemplate.getId());
+    assertEquals(templateDto.getCreatedDate(), newTemplate.getCreatedDate());
+    assertEquals(templateDto.getModifiedDate(), newTemplate.getModifiedDate());
+    assertEquals(templateDto.getProgramId(), newTemplate.getProgramId());
+    assertEquals(templateDto.isPopulateStockOnHandFromStockCardsEnabled(),
+        newTemplate.isPopulateStockOnHandFromStockCardsEnabled());
+    assertEquals(templateDto.getNumberOfPeriodsToAverage(),
+        newTemplate.getNumberOfPeriodsToAverage());
+    newTemplate.getColumnsMap().entrySet()
+        .stream()
+        .forEach(requisitionTemplateColumnEntry -> template.getColumnsMap()
+            .get(requisitionTemplateColumnEntry.getKey())
+            .equals(requisitionTemplateColumnEntry.getValue()));
+    assertEquals(templateDto.getId(), newTemplate.getId());
   }
 }

@@ -15,7 +15,10 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import java.util.ArrayList;
@@ -25,11 +28,19 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class RequisitionTemplateDto extends BaseRequisitionTemplateDto
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
+  @Getter
   private UUID programId;
 
+  @Getter
+  private boolean populateStockOnHandFromStockCardsEnabled;
+
+  @Getter
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
 
   /**

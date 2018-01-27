@@ -18,5 +18,10 @@ package org.openlmis.requisition.domain;
 public enum SourceType {
   USER_INPUT,
   CALCULATED,
-  REFERENCE_DATA
+  REFERENCE_DATA,
+  STOCK_CARDS;
+
+  public boolean isReferenceSource() {
+    return REFERENCE_DATA.equals(this) || STOCK_CARDS.equals(this);
+  }
 }
