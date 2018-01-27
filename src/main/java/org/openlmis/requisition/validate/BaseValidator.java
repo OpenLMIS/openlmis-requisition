@@ -41,6 +41,13 @@ abstract class BaseValidator implements Validator {
     }
   }
 
+  void rejectIfDisplayed(Errors errors, RequisitionTemplate template, String column,
+                            String field, Message message) {
+    if (template.isColumnDisplayed(column)) {
+      rejectValue(errors, field, message);
+    }
+  }
+
   <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value, String field,
                                Message message) {
     if (!collection.contains(value)) {

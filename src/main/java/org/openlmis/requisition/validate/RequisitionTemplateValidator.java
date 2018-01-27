@@ -25,8 +25,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOH_STOCK_CARDS_SOURCE_REQUIRED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
@@ -37,6 +39,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_M
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
 
+import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -68,7 +71,16 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
+  static final String BEGINNING_BALANCE = "beginningBalance";
+  static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
+  static final String TOTAL = "total";
+  static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
+  static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
+  static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(
+      BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
+      TOTAL_STOCKOUT_DAYS, TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION,
+      MAXIMUM_STOCK_QUANTITY, CALCULATED_ORDER_QUANTITY);
 
   private Errors errors;
 
@@ -105,6 +117,10 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
 
     validateNumberOfPeriodsToAverage(requisitionTemplate);
+
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCardsEnabled()) {
+      validateStockManagementFields(requisitionTemplate);
+    }
 
     UUID programId = requisitionTemplate.getProgramId();
     if (null != programId && null == programReferenceDataService.findOne(programId)) {
@@ -228,6 +244,24 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
+  private void validateStockManagementFields(RequisitionTemplate requisitionTemplate) {
+    if (requisitionTemplate.isColumnInTemplate(STOCK_ON_HAND)) {
+      RequisitionTemplateColumn soh = requisitionTemplate.getColumnsMap().get(STOCK_ON_HAND);
+      if (!SourceType.STOCK_CARDS.equals(soh.getSource())) {
+        rejectValue(errors, COLUMNS_MAP,
+            new Message(ERROR_SOH_STOCK_CARDS_SOURCE_REQUIRED, soh.getSource()));
+      }
+    }
+
+    for (String columnName : STOCK_DISABLED_COLUMNS) {
+      if (requisitionTemplate.isColumnInTemplate(columnName)
+          && requisitionTemplate.findColumn(columnName).getIsDisplayed()) {
+        rejectIfDisplayed(errors, requisitionTemplate, columnName, COLUMNS_MAP, new Message(
+            ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS, columnName));
+      }
+    }
+  }
+
   private void validateForAdjustedConsumption(RequisitionTemplate requisitionTemplate) {
     if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
@@ -283,5 +317,4 @@ public class RequisitionTemplateValidator extends BaseValidator {
               NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
     }
   }
-
 }
