@@ -180,9 +180,10 @@ public class RequisitionTemplateTest {
         newTemplate.getNumberOfPeriodsToAverage());
     newTemplate.getColumnsMap().entrySet()
         .stream()
-        .forEach(requisitionTemplateColumnEntry -> template.getColumnsMap()
-            .get(requisitionTemplateColumnEntry.getKey())
-            .equals(requisitionTemplateColumnEntry.getValue()));
+        .forEach(requisitionTemplateColumnEntry ->
+            assertEquals(template.getColumnsMap()
+                    .get(requisitionTemplateColumnEntry.getKey()).getName(),
+                requisitionTemplateColumnEntry.getValue().getName()));
     assertEquals(templateDto.getId(), newTemplate.getId());
   }
 }
