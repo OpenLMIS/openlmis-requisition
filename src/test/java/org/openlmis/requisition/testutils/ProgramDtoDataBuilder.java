@@ -33,8 +33,8 @@ public class ProgramDtoDataBuilder {
   private Boolean active = true;
   private Boolean periodsSkippable = true;
   private Boolean showNonFullSupplyTab = true;
-  private Boolean skipAuthorization = true;
-  private Boolean enableDatePhysicalStockCountCompleted = true;
+  private Boolean skipAuthorization = false;
+  private Boolean enableDatePhysicalStockCountCompleted = false;
 
   /**
    * Builds ProgramDto instance with test data.
