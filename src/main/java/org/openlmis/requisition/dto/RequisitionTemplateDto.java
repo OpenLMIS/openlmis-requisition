@@ -34,13 +34,8 @@ import java.util.UUID;
 public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
-  @Getter
   private UUID programId;
-
-  @Getter
-  private boolean populateStockOnHandFromStockCardsEnabled;
-
-  @Getter
+  private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
 
   /**

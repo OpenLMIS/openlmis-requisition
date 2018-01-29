@@ -658,7 +658,7 @@ public class RequisitionTemplateValidatorTest {
 
   private RequisitionTemplate getTemplatePopulatedByStock() {
     RequisitionTemplate template = baseTemplateBuilder()
-        .withPopulateStockOnHandFromStockCardsEnabled()
+        .withPopulateStockOnHandFromStockCards()
         .build();
     template.findColumn(STOCK_ON_HAND).getColumnDefinition()
         .getSources().add(SourceType.STOCK_CARDS);

@@ -118,7 +118,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
     validateNumberOfPeriodsToAverage(requisitionTemplate);
 
-    if (requisitionTemplate.isPopulateStockOnHandFromStockCardsEnabled()) {
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       validateStockManagementFields(requisitionTemplate);
     }
 

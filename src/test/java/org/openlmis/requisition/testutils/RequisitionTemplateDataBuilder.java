@@ -36,7 +36,7 @@ public class RequisitionTemplateDataBuilder {
   private ZonedDateTime modifiedDate;
   private UUID programId;
   private Integer numberOfPeriodsToAverage;
-  private boolean populateStockOnHandFromStockCardsEnabled;
+  private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumn> columnsMap;
 
   /**
@@ -48,7 +48,7 @@ public class RequisitionTemplateDataBuilder {
     modifiedDate = ZonedDateTime.now();
     programId = UUID.randomUUID();
     numberOfPeriodsToAverage = 6;
-    populateStockOnHandFromStockCardsEnabled = false;
+    populateStockOnHandFromStockCards = false;
     columnsMap = new HashMap<>();
   }
 
@@ -57,15 +57,15 @@ public class RequisitionTemplateDataBuilder {
    */
   public RequisitionTemplate build() {
     RequisitionTemplate template = new RequisitionTemplate(programId, numberOfPeriodsToAverage,
-        populateStockOnHandFromStockCardsEnabled, columnsMap);
+        populateStockOnHandFromStockCards, columnsMap);
     template.setId(id);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
     return template;
   }
 
-  public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCardsEnabled() {
-    populateStockOnHandFromStockCardsEnabled = true;
+  public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards() {
+    populateStockOnHandFromStockCards = true;
     return this;
   }
 

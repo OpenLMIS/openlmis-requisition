@@ -46,8 +46,6 @@ import javax.persistence.Table;
 @Table(name = "requisition_templates")
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 @EqualsAndHashCode(callSuper = true)
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
@@ -55,20 +53,27 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
 
+  @Getter
+  @Setter
   @Type(type = UUID_TYPE)
   private UUID programId;
 
+  @Getter
+  @Setter
   private Integer numberOfPeriodsToAverage;
 
-  private boolean populateStockOnHandFromStockCardsEnabled;
+  @Getter
+  @Setter
+  private boolean populateStockOnHandFromStockCards;
 
+  @Getter
+  @Setter
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
   @CollectionTable(
       name = "columns_maps",
       joinColumns = @JoinColumn(name = "requisitionTemplateId"))
-
   private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   /**
@@ -302,8 +307,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     requisitionTemplate.setCreatedDate(importer.getCreatedDate());
     requisitionTemplate.setModifiedDate(importer.getModifiedDate());
     requisitionTemplate.setProgramId(importer.getProgramId());
-    requisitionTemplate.setPopulateStockOnHandFromStockCardsEnabled(
-        importer.isPopulateStockOnHandFromStockCardsEnabled());
+    requisitionTemplate.setPopulateStockOnHandFromStockCards(
+        importer.isPopulateStockOnHandFromStockCards());
     requisitionTemplate.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
     requisitionTemplate.setColumnsMap(new HashMap<>());
 
@@ -326,7 +331,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setProgramId(programId);
-    exporter.setPopulateStockOnHandFromStockCardsEnabled(populateStockOnHandFromStockCardsEnabled);
+    exporter.setPopulateStockOnHandFromStockCards(populateStockOnHandFromStockCards);
     exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
   }
 
@@ -339,7 +344,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     UUID getProgramId();
 
-    boolean isPopulateStockOnHandFromStockCardsEnabled();
+    boolean isPopulateStockOnHandFromStockCards();
 
     Integer getNumberOfPeriodsToAverage();
 
@@ -355,7 +360,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     void setProgramId(UUID programId);
 
-    void setPopulateStockOnHandFromStockCardsEnabled(boolean stockManagementEnabled);
+    void setPopulateStockOnHandFromStockCards(boolean populateStockOnHandFromStockCards);
 
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
   }

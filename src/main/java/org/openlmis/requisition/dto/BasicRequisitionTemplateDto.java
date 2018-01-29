@@ -30,7 +30,7 @@ import java.util.UUID;
 public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter {
 
-  private boolean populateStockOnHandFromStockCardsEnabled;
+  private boolean populateStockOnHandFromStockCards;
 
   private Map<String, BasicRequisitionTemplateColumnDto> columnsMap;
 
