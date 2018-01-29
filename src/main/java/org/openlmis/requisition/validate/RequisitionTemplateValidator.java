@@ -249,7 +249,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
       RequisitionTemplateColumn soh = requisitionTemplate.getColumnsMap().get(STOCK_ON_HAND);
       if (!SourceType.STOCK_CARDS.equals(soh.getSource())) {
         rejectValue(errors, COLUMNS_MAP,
-            new Message(ERROR_COLUMN_SOURCE_INVALID, STOCK_ON_HAND, SourceType.STOCK_CARDS,
+            new Message(ERROR_COLUMN_SOURCE_INVALID, soh.getLabel(), SourceType.STOCK_CARDS,
                 soh.getSource()));
       }
     }
