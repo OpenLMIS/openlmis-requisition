@@ -213,8 +213,8 @@ public abstract class MessageKeys {
       + ".requisitionTemplateInUse";
   public static final String ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL =
       ERROR_PREFIX + ".validation.sourceOfRequisitionTemplateColumnCannotBeNull";
-  public static final String ERROR_SOH_STOCK_CARDS_SOURCE_REQUIRED =
-      ERROR_PREFIX + ".validation.stockOnHand.source.stockCards.required";
+  public static final String ERROR_COLUMN_SOURCE_INVALID =
+      ERROR_PREFIX + ".validation.column.source.invalid";
   public static final String ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS =
       ERROR_PREFIX + ".validation.column.displayedWhenStockOnHandPopulatedFromStockCards";
   public static final String ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED =

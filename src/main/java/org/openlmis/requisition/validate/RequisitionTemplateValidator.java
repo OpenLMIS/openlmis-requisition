@@ -28,7 +28,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOH_STOCK_CARDS_SOURCE_REQUIRED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
@@ -249,7 +249,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
       RequisitionTemplateColumn soh = requisitionTemplate.getColumnsMap().get(STOCK_ON_HAND);
       if (!SourceType.STOCK_CARDS.equals(soh.getSource())) {
         rejectValue(errors, COLUMNS_MAP,
-            new Message(ERROR_SOH_STOCK_CARDS_SOURCE_REQUIRED, soh.getSource()));
+            new Message(ERROR_COLUMN_SOURCE_INVALID, STOCK_ON_HAND, SourceType.STOCK_CARDS,
+                soh.getSource()));
       }
     }
 
