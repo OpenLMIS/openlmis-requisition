@@ -58,6 +58,11 @@ public class RequisitionTemplateColumnDataBuilder {
         columnDefinition, option, definition);
   }
 
+  public RequisitionTemplateColumnDataBuilder withNotDisplayed() {
+    this.isDisplayed = false;
+    return this;
+  }
+
   public RequisitionTemplateColumnDataBuilder withName(String name) {
     this.name = name;
     return this;

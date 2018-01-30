@@ -170,7 +170,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
     if (template.isColumnInTemplate(field) && template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
         if (template.isColumnInTemplate(requiredField)
-            && template.isColumnUserInput(requiredField)) {
+            && template.isColumnUserInput(requiredField)
+            && !(STOCK_DISABLED_COLUMNS.contains(requiredField)
+            && template.isPopulateStockOnHandFromStockCards())) {
           rejectIfNotDisplayed(errors, template, requiredField, COLUMNS_MAP,
               new Message(suffix, requiredField));
         }
@@ -180,6 +182,11 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   private void validateColumns(RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+      if (template.isPopulateStockOnHandFromStockCards()
+          && STOCK_DISABLED_COLUMNS.contains(column.getName())) {
+        return;
+      }
+
       rejectIfNotAlphanumeric(
           errors, column.getLabel(), COLUMNS_MAP,
           new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, column.getName())

@@ -320,6 +320,25 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectWhenAverageConsumptionIsDisplayedAndStockoutDaysIsDisabled() {
+    RequisitionTemplate requisitionTemplate = getTemplatePopulatedByStock();
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withName(TOTAL_STOCKOUT_DAYS)
+        .withIndicator("X")
+        .withNotDisplayed()
+        .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
+            .withName(TOTAL_STOCKOUT_DAYS)
+            .withSources(Sets.asSet(SourceType.USER_INPUT))
+            .build())
+        .withSource(SourceType.USER_INPUT)
+        .build();
+    requisitionTemplate.getColumnsMap().put(TOTAL_STOCKOUT_DAYS, column);
+    validator.validate(requisitionTemplate, errors);
+
+    verify(errors, never()).rejectValue(anyString(), anyString());
+  }
+
+  @Test
   public void shouldNotRejectWhenConsumptionsAreDisplayedAndStockoutDaysIsDisplayed() {
     RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
