@@ -17,6 +17,7 @@ package org.openlmis.requisition.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,8 +32,8 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDto {
-  private UUID id;
+@EqualsAndHashCode(callSuper = true)
+public final class OrderDto extends BaseDto {
   private UUID externalId;
   private Boolean emergency;
   private FacilityDto facility;

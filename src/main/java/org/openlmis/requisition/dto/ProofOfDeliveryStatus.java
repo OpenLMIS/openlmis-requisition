@@ -15,26 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import java.util.UUID;
-
-@EqualsAndHashCode
-public class ObjectReferenceDto {
-
-  @Getter
-  private final UUID id;
-
-  @Getter
-  private final String href;
-
-  ObjectReferenceDto() {
-    this(null);
-  }
-
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
-  }
-
+public enum ProofOfDeliveryStatus {
+  INITIATED,
+  CONFIRMED
 }

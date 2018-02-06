@@ -18,6 +18,7 @@ package org.openlmis.requisition.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,13 +30,14 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProofOfDeliveryLineItemDto {
-  private UUID id;
-  private OrderLineItemDto orderLineItem;
-  private Long packsToShip;
-  private Long quantityShipped;
-  private Long quantityReceived;
-  private Long quantityReturned;
-  private String replacedProductCode;
+@EqualsAndHashCode(callSuper = true)
+public final class ProofOfDeliveryLineItemDto extends BaseDto {
+  private ObjectReferenceDto orderable;
+  private ObjectReferenceDto lot;
+  private Integer quantityAccepted;
+  private Boolean useVvm;
+  private VvmStatus vvmStatus;
+  private Integer quantityRejected;
+  private UUID rejectionReasonId;
   private String notes;
 }

@@ -13,28 +13,38 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.service.fulfillment;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode
-public class ObjectReferenceDto {
+@Service
+public class ProofOfDeliveryFulfillmentService extends BaseFulfillmentService<ProofOfDeliveryDto> {
 
-  @Getter
-  private final UUID id;
-
-  @Getter
-  private final String href;
-
-  ObjectReferenceDto() {
-    this(null);
+  @Override
+  protected String getUrl() {
+    return "/api/proofOfDeliveries/";
   }
 
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
+  @Override
+  protected Class<ProofOfDeliveryDto> getResultClass() {
+    return ProofOfDeliveryDto.class;
+  }
+
+  @Override
+  protected Class<ProofOfDeliveryDto[]> getArrayResultClass() {
+    return ProofOfDeliveryDto[].class;
+  }
+
+  /**
+   * Finds proof of delivery related with the given order.
+   */
+  public List<ProofOfDeliveryDto> getProofOfDeliveries(UUID shipmentId) {
+    return getPage("", RequestParameters.init().set("shipmentId", shipmentId)).getContent();
   }
 
 }

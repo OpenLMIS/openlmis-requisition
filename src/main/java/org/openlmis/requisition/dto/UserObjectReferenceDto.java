@@ -15,26 +15,15 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import java.util.UUID;
 
-@EqualsAndHashCode
-public class ObjectReferenceDto {
-
-  @Getter
-  private final UUID id;
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+public final class UserObjectReferenceDto extends ObjectReferenceDto {
 
   @Getter
-  private final String href;
-
-  ObjectReferenceDto() {
-    this(null);
-  }
-
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
-  }
+  private final String username;
 
 }

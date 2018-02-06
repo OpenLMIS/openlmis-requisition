@@ -15,15 +15,19 @@
 
 package org.openlmis.requisition.dto;
 
+
+import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -33,31 +37,32 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProofOfDeliveryDto {
-  private UUID id;
-  private OrderDto order;
-  private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
-  private String deliveredBy;
+@EqualsAndHashCode(callSuper = true)
+public final class ProofOfDeliveryDto extends BaseDto {
+  private ObjectReferenceDto shipment;
+  private ProofOfDeliveryStatus status;
+  private List<ProofOfDeliveryLineItemDto> lineItems;
   private String receivedBy;
-  private ZonedDateTime receivedDate;
+  private String deliveredBy;
+  private LocalDate receivedDate;
 
   @JsonIgnore
   public boolean isSubmitted() {
-    return null != order && OrderStatus.RECEIVED == order.getStatus();
+    return CONFIRMED == status;
   }
 
   /**
    * Finds a correct line item based on product id.
    */
   public ProofOfDeliveryLineItemDto findLineByProductId(UUID productId) {
-    if (null == proofOfDeliveryLineItems) {
+    if (null == lineItems) {
       return null;
     }
 
-    return proofOfDeliveryLineItems
+    return lineItems
         .stream()
-        .filter(e -> null != e.getOrderLineItem() && null != e.getOrderLineItem().getOrderable())
-        .filter(e -> Objects.equals(productId, e.getOrderLineItem().getOrderable().getId()))
+        .filter(e -> null != e.getOrderable())
+        .filter(e -> Objects.equals(productId, e.getOrderable().getId()))
         .findFirst()
         .orElse(null);
   }

@@ -16,6 +16,9 @@
 package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
@@ -70,8 +73,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -306,7 +307,7 @@ public class Requisition extends BaseTimestampedEntity {
 
       Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions.get(0)
           .getRequisitionLineItems().stream().collect(
-              Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity(),
+              toMap(RequisitionLineItem::getOrderableId, identity(),
                   (item1, item2) -> item1));
 
       getNonSkippedFullSupplyRequisitionLineItems().forEach(currentLine -> {
@@ -329,11 +330,10 @@ public class Requisition extends BaseTimestampedEntity {
       }
 
       Map<UUID, ProofOfDeliveryLineItemDto> productIdToPodLine = proofOfDelivery
-          .getProofOfDeliveryLineItems().stream().filter(
-              li -> null != li.getOrderLineItem() && null != li.getOrderLineItem().getOrderable())
-          .collect(Collectors.toMap(
-              li -> li.getOrderLineItem().getOrderable().getId(), Function.identity(),
-              (item1, item2) -> item1));
+          .getLineItems()
+          .stream()
+          .filter(li -> null != li.getOrderable())
+          .collect(toMap(li -> li.getOrderable().getId(), identity(), (one, two) -> one));
 
       nonSkippedFullSupplyItems.forEach(requisitionLine -> {
         // ... we try to find line in POD for the same product ...
@@ -343,7 +343,7 @@ public class Requisition extends BaseTimestampedEntity {
         // ... and if line exists we set value for Total Received Quantity (B) column
         if (null != proofOfDeliveryLine) {
           requisitionLine.setTotalReceivedQuantity(
-              (int) zeroIfNull(proofOfDeliveryLine.getQuantityReceived())
+              zeroIfNull(proofOfDeliveryLine.getQuantityAccepted())
           );
         }
       });
@@ -529,7 +529,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
     return this.requisitionLineItems.stream()
         .filter(line -> !line.isLineSkipped())
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   /**
@@ -544,7 +544,7 @@ public class Requisition extends BaseTimestampedEntity {
     return this.requisitionLineItems.stream()
         .filter(line -> !line.isLineSkipped())
         .filter(line -> !line.isNonFullSupply())
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   /**
@@ -559,7 +559,7 @@ public class Requisition extends BaseTimestampedEntity {
     return this.requisitionLineItems.stream()
         .filter(line -> !line.isLineSkipped())
         .filter(RequisitionLineItem::isNonFullSupply)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   /**
@@ -570,7 +570,7 @@ public class Requisition extends BaseTimestampedEntity {
   public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
     return this.requisitionLineItems.stream()
         .filter(RequisitionLineItem::isLineSkipped)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   /**

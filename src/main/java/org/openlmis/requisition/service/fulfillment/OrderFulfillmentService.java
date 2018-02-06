@@ -19,12 +19,10 @@ import static org.openlmis.requisition.utils.RequestHelper.createEntity;
 import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import org.openlmis.requisition.dto.OrderDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.RequestParameters;
 import org.openlmis.requisition.utils.Message;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -75,7 +73,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   /**
    * Finds orders that matched the provided parameters.
    */
-  public Page<OrderDto> search(UUID supplyingFacility, UUID requestingFacility,
+  public List<OrderDto> search(UUID supplyingFacility, UUID requestingFacility,
                                UUID program, UUID processingPeriod, String status) {
     RequestParameters parameters = RequestParameters
         .init()
@@ -85,18 +83,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
         .set("processingPeriod", processingPeriod)
         .set("status", status);
 
-    return getPage("search", parameters);
-  }
-
-  /**
-   * Finds proof of delivery related with the given order.
-   */
-  public ProofOfDeliveryDto getProofOfDelivery(UUID orderId) {
-    return findOne(
-        orderId + "/proofOfDeliveries",
-        RequestParameters.init(),
-        ProofOfDeliveryDto.class
-    );
+    return getPage("search", parameters).getContent();
   }
 
   private void postNew(String url, HttpEntity<?> body) {

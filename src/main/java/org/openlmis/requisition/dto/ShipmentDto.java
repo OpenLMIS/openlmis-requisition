@@ -15,26 +15,26 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@EqualsAndHashCode
-public class ObjectReferenceDto {
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 
-  @Getter
-  private final UUID id;
-
-  @Getter
-  private final String href;
-
-  ObjectReferenceDto() {
-    this(null);
-  }
-
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
-  }
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public final class ShipmentDto extends BaseDto {
+  private ObjectReferenceDto order;
+  private UserObjectReferenceDto shippedBy;
+  private ZonedDateTime shippedDate;
+  private String notes;
+  private List<ShipmentLineItemDto> lineItems;
+  private Map<String, String> extraData;
 }

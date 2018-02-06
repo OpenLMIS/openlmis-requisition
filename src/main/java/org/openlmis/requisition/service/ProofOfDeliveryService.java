@@ -22,9 +22,11 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
+import org.openlmis.requisition.service.fulfillment.ShipmentFulfillmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +37,13 @@ public class ProofOfDeliveryService {
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
 
+  @Autowired
+  private ShipmentFulfillmentService shipmentFulfillmentService;
+
+  @Autowired
+  private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
+
+
   ProofOfDeliveryDto get(Requisition requisition) {
     if (RequisitionStatus.SKIPPED == requisition.getStatus()) {
       return null;
@@ -44,19 +53,24 @@ public class ProofOfDeliveryService {
       return null;
     }
 
-    Page<OrderDto> orders = orderFulfillmentService.search(
+    List<OrderDto> orders = orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null);
 
-    if (null == orders) {
+    if (isEmpty(orders)) {
       return null;
     }
 
-    List<OrderDto> content = orders.getContent();
+    List<ShipmentDto> shipments = shipmentFulfillmentService.getShipments(orders.get(0).getId());
 
-    return !isEmpty(content)
-        ? orderFulfillmentService.getProofOfDelivery(content.get(0).getId())
-        : null;
+    if (isEmpty(shipments)) {
+      return null;
+    }
+
+    List<ProofOfDeliveryDto> pods = proofOfDeliveryFulfillmentService
+        .getProofOfDeliveries(shipments.get(0).getId());
+
+    return isEmpty(pods) ? null : pods.get(0);
   }
 
 }

@@ -19,13 +19,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
-@EqualsAndHashCode
-public class RoleAssignmentDto {
-  private UUID id;
+@EqualsAndHashCode(callSuper = true)
+public final class RoleAssignmentDto extends BaseDto {
   protected RoleDto role;
   protected UserDto user;
 }
