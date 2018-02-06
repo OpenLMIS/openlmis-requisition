@@ -116,11 +116,7 @@ public final class DtoGenerator {
       return null;
     }
 
-    if (Object.class.isAssignableFrom(propertyType)) {
-      return of((Class<?>) propertyType);
-    }
-
-    return null;
+    return of(propertyType);
   }
 
   private static Object generateCustomValue(Class<?> propertyType) {
