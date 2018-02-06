@@ -55,6 +55,7 @@ import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.security.core.context.SecurityContext;
@@ -84,46 +85,23 @@ public class PermissionServiceTest {
   private PermissionService permissionService;
 
   @Mock
-  private UserDto user;
-
-  @Mock
-  private RightDto requisitionCreateRight;
-
-  @Mock
-  private RightDto requisitionApproveRight;
-
-  @Mock
-  private RightDto requisitionAuthorizeRight;
-
-  @Mock
-  private RightDto requisitionDeleteRight;
-
-  @Mock
-  private RightDto requisitionViewRight;
-
-  @Mock
-  private RightDto requisitionConvertRight;
-
-  @Mock
-  private RightDto manageRequisitionTemplateRight;
-
-  @Mock
   private Requisition requisition;
 
   private SecurityContext securityContext;
+
+  private UserDto user = DtoGenerator.of(UserDto.class);
+  private RightDto requisitionCreateRight = DtoGenerator.of(RightDto.class, 7).get(0);
+  private RightDto requisitionApproveRight = DtoGenerator.of(RightDto.class, 7).get(1);
+  private RightDto requisitionAuthorizeRight = DtoGenerator.of(RightDto.class, 7).get(2);
+  private RightDto requisitionDeleteRight = DtoGenerator.of(RightDto.class, 7).get(3);
+  private RightDto requisitionViewRight = DtoGenerator.of(RightDto.class, 7).get(4);
+  private RightDto requisitionConvertRight = DtoGenerator.of(RightDto.class, 7).get(5);
+  private RightDto manageRequisitionTemplateRight = DtoGenerator.of(RightDto.class, 7).get(6);
 
   private OAuth2Authentication trustedClient;
   private OAuth2Authentication userClient;
   private OAuth2Authentication apiKeyClient;
 
-  private UUID userId = UUID.randomUUID();
-  private UUID requisitionCreateRightId = UUID.randomUUID();
-  private UUID requisitionApproveRightId = UUID.randomUUID();
-  private UUID requisitionAuthorizeRightId = UUID.randomUUID();
-  private UUID requisitionDeleteRightId = UUID.randomUUID();
-  private UUID requisitionViewRightId = UUID.randomUUID();
-  private UUID requisitionConvertRightId = UUID.randomUUID();
-  private UUID manageRequisitionTemplateRightId = UUID.randomUUID();
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
@@ -142,16 +120,6 @@ public class PermissionServiceTest {
     convertToOrderDto.setRequisitionId(requisitionId);
     convertToOrderDto.setSupplyingDepotId(facilityId);
     convertToOrderDtos.add(convertToOrderDto);
-
-    when(user.getId()).thenReturn(userId);
-
-    when(requisitionCreateRight.getId()).thenReturn(requisitionCreateRightId);
-    when(requisitionApproveRight.getId()).thenReturn(requisitionApproveRightId);
-    when(requisitionAuthorizeRight.getId()).thenReturn(requisitionAuthorizeRightId);
-    when(requisitionDeleteRight.getId()).thenReturn(requisitionDeleteRightId);
-    when(requisitionViewRight.getId()).thenReturn(requisitionViewRightId);
-    when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
-    when(manageRequisitionTemplateRight.getId()).thenReturn(manageRequisitionTemplateRightId);
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -181,12 +149,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canInitRequisition() {
-    hasRight(requisitionCreateRightId, true);
+    hasRight(requisitionCreateRight, true);
 
     expectValidationSucceeds(permissionService.canInitRequisition(programId, facilityId));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
@@ -197,14 +165,14 @@ public class PermissionServiceTest {
 
   @Test
   public void canUpdateRequisition() {
-    hasRight(requisitionCreateRightId, true);
+    hasRight(requisitionCreateRight, true);
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
     expectValidationSucceeds(permissionService.canUpdateRequisition(requisitionId));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
@@ -217,12 +185,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canSubmitRequisition() throws Exception {
-    hasRight(requisitionCreateRightId, true);
+    hasRight(requisitionCreateRight, true);
 
     permissionService.canSubmitRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRightId);
+    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
@@ -233,12 +201,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canApproveRequisition() {
-    hasRight(requisitionApproveRightId, true);
+    hasRight(requisitionApproveRight, true);
 
     permissionService.canApproveRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRightId);
+    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
   }
 
   @Test
@@ -249,12 +217,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canAuthorizeRequisition() {
-    hasRight(requisitionAuthorizeRightId, true);
+    hasRight(requisitionAuthorizeRight, true);
 
     permissionService.canAuthorizeRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRightId);
+    verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRight);
   }
 
   @Test
@@ -265,19 +233,19 @@ public class PermissionServiceTest {
 
   @Test
   public void canDeleteInitiatedRequisitionWhenHasCreateRight() {
-    hasRight(requisitionDeleteRightId, true);
-    hasRight(requisitionCreateRightId, true);
+    hasRight(requisitionDeleteRight, true);
+    hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
     permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void cannotDeleteInitiatedRequisitionWhenHasNoCreateRight() {
-    hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
     expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
@@ -286,19 +254,19 @@ public class PermissionServiceTest {
 
   @Test
   public void shouldDeleteSkippedRequisitionWhenHasCreateRight() {
-    hasRight(requisitionDeleteRightId, true);
-    hasRight(requisitionCreateRightId, true);
+    hasRight(requisitionDeleteRight, true);
+    hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
     permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void shouldNotDeleteSkippedRequisitionWhenHasNoCreateRight() {
-    hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
     expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
@@ -307,19 +275,19 @@ public class PermissionServiceTest {
 
   @Test
   public void canDeleteSubmittedRequisitionWhenHasAuthorizeRight() {
-    hasRight(requisitionDeleteRightId, true);
-    hasRight(requisitionAuthorizeRightId, true);
+    hasRight(requisitionDeleteRight, true);
+    hasRight(requisitionAuthorizeRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
     permissionService.canDeleteRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRightId);
+    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void cannotDeleteSubmittedRequisitionWhenHasNoAuthorizeRight() {
-    hasRight(requisitionDeleteRightId, true);
+    hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
     expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
@@ -344,12 +312,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canViewRequisition() throws Exception {
-    hasRight(requisitionViewRightId, true);
+    hasRight(requisitionViewRight, true);
 
     permissionService.canViewRequisition(requisitionId);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_VIEW, requisitionViewRightId);
+    verifySupervisionRight(order, REQUISITION_VIEW, requisitionViewRight);
   }
 
   @Test
@@ -359,12 +327,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canConvertToOrder() throws Exception {
-    hasRight(requisitionConvertRightId, true);
+    hasRight(requisitionConvertRight, true);
 
     permissionService.canConvertToOrder(convertToOrderDtos);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRightId);
+    verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRight);
   }
 
   @Test
@@ -374,12 +342,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canManageRequisitionTemplate() throws Exception {
-    hasRight(manageRequisitionTemplateRightId, true);
+    hasRight(manageRequisitionTemplateRight, true);
 
     permissionService.canManageRequisitionTemplate();
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyGeneralAdminRight(order, REQUISITION_TEMPLATES_MANAGE, manageRequisitionTemplateRightId);
+    verifyGeneralAdminRight(order, REQUISITION_TEMPLATES_MANAGE, manageRequisitionTemplateRight);
   }
 
   @Test
@@ -486,16 +454,16 @@ public class PermissionServiceTest {
     assertEquals(0, permissionStrings.size());
   }
   
-  private void hasRight(UUID rightId, boolean assign) {
+  private void hasRight(RightDto right, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
-        .hasRight(userId, rightId, programId, facilityId, null)
+        .hasRight(user.getId(), right.getId(), programId, facilityId, null)
     ).thenReturn(resultDto);
     when(userReferenceDataService
-        .hasRight(userId, rightId, null, null, facilityId)
+        .hasRight(user.getId(), right.getId(), null, null, facilityId)
     ).thenReturn(resultDto);
     when(userReferenceDataService
-        .hasRight(userId, rightId, null, null, null)
+        .hasRight(user.getId(), right.getId(), null, null, null)
     ).thenReturn(resultDto);
   }
 
@@ -518,24 +486,24 @@ public class PermissionServiceTest {
         status.toString(), rightName), result.getError().getMessage());
   }
 
-  private void verifySupervisionRight(InOrder order, String rightName, UUID rightId) {
+  private void verifySupervisionRight(InOrder order, String rightName, RightDto right) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, programId, facilityId,
-        null);
+    order.verify(userReferenceDataService)
+        .hasRight(user.getId(), right.getId(), programId, facilityId, null);
   }
 
-  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId) {
+  private void verifyFulfillmentRight(InOrder order, String rightName, RightDto right) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null,
+    order.verify(userReferenceDataService).hasRight(user.getId(), right.getId(), null, null,
         facilityId);
   }
 
-  private void verifyGeneralAdminRight(InOrder order, String rightName, UUID rightId) {
+  private void verifyGeneralAdminRight(InOrder order, String rightName, RightDto right) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, null);
+    order.verify(userReferenceDataService).hasRight(user.getId(), right.getId(), null, null, null);
   }
 
 }

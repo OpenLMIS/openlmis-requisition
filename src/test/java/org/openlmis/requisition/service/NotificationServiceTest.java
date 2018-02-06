@@ -18,7 +18,6 @@ package org.openlmis.requisition.service;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,16 +29,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+
 import java.net.URI;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationServiceTest {
   private static final String ACCESS_TOKEN = "token";
-  private static final String USER_EMAIL = "test@test.te";
   private static final String MAIL_SUBJECT = "subject";
   private static final String MAIL_CONTENT = "content";
   private static final String BASE_URL = "http://localhost";
@@ -63,8 +63,7 @@ public class NotificationServiceTest {
 
   @Test
   public void shouldNotifyUser() throws Exception {
-    UserDto user = mock(UserDto.class);
-    when(user.getEmail()).thenReturn(USER_EMAIL);
+    UserDto user = DtoGenerator.of(UserDto.class);
 
     notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT);
 

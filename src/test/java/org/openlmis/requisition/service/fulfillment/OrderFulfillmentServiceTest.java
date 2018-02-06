@@ -19,22 +19,17 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.openlmis.requisition.dto.OrderDto;
-import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 
 import java.net.URI;
@@ -121,39 +116,4 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     service.create(asList(order, order2));
   }
 
-  @Test
-  public void shouldGetProofOfDeliveries() throws Exception {
-    // given
-    ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
-    pod.setId(UUID.randomUUID());
-
-    ResponseEntity<ProofOfDeliveryDto> response = mock(ResponseEntity.class);
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(ProofOfDeliveryDto.class)))
-        .thenReturn(response);
-
-    when(response.getBody()).thenReturn(pod);
-
-    // when
-    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
-    OrderDto order = generateInstance();
-    ProofOfDeliveryDto actual = service.getProofOfDelivery(order.getId());
-
-    // then
-    verify(restTemplate).exchange(
-          uriCaptor.capture(), eq(HttpMethod.GET),
-          entityCaptor.capture(), eq(ProofOfDeliveryDto.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + order.getId()
-        + "/proofOfDeliveries";
-
-    assertThat(uri.toString(), is(equalTo(url)));
-    assertThat(actual.getId(), is(equalTo(pod.getId())));
-
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
-    assertAuthHeader(entityCaptor.getValue());
-  }
 }

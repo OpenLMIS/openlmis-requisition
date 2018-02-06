@@ -21,11 +21,6 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -45,8 +40,14 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionReportDtoBuilderTest {
@@ -74,11 +75,8 @@ public class RequisitionReportDtoBuilderTest {
   @Mock
   private RequisitionDto requisitionDto;
 
-  @Mock
-  private UserDto user1;
-
-  @Mock
-  private UserDto user2;
+  private UserDto user1 = DtoGenerator.of(UserDto.class, 2).get(0);
+  private UserDto user2 = DtoGenerator.of(UserDto.class, 2).get(1);
 
   @Mock
   private List<RequisitionLineItemDto> fullSupplyDtos;
@@ -92,19 +90,14 @@ public class RequisitionReportDtoBuilderTest {
   @Mock
   private List<RequisitionLineItem> nonFullSupply;
 
-  private UUID userId1 = UUID.randomUUID();
-  private UUID userId2 = UUID.randomUUID();
-
   @InjectMocks
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder =
       new RequisitionReportDtoBuilder();
 
   @Before
   public void setUp() {
-    when(user1.getId()).thenReturn(userId1);
-    when(user2.getId()).thenReturn(userId2);
-    when(userReferenceDataService.findOne(userId1)).thenReturn(user1);
-    when(userReferenceDataService.findOne(userId2)).thenReturn(user2);
+    when(userReferenceDataService.findOne(user1.getId())).thenReturn(user1);
+    when(userReferenceDataService.findOne(user2.getId())).thenReturn(user2);
     when(requisitionDtoBuilder.build(requisition)).thenReturn(requisitionDto);
 
     when(requisition.getNonSkippedFullSupplyRequisitionLineItems())
@@ -148,13 +141,13 @@ public class RequisitionReportDtoBuilderTest {
     StatusChange authorizeStatusChange = mock(StatusChange.class);
     when(initStatusChange.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(initStatusChange.getCreatedDate()).thenReturn(initDt);
-    when(initStatusChange.getAuthorId()).thenReturn(userId1);
+    when(initStatusChange.getAuthorId()).thenReturn(user1.getId());
     when(submitStatusChange.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(submitStatusChange.getCreatedDate()).thenReturn(submitDt);
-    when(submitStatusChange.getAuthorId()).thenReturn(userId2);
+    when(submitStatusChange.getAuthorId()).thenReturn(user2.getId());
     when(authorizeStatusChange.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
     when(authorizeStatusChange.getCreatedDate()).thenReturn(authorizeDt);
-    when(authorizeStatusChange.getAuthorId()).thenReturn(userId1);
+    when(authorizeStatusChange.getAuthorId()).thenReturn(user1.getId());
     List<StatusChange> statusChanges = new ArrayList<>();
     statusChanges.add(initStatusChange);
     statusChanges.add(submitStatusChange);

@@ -46,6 +46,8 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
@@ -94,10 +96,10 @@ public class ApprovedRequisitionNotifierTest {
   @InjectMocks
   private ApprovedRequisitionNotifier approvedRequisitionNotifier;
 
-  private UserDto clerkOne = mock(UserDto.class);
-  private UserDto clerkTwo = mock(UserDto.class);
-  private UserDto clerkThree = mock(UserDto.class);
-  private UserDto clerkFour = mock(UserDto.class);
+  private UserDto clerkOne;
+  private UserDto clerkTwo;
+  private UserDto clerkThree;
+  private UserDto clerkFour;
 
   private FacilityDto warehouseOne = mock(FacilityDto.class);
   private FacilityDto warehouseTwo = mock(FacilityDto.class);
@@ -108,7 +110,6 @@ public class ApprovedRequisitionNotifierTest {
   private UUID processingPeriodId = UUID.randomUUID();
   private UUID warehouseOneId = UUID.randomUUID();
   private UUID warehouseTwoId = UUID.randomUUID();
-  private UUID rightId = UUID.randomUUID();
 
   private Requisition requisition = mock(Requisition.class);
   private FacilityDto facility = mock(FacilityDto.class);
@@ -121,7 +122,7 @@ public class ApprovedRequisitionNotifierTest {
   private Message regularRequisitionMessage = new Message(REQUISITION_TYPE_REGULAR);
   private Message emergencyRequisitionMessage = new Message(REQUISITION_TYPE_EMERGENCY);
 
-  private RightDto right = mock(RightDto.class);
+  private RightDto right = DtoGenerator.of(RightDto.class);
 
   @Before
   public void setUp() {
@@ -130,12 +131,12 @@ public class ApprovedRequisitionNotifierTest {
     when(processingPeriod.getName()).thenReturn("Mock Period");
     when(warehouseOne.getId()).thenReturn(warehouseOneId);
     when(warehouseTwo.getId()).thenReturn(warehouseTwoId);
-    when(right.getId()).thenReturn(rightId);
 
-    mockClerk(clerkOne, "ClerkOne");
-    mockClerk(clerkTwo, "ClerkTwo");
-    mockClerk(clerkThree, "ClerkThree");
-    mockClerk(clerkFour, "ClerkFour");
+    clerkOne = new UserDtoDataBuilder().withUsername("ClerkOne").build();
+    clerkTwo = new UserDtoDataBuilder().withUsername("ClerkTwo").build();
+    clerkThree = new UserDtoDataBuilder().withUsername("ClerkThree").build();
+    clerkFour = new UserDtoDataBuilder().withUsername("ClerkFour").build();
+
     prepareStatusChange();
     prepareRequisition();
     mockServices();
@@ -178,7 +179,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatCanNotBeNotified() {
-    when(clerkOne.allowNotify()).thenReturn(false);
+    clerkOne = new UserDtoDataBuilder().denyNotify().build();
 
     approvedRequisitionNotifier.notifyClerks(requisition);
 
@@ -194,9 +195,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatAreNotVerified() {
-    when(clerkOne.activeAndVerified()).thenCallRealMethod();
-    when(clerkOne.isActive()).thenReturn(true);
-    when(clerkOne.isVerified()).thenReturn(false);
+    clerkOne = new UserDtoDataBuilder().asUnverified().build();
 
     approvedRequisitionNotifier.notifyClerks(requisition);
 
@@ -212,7 +211,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersWithoutEmail() {
-    when(clerkOne.getEmail()).thenReturn(null);
+    clerkOne = new UserDtoDataBuilder().withoutEmail().build();
 
     approvedRequisitionNotifier.notifyClerks(requisition);
 
@@ -235,13 +234,13 @@ public class ApprovedRequisitionNotifierTest {
         .thenReturn(Arrays.asList(warehouseOne, warehouseTwo));
     when(authenticationHelper.getRight(RightName.ORDERS_EDIT)).thenReturn(right);
     when(userReferenceDataService.findUsers(
-        rightId,
+        right.getId(),
         null,
         null,
         warehouseOneId)
     ).thenReturn(Arrays.asList(clerkOne, clerkTwo, clerkThree));
     when(userReferenceDataService.findUsers(
-        rightId,
+        right.getId(),
         null,
         null,
         warehouseTwoId
@@ -281,13 +280,6 @@ public class ApprovedRequisitionNotifierTest {
     when(requisition.getProcessingPeriodId()).thenReturn(processingPeriodId);
     when(requisition.getEmergency()).thenReturn(false);
     when(requisition.getStatusChanges()).thenReturn(Arrays.asList(statusChange));
-  }
-
-  private void mockClerk(UserDto clerk, String username) {
-    when(clerk.getUsername()).thenReturn(username);
-    when(clerk.allowNotify()).thenReturn(true);
-    when(clerk.getEmail()).thenReturn("someEmail");
-    when(clerk.activeAndVerified()).thenReturn(true);
   }
 
 }

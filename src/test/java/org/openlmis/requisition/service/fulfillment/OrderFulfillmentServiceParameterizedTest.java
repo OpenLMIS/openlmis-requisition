@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.OrderStatus.RECEIVED;
 
 import com.google.common.collect.Lists;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.Before;
@@ -38,11 +39,11 @@ import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -131,13 +132,13 @@ public class OrderFulfillmentServiceParameterizedTest
         any(DynamicPageTypeReference.class)))
         .thenReturn(response);
 
-    Page<OrderDto> result = service.search(
+    List<OrderDto> result = service.search(
         supplyingFacility, requestingFacility, program, processingPeriod, status
     );
 
     // then
-    assertThat(result.getContent(), hasSize(1));
-    assertThat(result.getContent().get(0).getId(), is(equalTo(order.getId())));
+    assertThat(result, hasSize(1));
+    assertThat(result.get(0).getId(), is(equalTo(order.getId())));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),

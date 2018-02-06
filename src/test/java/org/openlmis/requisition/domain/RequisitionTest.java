@@ -32,6 +32,8 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
+import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.Lists;
@@ -44,9 +46,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
-import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderLineItemDto;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -55,6 +56,8 @@ import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -594,26 +597,11 @@ public class RequisitionTest {
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
-    ProofOfDeliveryDto pod = mock(ProofOfDeliveryDto.class);
-    ProofOfDeliveryLineItemDto line1 = mock(ProofOfDeliveryLineItemDto.class);
-    ProofOfDeliveryLineItemDto line2 = mock(ProofOfDeliveryLineItemDto.class);
-    when(line1.getQuantityReceived()).thenReturn(10L);
-    when(line2.getQuantityReceived()).thenReturn(15L);
-
-    OrderLineItemDto orderLine1 = mock(OrderLineItemDto.class);
-    OrderLineItemDto orderLine2 = mock(OrderLineItemDto.class);
-    when(line1.getOrderLineItem()).thenReturn(orderLine1);
-    when(line2.getOrderLineItem()).thenReturn(orderLine2);
-
-    when(pod.isSubmitted()).thenReturn(true);
-    when(pod.getProofOfDeliveryLineItems()).thenReturn(Arrays.asList(line1, line2));
-
-    OrderableDto orderable1 = mock(OrderableDto.class);
-    OrderableDto orderable2 = mock(OrderableDto.class);
-    when(orderable1.getId()).thenReturn(productId1);
-    when(orderable2.getId()).thenReturn(productId2);
-    when(orderLine1.getOrderable()).thenReturn(orderable1);
-    when(orderLine2.getOrderable()).thenReturn(orderable2);
+    ProofOfDeliveryDto pod = DtoGenerator.of(ProofOfDeliveryDto.class);
+    pod.setStatus(CONFIRMED);
+    pod.setLineItems(DtoGenerator.of(ProofOfDeliveryLineItemDto.class, 2));
+    pod.getLineItems().get(0).setOrderable(new ObjectReferenceDto(productId1));
+    pod.getLineItems().get(1).setOrderable(new ObjectReferenceDto(productId2));
 
     ApprovedProductDto product1 = mockApprovedProduct(productId1);
     ApprovedProductDto product2 = mockApprovedProduct(productId2);
@@ -629,8 +617,12 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(10));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(15));
+    assertThat(
+        req.findLineByProductId(productId1).getTotalReceivedQuantity(),
+        is(pod.getLineItems().get(0).getQuantityAccepted()));
+    assertThat(
+        req.findLineByProductId(productId2).getTotalReceivedQuantity(),
+        is(pod.getLineItems().get(1).getQuantityAccepted()));
   }
 
   @Test
@@ -648,14 +640,8 @@ public class RequisitionTest {
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
-    ProofOfDeliveryDto pod = mock(ProofOfDeliveryDto.class);
-    ProofOfDeliveryLineItemDto line1 = mock(ProofOfDeliveryLineItemDto.class);
-    ProofOfDeliveryLineItemDto line2 = mock(ProofOfDeliveryLineItemDto.class);
-    when(line1.getQuantityReceived()).thenReturn(10L);
-    when(line2.getQuantityReceived()).thenReturn(15L);
-    when(pod.isSubmitted()).thenReturn(false);
-    when(pod.findLineByProductId(productId1)).thenReturn(line1);
-    when(pod.findLineByProductId(productId2)).thenReturn(line2);
+    ProofOfDeliveryDto pod = DtoGenerator.of(ProofOfDeliveryDto.class);
+    pod.setStatus(INITIATED);
 
     ApprovedProductDto product1 = mockApprovedProduct(productId1);
     ApprovedProductDto product2 = mockApprovedProduct(productId2);

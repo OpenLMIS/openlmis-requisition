@@ -40,9 +40,10 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.Message;
+
 import java.util.Collections;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -66,8 +67,7 @@ public class ConvertToOrderNotifierTest {
   @InjectMocks
   private ConvertToOrderNotifier convertToOrderNotifier;
 
-  private UserDto user = mock(UserDto.class);
-  private UUID userId = UUID.randomUUID();
+  private UserDto user = DtoGenerator.of(UserDto.class);
 
   @Before
   public void setUp() {
@@ -82,7 +82,7 @@ public class ConvertToOrderNotifierTest {
 
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(initiateAuditEntry));
     when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
-    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
+    when(initiateAuditEntry.getAuthorId()).thenReturn(user.getId());
 
     convertToOrderNotifier.notifyConvertToOrder(requisition);
 
@@ -96,7 +96,7 @@ public class ConvertToOrderNotifierTest {
         mock(ProgramDto.class));
     when(periodReferenceDataService.findOne(any())).thenReturn(
         mock(ProcessingPeriodDto.class));
-    when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
+    when(userReferenceDataService.findOne(eq(user.getId()))).thenReturn(user);
   }
 
   private void mockMessages() {

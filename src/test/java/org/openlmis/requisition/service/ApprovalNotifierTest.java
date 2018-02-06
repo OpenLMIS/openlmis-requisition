@@ -48,6 +48,8 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RightName;
 import java.lang.reflect.Field;
@@ -85,11 +87,8 @@ public class ApprovalNotifierTest {
   @InjectMocks
   private ApprovalNotifier approvalNotifier;
 
-  private UserDto approver = mock(UserDto.class);
-  private UserDto approver2 = mock(UserDto.class);
-  private RightDto right = mock(RightDto.class);
+  private RightDto right = DtoGenerator.of(RightDto.class);
   private UUID supervisoryNodeId = UUID.randomUUID();
-  private UUID rightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private Requisition requisition = mock(Requisition.class);
 
@@ -110,13 +109,12 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldCallNotificationService() throws Exception {
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    UserDto approver = new UserDtoDataBuilder().withUsername("approver").build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
-    when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-
-    allowNotifyAndMockUsername(approver, "approver");
 
     mockChangeDate();
 
@@ -129,20 +127,21 @@ public class ApprovalNotifierTest {
   @Test
   public void shouldCallNotificationServiceTwoTimesForTwoApproversWithProperUsernameInContent()
       throws Exception {
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    UserDto approver = new UserDtoDataBuilder().withUsername("approver1").build();
+    UserDto approver2 = new UserDtoDataBuilder().withUsername("approver2").build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Arrays.asList(approver, approver2));
-    when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-    allowNotifyAndMockUsername(approver, "approver1");
-    allowNotifyAndMockUsername(approver2, "approver2");
 
     mockChangeDate();
 
     approvalNotifier.notifyApprovers(requisition);
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 
-    verify(notificationService, times(2)).notify(refEq(approver), eq(SUBJECT), argument.capture());
+    verify(notificationService, times(2))
+        .notify(any(UserDto.class), eq(SUBJECT), argument.capture());
 
     List<String> values = argument.getAllValues();
 
@@ -152,16 +151,12 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotActive() throws Exception {
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    UserDto approver = new UserDtoDataBuilder().asInactive().build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
-    when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-
-    when(approver.allowNotify()).thenReturn(true);
-    when(approver.activeAndVerified()).thenCallRealMethod();
-    when(approver.isVerified()).thenReturn(true);
-    when(approver.isActive()).thenReturn(false);
 
     mockChangeDate();
 
@@ -172,16 +167,12 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotVerified() throws Exception {
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    UserDto approver = new UserDtoDataBuilder().asUnverified().build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
-    when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-
-    when(approver.allowNotify()).thenReturn(true);
-    when(approver.activeAndVerified()).thenCallRealMethod();
-    when(approver.isVerified()).thenReturn(false);
-    when(approver.isActive()).thenReturn(true);
 
     mockChangeDate();
 
@@ -192,27 +183,18 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceWhenUserNotAllowNotify() throws Exception {
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, rightId, programId))
+    UserDto approver = new UserDtoDataBuilder().denyNotify().build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
-    when(right.getId()).thenReturn(rightId);
     mockRequisition();
     mockMessages();
-
-    when(approver.allowNotify()).thenReturn(false);
-    when(approver.activeAndVerified()).thenReturn(true);
 
     mockChangeDate();
 
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
-  }
-
-  private void allowNotifyAndMockUsername(UserDto approver, String username) {
-    when(approver.allowNotify()).thenReturn(true);
-    when(approver.activeAndVerified()).thenReturn(true);
-    when(approver.getEmail()).thenReturn(username + "@some.where");
-    when(approver.getUsername()).thenReturn(username);
   }
 
   private void mockChangeDate() {

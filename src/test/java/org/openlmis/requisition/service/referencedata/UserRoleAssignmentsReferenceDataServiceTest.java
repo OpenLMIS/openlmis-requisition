@@ -15,7 +15,14 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Sets;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,16 +31,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserRoleAssignmentsReferenceDataServiceTest {
@@ -41,14 +43,9 @@ public class UserRoleAssignmentsReferenceDataServiceTest {
   @Mock
   private UserRoleAssignmentsReferenceDataService roleService;
 
-  @Mock
-  private RightDto approveRequisitionRight;
-
-  @Mock
-  private RightDto convertToOrderRight;
-
-  @Mock
-  private RoleDto role;
+  private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(0);
+  private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(1);
+  private RoleDto role = DtoGenerator.of(RoleDto.class);
 
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
@@ -114,7 +111,7 @@ public class UserRoleAssignmentsReferenceDataServiceTest {
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(right);
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     when(roleService.getRoleAssignments(userId))
         .thenReturn(Sets.newHashSet(detailedRoleAssignmentDto));

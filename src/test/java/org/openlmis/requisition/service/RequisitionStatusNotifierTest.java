@@ -42,12 +42,13 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.Message;
+
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -76,8 +77,7 @@ public class RequisitionStatusNotifierTest {
   @InjectMocks
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
-  private UserDto user = mock(UserDto.class);
-  private UUID userId = UUID.randomUUID();
+  private UserDto user = DtoGenerator.of(UserDto.class);
 
   @Before
   public void setUp() throws Exception {
@@ -102,16 +102,12 @@ public class RequisitionStatusNotifierTest {
 
     when(requisition.getStatusChanges()).thenReturn(statusChanges);
     when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
-    when(initiateAuditEntry.getAuthorId()).thenReturn(userId);
+    when(initiateAuditEntry.getAuthorId()).thenReturn(user.getId());
     when(submitAuditEntry.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(submitAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
     when(authorizeAuditEntry.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
-    when(authorizeAuditEntry.getAuthorId()).thenReturn(userId);
+    when(authorizeAuditEntry.getAuthorId()).thenReturn(user.getId());
     when(authorizeAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
-
-    when(user.allowNotify()).thenReturn(true);
-    when(user.activeAndVerified()).thenReturn(true);
-    when(user.getEmail()).thenReturn("some@email.com");
 
     requisitionStatusNotifier.notifyStatusChanged(requisition);
 
@@ -127,7 +123,7 @@ public class RequisitionStatusNotifierTest {
         mock(ProcessingPeriodDto.class));
     when(facilityReferenceDataService.findOne(any())).thenReturn(
         mock(FacilityDto.class));
-    when(userReferenceDataService.findOne(eq(userId))).thenReturn(user);
+    when(userReferenceDataService.findOne(eq(user.getId()))).thenReturn(user);
     mockMessages();
   }
 

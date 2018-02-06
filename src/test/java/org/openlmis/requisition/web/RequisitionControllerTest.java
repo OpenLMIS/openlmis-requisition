@@ -46,6 +46,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
@@ -515,9 +516,7 @@ public class RequisitionControllerTest {
   public void shouldNotApproveIfHasNoPermission() {
     mockSupervisoryNode();
 
-    UserDto approver = mock(UserDto.class);
-    when(approver.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
     PermissionMessageException exception = mock(PermissionMessageException.class);
     doThrow(exception).when(requisitionService).validateCanApproveRequisition(
@@ -566,9 +565,7 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
-    UserDto approver = mock(UserDto.class);
-    when(approver.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -584,9 +581,7 @@ public class RequisitionControllerTest {
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() throws Exception {
     when(permissionService.canAuthorizeRequisition(submittedRequsition.getId()))
         .thenReturn(ValidationResult.success());
-    UserDto submitter = mock(UserDto.class);
-    when(submitter.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
     mockSupervisoryNodeForAuthorize();
 
@@ -596,9 +591,6 @@ public class RequisitionControllerTest {
   }
 
   private void mockDependenciesForSubmit() {
-    UserDto submitter = mock(UserDto.class);
-    when(submitter.getId()).thenReturn(UUID.randomUUID());
-
     when(permissionService.canSubmitRequisition(uuid1))
         .thenReturn(ValidationResult.success());
 
@@ -606,7 +598,7 @@ public class RequisitionControllerTest {
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep());
-    when(authenticationHelper.getCurrentUser()).thenReturn(submitter);
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
   private void mockSupervisoryNodeForAuthorize() {
@@ -682,9 +674,7 @@ public class RequisitionControllerTest {
   }
 
   private void setUpApprover() {
-    UserDto approver = mock(UserDto.class);
-    when(approver.getId()).thenReturn(UUID.randomUUID());
-    when(authenticationHelper.getCurrentUser()).thenReturn(approver);
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
             any(UUID.class),
             any(UUID.class)))

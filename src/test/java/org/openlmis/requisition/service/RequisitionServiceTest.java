@@ -60,6 +60,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.domain.Requisition;
@@ -165,15 +166,6 @@ public class RequisitionServiceTest {
   private FacilityDto facility;
 
   @Mock
-  private RightDto convertToOrderRight;
-
-  @Mock
-  private RightDto approveRequisitionRight;
-
-  @Mock
-  private RoleDto role;
-
-  @Mock
   private SupervisoryNodeDto supervisoryNode;
 
   @Mock
@@ -248,6 +240,11 @@ public class RequisitionServiceTest {
   @Mock
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
+  private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(0);
+  private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);
+  private RoleDto role = DtoGenerator.of(RoleDto.class);
+  private UserDto user = DtoGenerator.of(UserDto.class);
+
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
   private static final UUID PRODUCT_ID = UUID.randomUUID();
@@ -258,8 +255,6 @@ public class RequisitionServiceTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID suggestedPeriodId = UUID.randomUUID();
-  private UUID convertToOrderRightId = UUID.randomUUID();
-  private UUID approveRequisitionRightId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
   private List<String> permissionStrings = singletonList("validPermissionString");
@@ -565,7 +560,7 @@ public class RequisitionServiceTest {
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
@@ -595,11 +590,10 @@ public class RequisitionServiceTest {
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UserDto user = mockUser();
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
             .thenReturn(roleAssignmentDtos);
 
@@ -619,11 +613,10 @@ public class RequisitionServiceTest {
     when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
 
     Set<RightDto> rights = new HashSet<>();
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UserDto user = mockUser();
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
@@ -645,11 +638,10 @@ public class RequisitionServiceTest {
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UserDto user = mockUser();
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
@@ -671,11 +663,10 @@ public class RequisitionServiceTest {
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
-    when(role.getRights()).thenReturn(rights);
+    role.setRights(rights);
 
     Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
     roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UserDto user = mockUser();
     when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
         .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
@@ -966,15 +957,13 @@ public class RequisitionServiceTest {
   @Test
   public void shouldReleaseRequisitionsAsOrder() {
     // given
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(facilities);
+        convertToOrderRight.getId())).thenReturn(facilities);
     when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
         .thenReturn(facilities);
 
@@ -991,15 +980,13 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided() {
     // given
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
         .collect(Collectors.toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(facilities);
+        convertToOrderRight.getId())).thenReturn(facilities);
 
     for (ConvertToOrderDto requisition : requisitions) {
       requisition.setSupplyingDepotId(null);
@@ -1012,12 +999,10 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(new ArrayList<>());
+        convertToOrderRight.getId())).thenReturn(new ArrayList<>());
 
     // when
     requisitionService.releaseRequisitionsAsOrder(requisitions, user);
@@ -1027,8 +1012,6 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfApprovedQtyDisabled() {
     // given
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, APPROVED);
     when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
 
@@ -1039,8 +1022,6 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderInIncorrectStatus() {
     // given
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(1, SUBMITTED);
 
     // when
@@ -1343,8 +1324,6 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
@@ -1352,7 +1331,7 @@ public class RequisitionServiceTest {
         .collect(Collectors.toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(facilities);
+        convertToOrderRight.getId())).thenReturn(facilities);
     when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
         .thenReturn(facilities);
 
@@ -1369,8 +1348,6 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
@@ -1378,7 +1355,7 @@ public class RequisitionServiceTest {
         .collect(Collectors.toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(facilities);
+        convertToOrderRight.getId())).thenReturn(facilities);
 
     doThrow(new ValidationMessageException(("test"))).when(
       orderFulfillmentService).create(any(List.class));
@@ -1389,8 +1366,6 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldProcessStatusChangeWhenConvertingRequisitionToOrder() throws Exception {
-    UserDto user = mockUser();
-
     List<ConvertToOrderDto> list = setUpReleaseRequisitionsAsOrder(1, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
@@ -1398,7 +1373,7 @@ public class RequisitionServiceTest {
         .collect(Collectors.toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
-        convertToOrderRightId)).thenReturn(facilities);
+        convertToOrderRight.getId())).thenReturn(facilities);
     when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
         .thenReturn(facilities);
 
@@ -1690,13 +1665,6 @@ public class RequisitionServiceTest {
     when(pageable.getPageNumber()).thenReturn(pageNumber);
   }
 
-  private UserDto mockUser() {
-    UserDto user = mock(UserDto.class);
-    UUID userId = UUID.randomUUID();
-    when(user.getId()).thenReturn(userId);
-    return user;
-  }
-
   private void mockPreviousRequisition() {
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(ADJUSTED_CONSUMPTION);
@@ -1820,8 +1788,6 @@ public class RequisitionServiceTest {
         .findRight(RightName.REQUISITION_APPROVE))
         .thenReturn(approveRequisitionRight);
 
-    when(convertToOrderRight.getId()).thenReturn(convertToOrderRightId);
-    when(approveRequisitionRight.getId()).thenReturn(approveRequisitionRightId);
     when(facility.getId()).thenReturn(facilityId);
     when(program.getId()).thenReturn(programId);
     when(supervisoryNode.getId()).thenReturn(supervisoryNodeId);

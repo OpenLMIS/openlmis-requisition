@@ -15,64 +15,20 @@
 
 package org.openlmis.requisition.dto;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.testutils.DtoGenerator;
 
-import java.util.Set;
-
-public class UserDtoTest {
-
-  private UserDto userDto = new UserDto();
-
-  @Before
-  public void setUp() {
-    userDto.setUsername("jdoe");
-  }
-
-  @Test
-  public void shouldPrintNameAsFirstLastName() {
-    userDto.setFirstName("John");
-    userDto.setLastName("Doe");
-
-    assertEquals("John Doe", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsOnlyFirstName() {
-    userDto.setFirstName("John");
-
-    assertEquals("John", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsOnlyLastName() {
-    userDto.setLastName("Doe");
-
-    assertEquals("Doe", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsUsername() {
-    assertEquals("jdoe", userDto.printName());
-  }
+public class ProofOfDeliveryLineItemDtoTest {
 
   @Test
   public void equalsContract() {
-    RoleAssignmentDto roleAssignments = DtoGenerator.of(RoleAssignmentDto.class);
-
     EqualsVerifier
-        .forClass(UserDto.class)
-        .withPrefabValues(Set.class, emptySet(), singleton(roleAssignments))
+        .forClass(ProofOfDeliveryLineItemDto.class)
         .withRedefinedSuperclass()
         .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
         .verify();
   }
+
 }

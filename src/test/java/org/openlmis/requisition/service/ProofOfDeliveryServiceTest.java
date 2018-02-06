@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,10 +31,11 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
-import org.springframework.data.domain.PageImpl;
-
-import java.util.UUID;
+import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
+import org.openlmis.requisition.service.fulfillment.ShipmentFulfillmentService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProofOfDeliveryServiceTest {
@@ -43,27 +43,21 @@ public class ProofOfDeliveryServiceTest {
   @Mock
   private OrderFulfillmentService orderFulfillmentService;
 
+  @Mock
+  private ShipmentFulfillmentService shipmentFulfillmentService;
+
+  @Mock
+  private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
+
   @InjectMocks
   private ProofOfDeliveryService proofOfDeliveryService;
 
   @Mock
   private Requisition requisition;
 
-  @Mock
-  private OrderDto order;
-
-  @Mock
-  private ProofOfDeliveryDto proofOfDelivery;
-
-  @Before
-  public void setUp() throws Exception {
-    when(requisition.getFacilityId()).thenReturn(UUID.randomUUID());
-    when(requisition.getProgramId()).thenReturn(UUID.randomUUID());
-    when(requisition.getProcessingPeriodId()).thenReturn(UUID.randomUUID());
-
-    when(order.getId()).thenReturn(UUID.randomUUID());
-    when(proofOfDelivery.getId()).thenReturn(UUID.randomUUID());
-  }
+  private OrderDto order = DtoGenerator.of(OrderDto.class);
+  private ShipmentDto shipment = DtoGenerator.of(ShipmentDto.class);
+  private ProofOfDeliveryDto proofOfDelivery = DtoGenerator.of(ProofOfDeliveryDto.class);
 
   @Test
   public void shouldReturnNullIfRequisitionWasSkipped() throws Exception {
@@ -88,13 +82,29 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
+  public void shouldReturnNullIfThereIsNoShipment() throws Exception {
+    when(orderFulfillmentService.search(
+        null, requisition.getFacilityId(), requisition.getProgramId(),
+        requisition.getProcessingPeriodId(), null
+    )).thenReturn(Lists.newArrayList(order));
+
+    when(shipmentFulfillmentService.getShipments(order.getId()))
+        .thenReturn(null);
+
+    assertThat(proofOfDeliveryService.get(requisition), is(nullValue()));
+  }
+
+  @Test
   public void shouldReturnNullIfThereIsNoPods() throws Exception {
     when(orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null
-    )).thenReturn(new PageImpl<>(Lists.newArrayList(order)));
+    )).thenReturn(Lists.newArrayList(order));
 
-    when(orderFulfillmentService.getProofOfDelivery(order.getId()))
+    when(shipmentFulfillmentService.getShipments(order.getId()))
+        .thenReturn(Lists.newArrayList(shipment));
+
+    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(shipment.getId()))
         .thenReturn(null);
 
     assertThat(proofOfDeliveryService.get(requisition), is(nullValue()));
@@ -105,10 +115,13 @@ public class ProofOfDeliveryServiceTest {
     when(orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null
-    )).thenReturn(new PageImpl<>(Lists.newArrayList(order)));
+    )).thenReturn(Lists.newArrayList(order));
 
-    when(orderFulfillmentService.getProofOfDelivery(order.getId()))
-        .thenReturn(proofOfDelivery);
+    when(shipmentFulfillmentService.getShipments(order.getId()))
+        .thenReturn(Lists.newArrayList(shipment));
+
+    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(shipment.getId()))
+        .thenReturn(Lists.newArrayList(proofOfDelivery));
 
     assertThat(proofOfDeliveryService.get(requisition), is(proofOfDelivery));
   }

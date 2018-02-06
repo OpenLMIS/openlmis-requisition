@@ -15,28 +15,18 @@
 
 package org.openlmis.requisition.dto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.Test;
-import java.util.UUID;
 
-public class ObjectReferenceDtoTest {
+import org.junit.Test;
+
+public class UserObjectReferenceDtoTest {
 
   @Test
   public void equalsContract() {
     EqualsVerifier
-        .forClass(ObjectReferenceDto.class)
-        .withRedefinedSubclass(UserObjectReferenceDto.class)
+        .forClass(UserObjectReferenceDto.class)
+        .withRedefinedSuperclass()
         .verify();
   }
 
-  @Test
-  public void shouldCreateObjectWithIdField() {
-    UUID id = UUID.randomUUID();
-    ObjectReferenceDto dto = new ObjectReferenceDto(id);
-    assertEquals(id, dto.getId());
-    assertNull(dto.getHref());
-  }
 }
