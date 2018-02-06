@@ -51,10 +51,33 @@ public class RequisitionLineItemTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
+  private Money pricePerPack = Money.of(CurrencyUnit.USD, 5.79);
+  private double maxPeriodsOfStock = 7.25;
 
   @Before
   public void setUp() {
     initiatedRequisition = mockReq(RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldCreateNewRequisitionLineItem() {
+    RequisitionLineItem item =
+        new RequisitionLineItem(initiatedRequisition,
+            createDefaultApprovedProduct(pricePerPack), 30, 50);
+
+    checkResultsOfConstruction(item);
+    assertEquals(pricePerPack, item.getPricePerPack());
+  }
+
+  @Test
+  public void shouldCreateNewRequisitionLineItemWithDefaultPricePerPack() {
+    RequisitionLineItem item =
+        new RequisitionLineItem(initiatedRequisition,
+            createDefaultApprovedProduct(null), 30, 50);
+
+    checkResultsOfConstruction(item);
+    assertEquals(Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL),
+        item.getPricePerPack());
   }
 
   @Test
@@ -237,7 +260,6 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldBuildFromConstructorAndExport() {
-    Money pricePerPack = Money.of(CurrencyUnit.USD, 5.79);
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
 
     assertThat(lineItemDto.getPricePerPack(), is(pricePerPack));
@@ -305,6 +327,15 @@ public class RequisitionLineItemTest {
     assertFalse(requisitionLineItem.isLineSkipped());
   }
 
+  private void checkResultsOfConstruction(RequisitionLineItem item) {
+    assertEquals(initiatedRequisition, item.getRequisition());
+    assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
+    assertEquals(orderableId, item.getOrderableId());
+    assertEquals(30, item.getIdealStockAmount().intValue());
+    assertEquals(30, item.getIdealStockAmount().intValue());
+    assertEquals(50, item.getStockOnHand().intValue());
+  }
+
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setRequisition(requisition);
@@ -323,7 +354,7 @@ public class RequisitionLineItemTest {
 
   private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {
     RequisitionLineItem item =
-        new RequisitionLineItem(initiatedRequisition, ftap);
+        new RequisitionLineItem(initiatedRequisition, ftap, 30, 50);
 
     item.setId(UUID.randomUUID());
     item.setBeginningBalance(3);
@@ -356,7 +387,7 @@ public class RequisitionLineItemTest {
     when(programMock.getId()).thenReturn(programId);
     ftap.setProgram(programMock);
     ftap.setOrderable(orderable);
-    ftap.setMaxPeriodsOfStock(7.25);
+    ftap.setMaxPeriodsOfStock(maxPeriodsOfStock);
 
     return ftap;
   }

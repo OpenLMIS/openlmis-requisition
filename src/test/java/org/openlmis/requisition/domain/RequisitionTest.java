@@ -552,7 +552,8 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID(),
+        emptyMap());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -574,7 +575,7 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, Collections.singleton(product1),
-        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), emptyMap());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -609,7 +610,8 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
+        emptyMap());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -649,7 +651,8 @@ public class RequisitionTest {
     // when
     Requisition req = new Requisition();
     req.initiate(template, asList(product1, product2),
-        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID());
+        Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
+        emptyMap());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -983,7 +986,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
 
     requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null,
-        emptyMap(), initiatorId);
+        emptyMap(), initiatorId, emptyMap());
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
         initiatorId);
@@ -1136,7 +1139,7 @@ public class RequisitionTest {
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.initiate(template, asList(product1, product2), emptyList(), 0, null,
-        idealStockAmounts, UUID.randomUUID());
+        idealStockAmounts, UUID.randomUUID(), emptyMap());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1144,6 +1147,31 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getIdealStockAmount(), is(1000));
     assertThat(req.findLineByProductId(productId2).getIdealStockAmount(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldSetStockOnHandForLineItems() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    Map<UUID, Integer> orderableSoh = Maps.newHashMap();
+    orderableSoh.put(productId1, 1000);
+
+    // when
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.initiate(template, asList(product1, product2), emptyList(), 0, null,
+        emptyMap(), UUID.randomUUID(), orderableSoh);
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getStockOnHand(), is(1000));
+    assertThat(req.findLineByProductId(productId2).getStockOnHand(), is(nullValue()));
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {

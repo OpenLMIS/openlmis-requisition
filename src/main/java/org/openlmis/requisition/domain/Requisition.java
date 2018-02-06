@@ -280,12 +280,13 @@ public class Requisition extends BaseTimestampedEntity {
    *                             list if there are no previous requisitions.
    */
   public void initiate(RequisitionTemplate template,
-      Collection<ApprovedProductDto> products,
-      List<Requisition> previousRequisitions,
-      int numberOfPreviousPeriodsToAverage,
-      ProofOfDeliveryDto proofOfDelivery,
-      Map<UUID, Integer> idealStockAmounts,
-      UUID initiator) {
+                       Collection<ApprovedProductDto> products,
+                       List<Requisition> previousRequisitions,
+                       int numberOfPreviousPeriodsToAverage,
+                       ProofOfDeliveryDto proofOfDelivery,
+                       Map<UUID, Integer> idealStockAmounts,
+                       UUID initiator,
+                       Map<UUID, Integer> orderableSoh) {
 
     Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
     profiler.setLogger(LOGGER);
@@ -293,7 +294,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.previousRequisitions = previousRequisitions;
 
     profiler.start("SET_LINE_ITEMS");
-    initiateLineItems(products, idealStockAmounts);
+    initiateLineItems(products, idealStockAmounts, orderableSoh);
 
     profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
@@ -361,20 +362,26 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private void initiateLineItems(Collection<ApprovedProductDto> products,
-                                 Map<UUID, Integer> idealStockAmounts) {
+                                 Map<UUID, Integer> idealStockAmounts,
+                                 Map<UUID, Integer> orderableSoh) {
     this.requisitionLineItems = new ArrayList<>();
 
     for (ApprovedProductDto product : products) {
-      String commodityType = product.getOrderable().getCommodityTypeIdentifier();
-      Integer amount = isNotBlank(commodityType)
-          ? idealStockAmounts.get(UUID.fromString(commodityType))
-          : null;
+      Integer isa = extractIdealStockAmount(idealStockAmounts, product);
+      Integer soh = orderableSoh.get(product.getOrderable().getId());
 
-      RequisitionLineItem lineItem = new RequisitionLineItem(this, product);
-      lineItem.setIdealStockAmount(amount);
+      RequisitionLineItem lineItem = new RequisitionLineItem(this, product, isa, soh);
 
       this.requisitionLineItems.add(lineItem);
     }
+  }
+
+  private Integer extractIdealStockAmount(Map<UUID, Integer> idealStockAmounts,
+                                          ApprovedProductDto product) {
+    String commodityType = product.getOrderable().getCommodityTypeIdentifier();
+    return isNotBlank(commodityType)
+        ? idealStockAmounts.get(UUID.fromString(commodityType))
+        : null;
   }
 
   /**

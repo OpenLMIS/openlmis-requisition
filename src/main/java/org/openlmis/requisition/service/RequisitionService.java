@@ -102,6 +102,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -236,10 +237,12 @@ public class RequisitionService {
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
+    Map<UUID, Integer> orderableSoh = new HashMap<>();
+
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
         numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
-        authenticationHelper.getCurrentUser().getId());
+        authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
     profiler.start("SET_AVAIL_FULL_SUPPLY");
     requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
