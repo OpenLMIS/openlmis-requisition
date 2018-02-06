@@ -24,13 +24,10 @@ import static org.springframework.util.NumberUtils.parseNumber;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.assertj.core.util.Lists;
-import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.UserObjectReferenceDto;
-
 import java.beans.PropertyDescriptor;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -45,14 +42,14 @@ import java.util.UUID;
  * The <strong>DtoGenerator</strong> will create a random DTO object for the given type.
  */
 public final class DtoGenerator {
-  private static Multimap<Class<? extends BaseDto>, BaseDto> REFERENCES = HashMultimap.create();
+  private static Multimap<Class<?>, Object> REFERENCES = HashMultimap.create();
   private static final Random RANDOM = new Random();
 
   private DtoGenerator() {
     throw new UnsupportedOperationException();
   }
 
-  public static <T extends BaseDto> T of(Class<T> clazz) {
+  public static <T> T of(Class<T> clazz) {
     return of(clazz, 1).get(0);
   }
 
@@ -60,7 +57,7 @@ public final class DtoGenerator {
    * Creates a list of instances with the given type. The list size will be equal to the number
    * in the <strong>count</strong> parameter.
    */
-  public static <T extends BaseDto> List<T> of(Class<T> clazz, int count) {
+  public static <T> List<T> of(Class<T> clazz, int count) {
     while (REFERENCES.get(clazz).size() < count) {
       generate(clazz);
     }
@@ -72,7 +69,7 @@ public final class DtoGenerator {
     return Lists.newArrayList(collection);
   }
 
-  private static <T extends BaseDto> void generate(Class<T> clazz) {
+  private static <T> void generate(Class<T> clazz) {
     Object instance;
 
     try {
@@ -101,7 +98,7 @@ public final class DtoGenerator {
       }
     }
 
-    REFERENCES.put(clazz, (BaseDto) instance);
+    REFERENCES.put(clazz, instance);
   }
 
   private static Object generateValue(Class<?> type, Class<?> propertyType) {
@@ -119,8 +116,8 @@ public final class DtoGenerator {
       return null;
     }
 
-    if (BaseDto.class.isAssignableFrom(propertyType)) {
-      return of((Class<? extends BaseDto>) propertyType);
+    if (Object.class.isAssignableFrom(propertyType)) {
+      return of((Class<?>) propertyType);
     }
 
     return null;

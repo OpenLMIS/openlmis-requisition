@@ -80,6 +80,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockmanagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -97,12 +98,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +174,9 @@ public class RequisitionService {
   @Autowired
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
+  @Autowired
+  private StockCardSummariesStockmanagementService stockCardSummariesStockmanagementService;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -237,7 +239,9 @@ public class RequisitionService {
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
-    Map<UUID, Integer> orderableSoh = new HashMap<>();
+    profiler.start("FIND_STOCK_ON_HANDS");
+    Map<UUID, Integer> orderableSoh = getStockOnHands(
+        requisitionTemplate, approvedProducts, programId, facilityId, period.getEndDate());
 
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
@@ -259,6 +263,24 @@ public class RequisitionService {
 
     profiler.stop().log();
     return requisition;
+  }
+
+  private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
+                                             Collection<ApprovedProductDto> approvedProducts,
+                                             UUID programId, UUID facilityId, LocalDate endDate) {
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
+      return stockCardSummariesStockmanagementService.searchByOrderableIds(
+          programId,
+          facilityId,
+          approvedProducts.stream()
+              .map(ap -> ap.getOrderable().getId())
+              .collect(toSet()),
+          endDate)
+          .stream()
+          .collect(toMap(card -> card.getOrderable().getId(), card -> card.getStockOnHand()));
+    } else {
+      return Collections.emptyMap();
+    }
   }
 
   private ProofOfDeliveryDto getProofOfDeliveryDto(boolean emergency, Requisition requisition) {

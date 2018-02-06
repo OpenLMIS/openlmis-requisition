@@ -15,16 +15,19 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -47,7 +50,6 @@ import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -60,9 +62,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.openlmis.requisition.testutils.DtoGenerator;
-import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
-import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
+import org.mockito.stubbing.OngoingStubbing;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -91,6 +91,7 @@ import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -109,7 +110,11 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockmanagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
@@ -120,7 +125,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
+import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -234,6 +239,9 @@ public class RequisitionServiceTest {
   @Mock
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
+  @Mock
+  private StockCardSummariesStockmanagementService stockCardSummariesStockmanagementService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -244,6 +252,7 @@ public class RequisitionServiceTest {
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
   private UserDto user = DtoGenerator.of(UserDto.class);
+  private StockCardSummaryDto stockCard = DtoGenerator.of(StockCardSummaryDto.class);
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -261,6 +270,7 @@ public class RequisitionServiceTest {
   private PageRequest pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
   Requisition previousRequisition;
+  private LocalDate periodEndDate = LocalDate.of(2017, 12, 30);
 
   @Before
   public void setUp() {
@@ -955,6 +965,52 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
+    prepareForTestInitiate(SETTING, requisitionTemplate);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(stockCardSummariesStockmanagementService
+        .searchByOrderableIds(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
+        .thenReturn(Collections.singletonList(stockCard));
+    ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
+
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
+
+    assertEquals(stockCard.getStockOnHand(),
+        initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+  }
+
+  @Test
+  public void shouldNotSetStockOnHandIfFlagIsDisabled() {
+    prepareForTestInitiate(SETTING, requisitionTemplate);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    whenGetStockCardSummaries().thenThrow(IllegalStateException.class);
+
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
+
+    assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+  }
+
+  @Test
+  public void shouldNotSetStockOnHandIfNoStockCardSummariesFound() {
+    prepareForTestInitiate(SETTING, requisitionTemplate);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    whenGetStockCardSummaries().thenReturn(Collections.emptyList());
+
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
+
+    assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+  }
+
+  @Test
   public void shouldReleaseRequisitionsAsOrder() {
     // given
     List<ConvertToOrderDto> requisitions = setUpReleaseRequisitionsAsOrder(5, APPROVED);
@@ -1037,7 +1093,7 @@ public class RequisitionServiceTest {
 
     UUID parentId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-    Set<UUID> orderableIds = Collections.singleton(UUID.randomUUID());
+    Set<UUID> orderableIds = singleton(UUID.randomUUID());
 
     requisitionService.doApprove(
         parentId, userId, orderableIds, requisitionMock, singletonList(supplyLineDto)
@@ -1098,7 +1154,7 @@ public class RequisitionServiceTest {
         receivedRequisitions.get(0).getStatus(),
         requisition.getStatus());
   }
-  
+
   @Test
   public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
     // given
@@ -1616,14 +1672,14 @@ public class RequisitionServiceTest {
     when(orderableReferenceDataService.findOne(fullSupplyLineProductId))
         .thenReturn(fullSupplyOrderable);
     when(fullSupplyOrderable.getPrograms())
-        .thenReturn(Collections.singleton(fullSupplyProduct));
+        .thenReturn(singleton(fullSupplyProduct));
 
     OrderableDto nonFullSupplyOrderable = mock(OrderableDto.class);
     UUID nonFullSupplyLineProductId = UUID.randomUUID();
     when(orderableReferenceDataService.findOne(nonFullSupplyLineProductId))
         .thenReturn(nonFullSupplyOrderable);
     when(nonFullSupplyOrderable.getPrograms())
-        .thenReturn(Collections.singleton(nonFullSupplyProduct));
+        .thenReturn(singleton(nonFullSupplyProduct));
 
     fullSupply.forEach(line -> when(line.getOrderableId())
         .thenReturn(fullSupplyLineProductId));
@@ -1708,33 +1764,13 @@ public class RequisitionServiceTest {
         .thenReturn(singletonList(approvedProductDto));
   }
 
-  private void mockNonFullSupplyApprovedProduct() {
-    mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
-  }
-
-  private void prepareForPodTest() {
-    prepareForTestInitiate(SETTING);
-    mockApprovedProduct(PRODUCT_ID, true);
-    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
-    when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
-
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
-
-    when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
-    when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
-
-    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
-    periodDto.setStartDate(LocalDate.of(2016, 11, 1));
-    periodDto.setEndDate(LocalDate.of(2016, 11, 30));
-    periodDto.setDurationInMonths(1);
-    doReturn(periodDto).when(periodService).findPeriod(programId, facilityId, suggestedPeriodId,
-        false);
-  }
-
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+    prepareForTestInitiate(numberOfPeriodsToAverage, requisitionTemplate);
+  }
+
+  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage,
+                                      RequisitionTemplate requisitionTemplate) {
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
 
@@ -1747,6 +1783,7 @@ public class RequisitionServiceTest {
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setDurationInMonths(1);
+    periodDto.setEndDate(periodEndDate);
     when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
         .thenReturn(periodDto);
   }
@@ -1854,7 +1891,7 @@ public class RequisitionServiceTest {
 
   private void stubRecentRequisition() {
     when(periodService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Collections.singleton(processingPeriodDto));
+        .thenReturn(singleton(processingPeriodDto));
     when(requisitionRepository
         .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
         .thenReturn(singletonList(requisition));
@@ -1869,11 +1906,17 @@ public class RequisitionServiceTest {
 
   private void prepareRequisitionIsNotNewest() {
     when(periodService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Collections.singleton(processingPeriodDto));
+        .thenReturn(singleton(processingPeriodDto));
     Requisition newestRequisition = mock(Requisition.class);
     when(newestRequisition.getId()).thenReturn(UUID.randomUUID());
     when(requisitionRepository
         .searchRequisitions(processingPeriodDto.getId(), facilityId, programId, false))
         .thenReturn(singletonList(newestRequisition));
+  }
+
+  private OngoingStubbing<List<StockCardSummaryDto>> whenGetStockCardSummaries() {
+    return when(stockCardSummariesStockmanagementService
+        .searchByOrderableIds(any(UUID.class), any(UUID.class), anySetOf(UUID.class),
+            any(LocalDate.class)));
   }
 }
