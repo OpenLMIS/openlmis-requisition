@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -125,12 +125,12 @@ public class OrderFulfillmentServiceParameterizedTest
 
     // then
     assertThat(result, hasSize(1));
+    assertThat(result, contains(order));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         any(DynamicPageTypeReference.class)
     );
-    assertThat(result.get(0).getId(), is(equalTo(order.getId())));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");

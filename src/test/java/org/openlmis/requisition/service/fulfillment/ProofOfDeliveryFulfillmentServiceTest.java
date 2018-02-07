@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -52,10 +53,7 @@ public class ProofOfDeliveryFulfillmentServiceTest
     // given
     final UUID shipmentId = UUID.randomUUID();
 
-    ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
-    pod.setId(UUID.randomUUID());
-
-    mockPageResponseEntity(pod);
+    ProofOfDeliveryDto pod = mockPageResponseEntityAndGetDto();
 
     // when
     ProofOfDeliveryFulfillmentService service =
@@ -64,7 +62,7 @@ public class ProofOfDeliveryFulfillmentServiceTest
 
     // then
     assertThat(actual, hasSize(1));
-    assertThat(actual.get(0).getId(), is(pod.getId()));
+    assertThat(actual, contains(pod));
 
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET),

@@ -68,12 +68,12 @@ public class PeriodReferenceDataServiceTest
 
     // then
     assertThat(result, hasSize(1));
+    assertTrue(result.contains(period));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         Matchers.any(DynamicPageTypeReference.class)
     );
-    assertTrue(result.contains(period));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
@@ -100,12 +100,12 @@ public class PeriodReferenceDataServiceTest
 
     // then
     assertThat(result, hasSize(1));
+    assertTrue(result.contains(period));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         Matchers.any(DynamicPageTypeReference.class)
     );
-    assertTrue(result.contains(period));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");

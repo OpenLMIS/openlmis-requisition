@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service.fulfillment;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -51,10 +52,7 @@ public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<S
     // given
     final UUID orderId = UUID.randomUUID();
 
-    ShipmentDto shipment = new ShipmentDto();
-    shipment.setId(UUID.randomUUID());
-
-    mockPageResponseEntity(shipment);
+    ShipmentDto shipmentDto = mockPageResponseEntityAndGetDto();
 
     // when
     ShipmentFulfillmentService service = (ShipmentFulfillmentService) prepareService();
@@ -62,7 +60,7 @@ public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<S
 
     // then
     assertThat(actual, hasSize(1));
-    assertThat(actual.get(0).getId(), is(shipment.getId()));
+    assertThat(actual, contains(shipmentDto));
 
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET),
