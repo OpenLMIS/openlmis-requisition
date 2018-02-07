@@ -33,13 +33,13 @@ import java.util.UUID;
 public class ProofOfDeliveryDtoTest {
 
   @Test
-  public void shouldbeSubmittedIfOrderHasCorrectStatus() {
+  public void shouldBeSubmittedIfOrderHasCorrectStatus() {
     ProofOfDeliveryDto pod = ProofOfDeliveryDto.builder().status(CONFIRMED).build();
     assertThat(pod.isSubmitted(), is(true));
   }
 
   @Test
-  public void shouldbeNotSubmittedIfOrderHasIncorrectStatus() {
+  public void shouldBeNotSubmittedIfOrderHasIncorrectStatus() {
     ProofOfDeliveryDto pod = ProofOfDeliveryDto.builder().status(INITIATED).build();
     assertThat(pod.isSubmitted(), is(false));
   }
