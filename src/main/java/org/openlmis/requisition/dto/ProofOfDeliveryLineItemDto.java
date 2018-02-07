@@ -36,7 +36,7 @@ public final class ProofOfDeliveryLineItemDto extends BaseDto {
   private ObjectReferenceDto lot;
   private Integer quantityAccepted;
   private Boolean useVvm;
-  private VvmStatus vvmStatus;
+  private String vvmStatus;
   private Integer quantityRejected;
   private UUID rejectionReasonId;
   private String notes;
