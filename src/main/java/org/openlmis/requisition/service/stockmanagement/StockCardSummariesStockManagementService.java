@@ -48,7 +48,7 @@ public class StockCardSummariesStockManagementService
 
   @Override
   protected String getUrl() {
-    return "/api/v2/stockcardsummaries";
+    return "/api/v2/stockCardSummaries";
   }
 
   @Override
