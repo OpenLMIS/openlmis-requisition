@@ -80,7 +80,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockmanagementService;
+import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -175,7 +175,7 @@ public class RequisitionService {
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
   @Autowired
-  private StockCardSummariesStockmanagementService stockCardSummariesStockmanagementService;
+  private StockCardSummariesStockManagementService stockCardSummariesStockManagementService;
 
   /**
    * Initiated given requisition if possible.
@@ -269,7 +269,7 @@ public class RequisitionService {
                                              Collection<ApprovedProductDto> approvedProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      return stockCardSummariesStockmanagementService.searchByOrderableIds(
+      return stockCardSummariesStockManagementService.searchByOrderableIds(
           programId,
           facilityId,
           approvedProducts.stream()

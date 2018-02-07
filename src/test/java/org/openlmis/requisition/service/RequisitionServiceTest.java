@@ -110,7 +110,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockmanagementService;
+import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
@@ -240,7 +240,7 @@ public class RequisitionServiceTest {
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
   @Mock
-  private StockCardSummariesStockmanagementService stockCardSummariesStockmanagementService;
+  private StockCardSummariesStockManagementService stockCardSummariesStockManagementService;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -968,7 +968,7 @@ public class RequisitionServiceTest {
   public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
     prepareForTestInitiate(SETTING, requisitionTemplate);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    when(stockCardSummariesStockmanagementService
+    when(stockCardSummariesStockManagementService
         .searchByOrderableIds(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
         .thenReturn(Collections.singletonList(stockCard));
     ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
@@ -1915,7 +1915,7 @@ public class RequisitionServiceTest {
   }
 
   private OngoingStubbing<List<StockCardSummaryDto>> whenGetStockCardSummaries() {
-    return when(stockCardSummariesStockmanagementService
+    return when(stockCardSummariesStockManagementService
         .searchByOrderableIds(any(UUID.class), any(UUID.class), anySetOf(UUID.class),
             any(LocalDate.class)));
   }

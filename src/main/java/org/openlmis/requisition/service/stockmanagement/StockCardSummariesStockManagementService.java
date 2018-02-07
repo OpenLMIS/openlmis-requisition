@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class StockCardSummariesStockmanagementService
+public class StockCardSummariesStockManagementService
     extends BaseStockManagementService<StockCardSummaryDto> {
 
   /**
