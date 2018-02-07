@@ -969,7 +969,7 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING, requisitionTemplate);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     when(stockCardSummariesStockManagementService
-        .searchByOrderableIds(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
+        .search(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
         .thenReturn(Collections.singletonList(stockCard));
     ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
 
@@ -1916,7 +1916,7 @@ public class RequisitionServiceTest {
 
   private OngoingStubbing<List<StockCardSummaryDto>> whenGetStockCardSummaries() {
     return when(stockCardSummariesStockManagementService
-        .searchByOrderableIds(any(UUID.class), any(UUID.class), anySetOf(UUID.class),
+        .search(any(UUID.class), any(UUID.class), anySetOf(UUID.class),
             any(LocalDate.class)));
   }
 }

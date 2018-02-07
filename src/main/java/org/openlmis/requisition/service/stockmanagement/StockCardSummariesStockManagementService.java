@@ -33,9 +33,9 @@ public class StockCardSummariesStockManagementService
    * @param orderableIds  set of ordeable IDs
    * @return  the list of matching stock card summaries
    */
-  public List<StockCardSummaryDto> searchByOrderableIds(UUID programId, UUID facilityId,
-                                                        Set<UUID> orderableIds,
-                                                        LocalDate asOfDate) {
+  public List<StockCardSummaryDto> search(UUID programId, UUID facilityId,
+                                          Set<UUID> orderableIds,
+                                          LocalDate asOfDate) {
     RequestParameters params = RequestParameters.init()
         .set("size", Integer.MAX_VALUE)
         .set("programId", programId)

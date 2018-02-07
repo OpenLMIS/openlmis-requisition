@@ -21,11 +21,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 public abstract class BaseStockmanagementServiceTest<T> extends BaseCommunicationServiceTest<T> {
 
+  protected final String serviceUrl = "http://localhost";
+
   @Override
   protected BaseStockManagementService<T> prepareService() {
     BaseCommunicationService service = super.prepareService();
 
-    ReflectionTestUtils.setField(service, "stockmanagementUrl", "http://localhost");
+    ReflectionTestUtils.setField(service, "stockmanagementUrl", serviceUrl);
 
     return (BaseStockManagementService<T>) service;
   }

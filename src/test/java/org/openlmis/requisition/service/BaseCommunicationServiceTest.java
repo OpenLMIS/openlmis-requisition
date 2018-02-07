@@ -32,6 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.http.NameValuePair;
 import org.junit.After;
 import org.junit.Before;
@@ -43,6 +44,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.utils.DynamicPageTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -244,5 +249,30 @@ public abstract class BaseCommunicationServiceTest<T> {
 
   private void checkAuth() {
     verify(authService, atLeastOnce()).obtainAccessToken();
+  }
+
+  protected T mockPageResponseEntityAndGetDto() {
+    T dto = DtoGenerator.of((Class<T>) generateInstance().getClass());
+    mockPageResponseEntity(dto);
+    return dto;
+  }
+
+  protected void mockPageResponseEntity(Object dto) {
+    ResponseEntity<Page<T>> response = stubRestTemplateAndGetPageResponseEntity();
+
+    when(response.getBody())
+        .thenReturn((Page<T>) new PageImpl<>(ImmutableList.of(dto)));
+  }
+
+  private ResponseEntity<Page<T>> stubRestTemplateAndGetPageResponseEntity() {
+    ResponseEntity<Page<T>> response = mock(ResponseEntity.class);
+    when(restTemplate.exchange(
+        any(URI.class),
+        any(HttpMethod.class),
+        any(HttpEntity.class),
+        any(DynamicPageTypeReference.class)))
+        .thenReturn(response);
+
+    return response;
   }
 }

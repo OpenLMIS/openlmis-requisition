@@ -23,9 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.Test;
@@ -36,10 +34,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -66,25 +61,19 @@ public class PeriodReferenceDataServiceTest
     LocalDate date = LocalDate.now();
 
     PeriodReferenceDataService service = (PeriodReferenceDataService) prepareService();
-    ProcessingPeriodDto period = generateInstance();
-    ResponseEntity response = ResponseEntity
-        .ok(new PageImpl<>(Lists.newArrayList(period)));
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
 
     // when
-    when(restTemplate.exchange(Matchers.any(URI.class), eq(HttpMethod.GET),
-        Matchers.any(HttpEntity.class), Matchers.any(DynamicPageTypeReference.class)))
-        .thenReturn(response);
-
     Collection<ProcessingPeriodDto> result = service.search(scheduleId, date);
 
     // then
     assertThat(result, hasSize(1));
-    assertTrue(result.contains(period));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         Matchers.any(DynamicPageTypeReference.class)
     );
+    assertTrue(result.contains(period));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
@@ -103,26 +92,20 @@ public class PeriodReferenceDataServiceTest
     UUID programId = UUID.randomUUID();
 
     PeriodReferenceDataService service = (PeriodReferenceDataService) prepareService();
-    ProcessingPeriodDto period = generateInstance();
-    ResponseEntity response = ResponseEntity
-        .ok(new PageImpl<>(Lists.newArrayList(period)));
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
 
     // when
-    when(restTemplate.exchange(Matchers.any(URI.class), eq(HttpMethod.GET),
-        Matchers.any(HttpEntity.class), Matchers.any(DynamicPageTypeReference.class)))
-        .thenReturn(response);
-
     Collection<ProcessingPeriodDto> result = service
         .searchByProgramAndFacility(programId, facilityId);
 
     // then
     assertThat(result, hasSize(1));
-    assertTrue(result.contains(period));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         Matchers.any(DynamicPageTypeReference.class)
     );
+    assertTrue(result.contains(period));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");

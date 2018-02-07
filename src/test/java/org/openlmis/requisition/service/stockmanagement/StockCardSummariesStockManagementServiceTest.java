@@ -13,72 +13,79 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.service.fulfillment;
+package org.openlmis.requisition.service.stockmanagement;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
-import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
 import org.springframework.http.HttpMethod;
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class ProofOfDeliveryFulfillmentServiceTest
-    extends BaseFulfillmentServiceTest<ProofOfDeliveryDto> {
+public class StockCardSummariesStockManagementServiceTest
+    extends BaseStockmanagementServiceTest<StockCardSummaryDto> {
 
-  @Override
-  protected ProofOfDeliveryDto generateInstance() {
-    return new ProofOfDeliveryDto();
-  }
-
-  @Override
-  protected BaseCommunicationService<ProofOfDeliveryDto> getService() {
-    return new ProofOfDeliveryFulfillmentService();
-  }
+  private UUID programId = UUID.randomUUID();
+  private UUID facilityId = UUID.randomUUID();
+  private UUID orderableId = UUID.randomUUID();
+  private LocalDate asOfDate = LocalDate.now();
 
   @Test
-  public void shouldGetProofOfDeliveries() {
+  public void shouldFindStockCardSummaries() {
     // given
-    final UUID shipmentId = UUID.randomUUID();
-
-    ProofOfDeliveryDto pod = new ProofOfDeliveryDto();
-    pod.setId(UUID.randomUUID());
-
-    mockPageResponseEntity(pod);
+    StockCardSummaryDto stockCardSummaryDto = mockPageResponseEntityAndGetDto();
 
     // when
-    ProofOfDeliveryFulfillmentService service =
-        (ProofOfDeliveryFulfillmentService) prepareService();
-    List<ProofOfDeliveryDto> actual = service.getProofOfDeliveries(shipmentId);
+    StockCardSummariesStockManagementService service =
+        (StockCardSummariesStockManagementService) prepareService();
+    List<StockCardSummaryDto> actual =
+        service.search(programId, facilityId, Collections.singleton(orderableId), asOfDate);
 
     // then
     assertThat(actual, hasSize(1));
-    assertThat(actual.get(0).getId(), is(pod.getId()));
+    assertThat(actual, contains(stockCardSummaryDto));
 
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), any(DynamicPageTypeReference.class)
+        entityCaptor.capture(), refEq(new DynamicPageTypeReference<>(StockCardSummaryDto.class))
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl();
+    String url = serviceUrl + "/api/v2/stockCardSummaries";
 
     assertThat(uri.toString(), startsWith(url));
-    assertThat(uri.toString(), containsString("shipmentId=" + shipmentId));
+    assertThat(uri.toString(), containsString("programId=" + programId));
+    assertThat(uri.toString(), containsString("facilityId=" + facilityId));
+    assertThat(uri.toString(), containsString("orderableId=" + orderableId));
+    assertThat(uri.toString(), containsString("asOfDate=" + asOfDate));
 
     assertAuthHeader(entityCaptor.getValue());
     assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+  }
+
+  @Override
+  protected StockCardSummaryDto generateInstance() {
+    return new StockCardSummaryDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<StockCardSummaryDto> getService() {
+    return new StockCardSummariesStockManagementService();
   }
 
 }

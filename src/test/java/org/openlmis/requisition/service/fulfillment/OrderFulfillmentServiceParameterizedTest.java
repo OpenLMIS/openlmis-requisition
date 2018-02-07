@@ -24,10 +24,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.OrderStatus.RECEIVED;
-
-import com.google.common.collect.Lists;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -39,11 +36,7 @@ import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -123,27 +116,21 @@ public class OrderFulfillmentServiceParameterizedTest
   public void shouldCheckUserRight() {
     // given
     OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
-    OrderDto order = generateInstance();
-    ResponseEntity response = ResponseEntity
-        .ok(new PageImpl<>(Lists.newArrayList(order)));
+    OrderDto order = mockPageResponseEntityAndGetDto();
 
     // when
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
-        any(DynamicPageTypeReference.class)))
-        .thenReturn(response);
-
     List<OrderDto> result = service.search(
         supplyingFacility, requestingFacility, program, processingPeriod, status
     );
 
     // then
     assertThat(result, hasSize(1));
-    assertThat(result.get(0).getId(), is(equalTo(order.getId())));
 
     verify(restTemplate, atLeastOnce()).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
         any(DynamicPageTypeReference.class)
     );
+    assertThat(result.get(0).getId(), is(equalTo(order.getId())));
 
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");

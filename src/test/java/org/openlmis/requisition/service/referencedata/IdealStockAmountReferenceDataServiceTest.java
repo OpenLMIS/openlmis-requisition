@@ -25,25 +25,16 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
+import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.openlmis.requisition.utils.PageImplRepresentation;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,14 +65,7 @@ public class IdealStockAmountReferenceDataServiceTest
   @Test
   public void shouldFindIdealStockAmountBasedOnParameters() {
     IdealStockAmountDto isa = new IdealStockAmountDtoDataBuilder().build();
-    PageImplRepresentation page = new PageImplRepresentation();
-    page.setContent(Lists.newArrayList(isa));
-
-    when(restTemplate.exchange(
-        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
-        any(DynamicPageTypeReference.class)))
-        .thenReturn(new ResponseEntity<>(page, HttpStatus.OK));
-
+    mockPageResponseEntity(isa);
     UUID facilityId = UUID.randomUUID();
     UUID processingPeriodId = UUID.randomUUID();
 

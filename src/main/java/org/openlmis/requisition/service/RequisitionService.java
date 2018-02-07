@@ -269,7 +269,7 @@ public class RequisitionService {
                                              Collection<ApprovedProductDto> approvedProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      return stockCardSummariesStockManagementService.searchByOrderableIds(
+      return stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
           approvedProducts.stream()
