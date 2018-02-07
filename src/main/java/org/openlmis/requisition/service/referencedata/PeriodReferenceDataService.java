@@ -55,7 +55,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
         .set("startDate", startDate)
         .set("size", 2000);
 
-    return getPage("", parameters).getContent();
+    return getPage(parameters).getContent();
   }
 
   /**
@@ -73,6 +73,6 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
         .set("facilityId", facilityId)
         .set("size", 2000);
     
-    return getPage("", parameters).getContent();
+    return getPage(parameters).getContent();
   }
 }

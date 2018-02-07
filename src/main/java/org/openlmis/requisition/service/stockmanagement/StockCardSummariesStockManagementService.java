@@ -43,7 +43,7 @@ public class StockCardSummariesStockManagementService
         .set("orderableId", orderableIds)
         .set("asOfDate", asOfDate);
 
-    return getPage("", params).getContent();
+    return getPage(params).getContent();
   }
 
   @Override

@@ -48,7 +48,7 @@ public class OrderableReferenceDataService
 
   @Override
   public List<OrderableDto> findAll() {
-    return getPage("", RequestParameters.init()).getContent();
+    return getPage(RequestParameters.init()).getContent();
   }
 
   /**

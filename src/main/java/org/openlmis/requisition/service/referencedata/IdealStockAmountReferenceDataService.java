@@ -51,6 +51,6 @@ public class IdealStockAmountReferenceDataService
         .set("processingPeriodId", processingPeriodId)
         .set("size", 2000);
 
-    return getPage("", parameters).getContent();
+    return getPage(parameters).getContent();
   }
 }

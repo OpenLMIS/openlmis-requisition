@@ -38,7 +38,7 @@ public class StockCardStockManagementService extends BaseStockManagementService<
         .set("facility", facility.toString())
         .set("program", program.toString());
 
-    return getPage("", params).getContent();
+    return getPage(params).getContent();
   }
 
   @Override
