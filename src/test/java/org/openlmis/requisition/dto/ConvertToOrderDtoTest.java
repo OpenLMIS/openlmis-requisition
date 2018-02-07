@@ -15,19 +15,11 @@
 
 package org.openlmis.requisition.dto;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
+public class ConvertToOrderDtoTest extends DtoTest {
 
-import org.junit.Test;
-
-public class ConvertToOrderDtoTest {
-
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(ConvertToOrderDto.class)
-        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
-        .verify();
+  @Override
+  protected Class<ConvertToOrderDto> getTestClass() {
+    return ConvertToOrderDto.class;
   }
 
 }

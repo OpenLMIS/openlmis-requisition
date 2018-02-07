@@ -13,21 +13,22 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto.stockmanagement;
+package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@EqualsAndHashCode
-public final class StockCardSummaryDto {
+public abstract class DtoTest<T> {
 
-  @Getter
-  @Setter
-  private ObjectReferenceDto orderable;
+  protected abstract Class<T> getTestClass();
 
-  @Getter
-  @Setter
-  private Integer stockOnHand;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(getTestClass())
+        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
+        .verify();
+  }
+
 }

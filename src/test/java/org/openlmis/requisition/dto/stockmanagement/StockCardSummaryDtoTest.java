@@ -15,19 +15,12 @@
 
 package org.openlmis.requisition.dto.stockmanagement;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.openlmis.requisition.dto.DtoTest;
 
-@EqualsAndHashCode
-public final class StockCardSummaryDto {
+public class StockCardSummaryDtoTest extends DtoTest<StockCardSummaryDto> {
 
-  @Getter
-  @Setter
-  private ObjectReferenceDto orderable;
-
-  @Getter
-  @Setter
-  private Integer stockOnHand;
+  @Override
+  protected Class<StockCardSummaryDto> getTestClass() {
+    return StockCardSummaryDto.class;
+  }
 }
