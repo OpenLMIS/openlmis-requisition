@@ -15,14 +15,15 @@
 
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.RequisitionTemplate;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.domain.RequisitionTemplate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -65,10 +66,5 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
         BasicRequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
 
     return requisitionTemplateDto;
-  }
-
-  @Override
-  public void setProgramId(UUID programId) {
-    // not supported operation
   }
 }

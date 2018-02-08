@@ -46,11 +46,13 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +64,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
   static final String PROGRAM_ID = "programId";
+  static final String FACILITY_TYPE_ID = "facilityTypeId";
   static final String PROGRAM = "program";
+  static final String FACILITY_TYPE = "facility type";
   static final String REQUESTED_QUANTITY = "requestedQuantity";
   static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
@@ -91,6 +95,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
 
+  @Autowired
+  private FacilityTypeReferenceDataService facilityTypeReferenceDataService;
+
   @Override
   public boolean supports(Class<?> clazz) {
     return RequisitionTemplate.class.equals(clazz);
@@ -100,34 +107,41 @@ public class RequisitionTemplateValidator extends BaseValidator {
   public void validate(Object target, Errors errors) {
     this.errors = errors;
 
-    RequisitionTemplate requisitionTemplate = (RequisitionTemplate) target;
+    RequisitionTemplate template = (RequisitionTemplate) target;
 
-    validateRequestedQuantity(requisitionTemplate);
-    validateColumns(requisitionTemplate);
-    validateCalculatedFields(requisitionTemplate);
+    validateRequestedQuantity(template);
+    validateColumns(template);
+    validateCalculatedFields(template);
 
     if (!errors.hasErrors()) {
-      validateCalculatedField(requisitionTemplate, STOCK_ON_HAND,
+      validateCalculatedField(template, STOCK_ON_HAND,
           ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY
       );
-      validateCalculatedField(requisitionTemplate, TOTAL_CONSUMED_QUANTITY,
+      validateCalculatedField(template, TOTAL_CONSUMED_QUANTITY,
           ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED, STOCK_ON_HAND
       );
-      validateForAdjustedConsumption(requisitionTemplate);
-      validateForAverageConsumption(requisitionTemplate);
+      validateForAdjustedConsumption(template);
+      validateForAverageConsumption(template);
     }
 
-    validateNumberOfPeriodsToAverage(requisitionTemplate);
+    validateNumberOfPeriodsToAverage(template);
 
-    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      validateStockManagementFields(requisitionTemplate);
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      validateStockManagementFields(template);
     }
 
-    UUID programId = requisitionTemplate.getProgramId();
-    if (null != programId && null == programReferenceDataService.findOne(programId)) {
+    if (null == programReferenceDataService.findOne(template.getProgramId())) {
       rejectValue(errors, PROGRAM_ID,
           new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
-              PROGRAM, programId));
+              PROGRAM, template.getProgramId()));
+    }
+
+    for (UUID facilityTypeId : template.getFacilityTypeIds()) {
+      if (null == facilityTypeReferenceDataService.findOne(facilityTypeId)) {
+        rejectValue(errors, FACILITY_TYPE_ID,
+            new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+                FACILITY_TYPE, facilityTypeId));
+      }
     }
   }
 

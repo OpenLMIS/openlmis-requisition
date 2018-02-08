@@ -16,18 +16,31 @@
       "type": ["string", "null"],
       "title": "modifiedDate"
     },
-    "programId": {
-      "type": ["string", "null"],
-      "title": "programId"
-    },
     "numberOfPeriodsToAverage": {
       "type": ["number", "null"],
       "title": "numberOfPeriodsToAverage"
+    },
+    "populateStockOnHandFromStockCards": {
+      "type": "boolean",
+      "title": "populateStockOnHandFromStockCards"
     },
     "columnsMap": {
       "type": "object",
       "$ref": "requisitionTemplateColumnsMap.json",
       "title": "columnsMap"
+    },
+    "program": {
+      "type": "object",
+      "$ref": "referenceObjectDto.json",
+      "title": "program"
+    },
+    "facilityTypes": {
+      "type": "array",
+      "title": "facilityTypes",
+      "items": {
+        "type": "object",
+        "$ref": "referenceObjectDto.json"
+      }
     }
   }
 }

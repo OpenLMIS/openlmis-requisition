@@ -19,11 +19,11 @@ public abstract class MessageKeys {
   private static final String SERVICE_PREFIX = "requisition";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
 
-  public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
+  public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".classNotFound";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
 
   public static final String ERROR_JASPER_FILE_FORMAT = ERROR_PREFIX + ".jasper.file.format";
-  public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
+  public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.fileCreation";
   public static final String ERROR_JASPER_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".jasper.templateNotFound";
   public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
@@ -87,7 +87,7 @@ public abstract class MessageKeys {
   public static final String ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS =
       ERROR_PREFIX + ".periodsForInitiate.missingParameters";
   public static final String ERROR_INITIALIZE_MISSING_PARAMETERS = ERROR_PREFIX
-      + "initiate.missingParameters";
+      + ".initiate.missingParameters";
   public static final String ERROR_INCORRECT_SUGGESTED_PERIOD = ERROR_PREFIX
       + ".initiate.incorrectSuggestedPeriod";
   public static final String ERROR_NULL_ID = ERROR_PREFIX
@@ -167,6 +167,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.mustBeDisplayed";
   public static final String ERROR_VALIDATION_REQUESTED_QUANTITY_EXPLANATION_REQUIRED =
       ERROR_PREFIX + ".validation.requestedQuantityExplanationRequired";
+  public static final String ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS =
+      ERROR_PREFIX + ".validation.cannotAssignTemplateToSeveralPrograms";
   public static final String ERROR_VALIDATION_FIELD_IS_TOO_LONG =
       ERROR_PREFIX + ".validation.fieldIsTooLong";
   public static final String ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND =
@@ -221,6 +223,7 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".onlyAlphanumericLabelIsAccepted";
   public static final String REQUISITION_TYPE_REGULAR = "requisition.type.regular";
   public static final String REQUISITION_TYPE_EMERGENCY = "requisition.type.emergency";
+  public static final String ERROR_CAN_NOT_SKIP = "requisition.error.can-not-skip";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

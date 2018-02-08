@@ -15,23 +15,32 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
 
-import lombok.AllArgsConstructor;
+import com.google.common.collect.Sets;
+
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.utils.Message;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.utils.Message;
+
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -39,24 +48,21 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RequisitionTemplate extends BaseTimestampedEntity {
 
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
-
-  @Getter
-  @Setter
-  @Type(type = UUID_TYPE)
-  private UUID programId;
 
   @Getter
   @Setter
@@ -76,6 +82,41 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       joinColumns = @JoinColumn(name = "requisitionTemplateId"))
   private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
+  @OneToMany(
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY,
+      mappedBy = "template")
+  @DiffIgnore
+  private Set<RequisitionTemplateAssignment> templateAssignments = new HashSet<>();
+
+  @Transient
+  @Getter
+  private UUID programId;
+
+  @Transient
+  @Getter
+  private Set<UUID> facilityTypeIds = Sets.newHashSet();
+
+  RequisitionTemplate(UUID id) {
+    setId(id);
+  }
+
+  /**
+   * Allows creating requisition template with the given properties.
+   */
+  public RequisitionTemplate(Integer numberOfPeriodsToAverage,
+                             boolean populateStockOnHandFromStockCards,
+                             Map<String, RequisitionTemplateColumn> columnsMap,
+                             Set<RequisitionTemplateAssignment> templateAssignments) {
+    this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
+    this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
+    this.columnsMap = columnsMap;
+    this.templateAssignments = templateAssignments;
+
+    postLoad();
+  }
+
   /**
    * Allows creating requisition template with predefined columns.
    *
@@ -85,6 +126,38 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
       columnsMap.put(entry.getKey(), entry.getValue());
     }
+  }
+
+  @PostLoad
+  private void postLoad() {
+    for (RequisitionTemplateAssignment assignment : templateAssignments) {
+      setProgramId(assignment.getProgramId());
+      addFacilityTypeId(assignment.getFacilityTypeId());
+    }
+  }
+
+  /**
+   * Add new assignment. Currently template can be assign to single program and several facility
+   * types.
+   */
+  public void addAssignment(UUID programId, UUID facilityTypeId) {
+    setProgramId(programId);
+    addFacilityTypeId(facilityTypeId);
+    templateAssignments.add(new RequisitionTemplateAssignment(programId, facilityTypeId, this));
+  }
+
+  private synchronized void setProgramId(UUID programId) {
+    if (null == this.programId) {
+      this.programId = programId;
+    }
+
+    if (!Objects.equals(this.programId, programId)) {
+      throw new ValidationMessageException(ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS);
+    }
+  }
+
+  private synchronized void addFacilityTypeId(UUID facilityTypeId) {
+    facilityTypeIds.add(facilityTypeId);
   }
 
   /**
@@ -219,9 +292,11 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param requisitionTemplate RequisitionTemplate with new values.
    */
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
-    this.programId = requisitionTemplate.getProgramId();
     this.numberOfPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
     this.columnsMap = requisitionTemplate.getColumnsMap();
+    this.templateAssignments = requisitionTemplate.templateAssignments;
+
+    postLoad();
   }
 
   public boolean hasColumnsDefined() {
@@ -302,23 +377,29 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @return new instance od template.
    */
   public static RequisitionTemplate newInstance(RequisitionTemplate.Importer importer) {
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setId(importer.getId());
-    requisitionTemplate.setCreatedDate(importer.getCreatedDate());
-    requisitionTemplate.setModifiedDate(importer.getModifiedDate());
-    requisitionTemplate.setProgramId(importer.getProgramId());
-    requisitionTemplate.setPopulateStockOnHandFromStockCards(
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.setId(importer.getId());
+    template.setCreatedDate(importer.getCreatedDate());
+    template.setModifiedDate(importer.getModifiedDate());
+    template.setPopulateStockOnHandFromStockCards(
         importer.isPopulateStockOnHandFromStockCards());
-    requisitionTemplate.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
-    requisitionTemplate.setColumnsMap(new HashMap<>());
+    template.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
+    template.setColumnsMap(new HashMap<>());
 
     importer.getColumnsMap()
         .forEach((key, column) ->
-            requisitionTemplate.getColumnsMap()
+            template.getColumnsMap()
                 .put(key, RequisitionTemplateColumn.newInstance(column)));
 
+    if (importer.getFacilityTypeIds().isEmpty()) {
+      template.addAssignment(importer.getProgramId(), null);
+    } else {
+      for (UUID facilityTypeId : importer.getFacilityTypeIds()) {
+        template.addAssignment(importer.getProgramId(), facilityTypeId);
+      }
+    }
 
-    return requisitionTemplate;
+    return template;
   }
 
   /**
@@ -330,7 +411,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setId(id);
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
-    exporter.setProgramId(programId);
     exporter.setPopulateStockOnHandFromStockCards(populateStockOnHandFromStockCards);
     exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
   }
@@ -342,13 +422,15 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     ZonedDateTime getModifiedDate();
 
-    UUID getProgramId();
-
     boolean isPopulateStockOnHandFromStockCards();
 
     Integer getNumberOfPeriodsToAverage();
 
     Map<String, ? extends RequisitionTemplateColumn.Importer> getColumnsMap();
+
+    UUID getProgramId();
+
+    Set<UUID> getFacilityTypeIds();
   }
 
   public interface Exporter {
@@ -357,8 +439,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setCreatedDate(ZonedDateTime createdDate);
 
     void setModifiedDate(ZonedDateTime modifiedDate);
-
-    void setProgramId(UUID programId);
 
     void setPopulateStockOnHandFromStockCards(boolean populateStockOnHandFromStockCards);
 

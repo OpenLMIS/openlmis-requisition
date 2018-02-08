@@ -33,6 +33,7 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -447,7 +448,7 @@ public class RequisitionLineItem extends BaseEntity {
     if (template.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN)) {
       skipped = true;
     } else {
-      throw new ValidationMessageException(new Message("requisition.error.can-not-skip"));
+      throw new ValidationMessageException(new Message(MessageKeys.ERROR_CAN_NOT_SKIP));
     }
   }
 

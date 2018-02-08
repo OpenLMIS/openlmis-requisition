@@ -34,9 +34,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.ObjectMapperConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
+
 import org.assertj.core.util.Lists;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -66,6 +64,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -73,6 +76,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
 import javax.annotation.PostConstruct;
 
 
@@ -203,8 +207,8 @@ public abstract class BaseWebIntegrationTest {
 
     template.setId(UUID.randomUUID());
     template.setColumnsMap(new HashMap<>());
-    template.setProgramId(UUID.randomUUID());
     template.setNumberOfPeriodsToAverage(1);
+    template.addAssignment(UUID.randomUUID(), UUID.randomUUID());
 
     return template;
   }

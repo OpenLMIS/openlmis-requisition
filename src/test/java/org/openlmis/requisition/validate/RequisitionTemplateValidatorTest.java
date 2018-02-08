@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
@@ -38,7 +39,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
@@ -50,6 +50,8 @@ import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJ
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.FACILITY_TYPE;
+import static org.openlmis.requisition.validate.RequisitionTemplateValidator.FACILITY_TYPE_ID;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.MAX_COLUMN_DEFINITION_LENGTH;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
 import static org.openlmis.requisition.validate.RequisitionTemplateValidator.PROGRAM;
@@ -73,8 +75,10 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -82,6 +86,7 @@ import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -102,6 +107,9 @@ public class RequisitionTemplateValidatorTest {
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private FacilityTypeReferenceDataService facilityTypeReferenceDataService;
 
   @InjectMocks
   private RequisitionTemplateValidator validator;
@@ -530,7 +538,7 @@ public class RequisitionTemplateValidatorTest {
 
     template.getColumnsMap().get(STOCK_ON_HAND)
         .setLabel("New not valid name with wrong signs: !@#$%^&*()");
-    validator.validate(new RequisitionTemplate(template.getColumnsMap()), errors);
+    validator.validate(template, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
   }
@@ -597,19 +605,32 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectIfProgramWithSpecifiedIdDoesNotExist() throws Exception {
-    UUID programId = UUID.randomUUID();
-    when(programReferenceDataService.findOne(programId)).thenReturn(null);
 
     RequisitionTemplate requisitionTemplate = generateTemplate();
-    requisitionTemplate.setProgramId(programId);
+    when(programReferenceDataService.findOne(requisitionTemplate.getProgramId())).thenReturn(null);
 
     Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
-        PROGRAM, programId);
+        PROGRAM, requisitionTemplate.getProgramId());
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         message.toString()));
 
     validator.validate(requisitionTemplate, errors);
     verify(errors).rejectValue(eq(PROGRAM_ID), contains(message.toString()));
+  }
+
+  @Test
+  public void shouldRejectIfFacilityTypeWithSpecifiedIdDoesNotExist() throws Exception {
+    RequisitionTemplate requisitionTemplate = generateTemplate();
+    UUID facilityTypeId = requisitionTemplate.getFacilityTypeIds().iterator().next();
+    when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(null);
+
+    Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+        FACILITY_TYPE, facilityTypeId);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        message.toString()));
+
+    validator.validate(requisitionTemplate, errors);
+    verify(errors).rejectValue(eq(FACILITY_TYPE_ID), contains(message.toString()));
   }
 
   @Test
@@ -733,13 +754,18 @@ public class RequisitionTemplateValidatorTest {
   }
 
   private void mockResponses(RequisitionTemplate template) {
-    template.getColumnsMap().values().stream()
-        .forEach(column -> {
-          when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-              .thenReturn(column.getColumnDefinition());
-        });
+    for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+      when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
+          .thenReturn(column.getColumnDefinition());
+    }
+
     when(programReferenceDataService.findOne(template.getProgramId())).thenReturn(
         new ProgramDtoDataBuilder().withId(template.getProgramId()).build());
+
+    for (UUID facilityTypeId : template.getFacilityTypeIds()) {
+      when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(
+          new FacilityTypeDto());
+    }
   }
 
   private void setConsumptionsInTemplate(RequisitionTemplate requisitionTemplate) {

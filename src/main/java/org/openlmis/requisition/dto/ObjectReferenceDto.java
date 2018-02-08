@@ -15,11 +15,18 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.apache.commons.lang3.StringUtils.joinWith;
+import static org.openlmis.requisition.web.ResourceNames.BASE_PATH;
+import static org.openlmis.requisition.web.ResourceNames.SEPARATOR;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
+
 import java.util.UUID;
 
 @EqualsAndHashCode
+@ToString
 public class ObjectReferenceDto {
 
   @Getter
@@ -28,13 +35,30 @@ public class ObjectReferenceDto {
   @Getter
   private final String href;
 
-  ObjectReferenceDto() {
+  protected ObjectReferenceDto() {
     this(null);
   }
 
   public ObjectReferenceDto(UUID id) {
+    this(id, null);
+  }
+
+  /**
+   * Returns new object reference.
+   *
+   * @param id   object id
+   */
+  public ObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
+    this(id, joinWith(SEPARATOR, serviceUrl + BASE_PATH, resourceName, id));
+  }
+
+  private ObjectReferenceDto(UUID id, String href) {
     this.id = id;
-    this.href = null;
+    this.href = href;
+  }
+
+  public static ObjectReferenceDto create(UUID id, String serviceUrl, String resourceName) {
+    return new ObjectReferenceDto(id, serviceUrl, resourceName);
   }
 
 }

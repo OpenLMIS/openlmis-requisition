@@ -15,16 +15,22 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.openlmis.requisition.domain.RequisitionTemplate;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -34,39 +40,25 @@ import java.util.UUID;
 public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
-  private UUID programId;
   private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
+  private ObjectReferenceDto program;
+  private Set<ObjectReferenceDto> facilityTypes;
 
-  /**
-   * Create new list of RequisitionTemplateDto based on given list of {@link RequisitionTemplate}
-   *
-   * @param templates list of {@link RequisitionTemplate}
-   * @return new list of RequisitionTemplateDto.
-   */
-  public static Iterable<RequisitionTemplateDto> newInstance(
-      Iterable<RequisitionTemplate> templates) {
-
-    List<RequisitionTemplateDto> requisitionTemplateDtos = new ArrayList<>();
-    templates.forEach(t -> requisitionTemplateDtos.add(newInstance(t)));
-    return requisitionTemplateDtos;
+  @Override
+  @JsonIgnore
+  public UUID getProgramId() {
+    return null == program ? null : program.getId();
   }
 
-  /**
-   * Create new instance of RequisitionTemplateDto based on given {@link RequisitionTemplate}
-   *
-   * @param requisitionTemplate instance of Template
-   * @return new instance of RequisitionTemplateDto.
-   */
-  public static RequisitionTemplateDto newInstance(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate == null) {
-      return null;
-    }
-    RequisitionTemplateDto requisitionTemplateDto = new RequisitionTemplateDto();
-    requisitionTemplate.export(requisitionTemplateDto);
-    requisitionTemplateDto.setColumnsMap(
-        RequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
-
-    return requisitionTemplateDto;
+  @Override
+  @JsonIgnore
+  public Set<UUID> getFacilityTypeIds() {
+    return Optional.ofNullable(facilityTypes)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(ObjectReferenceDto::getId)
+        .collect(Collectors.toSet());
   }
+
 }

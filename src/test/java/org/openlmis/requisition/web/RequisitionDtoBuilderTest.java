@@ -43,12 +43,12 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -134,8 +134,6 @@ public class RequisitionDtoBuilderTest {
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
-    assertEquals(RequisitionTemplateDto.newInstance(requisition.getTemplate()).getId(),
-        requisitionDto.getTemplate().getId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(programDto, requisitionDto.getProgram());
@@ -167,8 +165,6 @@ public class RequisitionDtoBuilderTest {
 
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
-    assertEquals(RequisitionTemplateDto.newInstance(requisition.getTemplate()).getId(),
-        requisitionDto.getTemplate().getId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
     assertEquals(facilityDto, requisitionDto.getFacility());
     assertEquals(processingPeriodDto, requisitionDto.getProcessingPeriod());
@@ -208,7 +204,6 @@ public class RequisitionDtoBuilderTest {
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
     RequisitionTemplate template = new RequisitionTemplate();
     template.setId(UUID.randomUUID());
-    template.setProgramId(UUID.randomUUID());
     requisition.setTemplate(template);
     requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));

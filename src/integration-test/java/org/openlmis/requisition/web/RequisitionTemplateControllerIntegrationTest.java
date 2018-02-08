@@ -31,20 +31,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +53,6 @@ import java.util.UUID;
 public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
 
   @MockBean
@@ -61,9 +61,20 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @MockBean
   private RequisitionTemplateValidator requisitionTemplateValidator;
 
+  @SpyBean
+  private RequisitionTemplateDtoBuilder dtoBuilder;
+
+  private RequisitionTemplate template;
+  private RequisitionTemplateDto templateDto;
+
   @Before
   public void setUp() {
+    template = new RequisitionTemplateDataBuilder().build();
+    templateDto = dtoBuilder.newInstance(template);
+
     mockUserAuthenticated();
+
+    given(requisitionTemplateRepository.findOne(templateDto.getId())).willReturn(template);
 
     // Mock saving objects
     given(requisitionTemplateRepository.save(any(RequisitionTemplate.class)))
@@ -75,19 +86,21 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldGetAllRequisitionTemplates() {
     // given
-    List<RequisitionTemplate> templates = Arrays.asList(generateTemplate(), generateTemplate());
+    List<RequisitionTemplate> templates = Arrays.asList(
+        template, new RequisitionTemplateDataBuilder().build());
     given(requisitionTemplateRepository.findAll()).willReturn(templates);
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
-    RequisitionTemplate[] result = restAssured.given()
+    RequisitionTemplateDto[] result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionTemplate[].class);
+        .extract()
+        .as(RequisitionTemplateDto[].class);
 
     // then
     assertNotNull(result);
@@ -100,7 +113,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldCreateRequisitionTemplate() {
     // given
-    RequisitionTemplate template = generateTemplate(false);
     mockValidationSuccess();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
@@ -108,7 +120,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
-        .body(template)
+        .body(templateDto)
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -124,11 +136,10 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldGetChosenRequisitionTemplate() {
     // given
-    RequisitionTemplate template = generateTemplate();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
-    RequisitionTemplate result = restAssured.given()
+    RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", template.getId())
@@ -136,7 +147,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .get(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionTemplate.class);
+        .extract()
+        .as(RequisitionTemplateDto.class);
 
     // then
     assertEquals(template.getId(), result.getId());
@@ -168,28 +180,30 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldUpdateRequisitionTemplate() {
     // given
-    RequisitionTemplate oldTemplate = generateTemplate();
-    oldTemplate.setNumberOfPeriodsToAverage(10);
-
-    RequisitionTemplate newTemplate = generateTemplate(false);
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .withNumberOfPeriodsToAverage(100)
+        .build();
     newTemplate.setNumberOfPeriodsToAverage(100);
+
+    RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
     mockValidationSuccess();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
-    RequisitionTemplate result = restAssured.given()
+    RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
-        .pathParam("id", oldTemplate.getId())
-        .body(newTemplate)
+        .pathParam("id", template.getId())
+        .body(newTemplateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionTemplate.class);
+        .extract()
+        .as(RequisitionTemplateDto.class);
 
     // then
-    assertEquals(oldTemplate.getId(), result.getId());
+    assertEquals(template.getId(), result.getId());
     assertEquals(newTemplate.getNumberOfPeriodsToAverage(), result.getNumberOfPeriodsToAverage());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -201,22 +215,24 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     mockValidationSuccess();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
-    RequisitionTemplate template = generateTemplate(false);
+    given(requisitionTemplateRepository.findOne(templateDto.getId())).willReturn(null);
 
     // when
-    RequisitionTemplate result = restAssured.given()
+    RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON)
         .pathParam("id", UUID.randomUUID())
-        .body(template)
+        .body(templateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(RequisitionTemplate.class);
+        .extract()
+        .as(RequisitionTemplateDto.class);
 
     // then
-    assertEquals(template.getProgramId(), result.getProgramId());
+    assertEquals(templateDto.getProgramId(), result.getProgramId());
+    assertEquals(templateDto.getFacilityTypeIds(), result.getFacilityTypeIds());
     verify(requisitionTemplateRepository, atLeastOnce()).save(any(RequisitionTemplate.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -224,7 +240,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldDeleteRequisitionTemplate() {
     // given
-    RequisitionTemplate template = generateTemplate();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
@@ -266,7 +281,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldNotDeleteRequisitionTemplateWhenRelatedRequisitionsExist() {
     // given
-    RequisitionTemplate template = generateTemplate();
     List<Requisition> requisitions = Collections.singletonList(generateRequisition());
     given(requisitionRepository.findByTemplateId(template.getId())).willReturn(requisitions);
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
@@ -286,50 +300,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // GET /api/requisitionTemplates/search
-
-  @Test
-  public void shouldFindRequisitionTemplateByProgram() {
-    // given
-    RequisitionTemplate template = generateTemplate();
-    given(requisitionTemplateRepository.getTemplateForProgram(template.getProgramId()))
-        .willReturn(template);
-    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
-
-    // when
-    RequisitionTemplate result = restAssured.given()
-        .queryParam("program", template.getProgramId())
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RequisitionTemplate.class);
-
-    // then
-    assertEquals(template.getId(), result.getId());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturn403WhenUserHasNoRightsToSearchForRequisitionTemplates() {
-    // given
-    doReturn(ValidationResult.noPermission("noAccess")).when(permissionService)
-        .canManageRequisitionTemplate();
-
-    // when
-    restAssured.given()
-        .queryParam("program", UUID.randomUUID())
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(403);
-
-    // then
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
   // Helper methods
 
   private void mockValidationSuccess() {
@@ -337,22 +307,4 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     doNothing().when(requisitionTemplateValidator).validate(anyObject(), any(Errors.class));
   }
 
-  private RequisitionTemplate generateTemplate() {
-    return generateTemplate(true);
-  }
-
-  private RequisitionTemplate generateTemplate(boolean persistent) {
-    RequisitionTemplate template = new RequisitionTemplate();
-
-    template.setId(UUID.randomUUID());
-    template.setProgramId(UUID.randomUUID());
-    template.setCreatedDate(ZonedDateTime.now());
-    template.setColumnsMap(new HashMap<>());
-
-    if (persistent) {
-      given(requisitionTemplateRepository.findOne(template.getId())).willReturn(template);
-    }
-
-    return template;
-  }
 }

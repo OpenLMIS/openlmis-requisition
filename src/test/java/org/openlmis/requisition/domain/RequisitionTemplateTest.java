@@ -147,7 +147,6 @@ public class RequisitionTemplateTest {
     assertEquals(requisitionTemplate.getId(), templateDto.getId());
     assertEquals(requisitionTemplate.getCreatedDate(), templateDto.getCreatedDate());
     assertEquals(requisitionTemplate.getModifiedDate(), templateDto.getModifiedDate());
-    assertEquals(requisitionTemplate.getProgramId(), templateDto.getProgramId());
     assertEquals(requisitionTemplate.isPopulateStockOnHandFromStockCards(),
         templateDto.isPopulateStockOnHandFromStockCards());
     assertEquals(requisitionTemplate.getNumberOfPeriodsToAverage(),
@@ -173,7 +172,6 @@ public class RequisitionTemplateTest {
     assertEquals(templateDto.getId(), newTemplate.getId());
     assertEquals(templateDto.getCreatedDate(), newTemplate.getCreatedDate());
     assertEquals(templateDto.getModifiedDate(), newTemplate.getModifiedDate());
-    assertEquals(templateDto.getProgramId(), newTemplate.getProgramId());
     assertEquals(templateDto.isPopulateStockOnHandFromStockCards(),
         newTemplate.isPopulateStockOnHandFromStockCards());
     assertEquals(templateDto.getNumberOfPeriodsToAverage(),

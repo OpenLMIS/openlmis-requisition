@@ -23,8 +23,8 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionTemplateService;
-import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.validate.RequisitionTemplateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +36,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.util.UUID;
 
 @Controller
@@ -58,6 +58,9 @@ public class RequisitionTemplateController extends BaseController {
 
   @Autowired
   private PermissionService permissionService;
+
+  @Autowired
+  private RequisitionTemplateDtoBuilder dtoBuilder;
 
   /**
    * Allows creating a new Requisition Template.
@@ -87,7 +90,7 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate newRequisitionTemplate =
         requisitionTemplateRepository.save(requisitionTemplate);
     LOGGER.debug("Created new requisitionTemplate with id: " + requisitionTemplate.getId());
-    return RequisitionTemplateDto.newInstance(newRequisitionTemplate);
+    return dtoBuilder.newInstance(newRequisitionTemplate);
   }
 
   /**
@@ -101,7 +104,7 @@ public class RequisitionTemplateController extends BaseController {
   public Iterable<RequisitionTemplateDto> getAllRequisitionTemplates() {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
-    return RequisitionTemplateDto.newInstance(requisitionTemplateRepository.findAll());
+    return dtoBuilder.newInstance(requisitionTemplateRepository.findAll());
   }
 
   /**
@@ -144,7 +147,7 @@ public class RequisitionTemplateController extends BaseController {
     requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
 
     LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
-    return RequisitionTemplateDto.newInstance(requisitionTemplateToUpdate);
+    return dtoBuilder.newInstance(requisitionTemplateToUpdate);
   }
 
   /**
@@ -166,7 +169,7 @@ public class RequisitionTemplateController extends BaseController {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
     } else {
-      return RequisitionTemplateDto.newInstance(requisitionTemplate);
+      return dtoBuilder.newInstance(requisitionTemplate);
     }
   }
 
@@ -189,19 +192,4 @@ public class RequisitionTemplateController extends BaseController {
     }
   }
 
-  /**
-   * Returns requisition template for the given program.
-   *
-   * @param program program of searched requisition templates.
-   * @return RequisitionTemplate matching provided parameters.
-   */
-  @RequestMapping(value = "/requisitionTemplates/search", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public RequisitionTemplateDto getTemplateByProgram(
-      @RequestParam(value = "program", required = false) UUID program) {
-    permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
-    return RequisitionTemplateDto.newInstance(
-        requisitionTemplateService.getTemplateForProgram(program));
-  }
 }

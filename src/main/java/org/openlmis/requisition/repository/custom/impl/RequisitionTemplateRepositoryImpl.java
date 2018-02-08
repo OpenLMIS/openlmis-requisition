@@ -25,12 +25,13 @@ import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRepositoryCustom {
+  private static final String FIND_BY_PROGRAM = "SELECT DISTINCT t"
+      + " FROM RequisitionTemplate AS t"
+      + " INNER JOIN FETCH t.templateAssignments AS a"
+      + " WHERE a.id.programId = :programId"
+      + " ORDER BY t.createdDate DESC";
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -43,24 +44,16 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
    */
   public RequisitionTemplate getTemplateForProgram(UUID program) {
     if (program == null) {
-      throw new ContentNotFoundMessageException(new Message("requisition.error"
-          + ".program-cannot-be-null"));
+      throw new ContentNotFoundMessageException(
+          new Message("requisition.error.program-cannot-be-null"));
     }
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<RequisitionTemplate> query = builder.createQuery(RequisitionTemplate.class);
-    Root<RequisitionTemplate> root = query.from(RequisitionTemplate.class);
-    Predicate predicate = builder.conjunction();
 
-    predicate = builder.and(
-        predicate,
-        builder.equal(
-            root.get("programId"), program));
+    List<RequisitionTemplate> templates = entityManager
+        .createQuery(FIND_BY_PROGRAM, RequisitionTemplate.class)
+        .setParameter("programId", program)
+        .setMaxResults(1)
+        .getResultList();
 
-    query.where(predicate);
-    query.orderBy(builder.desc(root.get("createdDate")));
-
-    List<RequisitionTemplate> templates = entityManager.createQuery(query)
-        .setMaxResults(1).getResultList();
     return templates.isEmpty() ? null : templates.get(0);
   }
 }

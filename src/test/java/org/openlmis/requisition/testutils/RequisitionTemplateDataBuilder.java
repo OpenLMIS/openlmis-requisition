@@ -19,12 +19,16 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORD
 import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -34,10 +38,10 @@ public class RequisitionTemplateDataBuilder {
   private UUID id;
   private ZonedDateTime createdDate;
   private ZonedDateTime modifiedDate;
-  private UUID programId;
   private Integer numberOfPeriodsToAverage;
   private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumn> columnsMap;
+  private Set<Pair<UUID, UUID>> templateAssignments;
 
   /**
    * Builder for {@link RequisitionTemplate} class.
@@ -46,21 +50,33 @@ public class RequisitionTemplateDataBuilder {
     id = UUID.randomUUID();
     createdDate = ZonedDateTime.now();
     modifiedDate = ZonedDateTime.now();
-    programId = UUID.randomUUID();
     numberOfPeriodsToAverage = 6;
     populateStockOnHandFromStockCards = false;
     columnsMap = new HashMap<>();
+
+    templateAssignments = new HashSet<>();
+    templateAssignments.add(new ImmutablePair<>(UUID.randomUUID(), UUID.randomUUID()));
+  }
+
+  public RequisitionTemplateDataBuilder withAssignment(UUID programId, UUID facilityTypeId) {
+    templateAssignments.add(new ImmutablePair<>(programId, facilityTypeId));
+    return this;
   }
 
   /**
    * Builds {@link RequisitionTemplate} instance with test data.
    */
   public RequisitionTemplate build() {
-    RequisitionTemplate template = new RequisitionTemplate(programId, numberOfPeriodsToAverage,
-        populateStockOnHandFromStockCards, columnsMap);
+    RequisitionTemplate template = new RequisitionTemplate(numberOfPeriodsToAverage,
+        populateStockOnHandFromStockCards, columnsMap, new HashSet<>());
     template.setId(id);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
+
+    for (Pair<UUID, UUID> assignment : templateAssignments) {
+      template.addAssignment(assignment.getLeft(), assignment.getRight());
+    }
+
     return template;
   }
 

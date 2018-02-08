@@ -895,25 +895,3 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
-      /search:
-          get:
-              is: [ secured ]
-              description: Find requisition templates with matched parameters.
-              queryParameters:
-                  program:
-                      displayName: program
-                      description: program ID
-                      type: string
-                      required: false
-                      repeat: false
-              responses:
-                  "200":
-                      body:
-                        application/json:
-                            schema: requisitionTemplate
-                  "403":
-                      body:
-                        application/json:
-                            schema: localizedMessage
-                  "404":
-                  "500":

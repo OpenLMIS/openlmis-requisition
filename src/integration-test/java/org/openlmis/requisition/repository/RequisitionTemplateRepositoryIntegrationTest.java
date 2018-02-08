@@ -15,8 +15,10 @@
 
 package org.openlmis.requisition.repository;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +70,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   RequisitionTemplate generateInstance() {
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
         new HashMap<>());
-    requisitionTemplate.setProgramId(UUID.randomUUID());
     requisitionTemplate.setNumberOfPeriodsToAverage(3);
     return requisitionTemplate;
   }
@@ -216,16 +217,18 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testSearchRequisitionTemplatesByAllParameters() {
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.setProgramId(UUID.randomUUID());
+      requisitionTemplate.addAssignment(UUID.randomUUID(), null);
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
-    RequisitionTemplate template
-        = repository.getTemplateForProgram(requisitionTemplates.get(0).getProgramId());
+
+    UUID programId = requisitionTemplates
+        .get(0)
+        .getProgramId();
+
+    RequisitionTemplate template = repository.getTemplateForProgram(programId);
 
     assertNotNull(template);
-    assertEquals(
-        requisitionTemplates.get(0).getProgramId(),
-        template.getProgramId());
+    assertThat(template.getProgramId(), is(programId));
   }
 
   @Test
@@ -238,7 +241,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       createdDate = createdDate.plusDays(1);
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.setProgramId(programId);
+      requisitionTemplate.addAssignment(programId, UUID.randomUUID());
       requisitionTemplate.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
       requisitionTemplates.add(repository.save(requisitionTemplate));
 
@@ -252,7 +255,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     // then
     assertEquals(
         requisitionTemplates.get(requisitionTemplates.size() - 1).getId(), result.getId());
-    assertEquals(programId, result.getProgramId());
+    assertThat(result.getProgramId(), is(programId));
     assertEquals(numberOfPeriodsToAverage, result.getNumberOfPeriodsToAverage());
   }
 
