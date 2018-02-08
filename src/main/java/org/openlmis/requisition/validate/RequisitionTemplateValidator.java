@@ -17,6 +17,7 @@ package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
@@ -28,7 +29,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
@@ -76,11 +76,12 @@ public class RequisitionTemplateValidator extends BaseValidator {
   static final String TOTAL = "total";
   static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
+  static final String TOTAL_LOSSES_AND_ADJUSTMNETS = "totalLossesAndAdjustments";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
   static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(
-      BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
-      TOTAL_STOCKOUT_DAYS, TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION,
-      MAXIMUM_STOCK_QUANTITY, CALCULATED_ORDER_QUANTITY);
+      BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_STOCKOUT_DAYS,
+      TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION, MAXIMUM_STOCK_QUANTITY,
+      CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION, TOTAL_LOSSES_AND_ADJUSTMNETS);
 
   private Errors errors;
 
