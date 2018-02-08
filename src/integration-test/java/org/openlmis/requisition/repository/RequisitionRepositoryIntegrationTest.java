@@ -53,6 +53,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -125,7 +126,7 @@ public class RequisitionRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    testTemplate = templateRepository.save(new RequisitionTemplate());
+    testTemplate = templateRepository.save(new RequisitionTemplateDataBuilder().build());
     requisitions = new ArrayList<>();
     for (int count = 0; count < 5; ++count) {
       requisitions.add(repository.save(generateInstance()));
@@ -282,7 +283,8 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByTemplate() {
     // given
-    RequisitionTemplate nonMatchingTemplate = templateRepository.save(new RequisitionTemplate());
+    RequisitionTemplate nonMatchingTemplate = templateRepository
+        .save(new RequisitionTemplateDataBuilder().build());
     Requisition nonMatchingRequisition = requisitions.get(0);
     nonMatchingRequisition.setTemplate(nonMatchingTemplate);
 

@@ -32,6 +32,7 @@ import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 
@@ -81,7 +82,7 @@ public class StatusMessageRepositoryIntegrationTest
   
   @Before
   public void setUp() {
-    requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate = new RequisitionTemplateDataBuilder().build();
     requisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
 
     requisition = new Requisition(

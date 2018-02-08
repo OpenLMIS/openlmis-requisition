@@ -19,6 +19,7 @@ import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORD
 import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
@@ -40,6 +41,7 @@ public class RequisitionTemplateDataBuilder {
   private ZonedDateTime modifiedDate;
   private Integer numberOfPeriodsToAverage;
   private Boolean populateStockOnHandFromStockCards;
+  private String name;
   private Map<String, RequisitionTemplateColumn> columnsMap;
   private Set<Pair<UUID, UUID>> templateAssignments;
 
@@ -52,6 +54,7 @@ public class RequisitionTemplateDataBuilder {
     modifiedDate = ZonedDateTime.now();
     numberOfPeriodsToAverage = 6;
     populateStockOnHandFromStockCards = false;
+    name = "template-name-" + RandomStringUtils.randomNumeric(5);
     columnsMap = new HashMap<>();
 
     templateAssignments = new HashSet<>();
@@ -68,7 +71,7 @@ public class RequisitionTemplateDataBuilder {
    */
   public RequisitionTemplate build() {
     RequisitionTemplate template = new RequisitionTemplate(numberOfPeriodsToAverage,
-        populateStockOnHandFromStockCards, columnsMap, new HashSet<>());
+        populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
     template.setId(id);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);

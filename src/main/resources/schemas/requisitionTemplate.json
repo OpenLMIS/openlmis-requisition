@@ -24,6 +24,10 @@
       "type": "boolean",
       "title": "populateStockOnHandFromStockCards"
     },
+    "name": {
+      "type": "string",
+      "title": "name"
+    },
     "columnsMap": {
       "type": "object",
       "$ref": "requisitionTemplateColumnsMap.json",

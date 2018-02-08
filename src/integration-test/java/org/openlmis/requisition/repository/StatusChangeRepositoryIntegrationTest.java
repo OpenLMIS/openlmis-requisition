@@ -19,9 +19,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +26,12 @@ import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 public class StatusChangeRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<StatusChange> {
@@ -57,7 +59,7 @@ public class StatusChangeRepositoryIntegrationTest
 
   @Before
   public void setUp() {
-    requisitionTemplate = new RequisitionTemplate();
+    requisitionTemplate = new RequisitionTemplateDataBuilder().build();
     requisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
 
     requisition = new Requisition(

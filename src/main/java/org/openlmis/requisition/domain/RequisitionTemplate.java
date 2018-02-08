@@ -74,6 +74,10 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Getter
   @Setter
+  private String name;
+
+  @Getter
+  @Setter
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
@@ -107,10 +111,12 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    */
   public RequisitionTemplate(Integer numberOfPeriodsToAverage,
                              boolean populateStockOnHandFromStockCards,
+                             String name,
                              Map<String, RequisitionTemplateColumn> columnsMap,
                              Set<RequisitionTemplateAssignment> templateAssignments) {
     this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
     this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
+    this.name = name;
     this.columnsMap = columnsMap;
     this.templateAssignments = templateAssignments;
 
@@ -424,6 +430,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     Boolean getPopulateStockOnHandFromStockCards();
 
+    String getName();
+
     Integer getNumberOfPeriodsToAverage();
 
     Map<String, ? extends RequisitionTemplateColumn.Importer> getColumnsMap();
@@ -443,5 +451,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setPopulateStockOnHandFromStockCards(Boolean populateStockOnHandFromStockCards);
 
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
+
+    void setName(String name);
   }
 }

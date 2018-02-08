@@ -71,6 +71,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate requisitionTemplate = new RequisitionTemplate(
         new HashMap<>());
     requisitionTemplate.setNumberOfPeriodsToAverage(3);
+    requisitionTemplate.setName("test-name" + getNextInstanceNumber());
     return requisitionTemplate;
   }
 

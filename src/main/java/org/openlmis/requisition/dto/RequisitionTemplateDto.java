@@ -41,6 +41,7 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
   private Boolean populateStockOnHandFromStockCards;
+  private String name;
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
   private ObjectReferenceDto program;
   private Set<ObjectReferenceDto> facilityTypes;
