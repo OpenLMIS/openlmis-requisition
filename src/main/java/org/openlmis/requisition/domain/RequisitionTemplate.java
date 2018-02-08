@@ -301,6 +301,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.numberOfPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
     this.columnsMap = requisitionTemplate.getColumnsMap();
     this.templateAssignments = requisitionTemplate.templateAssignments;
+    this.name = requisitionTemplate.name;
 
     postLoad();
   }
