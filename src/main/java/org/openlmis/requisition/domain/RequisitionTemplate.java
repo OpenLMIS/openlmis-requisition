@@ -70,7 +70,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  private boolean populateStockOnHandFromStockCards;
+  private Boolean populateStockOnHandFromStockCards;
 
   @Getter
   @Setter
@@ -382,7 +382,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
     template.setPopulateStockOnHandFromStockCards(
-        importer.isPopulateStockOnHandFromStockCards());
+        importer.getPopulateStockOnHandFromStockCards());
     template.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
     template.setColumnsMap(new HashMap<>());
 
@@ -422,7 +422,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     ZonedDateTime getModifiedDate();
 
-    boolean isPopulateStockOnHandFromStockCards();
+    Boolean getPopulateStockOnHandFromStockCards();
 
     Integer getNumberOfPeriodsToAverage();
 
@@ -440,7 +440,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     void setModifiedDate(ZonedDateTime modifiedDate);
 
-    void setPopulateStockOnHandFromStockCards(boolean populateStockOnHandFromStockCards);
+    void setPopulateStockOnHandFromStockCards(Boolean populateStockOnHandFromStockCards);
 
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
   }

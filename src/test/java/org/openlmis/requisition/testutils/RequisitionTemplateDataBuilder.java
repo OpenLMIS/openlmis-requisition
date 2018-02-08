@@ -39,7 +39,7 @@ public class RequisitionTemplateDataBuilder {
   private ZonedDateTime createdDate;
   private ZonedDateTime modifiedDate;
   private Integer numberOfPeriodsToAverage;
-  private boolean populateStockOnHandFromStockCards;
+  private Boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumn> columnsMap;
   private Set<Pair<UUID, UUID>> templateAssignments;
 

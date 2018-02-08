@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
-  private boolean populateStockOnHandFromStockCards;
+  private Boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
   private ObjectReferenceDto program;
   private Set<ObjectReferenceDto> facilityTypes;

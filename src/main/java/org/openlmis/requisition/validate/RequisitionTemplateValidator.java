@@ -126,7 +126,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
     validateNumberOfPeriodsToAverage(template);
 
-    if (template.isPopulateStockOnHandFromStockCards()) {
+    if (template.getPopulateStockOnHandFromStockCards()) {
       validateStockManagementFields(template);
     }
 
@@ -187,7 +187,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
         if (template.isColumnInTemplate(requiredField)
             && template.isColumnUserInput(requiredField)
             && !(STOCK_DISABLED_COLUMNS.contains(requiredField)
-            && template.isPopulateStockOnHandFromStockCards())) {
+            && template.getPopulateStockOnHandFromStockCards())) {
           rejectIfNotDisplayed(errors, template, requiredField, COLUMNS_MAP,
               new Message(suffix, requiredField));
         }
@@ -197,7 +197,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   private void validateColumns(RequisitionTemplate template) {
     for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
-      if (template.isPopulateStockOnHandFromStockCards()
+      if (template.getPopulateStockOnHandFromStockCards()
           && STOCK_DISABLED_COLUMNS.contains(column.getName())) {
         return;
       }
