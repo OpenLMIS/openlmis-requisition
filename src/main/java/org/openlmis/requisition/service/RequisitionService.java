@@ -268,7 +268,7 @@ public class RequisitionService {
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
                                              Collection<ApprovedProductDto> approvedProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
-    if (requisitionTemplate.getPopulateStockOnHandFromStockCards()) {
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       return stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
