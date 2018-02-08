@@ -72,6 +72,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
         new HashMap<>());
     requisitionTemplate.setNumberOfPeriodsToAverage(3);
     requisitionTemplate.setName("test-name" + getNextInstanceNumber());
+    requisitionTemplate.setPopulateStockOnHandFromStockCards(false);
     return requisitionTemplate;
   }
 

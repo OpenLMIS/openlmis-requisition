@@ -31,9 +31,8 @@ import java.util.Map;
 public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter {
 
-  private boolean populateStockOnHandFromStockCards;
   private String name;
-
+  private Boolean populateStockOnHandFromStockCards;
   private Map<String, BasicRequisitionTemplateColumnDto> columnsMap;
 
   /**

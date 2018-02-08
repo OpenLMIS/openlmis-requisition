@@ -967,7 +967,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
     prepareForTestInitiate(SETTING, requisitionTemplate);
-    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(requisitionTemplate.getPopulateStockOnHandFromStockCards()).thenReturn(true);
     when(stockCardSummariesStockManagementService
         .search(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
         .thenReturn(Collections.singletonList(stockCard));
@@ -985,7 +985,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetStockOnHandIfFlagIsDisabled() {
     prepareForTestInitiate(SETTING, requisitionTemplate);
-    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    when(requisitionTemplate.getPopulateStockOnHandFromStockCards()).thenReturn(false);
     whenGetStockCardSummaries().thenThrow(IllegalStateException.class);
 
     mockApprovedProduct(PRODUCT_ID, true);
@@ -999,7 +999,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetStockOnHandIfNoStockCardSummariesFound() {
     prepareForTestInitiate(SETTING, requisitionTemplate);
-    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(requisitionTemplate.getPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
 
     mockApprovedProduct(PRODUCT_ID, true);
