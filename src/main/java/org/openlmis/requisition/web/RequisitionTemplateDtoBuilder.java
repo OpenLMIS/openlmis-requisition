@@ -67,6 +67,7 @@ public class RequisitionTemplateDtoBuilder {
         .stream()
         .map(elem -> new ObjectReferenceDto(elem, serviceUrl, FACILITY_TYPES))
         .collect(Collectors.toSet()));
+    dto.setName(template.getName());
 
     return dto;
   }

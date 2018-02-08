@@ -391,6 +391,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
         importer.isPopulateStockOnHandFromStockCards());
     template.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
     template.setColumnsMap(new HashMap<>());
+    template.setName(importer.getName());
 
     importer.getColumnsMap()
         .forEach((key, column) ->
