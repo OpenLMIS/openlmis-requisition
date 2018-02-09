@@ -15,9 +15,21 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class RequisitionTemplateDtoTest {
 
@@ -28,5 +40,38 @@ public class RequisitionTemplateDtoTest {
         .withRedefinedSuperclass()
         .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
         .verify();
+  }
+
+  @Test
+  public void shouldReturnProgramId() {
+    UUID id = UUID.randomUUID();
+
+    RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    dto.setProgram(new ObjectReferenceDto(id));
+
+    assertThat(dto.getProgramId(), is(id));
+  }
+
+  @Test
+  public void shouldReturnFacilityTypeIds() {
+    Set<UUID> facilityTypeId = IntStream
+        .range(0, 4)
+        .mapToObj(idx -> UUID.randomUUID())
+        .collect(Collectors.toSet());
+
+    RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    dto.setFacilityTypes(new HashSet<>());
+
+    facilityTypeId.forEach(id -> dto.getFacilityTypes().add(new ObjectReferenceDto(id)));
+    assertThat(dto.getFacilityTypeIds(), hasSize(facilityTypeId.size()));
+    assertThat(dto.getFacilityTypeIds(), hasItems(facilityTypeId.toArray(new UUID[0])));
+  }
+
+  @Test
+  public void shouldReturnEmptySetOfFacilityTypeIdsIfThereIsNoTypes() {
+    RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    dto.setFacilityTypes(new HashSet<>());
+
+    assertThat(dto.getFacilityTypeIds(), hasSize(0));
   }
 }

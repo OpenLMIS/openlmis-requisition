@@ -15,11 +15,18 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,14 +38,18 @@ import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class RequisitionTemplateTest {
 
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public ExpectedException expected = ExpectedException.none();
 
   private RequisitionTemplate requisitionTemplate;
 
@@ -107,22 +118,22 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldThrowIfSourceIsNotAvailableInColumn() {
-    expectedException.expect(ValidationMessageException.class);
+    expected.expect(ValidationMessageException.class);
     requisitionTemplate.changeColumnSource(COLUMN_NAMES[0], SourceType.REFERENCE_DATA);
 
-    expectedException.expectMessage(RequisitionTemplate.SOURCE + SourceType.REFERENCE_DATA
+    expected.expectMessage(RequisitionTemplate.SOURCE + SourceType.REFERENCE_DATA
         + RequisitionTemplate.WARNING_SUFFIX);
   }
 
   @Test
   public void shouldThrowIfOptionIsNotAvailableInColumn() {
-    expectedException.expect(ValidationMessageException.class);
+    expected.expect(ValidationMessageException.class);
     AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
         requisitionTemplate.getColumnsMap().get(COLUMN_NAMES[0])
             .getColumnDefinition(), "option1", "label1");
     requisitionTemplate.changeColumnOption(COLUMN_NAMES[0], option);
 
-    expectedException.expectMessage(RequisitionTemplate.OPTION + option.getOptionName()
+    expected.expectMessage(RequisitionTemplate.OPTION + option.getOptionName()
         + RequisitionTemplate.WARNING_SUFFIX);
   }
 
@@ -183,5 +194,44 @@ public class RequisitionTemplateTest {
                     .get(requisitionTemplateColumnEntry.getKey()).getName(),
                 requisitionTemplateColumnEntry.getValue().getName()));
     assertEquals(templateDto.getId(), newTemplate.getId());
+    assertThat(newTemplate.getProgramId(), is(templateDto.getProgramId()));
+    assertThat(
+        newTemplate.getFacilityTypeIds(),
+        hasItems(templateDto.getFacilityTypeIds().toArray(new UUID[0]))
+    );
+  }
+
+  @Test
+  public void shouldAddAssignment() {
+    UUID programId = UUID.randomUUID();
+    Set<UUID> facilityTypeId = IntStream
+        .range(0, 4)
+        .mapToObj(idx -> UUID.randomUUID())
+        .collect(Collectors.toSet());
+
+    RequisitionTemplate template = new RequisitionTemplate();
+    facilityTypeId.forEach(id -> template.addAssignment(programId, id));
+
+    assertThat(template.getProgramId(), is(programId));
+    assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeId.size()));
+    assertThat(template.getFacilityTypeIds(), hasItems(facilityTypeId.toArray(new UUID[0])));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfTryToAssignToSeveralPrograms() {
+    expected.expect(ValidationMessageException.class);
+    expected.expectMessage(containsString(ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS));
+
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.addAssignment(UUID.randomUUID(), null);
+    template.addAssignment(UUID.randomUUID(), null);
+  }
+
+  @Test
+  public void shouldFacilityTypeIdsShouldNotContainNullValue() {
+    RequisitionTemplate template = new RequisitionTemplate();
+    template.addAssignment(UUID.randomUUID(), null);
+
+    assertThat(template.getFacilityTypeIds(), hasSize(0));
   }
 }
