@@ -16,7 +16,9 @@
     "draftStatusMessage": { "type": "string", "title": "draftStatusMessage" },
     "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"schemas/requisitionLineItemDto.json" }, "uniqueItems": false },
     "datePhysicalStockCountCompleted": { "type": "string", "title": "datePhysicalStockCountCompleted" },
-    "stockAdjustmentReasons": { "type": "array", "title": "stockAdjustmentReasons", "items": { "type": "object", "$ref":"schemas/stockAdjustmentReason.json" }, "uniqueItems": true }
+    "stockAdjustmentReasons": { "type": "array", "title": "stockAdjustmentReasons", "items": { "type": "object", "$ref":"schemas/stockAdjustmentReason.json" }, "uniqueItems": true },
+    "availableNonFullSupplyProducts": { "type": "array", "title": "availableNonFullSupplyProducts", "items": { "type": "object", "$ref":"schemas/orderableDto.json" }, "uniqueItems": true },
+    "availableFullSupplyProducts": { "type": "array", "title": "availableFullSupplyProducts", "items": { "type": "object", "$ref":"schemas/orderableDto.json" }, "uniqueItems": true }
   },
   "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
 }

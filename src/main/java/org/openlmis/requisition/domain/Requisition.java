@@ -194,12 +194,12 @@ public class Requisition extends BaseTimestampedEntity {
   @ElementCollection(fetch = FetchType.EAGER, targetClass = UUID.class)
   @Column(name = "value")
   @CollectionTable(
-      name = "available_non_full_supply_products",
+      name = "available_products",
       joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
   @Type(type = UUID_TYPE)
-  private Set<UUID> availableNonFullSupplyProducts;
+  private Set<UUID> availableProducts;
 
   @Getter
   @Setter
