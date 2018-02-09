@@ -86,7 +86,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   @OneToMany(
-      cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
+      cascade = CascadeType.ALL,
       orphanRemoval = true,
       mappedBy = "template")
   @DiffIgnore
