@@ -46,6 +46,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateTest {
 
   @Rule
