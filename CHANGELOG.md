@@ -1,9 +1,12 @@
-5.2.0 / WIP
+6.0.0 / WIP
 ===========
+
+Contract breaking changes:
+* [OLMIS-4086](https://openlmis.atlassian.net/browse/OLMIS-4086): Support multiple requisition templates per program
+  * The requisition template search endpoint has been removed
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
-* [OLMIS-4086](https://openlmis.atlassian.net/browse/OLMIS-4086): Support multiple requisition templates per program
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
