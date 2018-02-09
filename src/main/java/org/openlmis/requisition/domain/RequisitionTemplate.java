@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMPLATE;
@@ -118,9 +119,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
     this.name = name;
     this.columnsMap = columnsMap;
-    this.templateAssignments = templateAssignments;
 
-    postLoad();
+    setTemplateAssignments(templateAssignments);
   }
 
   /**
@@ -129,9 +129,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columns Columns to appear in requisition template.
    */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
-      columnsMap.put(entry.getKey(), entry.getValue());
-    }
+    columns.forEach(columnsMap::put);
   }
 
   @PostLoad
@@ -231,7 +229,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    */
   public void changeColumnDisplay(String key, boolean display) {
     RequisitionTemplateColumn column = columnsMap.get(key);
-    if (!column.getColumnDefinition().getIsDisplayRequired()) {
+    if (isNotTrue(column.getColumnDefinition().getIsDisplayRequired())) {
       if (display && "productCode".equals(key)) {
         column.setDisplayOrder(1);
       }
@@ -299,11 +297,16 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    */
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
     this.numberOfPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
-    this.columnsMap = requisitionTemplate.getColumnsMap();
-    this.templateAssignments = requisitionTemplate.templateAssignments;
     this.name = requisitionTemplate.name;
 
-    postLoad();
+    requisitionTemplate.getColumnsMap().forEach(columnsMap::put);
+    setTemplateAssignments(requisitionTemplate.templateAssignments);
+  }
+
+  private void setTemplateAssignments(Set<RequisitionTemplateAssignment> assignments) {
+    for (RequisitionTemplateAssignment assignment : assignments) {
+      addAssignment(assignment.getProgramId(), assignment.getFacilityTypeId());
+    }
   }
 
   public boolean hasColumnsDefined() {

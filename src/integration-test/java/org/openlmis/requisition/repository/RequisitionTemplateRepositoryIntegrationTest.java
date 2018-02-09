@@ -40,7 +40,7 @@ import java.util.UUID;
 /**
  * Allow testing requisitionTemplateRepository.
  */
-
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<RequisitionTemplate> {
 
@@ -48,7 +48,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   private static final SourceType SOURCE = SourceType.CALCULATED;
 
   @Autowired
-  RequisitionTemplateRepository repository;
+  private RequisitionTemplateRepository repository;
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -258,6 +258,17 @@ public class RequisitionTemplateRepositoryIntegrationTest
         requisitionTemplates.get(requisitionTemplates.size() - 1).getId(), result.getId());
     assertThat(result.getProgramId(), is(programId));
     assertEquals(numberOfPeriodsToAverage, result.getNumberOfPeriodsToAverage());
+  }
+
+  @Test
+  public void shouldSaveCopyOfTemplate() {
+    RequisitionTemplate template = generateInstance();
+    repository.saveAndFlush(template);
+
+    RequisitionTemplate newTemplate = new RequisitionTemplate();
+    newTemplate.updateFrom(template);
+
+    repository.saveAndFlush(newTemplate);
   }
 
   private AvailableRequisitionColumn getColumn() {
