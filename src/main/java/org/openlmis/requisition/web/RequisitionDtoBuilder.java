@@ -25,6 +25,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.PeriodService;
@@ -37,10 +38,12 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -136,10 +139,8 @@ public class RequisitionDtoBuilder {
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
     profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
-    if (requisition.getAvailableNonFullSupplyProducts() != null) {
-      requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>(
-          orderableReferenceDataService.findByIds(
-              requisition.getAvailableNonFullSupplyProducts())));
+    if (requisition.getAvailableProducts() != null) {
+      setAvailableProductsDto(requisitionDto, requisition);
     }
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisitionDto.setStockAdjustmentReasons(
@@ -207,7 +208,30 @@ public class RequisitionDtoBuilder {
           periodService.getPeriod(requisition.getProcessingPeriodId()));
     }
     requisitionDto.setProgram(program);
+  }
 
+  private void setAvailableProductsDto(RequisitionDto requisitionDto, Requisition requisition) {
+    List<OrderableDto> orderables = orderableReferenceDataService
+        .findByIds(requisition.getAvailableProducts());
+
+    Set<OrderableDto> availableFullSupply = new HashSet<>();
+    Set<OrderableDto> availableNonFullSupply = new HashSet<>();
+
+    for (OrderableDto orderableDto : orderables) {
+      ProgramOrderableDto poDto = orderableDto.findProgramOrderableDto(requisition.getProgramId());
+      if (poDto == null) {
+        continue;
+      }
+
+      if (poDto.getFullSupply()) {
+        availableFullSupply.add(orderableDto);
+      } else {
+        availableNonFullSupply.add(orderableDto);
+      }
+    }
+
+    requisitionDto.setAvailableFullSupplyProducts(availableFullSupply);
+    requisitionDto.setAvailableNonFullSupplyProducts(availableNonFullSupply);
   }
 
 }

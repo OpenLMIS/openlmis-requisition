@@ -251,7 +251,7 @@ public class RequisitionService {
         authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
     profiler.start("SET_AVAIL_FULL_SUPPLY");
-    requisition.setAvailableNonFullSupplyProducts(approvedProductReferenceDataService
+    requisition.setAvailableProducts(approvedProductReferenceDataService
         .getApprovedProducts(facilityId, programId, false)
         .stream()
         .map(ap -> ap.getOrderable().getId())

@@ -182,7 +182,7 @@ public abstract class BaseWebIntegrationTest {
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));
     requisition.setTemplate(generateRequisitionTemplate());
     requisition.setEmergency(false);
-    requisition.setAvailableNonFullSupplyProducts(Collections.emptySet());
+    requisition.setAvailableProducts(Collections.emptySet());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;

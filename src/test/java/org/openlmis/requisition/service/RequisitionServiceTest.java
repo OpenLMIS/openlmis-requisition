@@ -956,8 +956,7 @@ public class RequisitionServiceTest {
         this.programId, facilityId, suggestedPeriodId, false,
         stockAdjustmentReasons);
 
-    Set<UUID> availableNonFullSupplyProducts = initiatedRequisition
-        .getAvailableNonFullSupplyProducts();
+    Set<UUID> availableNonFullSupplyProducts = initiatedRequisition.getAvailableProducts();
     assertThat(availableNonFullSupplyProducts, hasItem(NON_FULL_PRODUCT_ID));
   }
 

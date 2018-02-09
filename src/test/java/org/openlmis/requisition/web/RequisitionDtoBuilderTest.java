@@ -18,11 +18,16 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +43,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
@@ -87,6 +93,9 @@ public class RequisitionDtoBuilderTest {
   private OrderableDto orderableDto;
 
   @Mock
+  private ProgramOrderableDto programOrderableDto;
+
+  @Mock
   private RequisitionLineItemDto requisitionLineItemDto;
 
   @Mock
@@ -128,6 +137,9 @@ public class RequisitionDtoBuilderTest {
     when(orderableReferenceDataService
         .findByIds(Collections.singleton(orderableId)))
         .thenReturn(Collections.singletonList(orderableDto));
+    when(orderableDto.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(programOrderableDto);
+    when(programOrderableDto.getFullSupply()).thenReturn(false);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
@@ -149,6 +161,51 @@ public class RequisitionDtoBuilderTest {
         requisitionDto.getAvailableNonFullSupplyProducts());
 
     assertReasonsEquals(requisitionDto.getStockAdjustmentReasons());
+  }
+
+  @Test
+  public void shouldPopulateAvailableProductsCollectionsBasedOnFullSupplyFlag() {
+    OrderableDto fs1 = mock(OrderableDto.class);
+    OrderableDto fs2 = mock(OrderableDto.class);
+    OrderableDto nfs1 = mock(OrderableDto.class);
+    OrderableDto nfs2 = mock(OrderableDto.class);
+    OrderableDto differentProgram = mock(OrderableDto.class);
+
+    ProgramOrderableDto pofs1 = mock(ProgramOrderableDto.class);
+    ProgramOrderableDto pofs2 = mock(ProgramOrderableDto.class);
+    ProgramOrderableDto ponfs1 = mock(ProgramOrderableDto.class);
+    ProgramOrderableDto ponfs2 = mock(ProgramOrderableDto.class);
+
+    when(orderableReferenceDataService
+        .findByIds(anySet()))
+        .thenReturn(Lists.newArrayList(fs1, fs2, nfs1, nfs2, differentProgram));
+    when(fs1.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(pofs1);
+    when(fs2.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(pofs2);
+    when(nfs1.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(ponfs1);
+    when(nfs2.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(ponfs2);
+    when(differentProgram.findProgramOrderableDto(requisition.getProgramId()))
+        .thenReturn(null);
+
+    when(pofs1.getFullSupply()).thenReturn(true);
+    when(pofs2.getFullSupply()).thenReturn(true);
+    when(ponfs1.getFullSupply()).thenReturn(false);
+    when(ponfs2.getFullSupply()).thenReturn(false);
+
+    RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
+
+    assertNotNull(requisitionDto);
+    assertNotNull(requisitionDto.getAvailableFullSupplyProducts());
+    assertNotNull(requisitionDto.getAvailableNonFullSupplyProducts());
+    assertEquals(2, requisitionDto.getAvailableFullSupplyProducts().size());
+    assertEquals(2, requisitionDto.getAvailableNonFullSupplyProducts().size());
+    assertTrue(requisitionDto.getAvailableFullSupplyProducts().contains(fs1));
+    assertTrue(requisitionDto.getAvailableFullSupplyProducts().contains(fs2));
+    assertTrue(requisitionDto.getAvailableNonFullSupplyProducts().contains(nfs1));
+    assertTrue(requisitionDto.getAvailableNonFullSupplyProducts().contains(nfs2));
   }
 
   @Test
@@ -208,7 +265,7 @@ public class RequisitionDtoBuilderTest {
     requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
-    requisition.setAvailableNonFullSupplyProducts(Collections.singleton(orderableId));
+    requisition.setAvailableProducts(Collections.singleton(orderableId));
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
     requisition.setStockAdjustmentReasons(Collections.singletonList(reason));
