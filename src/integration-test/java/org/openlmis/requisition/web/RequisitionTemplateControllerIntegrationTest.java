@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -26,18 +27,22 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
@@ -133,6 +138,30 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     // then
     verify(requisitionTemplateRepository, atLeastOnce()).save(any(RequisitionTemplate.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotCreateRequisitionTemplateIfNameIsDuplicated() {
+    // given
+    when(requisitionTemplateRepository.save(any(RequisitionTemplate.class)))
+        .thenThrow(new DataIntegrityViolationException("test",
+            new ConstraintViolationException("", null, "requisition_template_name_unique_idx")));
+    mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON)
+        .body(templateDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body("messageKey", is(MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION));
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -241,6 +270,33 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     verify(requisitionTemplateRepository, atLeastOnce()).save(any(RequisitionTemplate.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldNotUpdateRequisitionTemplateIfNameIsDuplicated() {
+    // given
+    when(requisitionTemplateRepository.save(any(RequisitionTemplate.class)))
+        .thenThrow(new DataIntegrityViolationException("test",
+            new ConstraintViolationException("", null, "requisition_template_name_unique_idx")));
+    mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", template.getId())
+        .body(templateDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .body("messageKey", is(MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION));
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // DELETE /api/requisitionTemplates/{id}
 
   @Test
   public void shouldDeleteRequisitionTemplate() {

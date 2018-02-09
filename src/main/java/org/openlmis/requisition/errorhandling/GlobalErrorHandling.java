@@ -15,6 +15,9 @@
 
 package org.openlmis.requisition.errorhandling;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
+
+import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.ExternalApiException;
@@ -22,13 +25,17 @@ import org.openlmis.requisition.exception.ServerException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.service.DataRetrievalException;
-import org.openlmis.requisition.web.PermissionMessageException;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.web.PermissionMessageException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Global error handling for all controllers in the service.
@@ -36,6 +43,35 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ControllerAdvice
 public class GlobalErrorHandling extends AbstractErrorHandling {
+
+  private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
+
+  static {
+    CONSTRAINT_MAP.put("requisition_template_name_unique_idx", ERROR_TEMPLATE_NAME_DUPLICATION);
+  }
+
+  /**
+   * Handles data integrity violation exception.
+   * @param dive the data integrity exception
+   * @return the user-oriented error message.
+   */
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public Message.LocalizedMessage handleDataIntegrityViolation(
+      DataIntegrityViolationException dive) {
+    logger.info(dive.getMessage());
+
+    if (dive.getCause() instanceof ConstraintViolationException) {
+      ConstraintViolationException cause = (ConstraintViolationException) dive.getCause();
+      String messageKey = CONSTRAINT_MAP.get(cause.getConstraintName());
+      if (messageKey != null) {
+        return getLocalizedMessage(new Message(messageKey));
+      }
+    }
+
+    return getLocalizedMessage(dive.getMessage());
+  }
 
   /**
    * Handles Message exceptions and returns status 500.
