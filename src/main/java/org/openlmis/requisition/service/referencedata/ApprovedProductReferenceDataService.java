@@ -55,9 +55,7 @@ public class ApprovedProductReferenceDataService extends
     RequestParameters parameters = RequestParameters
         .init()
         .set("programId", programId)
-        .set("fullSupply", fullSupply)
-        .set("page", 0)
-        .set("size", Integer.MAX_VALUE);
+        .set("fullSupply", fullSupply);
 
     return getPage(facilityId + "/approvedProducts", parameters).getContent();
   }
