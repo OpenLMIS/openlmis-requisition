@@ -17,12 +17,15 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.BaseEntity.TEXT_COLUMN_DEFINITION;
 
+import org.openlmis.requisition.dto.AvailableRequisitionColumnDto;
+import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
+
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.dto.AvailableRequisitionColumnDto;
-import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -38,19 +41,16 @@ public class RequisitionTemplateColumn {
   public static final String DEFINITION_KEY = "definition";
 
   @Getter
-  @Setter
   private String name;
 
   @Getter
-  @Setter
+  @Setter(AccessLevel.PACKAGE)
   private String label;
 
-  @Getter
-  @Setter
   private String indicator;
 
   @Getter
-  @Setter
+  @Setter(AccessLevel.PACKAGE)
   private int displayOrder;
 
   @Getter
@@ -58,7 +58,7 @@ public class RequisitionTemplateColumn {
 
   @Column(nullable = false)
   @Getter
-  @Setter
+  @Setter(AccessLevel.PACKAGE)
   private SourceType source;
 
   @ManyToOne(
@@ -66,7 +66,6 @@ public class RequisitionTemplateColumn {
       fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnId", nullable = false)
   @Getter
-  @Setter
   private AvailableRequisitionColumn columnDefinition;
 
   @ManyToOne(
@@ -74,16 +73,21 @@ public class RequisitionTemplateColumn {
       fetch = FetchType.EAGER)
   @JoinColumn(name = "requisitionColumnOptionId")
   @Getter
-  @Setter
+  @Setter(AccessLevel.PACKAGE)
   private AvailableRequisitionColumnOption option;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
-  @Getter
-  @Setter
   private String definition;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
-    this.columnDefinition = columnDefinition;
+    this(null, null, null, 0, null, null, columnDefinition, null, null);
+  }
+
+  RequisitionTemplateColumn copy() {
+    return new RequisitionTemplateColumn(
+        name, label, indicator, displayOrder, isDisplayed, source,
+        columnDefinition, option, definition
+    );
   }
 
   /**
@@ -93,7 +97,7 @@ public class RequisitionTemplateColumn {
    * @param isDisplayed Should the column be displayed.
    */
   public void setIsDisplayed(boolean isDisplayed) {
-    if (this.name.equals("productCode")) {
+    if ("productCode".equals(this.name)) {
       this.displayOrder = 1;
     }
     this.isDisplayed = isDisplayed;
@@ -107,20 +111,13 @@ public class RequisitionTemplateColumn {
    * @return new instance od template column.
    */
   public static RequisitionTemplateColumn newInstance(RequisitionTemplateColumn.Importer importer) {
-    RequisitionTemplateColumn requisitionTemplateColumn = new RequisitionTemplateColumn();
-    requisitionTemplateColumn.setName(importer.getName());
-    requisitionTemplateColumn.setLabel(importer.getLabel());
-    requisitionTemplateColumn.setIndicator(importer.getIndicator());
-    requisitionTemplateColumn.setDisplayOrder(importer.getDisplayOrder());
-    requisitionTemplateColumn.setIsDisplayed(importer.getIsDisplayed());
-    requisitionTemplateColumn.setSource(importer.getSource());
-    requisitionTemplateColumn.setColumnDefinition(
-        AvailableRequisitionColumn.newInstance(importer.getColumnDefinition()));
-    requisitionTemplateColumn.setOption(
-        AvailableRequisitionColumnOption.newInstance(importer.getOption()));
-    requisitionTemplateColumn.setDefinition(importer.getDefinition());
-
-    return requisitionTemplateColumn;
+    return new RequisitionTemplateColumn(
+        importer.getName(), importer.getLabel(), importer.getIndicator(),
+        importer.getDisplayOrder(), importer.getIsDisplayed(), importer.getSource(),
+        AvailableRequisitionColumn.newInstance(importer.getColumnDefinition()),
+        AvailableRequisitionColumnOption.newInstance(importer.getOption()),
+        importer.getDefinition()
+    );
   }
 
   /**

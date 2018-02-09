@@ -66,7 +66,7 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
     BasicRequisitionTemplateDto requisitionTemplateDto = new BasicRequisitionTemplateDto();
     requisitionTemplate.export(requisitionTemplateDto);
     requisitionTemplateDto.setColumnsMap(
-        BasicRequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
+        BasicRequisitionTemplateColumnDto.newInstance(requisitionTemplate.viewColumns()));
 
     return requisitionTemplateDto;
   }

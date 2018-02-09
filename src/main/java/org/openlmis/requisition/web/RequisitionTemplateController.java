@@ -24,7 +24,7 @@ import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.validate.RequisitionTemplateValidator;
+import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class RequisitionTemplateController extends BaseController {
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
-  private RequisitionTemplateValidator validator;
+  private RequisitionTemplateDtoValidator validator;
 
   @Autowired
   private PermissionService permissionService;
@@ -77,10 +77,11 @@ public class RequisitionTemplateController extends BaseController {
       @RequestBody RequisitionTemplateDto requisitionTemplateDto, BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
+    validator.validate(requisitionTemplateDto, bindingResult);
+
     RequisitionTemplate requisitionTemplate =
         RequisitionTemplate.newInstance(requisitionTemplateDto);
 
-    validator.validate(requisitionTemplate, bindingResult);
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
@@ -124,10 +125,11 @@ public class RequisitionTemplateController extends BaseController {
       BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
+    validator.validate(requisitionTemplateDto, bindingResult);
+
     RequisitionTemplate requisitionTemplate =
         RequisitionTemplate.newInstance(requisitionTemplateDto);
 
-    validator.validate(requisitionTemplate, bindingResult);
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }

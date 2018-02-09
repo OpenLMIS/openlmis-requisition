@@ -31,9 +31,9 @@ import org.openlmis.requisition.utils.Message;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,25 +61,17 @@ import javax.persistence.Transient;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RequisitionTemplate extends BaseTimestampedEntity {
-
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
 
   @Getter
-  @Setter
   private Integer numberOfPeriodsToAverage;
 
   @Getter
-  @Setter
   private boolean populateStockOnHandFromStockCards;
-
-  @Getter
-  @Setter
   private String name;
 
-  @Getter
-  @Setter
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
@@ -104,23 +96,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private Set<UUID> facilityTypeIds = Sets.newHashSet();
 
   RequisitionTemplate(UUID id) {
-    setId(id);
-  }
-
-  /**
-   * Allows creating requisition template with the given properties.
-   */
-  public RequisitionTemplate(Integer numberOfPeriodsToAverage,
-                             boolean populateStockOnHandFromStockCards,
-                             String name,
-                             Map<String, RequisitionTemplateColumn> columnsMap,
-                             Set<RequisitionTemplateAssignment> templateAssignments) {
-    this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
-    this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
-    this.name = name;
-    this.columnsMap = columnsMap;
-
-    setTemplateAssignments(templateAssignments);
+    this(id, null, false, null, null, null);
   }
 
   /**
@@ -129,7 +105,25 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columns Columns to appear in requisition template.
    */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
-    columns.forEach(columnsMap::put);
+    this(null, null, false, null, columns, null);
+  }
+
+  /**
+   * Allows creating requisition template with the given properties.
+   */
+  public RequisitionTemplate(UUID id, Integer numberOfPeriodsToAverage,
+                             boolean populateStockOnHandFromStockCards,
+                             String name,
+                             Map<String, RequisitionTemplateColumn> columnsMap,
+                             Set<RequisitionTemplateAssignment> templateAssignments) {
+    setId(id);
+
+    this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
+    this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
+    this.name = name;
+
+    addColumns(columnsMap);
+    addAssignments(templateAssignments);
   }
 
   @PostLoad
@@ -138,6 +132,16 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       setProgramId(assignment.getProgramId());
       addFacilityTypeId(assignment.getFacilityTypeId());
     }
+  }
+
+  /**
+   * Returns current columns view.
+   */
+  public Map<String, RequisitionTemplateColumn> viewColumns() {
+    Map<String, RequisitionTemplateColumn> map = new HashMap<>();
+    columnsMap.forEach((key, value) -> map.put(key, value.copy()));
+
+    return Collections.unmodifiableMap(map);
   }
 
   /**
@@ -296,17 +300,23 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param requisitionTemplate RequisitionTemplate with new values.
    */
   public void updateFrom(RequisitionTemplate requisitionTemplate) {
-    this.numberOfPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
+    this.numberOfPeriodsToAverage = requisitionTemplate.numberOfPeriodsToAverage;
+    this.populateStockOnHandFromStockCards = requisitionTemplate.populateStockOnHandFromStockCards;
     this.name = requisitionTemplate.name;
 
-    requisitionTemplate.getColumnsMap().forEach(columnsMap::put);
-    setTemplateAssignments(requisitionTemplate.templateAssignments);
+    addColumns(requisitionTemplate.columnsMap);
+    addAssignments(requisitionTemplate.templateAssignments);
   }
 
-  private void setTemplateAssignments(Set<RequisitionTemplateAssignment> assignments) {
-    for (RequisitionTemplateAssignment assignment : assignments) {
-      addAssignment(assignment.getProgramId(), assignment.getFacilityTypeId());
-    }
+  private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
+    Optional
+        .ofNullable(templateAssignments)
+        .orElse(Collections.emptySet())
+        .forEach(item -> addAssignment(item.getProgramId(), item.getFacilityTypeId()));
+  }
+
+  private void addColumns(Map<String, RequisitionTemplateColumn> columnsMap) {
+    columnsMap.forEach(this.columnsMap::put);
   }
 
   public boolean hasColumnsDefined() {
@@ -387,20 +397,18 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @return new instance od template.
    */
   public static RequisitionTemplate newInstance(RequisitionTemplate.Importer importer) {
-    RequisitionTemplate template = new RequisitionTemplate();
-    template.setId(importer.getId());
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
+    importer
+        .getColumns()
+        .forEach((key, column) -> columns.put(key, RequisitionTemplateColumn.newInstance(column)));
+
+    RequisitionTemplate template = new RequisitionTemplate(
+        importer.getId(), importer.getNumberOfPeriodsToAverage(),
+        importer.isPopulateStockOnHandFromStockCards(), importer.getName(),
+        columns, new HashSet<>()
+    );
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
-    template.setPopulateStockOnHandFromStockCards(
-        importer.isPopulateStockOnHandFromStockCards());
-    template.setNumberOfPeriodsToAverage(importer.getNumberOfPeriodsToAverage());
-    template.setColumnsMap(new HashMap<>());
-    template.setName(importer.getName());
-
-    importer.getColumnsMap()
-        .forEach((key, column) ->
-            template.getColumnsMap()
-                .put(key, RequisitionTemplateColumn.newInstance(column)));
 
     if (importer.getFacilityTypeIds().isEmpty()) {
       template.addAssignment(importer.getProgramId(), null);
@@ -424,8 +432,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setModifiedDate(getModifiedDate());
     exporter.setPopulateStockOnHandFromStockCards(populateStockOnHandFromStockCards);
     exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
-    exporter.setProgramId(getProgramId());
-    exporter.setFacilityTypeIds(getFacilityTypeIds());
+    exporter.setName(name);
+    exporter.setProgramId(programId);
+    exporter.setFacilityTypeIds(facilityTypeIds);
   }
 
   public interface Importer {
@@ -441,7 +450,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     Integer getNumberOfPeriodsToAverage();
 
-    Map<String, ? extends RequisitionTemplateColumn.Importer> getColumnsMap();
+    Map<String, ? extends RequisitionTemplateColumn.Importer> getColumns();
 
     UUID getProgramId();
 

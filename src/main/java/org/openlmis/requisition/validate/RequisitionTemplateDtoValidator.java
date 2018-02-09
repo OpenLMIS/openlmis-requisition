@@ -41,10 +41,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFEREN
 
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
+import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -59,7 +59,7 @@ import java.util.UUID;
 
 @Component
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionTemplateValidator extends BaseValidator {
+public class RequisitionTemplateDtoValidator extends BaseValidator {
 
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
@@ -100,14 +100,14 @@ public class RequisitionTemplateValidator extends BaseValidator {
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return RequisitionTemplate.class.equals(clazz);
+    return RequisitionTemplateDto.class.equals(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
     this.errors = errors;
 
-    RequisitionTemplate template = (RequisitionTemplate) target;
+    RequisitionTemplateDto template = (RequisitionTemplateDto) target;
 
     validateRequestedQuantity(template);
     validateColumns(template);
@@ -145,7 +145,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateRequestedQuantity(RequisitionTemplate template) {
+  private void validateRequestedQuantity(RequisitionTemplateDto template) {
     boolean quantityDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY);
     boolean explanationDisplayed = template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION);
     boolean calcOrderQuantityDisplayed = template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY);
@@ -170,7 +170,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateCalculatedFields(RequisitionTemplate template) {
+  private void validateCalculatedFields(RequisitionTemplateDto template) {
     if (template.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)
         && template.isColumnInTemplate(STOCK_ON_HAND)
@@ -180,7 +180,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateCalculatedField(RequisitionTemplate template, String field,
+  private void validateCalculatedField(RequisitionTemplateDto template, String field,
                                        String suffix, String... requiredFields) {
     if (template.isColumnInTemplate(field) && template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
@@ -195,8 +195,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateColumns(RequisitionTemplate template) {
-    for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+  private void validateColumns(RequisitionTemplateDto template) {
+    for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
       if (template.isPopulateStockOnHandFromStockCards()
           && STOCK_DISABLED_COLUMNS.contains(column.getName())) {
         return;
@@ -210,7 +210,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
       validateColumnDefinition(column);
       validateChosenSources(template, column);
 
-      Set<AvailableRequisitionColumnOption> options = column.getColumnDefinition().getOptions();
+      Set<AvailableRequisitionColumnOptionDto> options = column
+          .getColumnDefinition()
+          .getOptions();
       Optional.ofNullable(column.getOption())
           .ifPresent(option -> rejectIfNotContains(errors, options, option, COLUMNS_MAP,
               new Message(ERROR_OPTION_NOT_AVAILABLE, option.toString())));
@@ -223,8 +225,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateColumnDefinition(RequisitionTemplateColumn column) {
-    AvailableRequisitionColumn actual = column.getColumnDefinition();
+  private void validateColumnDefinition(RequisitionTemplateColumnDto column) {
+    AvailableRequisitionColumn actual = AvailableRequisitionColumn
+        .newInstance(column.getColumnDefinition());
     AvailableRequisitionColumn expected = availableRequisitionColumnRepository
         .findOne(actual.getId());
 
@@ -241,8 +244,8 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateChosenSources(RequisitionTemplate template,
-                                     RequisitionTemplateColumn column) {
+  private void validateChosenSources(RequisitionTemplateDto template,
+                                     RequisitionTemplateColumnDto column) {
     SourceType chosenSource = column.getSource();
 
     if (chosenSource == null) {
@@ -250,7 +253,7 @@ public class RequisitionTemplateValidator extends BaseValidator {
           new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
               column.getLabel()));
     } else {
-      AvailableRequisitionColumn definition = column.getColumnDefinition();
+      AvailableRequisitionColumn.Importer definition = column.getColumnDefinition();
       Set<SourceType> sources = definition.getSources();
 
       if (sources.size() > 1 && template.isColumnUserInput(definition.getName())) {
@@ -266,9 +269,9 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
   }
 
-  private void validateStockManagementFields(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate.isColumnInTemplate(STOCK_ON_HAND)) {
-      RequisitionTemplateColumn soh = requisitionTemplate.getColumnsMap().get(STOCK_ON_HAND);
+  private void validateStockManagementFields(RequisitionTemplateDto template) {
+    if (template.isColumnInTemplate(STOCK_ON_HAND)) {
+      RequisitionTemplateColumnDto soh = template.getColumnsMap().get(STOCK_ON_HAND);
       if (!SourceType.STOCK_CARDS.equals(soh.getSource())) {
         rejectValue(errors, COLUMNS_MAP,
             new Message(ERROR_COLUMN_SOURCE_INVALID, soh.getLabel(), SourceType.STOCK_CARDS,
@@ -277,46 +280,46 @@ public class RequisitionTemplateValidator extends BaseValidator {
     }
 
     for (String columnName : STOCK_DISABLED_COLUMNS) {
-      if (requisitionTemplate.isColumnInTemplate(columnName)
-          && requisitionTemplate.findColumn(columnName).getIsDisplayed()) {
-        rejectIfDisplayed(errors, requisitionTemplate, columnName, COLUMNS_MAP, new Message(
+      if (template.isColumnInTemplate(columnName)
+          && template.findColumn(columnName).getIsDisplayed()) {
+        rejectIfDisplayed(errors, template, columnName, COLUMNS_MAP, new Message(
             ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS, columnName));
       }
     }
   }
 
-  private void validateForAdjustedConsumption(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
+  private void validateForAdjustedConsumption(RequisitionTemplateDto template) {
+    if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
       rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
-          requisitionTemplate, ADJUSTED_CONSUMPTION);
-      if (requisitionTemplate.isColumnDisplayed(ADJUSTED_CONSUMPTION)) {
-        validateCalculatedField(requisitionTemplate, ADJUSTED_CONSUMPTION,
+          template, ADJUSTED_CONSUMPTION);
+      if (template.isColumnDisplayed(ADJUSTED_CONSUMPTION)) {
+        validateCalculatedField(template, ADJUSTED_CONSUMPTION,
             ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS);
       }
     }
   }
 
-  private void validateForAverageConsumption(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
-      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(requisitionTemplate, AVERAGE_CONSUMPTION);
-      if (requisitionTemplate.isColumnDisplayed(AVERAGE_CONSUMPTION)) {
-        validateCalculatedField(requisitionTemplate, AVERAGE_CONSUMPTION,
+  private void validateForAverageConsumption(RequisitionTemplateDto template) {
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(template, AVERAGE_CONSUMPTION);
+      if (template.isColumnDisplayed(AVERAGE_CONSUMPTION)) {
+        validateCalculatedField(template, AVERAGE_CONSUMPTION,
             ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS);
       }
-      rejectIfNumberOfPeriodsToAverageIsNull(requisitionTemplate);
+      rejectIfNumberOfPeriodsToAverageIsNull(template);
     }
   }
 
   private void rejectIfStockoutDaysOrConsumedQuantityNotInTemplate(
-      RequisitionTemplate requisitionTemplate, String validatedColumn) {
-    if (!requisitionTemplate.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)) {
+      RequisitionTemplateDto template, String validatedColumn) {
+    if (!template.isColumnInTemplate(TOTAL_CONSUMED_QUANTITY)) {
       rejectValue(errors, COLUMNS_MAP,
           new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
               TOTAL_CONSUMED_QUANTITY, validatedColumn));
     }
-    if (!requisitionTemplate.isColumnInTemplate(TOTAL_STOCKOUT_DAYS)) {
+    if (!template.isColumnInTemplate(TOTAL_STOCKOUT_DAYS)) {
       rejectValue(errors, COLUMNS_MAP,
           new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE,
               TOTAL_STOCKOUT_DAYS, validatedColumn));
@@ -324,20 +327,34 @@ public class RequisitionTemplateValidator extends BaseValidator {
   }
 
 
-  private void rejectIfNumberOfPeriodsToAverageIsNull(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
+  private void rejectIfNumberOfPeriodsToAverageIsNull(RequisitionTemplateDto template) {
+    if (template.getNumberOfPeriodsToAverage() == null) {
       rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
           new Message(ERROR_VALIDATION_FIELD_CANNOT_BE_NULL,
               NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION));
     }
   }
 
-  private void validateNumberOfPeriodsToAverage(RequisitionTemplate requisitionTemplate) {
-    if (requisitionTemplate.getNumberOfPeriodsToAverage() != null
-        && requisitionTemplate.getNumberOfPeriodsToAverage() < 2) {
+  private void validateNumberOfPeriodsToAverage(RequisitionTemplateDto template) {
+    if (template.getNumberOfPeriodsToAverage() != null
+        && template.getNumberOfPeriodsToAverage() < 2) {
       rejectValue(errors, NUMBER_OF_PERIODS_TO_AVERAGE,
           new Message(ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL,
               NUMBER_OF_PERIODS_TO_AVERAGE, "2"));
+    }
+  }
+
+  private void rejectIfNotDisplayed(Errors errors, RequisitionTemplateDto template, String column,
+                                    String field, Message message) {
+    if (!template.isColumnDisplayed(column)) {
+      rejectValue(errors, field, message);
+    }
+  }
+
+  private void rejectIfDisplayed(Errors errors, RequisitionTemplateDto template, String column,
+                                 String field, Message message) {
+    if (template.isColumnDisplayed(column)) {
+      rejectValue(errors, field, message);
     }
   }
 }

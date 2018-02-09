@@ -23,6 +23,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -58,7 +59,6 @@ public class RequisitionTemplateDataBuilder {
     columnsMap = new HashMap<>();
 
     templateAssignments = new HashSet<>();
-    templateAssignments.add(new ImmutablePair<>(UUID.randomUUID(), UUID.randomUUID()));
   }
 
   public RequisitionTemplateDataBuilder withAssignment(UUID programId, UUID facilityTypeId) {
@@ -70,9 +70,8 @@ public class RequisitionTemplateDataBuilder {
    * Builds {@link RequisitionTemplate} instance with test data.
    */
   public RequisitionTemplate build() {
-    RequisitionTemplate template = new RequisitionTemplate(numberOfPeriodsToAverage,
+    RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
         populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
-    template.setId(id);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
 
@@ -106,20 +105,41 @@ public class RequisitionTemplateDataBuilder {
             Sets.asSet(SourceType.USER_INPUT));
   }
 
+  public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
+                                                   SourceType source,
+                                                   Set<SourceType> sources) {
+    return withColumn(name, indicator, source, null, sources);
+  }
+
   /**
    * Adds column to the columns map for new {@link RequisitionTemplate} instance.
    */
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
-                                                   SourceType source, Set<SourceType> sources) {
+                                                   SourceType source,
+                                                   AvailableRequisitionColumnOption option,
+                                                   Set<SourceType> sources) {
     columnsMap.put(name, new RequisitionTemplateColumnDataBuilder()
         .withName(name)
         .withIndicator(indicator)
+        .withDisplayOrder(columnsMap.size() + 1)
+        .withOption(option)
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(name)
             .withSources(sources)
             .build())
         .withSource(source)
         .build());
+    return this;
+  }
+
+  public RequisitionTemplateDataBuilder withColumns(
+      Map<String, RequisitionTemplateColumn> columnsMap) {
+    this.columnsMap = columnsMap;
+    return this;
+  }
+
+  public RequisitionTemplateDataBuilder withoutId() {
+    this.id = null;
     return this;
   }
 }

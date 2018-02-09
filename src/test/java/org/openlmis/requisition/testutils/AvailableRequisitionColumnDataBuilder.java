@@ -20,6 +20,8 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.ColumnType;
 import org.openlmis.requisition.domain.SourceType;
+
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -65,7 +67,6 @@ public class AvailableRequisitionColumnDataBuilder {
         definition, columnType);
     column.setId(id);
     column.getOptions()
-        .stream()
         .forEach(option -> option.setRequisitionColumn(column));
     return column;
   }
@@ -73,6 +74,11 @@ public class AvailableRequisitionColumnDataBuilder {
   public AvailableRequisitionColumnDataBuilder withOptions(
       Set<AvailableRequisitionColumnOption> options) {
     this.options = options;
+    return this;
+  }
+
+  public AvailableRequisitionColumnDataBuilder withoutOptions() {
+    this.options = Collections.emptySet();
     return this;
   }
 

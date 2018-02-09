@@ -17,7 +17,6 @@ package org.openlmis.requisition.validate;
 
 import static org.apache.commons.lang3.StringUtils.length;
 
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,20 +32,6 @@ abstract class BaseValidator implements Validator {
   
   @Autowired
   private MessageService messageService;
-
-  void rejectIfNotDisplayed(Errors errors, RequisitionTemplate template, String column,
-                            String field, Message message) {
-    if (!template.isColumnDisplayed(column)) {
-      rejectValue(errors, field, message);
-    }
-  }
-
-  void rejectIfDisplayed(Errors errors, RequisitionTemplate template, String column,
-                            String field, Message message) {
-    if (template.isColumnDisplayed(column)) {
-      rejectValue(errors, field, message);
-    }
-  }
 
   <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value, String field,
                                Message message) {

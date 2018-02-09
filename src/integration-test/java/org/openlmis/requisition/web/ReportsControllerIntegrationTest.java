@@ -49,6 +49,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -162,19 +163,14 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
             this::generateValidRequisitionTemplateColumn
         ));
 
-    RequisitionTemplate template = new RequisitionTemplate();
-    template.setColumnsMap(columns);
-    return template;
+    return new RequisitionTemplate(columns);
   }
 
   private RequisitionTemplateColumn generateValidRequisitionTemplateColumn(String name) {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-
-    column.setName(name);
-    column.setLabel(name);
-    column.setIsDisplayed(true);
-
-    return column;
+    return new RequisitionTemplateColumnDataBuilder()
+        .withName(name)
+        .withLabel(name)
+        .build();
   }
 
   private RequisitionReportDto generateValidRequisitionReportDto() {

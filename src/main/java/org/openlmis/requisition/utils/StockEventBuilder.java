@@ -17,17 +17,10 @@ package org.openlmis.requisition.utils;
 
 import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
@@ -45,6 +38,13 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class StockEventBuilder {
@@ -95,7 +95,7 @@ public class StockEventBuilder {
         .lineItems(fromLineItems(
             requisition.getRequisitionLineItems(),
             requisition.getStockAdjustmentReasons(),
-            requisition.getTemplate().getColumnsMap(),
+            requisition.getTemplate(),
             getOccurredDate(requisition),
             stockCards
         ))
@@ -108,32 +108,32 @@ public class StockEventBuilder {
 
   private List<StockEventLineItemDto> fromLineItems(
       List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons,
-      Map<String, RequisitionTemplateColumn> columnsMap, LocalDate occurredDate,
+      RequisitionTemplate template, LocalDate occurredDate,
       List<StockCardDto> stockCards) {
     return lineItems.stream()
         .filter(lineItem -> !lineItem.isLineSkipped() && !lineItem.isNonFullSupply())
-        .map(lineItem -> fromLineItem(lineItem, reasons, columnsMap, occurredDate, stockCards))
+        .map(lineItem -> fromLineItem(lineItem, reasons, template, occurredDate, stockCards))
         .collect(Collectors.toList());
   }
 
   private StockEventLineItemDto fromLineItem(RequisitionLineItem lineItem,
                                              List<StockAdjustmentReason> reasons,
-                                             Map<String, RequisitionTemplateColumn> columnsMap,
+                                             RequisitionTemplate template,
                                              LocalDate occurredDate,
                                              List<StockCardDto> stockCards) {
     return StockEventLineItemDto.builder()
         .orderableId(lineItem.getOrderableId())
         .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
-        .stockAdjustments(getStockAdjustments(lineItem, reasons, columnsMap, stockCards))
+        .stockAdjustments(getStockAdjustments(lineItem, reasons, template, stockCards))
         .build();
   }
 
   private List<StockEventAdjustmentDto> getStockAdjustments(RequisitionLineItem lineItem,
-      List<StockAdjustmentReason> reasons, Map<String, RequisitionTemplateColumn> columnsMap,
+      List<StockAdjustmentReason> reasons, RequisitionTemplate template,
       List<StockCardDto> stockCards) {
 
-    XLOGGER.entry(lineItem, reasons, columnsMap, stockCards);
+    XLOGGER.entry(lineItem, reasons, template, stockCards);
 
     Profiler profiler = new Profiler("GET_STOCK_ADJUSTMENTS");
     profiler.setLogger(XLOGGER);
@@ -141,14 +141,14 @@ public class StockEventBuilder {
     List<StockEventAdjustmentDto> stockAdjustments = new ArrayList<>();
 
     profiler.start("TOTAL_LOSSES_AND_ADJUSTMENTS");
-    if (existsAndIsDisplayed(columnsMap.get(TOTAL_LOSSES_AND_ADJUSTMENTS))) {
+    if (template.isColumnInTemplateAndDisplayed(TOTAL_LOSSES_AND_ADJUSTMENTS)) {
       stockAdjustments = lineItem.getStockAdjustments().stream()
           .map(stockAdjustment -> fromStockAdjustment(stockAdjustment, reasons))
           .collect(Collectors.toList());
     }
 
     profiler.start("TOTAL_CONSUMED_QUANTITY");
-    if (shouldIncludeConsumed(reasons, columnsMap)) {
+    if (shouldIncludeConsumed(reasons, template)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalConsumedQuantity())
           .reasonId(getReasonById(settings.getReasonIdForConsumed(), reasons))
@@ -157,7 +157,7 @@ public class StockEventBuilder {
     }
 
     profiler.start("TOTAL_RECEIVED_QUANTITY");
-    if (shouldIncludeReceipts(reasons, columnsMap)) {
+    if (shouldIncludeReceipts(reasons, template)) {
       stockAdjustments.add(StockEventAdjustmentDto.builder()
           .quantity(lineItem.getTotalReceivedQuantity())
           .reasonId(getReasonById(settings.getReasonIdForReceipts(), reasons))
@@ -209,15 +209,19 @@ public class StockEventBuilder {
   }
 
   private boolean shouldIncludeConsumed(List<StockAdjustmentReason> reasons,
-                                        Map<String, RequisitionTemplateColumn> columnsMap) {
+                                        RequisitionTemplate template) {
     return shouldInclude(
-        columnsMap.get(TOTAL_CONSUMED_QUANTITY), settings.getReasonIdForConsumed(), reasons);
+        template.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY),
+        settings.getReasonIdForConsumed(), reasons
+    );
   }
 
   private boolean shouldIncludeReceipts(List<StockAdjustmentReason> reasons,
-                                        Map<String, RequisitionTemplateColumn> columnsMap) {
+                                        RequisitionTemplate template) {
     return shouldInclude(
-        columnsMap.get(TOTAL_RECEIVED_QUANTITY), settings.getReasonIdForReceipts(), reasons);
+        template.isColumnInTemplateAndDisplayed(TOTAL_RECEIVED_QUANTITY),
+        settings.getReasonIdForReceipts(), reasons
+    );
   }
 
   private LocalDate getOccurredDate(Requisition requisition) {
@@ -234,9 +238,9 @@ public class StockEventBuilder {
     return periodReferenceDataService.findOne(requisition.getProcessingPeriodId()).getEndDate();
   }
 
-  private boolean shouldInclude(RequisitionTemplateColumn column, UUID reason,
+  private boolean shouldInclude(boolean existsAndIsDisplayed, UUID reason,
                                 List<StockAdjustmentReason> reasons) {
-    return existsAndIsDisplayed(column) && getReasonById(reason, reasons) != null;
+    return existsAndIsDisplayed && getReasonById(reason, reasons) != null;
   }
 
   private boolean shouldIncludeBeginningBalanceExcess(StockCardDto stockCard,
@@ -278,10 +282,6 @@ public class StockEventBuilder {
         .filter(id -> id.equals(reasonId))
         .findFirst()
         .orElse(null);
-  }
-
-  private boolean existsAndIsDisplayed(RequisitionTemplateColumn column) {
-    return column != null && column.getIsDisplayed();
   }
 
 }

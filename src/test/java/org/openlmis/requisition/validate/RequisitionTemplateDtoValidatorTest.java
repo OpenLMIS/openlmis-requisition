@@ -26,6 +26,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
+import static org.openlmis.requisition.domain.SourceType.CALCULATED;
+import static org.openlmis.requisition.domain.SourceType.STOCK_CARDS;
+import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
@@ -46,22 +49,22 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.COLUMNS_MAP;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.FACILITY_TYPE;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.FACILITY_TYPE_ID;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.MAX_COLUMN_DEFINITION_LENGTH;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.PROGRAM;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.PROGRAM_ID;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.REQUESTED_QUANTITY_EXPLANATION;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.STOCK_DISABLED_COLUMNS;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.STOCK_ON_HAND;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_CONSUMED_QUANTITY;
-import static org.openlmis.requisition.validate.RequisitionTemplateValidator.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.COLUMNS_MAP;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE_ID;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.MAX_COLUMN_DEFINITION_LENGTH;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.PROGRAM;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.PROGRAM_ID;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_DISABLED_COLUMNS;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
@@ -71,29 +74,31 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
 import org.openlmis.requisition.dto.FacilityTypeDto;
+import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
-public class RequisitionTemplateValidatorTest {
+public class RequisitionTemplateDtoValidatorTest {
 
   private static final String COLUMN_NAME = "test";
   private static final String ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED =
@@ -112,7 +117,7 @@ public class RequisitionTemplateValidatorTest {
   private FacilityTypeReferenceDataService facilityTypeReferenceDataService;
 
   @InjectMocks
-  private RequisitionTemplateValidator validator;
+  private RequisitionTemplateDtoValidator validator;
 
   private Errors errors = mock(Errors.class);
   private Message.LocalizedMessage message =
@@ -161,14 +166,10 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectIfRequestedQuantityAndExplanationIsDisplayedValuesAreDifferent() {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
-    requisitionTemplate.changeColumnDisplay(
-        REQUESTED_QUANTITY_EXPLANATION, false);
-    requisitionTemplate.changeColumnSource(REQUESTED_QUANTITY,
-        SourceType.USER_INPUT);
-
-    requisitionTemplate.changeColumnSource(
-        REQUESTED_QUANTITY_EXPLANATION, SourceType.USER_INPUT);
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY).setSource(USER_INPUT);
+    requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setSource(USER_INPUT);
 
     validator.validate(requisitionTemplate, errors);
 
@@ -179,10 +180,10 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenRequestedQuantityAndCalcOrderQuantityAreNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
-    requisitionTemplate.changeColumnDisplay(REQUESTED_QUANTITY, false);
-    requisitionTemplate.changeColumnDisplay(REQUESTED_QUANTITY_EXPLANATION, false);
-    requisitionTemplate.changeColumnDisplay(CALCULATED_ORDER_QUANTITY, false);
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
 
     validator.validate(requisitionTemplate, errors);
 
@@ -193,36 +194,34 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenSourceIsNotAvailableInColumn() {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
 
-    requisitionTemplate.changeColumnSource(COLUMN_NAME, SourceType.USER_INPUT);
+    requisitionTemplate.getColumnsMap().get(COLUMN_NAME).setSource(USER_INPUT);
     requisitionTemplate.getColumnsMap()
         .get(COLUMN_NAME).getColumnDefinition().getSources().clear();
 
     Message message4 = new Message(ERROR_SOURCE_NOT_AVAILABLE, "test");
     when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
-        "Source " + SourceType.USER_INPUT + " is not available for this column."));
+        "Source " + USER_INPUT + " is not available for this column."));
 
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP),
-        contains(RequisitionTemplate.SOURCE + SourceType.USER_INPUT
+        contains(RequisitionTemplate.SOURCE + USER_INPUT
             + RequisitionTemplate.WARNING_SUFFIX));
   }
 
   @Test
   public void shouldRejectWhenOptionIsNotAvailableInColumn() {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
-    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
-        requisitionTemplate.getColumnsMap().get(COLUMN_NAME)
-            .getColumnDefinition(), "option1", "label1");
-    Set<AvailableRequisitionColumnOption> options = new HashSet<>();
-    options.add(option);
-    requisitionTemplate.getColumnsMap().get(COLUMN_NAME).getColumnDefinition().setOptions(options);
-    requisitionTemplate.changeColumnOption(COLUMN_NAME, option);
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    RequisitionTemplateColumnDto column = requisitionTemplate
+        .getColumnsMap()
+        .get(COLUMN_NAME);
 
-    requisitionTemplate.getColumnsMap().get(COLUMN_NAME)
-        .getColumnDefinition().getOptions().clear();
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOptionDataBuilder()
+        .build();
+
+    column.setOption(AvailableRequisitionColumnOptionDto.newInstance(option));
 
     Message message5 = new Message(ERROR_OPTION_NOT_AVAILABLE, "test");
     when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
@@ -237,17 +236,21 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsInTemplateAndStockoutDaysInTemplate() {
-    RequisitionTemplate template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
+    RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
     RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
         .withName(TOTAL_STOCKOUT_DAYS)
         .withIndicator("X")
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(SourceType.USER_INPUT))
+            .withSources(Sets.asSet(USER_INPUT))
+            .withoutOptions()
             .build())
-        .withSource(SourceType.USER_INPUT)
+        .withSource(USER_INPUT)
+        .withoutOption()
         .build();
-    template.getColumnsMap().put(TOTAL_STOCKOUT_DAYS, column);
+    template
+        .getColumnsMap()
+        .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
 
     when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
         .thenReturn(column.getColumnDefinition());
@@ -263,7 +266,7 @@ public class RequisitionTemplateValidatorTest {
         new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
         .thenReturn(message);
 
-    RequisitionTemplate template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
+    RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
 
     validator.validate(template, errors);
 
@@ -271,18 +274,22 @@ public class RequisitionTemplateValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectWhenConsumptionsInTemplateAndConsumedQuantityInTemplate() {
-    RequisitionTemplate template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
+  public void shouldNotRejectWhenConsumptionsAndConsumedQuantityAreInTemplate() {
+    RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
     RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
         .withName(TOTAL_STOCKOUT_DAYS)
         .withIndicator("X")
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(SourceType.USER_INPUT))
+            .withSources(Sets.asSet(USER_INPUT))
+            .withoutOptions()
             .build())
-        .withSource(SourceType.USER_INPUT)
+        .withSource(USER_INPUT)
+        .withoutOption()
         .build();
-    template.getColumnsMap().put(TOTAL_STOCKOUT_DAYS, column);
+    template
+        .getColumnsMap()
+        .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
 
     when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
         .thenReturn(column.getColumnDefinition());
@@ -298,7 +305,7 @@ public class RequisitionTemplateValidatorTest {
         new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
         .thenReturn(message);
 
-    RequisitionTemplate template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
+    RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
 
     validator.validate(template, errors);
 
@@ -307,10 +314,10 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenAdjustedConsumptionIsDisplayedAndStockoutDaysIsNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
-    requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_STOCKOUT_DAYS).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(AVERAGE_CONSUMPTION).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(COLUMNS_MAP, message.toString());
@@ -318,10 +325,10 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenAverageConsumptionIsDisplayedAndStockoutDaysIsNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_STOCKOUT_DAYS).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(ADJUSTED_CONSUMPTION).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(COLUMNS_MAP, message.toString());
@@ -329,18 +336,20 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenAverageConsumptionIsDisplayedAndStockoutDaysIsDisabled() {
-    RequisitionTemplate requisitionTemplate = getTemplatePopulatedByStock();
+    RequisitionTemplateDto requisitionTemplate = getTemplatePopulatedByStock();
     RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
         .withName(TOTAL_STOCKOUT_DAYS)
         .withIndicator("X")
         .withNotDisplayed()
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(SourceType.USER_INPUT))
+            .withSources(Sets.asSet(USER_INPUT))
             .build())
-        .withSource(SourceType.USER_INPUT)
+        .withSource(USER_INPUT)
         .build();
-    requisitionTemplate.getColumnsMap().put(TOTAL_STOCKOUT_DAYS, column);
+    requisitionTemplate
+        .getColumnsMap()
+        .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -348,9 +357,9 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsAreDisplayedAndStockoutDaysIsDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, true);
+    requisitionTemplate.getColumnsMap().get(TOTAL_STOCKOUT_DAYS).setIsDisplayed(true);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -358,11 +367,11 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsAreNotDisplayedAndStockoutDaysIsNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
-    requisitionTemplate.changeColumnDisplay(TOTAL_STOCKOUT_DAYS, false);
+    requisitionTemplate.getColumnsMap().get(AVERAGE_CONSUMPTION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(ADJUSTED_CONSUMPTION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_STOCKOUT_DAYS).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -370,10 +379,10 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsAreDisplayedAndConsumedQuantityIsCalculated() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
+    requisitionTemplate.getColumnsMap().get(TOTAL_CONSUMED_QUANTITY).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -381,9 +390,9 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsAreDisplayedAndConsumedQuantityIsDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, true);
+    requisitionTemplate.getColumnsMap().get(TOTAL_CONSUMED_QUANTITY).setIsDisplayed(true);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -391,12 +400,12 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldNotRejectWhenConsumptionsAndConsumedQuantityAreNotDisplayed() {
-    RequisitionTemplate requisitionTemplate = mockMessageAndGetRequisitionTemplate(
+    RequisitionTemplateDto requisitionTemplate = mockMessageAndGetRequisitionTemplate(
         ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED);
-    requisitionTemplate.changeColumnSource(TOTAL_CONSUMED_QUANTITY, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnDisplay(AVERAGE_CONSUMPTION, false);
-    requisitionTemplate.changeColumnDisplay(ADJUSTED_CONSUMPTION, false);
-    requisitionTemplate.changeColumnDisplay(TOTAL_CONSUMED_QUANTITY, false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
+    requisitionTemplate.getColumnsMap().get(AVERAGE_CONSUMPTION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(ADJUSTED_CONSUMPTION).setIsDisplayed(false);
+    requisitionTemplate.getColumnsMap().get(TOTAL_CONSUMED_QUANTITY).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -408,7 +417,7 @@ public class RequisitionTemplateValidatorTest {
         new Message("requisition.error.validation.fieldCanNotBeNull")))
         .thenReturn(message);
 
-    RequisitionTemplate requisitionTemplate
+    RequisitionTemplateDto requisitionTemplate
         = getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.setNumberOfPeriodsToAverage(null);
 
@@ -426,9 +435,10 @@ public class RequisitionTemplateValidatorTest {
     RequisitionTemplate template = baseTemplateBuilder()
         .withNumberOfPeriodsToAverage(1)
         .build();
-    mockResponses(template);
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
 
-    validator.validate(template, errors);
+    validator.validate(dto, errors);
 
     verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, message.toString());
   }
@@ -439,9 +449,10 @@ public class RequisitionTemplateValidatorTest {
         .withNumberOfPeriodsToAverage(2)
         .build();
 
-    mockResponses(template);
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
 
-    validator.validate(template, errors);
+    validator.validate(dto, errors);
 
     verify(errors, never()).rejectValue(eq(NUMBER_OF_PERIODS_TO_AVERAGE), any());
   }
@@ -459,12 +470,13 @@ public class RequisitionTemplateValidatorTest {
         .withNumberOfPeriodsToAverage(2)
         .build();
 
-    template.getColumnsMap().get(STOCK_ON_HAND).setIsDisplayed(false);
-    template.getColumnsMap().get(STOCK_ON_HAND).setSource(SourceType.USER_INPUT);
+    RequisitionTemplateDto dto = buildDto(template);
+    dto.getColumnsMap().get(STOCK_ON_HAND).setIsDisplayed(false);
+    dto.getColumnsMap().get(STOCK_ON_HAND).setSource(USER_INPUT);
 
-    mockResponses(template);
+    mockResponses(dto);
 
-    validator.validate(template, errors);
+    validator.validate(dto, errors);
 
     verify(errors, never()).rejectValue(COLUMNS_MAP, errorMessage);
   }
@@ -482,10 +494,11 @@ public class RequisitionTemplateValidatorTest {
     RequisitionTemplate template = baseTemplateBuilder()
         .withNumberOfPeriodsToAverage(2)
         .build();
-    template.getColumnsMap().get(STOCK_ON_HAND).setDefinition(RandomStringUtils.random(200));
-    mockResponses(template);
+    RequisitionTemplateDto dto = buildDto(template);
+    dto.getColumnsMap().get(STOCK_ON_HAND).setDefinition(RandomStringUtils.random(200));
+    mockResponses(dto);
 
-    validator.validate(template, errors);
+    validator.validate(dto, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
   }
@@ -498,7 +511,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     when(availableRequisitionColumnRepository.findOne(template.getColumnsMap().get(STOCK_ON_HAND)
         .getColumnDefinition().getId())).thenReturn(null);
@@ -516,11 +529,11 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     when(availableRequisitionColumnRepository
         .findOne(template.getColumnsMap().get(STOCK_ON_HAND).getColumnDefinition().getId()))
-        .thenReturn(template.getColumnsMap().get(REQUESTED_QUANTITY).getColumnDefinition());
+        .thenReturn(new AvailableRequisitionColumn());
 
     validator.validate(template, errors);
 
@@ -534,7 +547,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND)
         .setLabel("New not valid name with wrong signs: !@#$%^&*()");
@@ -550,7 +563,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(")(*&^%$#@!");
     validator.validate(template, errors);
@@ -565,7 +578,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(null);
     validator.validate(template, errors);
@@ -580,7 +593,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel("");
     validator.validate(template, errors);
@@ -595,7 +608,7 @@ public class RequisitionTemplateValidatorTest {
 
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
 
-    RequisitionTemplate template = generateTemplate();
+    RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(" ");
     validator.validate(template, errors);
@@ -606,7 +619,7 @@ public class RequisitionTemplateValidatorTest {
   @Test
   public void shouldRejectIfProgramWithSpecifiedIdDoesNotExist() throws Exception {
 
-    RequisitionTemplate requisitionTemplate = generateTemplate();
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
     when(programReferenceDataService.findOne(requisitionTemplate.getProgramId())).thenReturn(null);
 
     Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
@@ -620,7 +633,7 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectIfFacilityTypeWithSpecifiedIdDoesNotExist() throws Exception {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
     UUID facilityTypeId = requisitionTemplate.getFacilityTypeIds().iterator().next();
     when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(null);
 
@@ -635,7 +648,7 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenSourceInRequisitionTemplateColumnIsNull() throws Exception {
-    RequisitionTemplate requisitionTemplate = generateTemplate();
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
     requisitionTemplate.findColumn(REQUESTED_QUANTITY_EXPLANATION).setSource(null);
 
     Message message = new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
@@ -649,7 +662,7 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenSohSourceIsOtherThanStockCards() throws Exception {
-    RequisitionTemplate template = getTemplatePopulatedByStock();
+    RequisitionTemplateDto template = getTemplatePopulatedByStock();
 
     validator.validate(template, errors);
 
@@ -657,7 +670,7 @@ public class RequisitionTemplateValidatorTest {
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         message.toString()));
 
-    template.findColumn(STOCK_ON_HAND).setSource(SourceType.CALCULATED);
+    template.findColumn(STOCK_ON_HAND).setSource(CALCULATED);
 
     validator.validate(template, errors);
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
@@ -665,7 +678,7 @@ public class RequisitionTemplateValidatorTest {
 
   @Test
   public void shouldRejectWhenStockDisabledColumnIsDisplayed() throws Exception {
-    RequisitionTemplate template = getTemplatePopulatedByStock();
+    RequisitionTemplateDto template = getTemplatePopulatedByStock();
 
     validator.validate(template, errors);
 
@@ -682,81 +695,99 @@ public class RequisitionTemplateValidatorTest {
   private RequisitionTemplateDataBuilder baseTemplateBuilder() {
     return new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
-        .withColumn(TOTAL_CONSUMED_QUANTITY, "C", SourceType.USER_INPUT,
-            Sets.asSet(SourceType.USER_INPUT, SourceType.CALCULATED))
-        .withColumn(STOCK_ON_HAND, "E", SourceType.USER_INPUT,
-            Sets.asSet(SourceType.USER_INPUT, SourceType.CALCULATED))
-        .withColumn(COLUMN_NAME, "T", SourceType.USER_INPUT,
-            Sets.asSet(SourceType.USER_INPUT));
+        .withColumn(TOTAL_CONSUMED_QUANTITY, "C", USER_INPUT,
+            Sets.asSet(USER_INPUT, CALCULATED))
+        .withColumn(STOCK_ON_HAND, "E", USER_INPUT,
+            Sets.asSet(USER_INPUT, CALCULATED))
+        .withColumn(COLUMN_NAME, "T", USER_INPUT,
+            Sets.asSet(USER_INPUT))
+        .withAssignment(UUID.randomUUID(), UUID.randomUUID());
   }
 
-  private RequisitionTemplate generateTemplate() {
+  private RequisitionTemplateDto generateTemplate() {
     RequisitionTemplate template = baseTemplateBuilder().build();
-    mockResponses(template);
-    return template;
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
+    return dto;
   }
 
-  private RequisitionTemplate getTemplatePopulatedByStock() {
+  private RequisitionTemplateDto getTemplatePopulatedByStock() {
     RequisitionTemplate template = baseTemplateBuilder()
         .withPopulateStockOnHandFromStockCards()
         .build();
-    template.findColumn(STOCK_ON_HAND).getColumnDefinition()
-        .getSources().add(SourceType.STOCK_CARDS);
-    template.findColumn(STOCK_ON_HAND).setSource(SourceType.STOCK_CARDS);
-    template.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(SourceType.CALCULATED);
 
-    STOCK_DISABLED_COLUMNS.stream()
-        .filter(template::isColumnInTemplate)
-        .forEach(c -> template.changeColumnDisplay(c, false));
+    RequisitionTemplateDto dto = buildDto(template);
 
-    mockResponses(template);
+    dto.findColumn(STOCK_ON_HAND).getColumnDefinition()
+        .getSources().add(STOCK_CARDS);
+    dto.findColumn(STOCK_ON_HAND).setSource(STOCK_CARDS);
+    dto.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
 
-    return template;
+    STOCK_DISABLED_COLUMNS
+        .stream()
+        .filter(dto::isColumnInTemplate)
+        .forEach(c -> dto.getColumnsMap().get(c).setIsDisplayed(false));
+
+    mockResponses(dto);
+
+    return dto;
   }
 
-  private RequisitionTemplate addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate() {
+  private RequisitionTemplateDto addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate() {
     RequisitionTemplate template = baseTemplateBuilder()
-        .withColumn(TOTAL_CONSUMED_QUANTITY, "X", SourceType.USER_INPUT,
-            Sets.asSet(SourceType.USER_INPUT))
-        .withColumn(ADJUSTED_CONSUMPTION, "N", SourceType.CALCULATED,
-            Sets.asSet(SourceType.CALCULATED))
-        .withColumn(AVERAGE_CONSUMPTION, "P", SourceType.CALCULATED,
-            Sets.asSet(SourceType.CALCULATED))
+        .withColumn(TOTAL_CONSUMED_QUANTITY, "X", USER_INPUT,
+            Sets.asSet(USER_INPUT))
+        .withColumn(ADJUSTED_CONSUMPTION, "N", CALCULATED,
+            Sets.asSet(CALCULATED))
+        .withColumn(AVERAGE_CONSUMPTION, "P", CALCULATED,
+            Sets.asSet(CALCULATED))
         .build();
 
-    setConsumptionsInTemplate(template);
-    mockResponses(template);
 
-    return template;
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
+    setConsumptionsInTemplate(dto);
+
+    return dto;
   }
 
-  private RequisitionTemplate mockMessageAndGetRequisitionTemplate(String messageKey) {
+  private RequisitionTemplateDto mockMessageAndGetRequisitionTemplate(String messageKey) {
     when(messageService.localize(new Message(messageKey))).thenReturn(message);
 
-    RequisitionTemplate requisitionTemplate =
+    RequisitionTemplateDto requisitionTemplate =
         getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.setNumberOfPeriodsToAverage(2);
     return requisitionTemplate;
   }
 
-  private RequisitionTemplate getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
+  private RequisitionTemplateDto getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
     RequisitionTemplate template = baseTemplateBuilder()
-        .withColumn(TOTAL_STOCKOUT_DAYS, "X", SourceType.USER_INPUT,
-            Sets.asSet(SourceType.USER_INPUT))
-        .withColumn(ADJUSTED_CONSUMPTION, "N", SourceType.CALCULATED,
-            Sets.asSet(SourceType.CALCULATED))
-        .withColumn(AVERAGE_CONSUMPTION, "P", SourceType.CALCULATED,
-            Sets.asSet(SourceType.CALCULATED))
+        .withColumn(TOTAL_STOCKOUT_DAYS, "X", USER_INPUT,
+            Sets.asSet(USER_INPUT))
+        .withColumn(ADJUSTED_CONSUMPTION, "N", CALCULATED,
+            Sets.asSet(CALCULATED))
+        .withColumn(AVERAGE_CONSUMPTION, "P", CALCULATED,
+            Sets.asSet(CALCULATED))
         .build();
-    mockResponses(template);
 
-    return template;
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
+
+    return dto;
   }
 
-  private void mockResponses(RequisitionTemplate template) {
-    for (RequisitionTemplateColumn column : template.getColumnsMap().values()) {
+  private RequisitionTemplateDto buildDto(RequisitionTemplate template) {
+    RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    template.export(dto);
+
+    dto.setColumnsMap(RequisitionTemplateColumnDto.newInstance(template.viewColumns()));
+    return dto;
+  }
+
+  private void mockResponses(RequisitionTemplateDto template) {
+    for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
       when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-          .thenReturn(column.getColumnDefinition());
+          .thenReturn(AvailableRequisitionColumn.newInstance(column.getColumnDefinition()));
     }
 
     when(programReferenceDataService.findOne(template.getProgramId())).thenReturn(
@@ -768,9 +799,9 @@ public class RequisitionTemplateValidatorTest {
     }
   }
 
-  private void setConsumptionsInTemplate(RequisitionTemplate requisitionTemplate) {
-    requisitionTemplate.changeColumnSource(ADJUSTED_CONSUMPTION, SourceType.CALCULATED);
-    requisitionTemplate.changeColumnSource(AVERAGE_CONSUMPTION, SourceType.CALCULATED);
+  private void setConsumptionsInTemplate(RequisitionTemplateDto requisitionTemplate) {
+    requisitionTemplate.getColumnsMap().get(ADJUSTED_CONSUMPTION).setSource(CALCULATED);
+    requisitionTemplate.getColumnsMap().get(AVERAGE_CONSUMPTION).setSource(CALCULATED);
     requisitionTemplate.setNumberOfPeriodsToAverage(2);
   }
 }

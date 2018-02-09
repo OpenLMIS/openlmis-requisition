@@ -267,7 +267,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private void nullCalculatedFields(Requisition requisition) {
     for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
-      for (RequisitionTemplateColumn column : requisition.getTemplate().getColumnsMap().values()) {
+      for (RequisitionTemplateColumn column : requisition.getTemplate().viewColumns().values()) {
         if (isFalse(column.getIsDisplayed()) || column.getSource() == SourceType.CALCULATED) {
           String field = column.getName();
 

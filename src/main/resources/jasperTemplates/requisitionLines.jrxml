@@ -151,7 +151,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productName").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productName").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="productCode" mode="Opaque" x="9" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="aa050bad-b263-43fa-8d5e-9c9b506f2260"/>
@@ -164,7 +164,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productCode").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productCode").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="beginningBalance" mode="Opaque" x="139" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="ba36ed17-bea4-4f3c-9a77-1e1adb90aedb"/>
@@ -177,7 +177,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("beginningBalance").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("beginningBalance").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="totalReceivedQuantity" mode="Opaque" x="171" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="925448c8-3d6b-4b79-93b2-38b441c379fa">
@@ -193,7 +193,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalReceivedQuantity").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalReceivedQuantity").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="totalConsumedQuantity" mode="Opaque" x="203" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="7b859dc6-720f-43e0-9092-886ad01a9d50">
@@ -208,7 +208,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalConsumedQuantity").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalConsumedQuantity").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="totalLossesAndAdjustments" mode="Opaque" x="235" y="0" width="38" height="25" backcolor="#CCCCCC" uuid="dc09a9f2-acf7-4dab-84ef-a500845dde6d">
@@ -223,7 +223,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalLossesAndAdjustments").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="stockOnHand" mode="Opaque" x="273" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="ff7df6d1-53e7-49c8-a94a-0e026f345a39"/>
@@ -236,7 +236,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("stockOnHand").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("stockOnHand").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="requestedQuantity" mode="Opaque" x="305" y="0" width="34" height="25" backcolor="#CCCCCC" uuid="39121943-899a-42d8-93c2-974a7b408fb0">
@@ -251,7 +251,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantity").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantity").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="requestedQuantityExplanation" mode="Opaque" x="339" y="0" width="70" height="25" backcolor="#CCCCCC" uuid="344870d7-8dd4-49a3-b597-d4b615a20eee">
@@ -266,7 +266,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantityExplanation").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantityExplanation").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="approvedQuantity" mode="Opaque" x="409" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="5ca60a9a-32ae-47e4-b72f-6be575361d5c">
@@ -281,7 +281,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("approvedQuantity").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("approvedQuantity").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="remarks" mode="Opaque" x="441" y="0" width="68" height="25" backcolor="#CCCCCC" uuid="037372e2-a4c6-4675-9eb1-cd3d955c2961"/>
@@ -294,7 +294,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("remarks").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("remarks").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="totalStockoutDays" mode="Opaque" x="509" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="38ca3046-107c-49cf-ab32-b6b2a0ad659c"/>
@@ -307,7 +307,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalStockoutDays").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalStockoutDays").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="total" mode="Opaque" x="539" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="be01de2b-4274-413e-bb50-9463735e2c87"/>
@@ -320,7 +320,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("total").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="dispensingUnit" mode="Opaque" x="99" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="88b07504-aa0a-4fb4-a4fc-71b3d8b091ef"/>
@@ -333,7 +333,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("dispensingUnit").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="packsToShip" mode="Opaque" x="569" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="b7f0ed2c-71bf-47b6-a4cc-f74ab3a5688d"/>
@@ -346,7 +346,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("packsToShip").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("packsToShip").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="pricePerPack" mode="Opaque" x="599" y="0" width="45" height="25" backcolor="#CCCCCC" uuid="74eb88e0-bdb7-49df-8556-5ee3e4b78647">
@@ -361,7 +361,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("pricePerPack").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="numberOfNewPatientsAdded" mode="Opaque" x="644" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="326f1d21-fe28-4c47-a971-747e3b295acc">
@@ -376,7 +376,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("numberOfNewPatientsAdded").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("numberOfNewPatientsAdded").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="totalCost" mode="Opaque" x="674" y="0" width="45" height="25" backcolor="#CCCCCC" uuid="4b173290-a1ae-4c11-bc47-dfb8fb4e1710"/>
@@ -389,7 +389,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalCost").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="adjustedConsumption" mode="Opaque" x="719" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="856d2220-e43a-4111-8ec0-b630b1bdc0bb"/>
@@ -402,7 +402,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("adjustedConsumption").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("adjustedConsumption").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="averageConsumption" mode="Opaque" x="759" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="86c38ec7-30e4-4a5d-98fc-a62d1149c2eb"/>
@@ -415,7 +415,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("averageConsumption").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("averageConsumption").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="calculatedOrderQuantity" mode="Opaque" x="799" y="0" width="34" height="25" backcolor="#CCCCCC" uuid="2eceb46c-22e9-4385-8c3d-645efa2c1d13">
@@ -430,7 +430,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("calculatedOrderQuantity").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantity").getLabel()]]></textFieldExpression>
             </textField>
         </band>
     </columnHeader>
@@ -455,7 +455,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productName").getIsDisplayed() ? $F{orderable}.getFullProductName() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productName").getIsDisplayed() ? $F{orderable}.getFullProductName() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="productCode" x="9" y="0" width="30" height="20" uuid="364650f2-c5ab-49b6-b74a-89aa733eeda5">
@@ -470,7 +470,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("productCode").getIsDisplayed() ? $F{orderable}.getProductCode() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productCode").getIsDisplayed() ? $F{orderable}.getProductCode() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="beginningBalance" x="139" y="0" width="32" height="20" uuid="a7672f9a-30bd-4bf9-96af-324baa7e2280"/>
@@ -483,7 +483,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("beginningBalance").getIsDisplayed() ? $F{beginningBalance} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("beginningBalance").getIsDisplayed() ? $F{beginningBalance} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalReceivedQuantity" x="171" y="0" width="32" height="20" uuid="547fa08c-24e6-4617-aa94-09384a952a19"/>
@@ -496,7 +496,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalReceivedQuantity").getIsDisplayed() ? $F{totalReceivedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalReceivedQuantity").getIsDisplayed() ? $F{totalReceivedQuantity} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalConsumedQuantity" x="203" y="0" width="32" height="20" uuid="a2c8fc54-7cdc-442a-9ced-608a01ef270b"/>
@@ -509,7 +509,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalConsumedQuantity").getIsDisplayed() ? $F{totalConsumedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalConsumedQuantity").getIsDisplayed() ? $F{totalConsumedQuantity} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalLossesAndAdjustments" x="235" y="0" width="38" height="20" uuid="86886d4d-e188-4bbf-bfc7-113325f40773"/>
@@ -522,7 +522,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalLossesAndAdjustments").getIsDisplayed() ? $F{totalLossesAndAdjustments} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getIsDisplayed() ? $F{totalLossesAndAdjustments} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="stockOnHand" x="273" y="0" width="32" height="20" uuid="0185ea38-1d83-4eed-929f-508e1ffe010c"/>
@@ -535,7 +535,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("stockOnHand").getIsDisplayed() ? $F{stockOnHand} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("stockOnHand").getIsDisplayed() ? $F{stockOnHand} : null]]></textFieldExpression>
             </textField>
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                 <reportElement key="requestedQuantityExplanation" x="339" y="0" width="70" height="20" uuid="1e2e903d-a271-40f0-a2a3-ba25d101182f"/>
@@ -548,7 +548,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantityExplanation").getIsDisplayed() ? $F{requestedQuantityExplanation} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantityExplanation").getIsDisplayed() ? $F{requestedQuantityExplanation} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="approvedQuantity" x="409" y="0" width="32" height="20" uuid="123d5789-9a0e-493b-9dcb-8fd89100a599">
@@ -563,7 +563,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[($P{template}.getColumnsMap().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalStockoutDays" x="509" y="0" width="30" height="20" uuid="0b535dc6-aa7d-41e4-bf5f-092d578c0ced">
@@ -578,7 +578,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalStockoutDays").getIsDisplayed() ? $F{totalStockoutDays} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalStockoutDays").getIsDisplayed() ? $F{totalStockoutDays} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="total" x="539" y="0" width="30" height="20" uuid="2aef1b8a-a7cb-4972-9506-22d1ccc2a945">
@@ -593,7 +593,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("total").getIsDisplayed() ? $F{total} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getIsDisplayed() ? $F{total} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="dispensingUnit" x="99" y="0" width="40" height="20" uuid="0e217f2e-f7ca-4c05-b9d2-f13ec6cf38db">
@@ -608,7 +608,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("dispensingUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="packsToShip" x="569" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
@@ -623,7 +623,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("packsToShip").getIsDisplayed() ? $F{packsToShip} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("packsToShip").getIsDisplayed() ? $F{packsToShip} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="pricePerPack" x="599" y="0" width="45" height="20" uuid="8a78859d-6649-4ac8-9538-48ce2f44ad67">
@@ -638,7 +638,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("pricePerPack").getIsDisplayed() ? MoneyFormat.format($F{pricePerPack}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("pricePerPack").getIsDisplayed() ? MoneyFormat.format($F{pricePerPack}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="numberOfNewPatientsAdded" x="644" y="0" width="30" height="20" uuid="fea4bade-1ea2-4739-83fa-93be949392a2">
@@ -653,7 +653,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("numberOfNewPatientsAdded").getIsDisplayed() ? $F{numberOfNewPatientsAdded} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("numberOfNewPatientsAdded").getIsDisplayed() ? $F{numberOfNewPatientsAdded} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalCost" x="674" y="0" width="45" height="20" uuid="09db620a-d11c-40e3-9981-bb0aed1b3ad9"/>
@@ -666,7 +666,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("totalCost").getIsDisplayed() ? MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalCost").getIsDisplayed() ? MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA) : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="averageConsumption" x="759" y="0" width="40" height="20" uuid="415e8964-fd1f-4c09-a7fe-7b34036549d9">
@@ -681,7 +681,7 @@
                 <textElement textAlignment="Left" verticalAlignment="Top">
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("averageConsumption").getIsDisplayed() ? $F{averageConsumption} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("averageConsumption").getIsDisplayed() ? $F{averageConsumption} : null]]></textFieldExpression>
             </textField>
             <textField isStretchWithOverflow="true" isBlankWhenNull="true">
                 <reportElement key="remarks" x="441" y="0" width="68" height="20" uuid="b995a245-0802-4412-b304-d4dc8741b567">
@@ -696,7 +696,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[($P{template}.getColumnsMap().get("remarks").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{remarks} : ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("remarks").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{remarks} : ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="adjustedConsumption" x="719" y="0" width="40" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b">
@@ -711,7 +711,7 @@
                 <textElement textAlignment="Left" verticalAlignment="Top">
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("adjustedConsumption").getIsDisplayed() ? $F{adjustedConsumption} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("adjustedConsumption").getIsDisplayed() ? $F{adjustedConsumption} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="requestedQuantity" x="305" y="0" width="34" height="20" uuid="e0b2c183-8945-4262-8a8a-5c892513d0ee">
@@ -726,7 +726,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("requestedQuantity").getIsDisplayed() ? $F{requestedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantity").getIsDisplayed() ? $F{requestedQuantity} : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="calculatedOrderQuantity" x="799" y="0" width="34" height="20" uuid="f4aa1080-4960-4760-a3f8-ad8a1fb5de81">
@@ -741,7 +741,7 @@
                 <textElement textAlignment="Left" verticalAlignment="Top">
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.getColumnsMap().get("calculatedOrderQuantity").getIsDisplayed() ? $F{calculatedOrderQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantity").getIsDisplayed() ? $F{calculatedOrderQuantity} : null]]></textFieldExpression>
             </textField>
         </band>
     </detail>

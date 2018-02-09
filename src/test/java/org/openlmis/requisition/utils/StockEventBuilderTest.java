@@ -46,6 +46,9 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -148,7 +151,12 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldNotIncludeReceiptsIfTotalReceivedQuantityDoesNotExist() throws Exception {
-    requisition.getTemplate().getColumnsMap().remove(TOTAL_RECEIVED_QUANTITY);
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>(
+        requisition.getTemplate().viewColumns()
+    );
+    columns.remove(TOTAL_RECEIVED_QUANTITY);
+
+    requisition.setTemplate(new RequisitionTemplate(columns));
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
@@ -201,7 +209,12 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldNotIncludeConsumedIfTotalConsumedQuantityDoesNotExist() throws Exception {
-    requisition.getTemplate().getColumnsMap().remove(TOTAL_CONSUMED_QUANTITY);
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>(
+        requisition.getTemplate().viewColumns()
+    );
+    columns.remove(TOTAL_CONSUMED_QUANTITY);
+
+    requisition.setTemplate(new RequisitionTemplate(columns));
 
     StockEventDto result = stockEventBuilder.fromRequisition(requisition);
 
@@ -475,11 +488,7 @@ public class StockEventBuilderTest {
   }
 
   private RequisitionTemplate prepareTemplate() {
-    RequisitionTemplate template = new RequisitionTemplate();
-
-    template.setColumnsMap(prepareColumnsMap());
-
-    return template;
+    return new RequisitionTemplateDataBuilder().withColumns(prepareColumnsMap()).build();
   }
 
   private Map<String, RequisitionTemplateColumn> prepareColumnsMap() {
@@ -498,12 +507,9 @@ public class StockEventBuilderTest {
   }
 
   private RequisitionTemplateColumn prepareColumn(String columnName) {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-
-    column.setName(columnName);
-    column.setIsDisplayed(true);
-
-    return column;
+    return new RequisitionTemplateColumnDataBuilder()
+        .withName(columnName)
+        .build();
   }
 
   private List<StockAdjustmentReason> prepareReasons() {

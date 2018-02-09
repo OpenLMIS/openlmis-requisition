@@ -17,7 +17,6 @@ package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -26,9 +25,7 @@ import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -60,10 +57,7 @@ public class RequisitionTemplateService {
   public RequisitionTemplate save(RequisitionTemplate template) {
     List<Requisition> requisitions = requisitionRepository.findByTemplateId(template.getId());
     if (!requisitions.isEmpty()) {
-      Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
-      template.getColumnsMap().forEach(columnsMap::put);
-
-      RequisitionTemplate newTemplate = new RequisitionTemplate(columnsMap);
+      RequisitionTemplate newTemplate = new RequisitionTemplate();
       newTemplate.updateFrom(template);
       template = newTemplate;
     }

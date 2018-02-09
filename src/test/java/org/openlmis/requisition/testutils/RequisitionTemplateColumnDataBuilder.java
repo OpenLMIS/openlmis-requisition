@@ -21,6 +21,11 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateColumnDataBuilder {
 
   private String name;
@@ -54,6 +59,12 @@ public class RequisitionTemplateColumnDataBuilder {
    * Builds {@link RequisitionTemplateColumn} instance with test data.
    */
   public RequisitionTemplateColumn build() {
+    if (null != columnDefinition) {
+      Optional
+          .ofNullable(columnDefinition.getOptions())
+          .orElse(Collections.emptySet())
+          .forEach(option -> option.setRequisitionColumn(columnDefinition));
+    }
     return new RequisitionTemplateColumn(name, label, indicator, displayOrder, isDisplayed, source,
         columnDefinition, option, definition);
   }
@@ -79,8 +90,41 @@ public class RequisitionTemplateColumnDataBuilder {
     return this;
   }
 
+  /**
+   * Set column definition with parameters.
+   */
+  public RequisitionTemplateColumnDataBuilder withColumnDefinition(String name, String indicator,
+                                                                   Set<SourceType> sources) {
+    columnDefinition = new AvailableRequisitionColumn();
+    columnDefinition.setName(name);
+    columnDefinition.setIndicator(indicator);
+    columnDefinition.setSources(sources);
+
+    return this;
+  }
+
   public RequisitionTemplateColumnDataBuilder withSource(SourceType source) {
     this.source = source;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withDisplayOrder(int displayOrder) {
+    this.displayOrder = displayOrder;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withOption(AvailableRequisitionColumnOption option) {
+    this.option = option;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withoutOption() {
+    this.option = null;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withLabel(String label) {
+    this.label = label;
     return this;
   }
 }

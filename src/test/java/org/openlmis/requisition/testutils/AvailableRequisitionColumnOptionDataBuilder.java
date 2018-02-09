@@ -18,8 +18,10 @@ package org.openlmis.requisition.testutils;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 
-public class AvailableRequisitionColumnOptionDataBuilder {
+import java.util.UUID;
 
+public class AvailableRequisitionColumnOptionDataBuilder {
+  private UUID id;
   private AvailableRequisitionColumn requisitionColumn;
   private String optionName;
   private String optionLabel;
@@ -28,6 +30,7 @@ public class AvailableRequisitionColumnOptionDataBuilder {
    * Builder for {@link AvailableRequisitionColumnOption}.
    */
   public AvailableRequisitionColumnOptionDataBuilder() {
+    id = UUID.randomUUID();
     requisitionColumn = null;
     optionName = "option";
     optionLabel = "Option";
@@ -37,6 +40,11 @@ public class AvailableRequisitionColumnOptionDataBuilder {
    * Builds {@link AvailableRequisitionColumnOption} instance with test data.
    */
   public AvailableRequisitionColumnOption build() {
-    return new AvailableRequisitionColumnOption(requisitionColumn, optionName, optionLabel);
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
+        requisitionColumn, optionName, optionLabel
+    );
+    option.setId(id);
+
+    return option;
   }
 }

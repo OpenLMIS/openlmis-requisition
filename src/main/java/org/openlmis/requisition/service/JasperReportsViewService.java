@@ -253,7 +253,7 @@ public class JasperReportsViewService {
       JRBand header = design.getColumnHeader();
 
       Map<String, RequisitionTemplateColumn> columns =
-          ReportUtils.getSortedTemplateColumnsForPrint(template.getColumnsMap(), requisitionStatus);
+          ReportUtils.getSortedTemplateColumnsForPrint(template.viewColumns(), requisitionStatus);
 
       ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 9);
       ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 9);

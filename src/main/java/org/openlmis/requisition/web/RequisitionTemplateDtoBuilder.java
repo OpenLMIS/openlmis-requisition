@@ -58,9 +58,7 @@ public class RequisitionTemplateDtoBuilder {
     dto.setServiceUrl(serviceUrl);
 
     template.export(dto);
-
-    dto.setColumnsMap(RequisitionTemplateColumnDto.newInstance(template.getColumnsMap()));
-    dto.setName(template.getName());
+    dto.setColumnsMap(RequisitionTemplateColumnDto.newInstance(template.viewColumns()));
 
     return dto;
   }

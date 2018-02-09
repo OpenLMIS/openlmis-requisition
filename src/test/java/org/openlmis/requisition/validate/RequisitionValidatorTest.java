@@ -49,6 +49,7 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;
@@ -85,7 +86,6 @@ public class RequisitionValidatorTest {
   private Errors errors = mock(Errors.class);
 
   private List<RequisitionLineItem> requisitionLineItems;
-  private RequisitionTemplate requisitionTemplate;
   private Map<String, RequisitionTemplateColumn> columnsMap;
   private UUID programId;
 
@@ -93,9 +93,6 @@ public class RequisitionValidatorTest {
   public void setUp() {
     requisitionLineItems = new ArrayList<>();
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
-    requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setId(UUID.randomUUID());
-    requisitionTemplate.setColumnsMap(columnsMap);
     mockRepositoriesAndObjects();
   }
 
@@ -168,6 +165,7 @@ public class RequisitionValidatorTest {
     requisitionLineItems.add(lineItem);
 
     columnsMap.remove(RequisitionLineItem.STOCK_ON_HAND);
+    mockRepositoriesAndObjects();
 
     requisitionValidator.validate(requisition, errors);
   }
@@ -627,7 +625,7 @@ public class RequisitionValidatorTest {
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getNonSkippedRequisitionLineItems()).thenReturn(requisitionLineItems);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
-    when(requisition.getTemplate()).thenReturn(requisitionTemplate);
+    when(requisition.getTemplate()).thenReturn(generateTemplate());
 
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(requisition);
     when(predicate.exec(any(UUID.class))).thenReturn(true);
@@ -645,9 +643,13 @@ public class RequisitionValidatorTest {
     requisition.setRequisitionLineItems(requisitionLineItems);
     requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setTemplate(requisitionTemplate);
+    requisition.setTemplate(generateTemplate());
     requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
     requisition.setStockAdjustmentReasons(Collections.emptyList());
     return requisition;
+  }
+
+  private RequisitionTemplate generateTemplate() {
+    return new RequisitionTemplateDataBuilder().withColumns(columnsMap).build();
   }
 }

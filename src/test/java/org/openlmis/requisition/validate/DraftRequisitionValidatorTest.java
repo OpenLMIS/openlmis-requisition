@@ -51,6 +51,7 @@ import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
@@ -102,9 +103,7 @@ public class DraftRequisitionValidatorTest {
   public void setUp() {
     requisitionLineItems = new ArrayList<>();
     columnsMap = RequisitionValidationTestUtils.initiateColumns();
-    requisitionTemplate = new RequisitionTemplate();
-    requisitionTemplate.setId(UUID.randomUUID());
-    requisitionTemplate.setColumnsMap(columnsMap);
+    requisitionTemplate = new RequisitionTemplateDataBuilder().withColumns(columnsMap).build();
     requisition = generateRequisition();
     mockRepositoriesAndObjects();
     when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now(ZoneId.of("UTC")));

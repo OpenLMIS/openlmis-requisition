@@ -53,6 +53,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -617,9 +618,9 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-    column.setName(RequisitionLineItem.BEGINNING_BALANCE);
-    column.setIsDisplayed(true);
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withName(RequisitionLineItem.BEGINNING_BALANCE)
+        .build();
 
     return templateRepository.save(new RequisitionTemplate(
         Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));

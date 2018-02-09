@@ -23,6 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -54,61 +57,42 @@ public class RequisitionTemplateTest {
 
   private RequisitionTemplate requisitionTemplate;
 
-  private static final String[] COLUMN_NAMES = {"column1", "column2", "column3", "column4"};
+  private static final String[] COLUMN_NAMES = {
+      CALCULATED_ORDER_QUANTITY, REQUESTED_QUANTITY, REQUESTED_QUANTITY_EXPLANATION
+  };
 
   @Before
   public void setUp() {
-    requisitionTemplate = new RequisitionTemplate();
-    AvailableRequisitionColumn columnDefinition = new AvailableRequisitionColumn();
-    columnDefinition.setCanChangeOrder(true);
-    RequisitionTemplateColumn column1 = new RequisitionTemplateColumn(columnDefinition);
-    column1.setName(COLUMN_NAMES[0]);
-    column1.setDisplayOrder(1);
-    RequisitionTemplateColumn column2 = new RequisitionTemplateColumn(columnDefinition);
-    column2.setName(COLUMN_NAMES[1]);
-    column2.setDisplayOrder(2);
-    RequisitionTemplateColumn column3 = new RequisitionTemplateColumn(columnDefinition);
-    column3.setName(COLUMN_NAMES[2]);
-    column3.setDisplayOrder(3);
-    RequisitionTemplateColumn column4 = new RequisitionTemplateColumn(columnDefinition);
-    column4.setName(COLUMN_NAMES[3]);
-    column4.setDisplayOrder(4);
-    Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
-    columnsMap.put(column1.getName(), column1);
-    columnsMap.put(column2.getName(), column2);
-    columnsMap.put(column3.getName(), column3);
-    columnsMap.put(column4.getName(), column4);
-    requisitionTemplate.setColumnsMap(columnsMap);
+    requisitionTemplate = new RequisitionTemplateDataBuilder()
+        .withRequiredColumns()
+        .build();
   }
 
   @Test
   public void testChangeColumnDisplayOrderToLower() {
     requisitionTemplate.changeColumnDisplayOrder(COLUMN_NAMES[2], 1);
-    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.getColumnsMap();
+    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.viewColumns();
     Assert.assertEquals(1, mapAfterChange.get(COLUMN_NAMES[2]).getDisplayOrder());
     Assert.assertEquals(2, mapAfterChange.get(COLUMN_NAMES[0]).getDisplayOrder());
     Assert.assertEquals(3, mapAfterChange.get(COLUMN_NAMES[1]).getDisplayOrder());
-    Assert.assertEquals(4, mapAfterChange.get(COLUMN_NAMES[3]).getDisplayOrder());
   }
 
   @Test
   public void testChangeColumnDisplayOrderToHigher() {
     requisitionTemplate.changeColumnDisplayOrder(COLUMN_NAMES[0], 3);
-    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.getColumnsMap();
+    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.viewColumns();
     Assert.assertEquals(1, mapAfterChange.get(COLUMN_NAMES[1]).getDisplayOrder());
     Assert.assertEquals(2, mapAfterChange.get(COLUMN_NAMES[2]).getDisplayOrder());
     Assert.assertEquals(3, mapAfterChange.get(COLUMN_NAMES[0]).getDisplayOrder());
-    Assert.assertEquals(4, mapAfterChange.get(COLUMN_NAMES[3]).getDisplayOrder());
   }
 
   @Test
   public void testChangeColumnDisplayOrderToTheSame() {
     requisitionTemplate.changeColumnDisplayOrder(COLUMN_NAMES[1], 2);
-    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.getColumnsMap();
+    Map<String, RequisitionTemplateColumn> mapAfterChange = requisitionTemplate.viewColumns();
     Assert.assertEquals(1, mapAfterChange.get(COLUMN_NAMES[0]).getDisplayOrder());
     Assert.assertEquals(2, mapAfterChange.get(COLUMN_NAMES[1]).getDisplayOrder());
     Assert.assertEquals(3, mapAfterChange.get(COLUMN_NAMES[2]).getDisplayOrder());
-    Assert.assertEquals(4, mapAfterChange.get(COLUMN_NAMES[3]).getDisplayOrder());
   }
 
   @Test
@@ -130,7 +114,7 @@ public class RequisitionTemplateTest {
   public void shouldThrowIfOptionIsNotAvailableInColumn() {
     expected.expect(ValidationMessageException.class);
     AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(
-        requisitionTemplate.getColumnsMap().get(COLUMN_NAMES[0])
+        requisitionTemplate.viewColumns().get(COLUMN_NAMES[0])
             .getColumnDefinition(), "option1", "label1");
     requisitionTemplate.changeColumnOption(COLUMN_NAMES[0], option);
 
@@ -172,7 +156,7 @@ public class RequisitionTemplateTest {
         .withRequiredColumns()
         .build();
     template.export(templateDto);
-    templateDto.setColumnsMap(template.getColumnsMap().entrySet().stream()
+    templateDto.setColumnsMap(template.viewColumns().entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
           RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDto();
           entry.getValue().export(dto);
@@ -188,10 +172,9 @@ public class RequisitionTemplateTest {
         newTemplate.isPopulateStockOnHandFromStockCards());
     assertEquals(templateDto.getNumberOfPeriodsToAverage(),
         newTemplate.getNumberOfPeriodsToAverage());
-    newTemplate.getColumnsMap().entrySet()
-        .stream()
+    newTemplate.viewColumns().entrySet()
         .forEach(requisitionTemplateColumnEntry ->
-            assertEquals(template.getColumnsMap()
+            assertEquals(template.viewColumns()
                     .get(requisitionTemplateColumnEntry.getKey()).getName(),
                 requisitionTemplateColumnEntry.getValue().getName()));
     assertEquals(templateDto.getId(), newTemplate.getId());

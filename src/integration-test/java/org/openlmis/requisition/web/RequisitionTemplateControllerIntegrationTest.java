@@ -35,7 +35,7 @@ import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
-import org.openlmis.requisition.validate.RequisitionTemplateValidator;
+import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpHeaders;
@@ -59,7 +59,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @MockBean
-  private RequisitionTemplateValidator requisitionTemplateValidator;
+  private RequisitionTemplateDtoValidator requisitionTemplateDtoValidator;
 
   @SpyBean
   private RequisitionTemplateDtoBuilder dtoBuilder;
@@ -69,7 +69,10 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
   @Before
   public void setUp() {
-    template = new RequisitionTemplateDataBuilder().build();
+    template = new RequisitionTemplateDataBuilder()
+        .withAssignment(UUID.randomUUID(), UUID.randomUUID())
+        .withRequiredColumns()
+        .build();
     templateDto = dtoBuilder.newInstance(template);
 
     mockUserAuthenticated();
@@ -86,8 +89,10 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldGetAllRequisitionTemplates() {
     // given
-    List<RequisitionTemplate> templates = Arrays.asList(
-        template, new RequisitionTemplateDataBuilder().build());
+    RequisitionTemplate another = new RequisitionTemplateDataBuilder()
+        .withAssignment(UUID.randomUUID(), null)
+        .build();
+    List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.findAll()).willReturn(templates);
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
@@ -182,8 +187,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // given
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
         .withNumberOfPeriodsToAverage(100)
+        .withAssignment(UUID.randomUUID(), null)
         .build();
-    newTemplate.setNumberOfPeriodsToAverage(100);
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
     mockValidationSuccess();
@@ -303,8 +308,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   // Helper methods
 
   private void mockValidationSuccess() {
-    given(requisitionTemplateValidator.supports(any(Class.class))).willReturn(true);
-    doNothing().when(requisitionTemplateValidator).validate(anyObject(), any(Errors.class));
+    given(requisitionTemplateDtoValidator.supports(any(Class.class))).willReturn(true);
+    doNothing().when(requisitionTemplateDtoValidator).validate(anyObject(), any(Errors.class));
   }
 
 }

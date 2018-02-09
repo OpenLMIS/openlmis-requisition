@@ -65,10 +65,12 @@ public final class ReportUtils {
    */
   public static Map<String, RequisitionTemplateColumn> getSortedTemplateColumnsForPrint(
       Map<String, RequisitionTemplateColumn> map, RequisitionStatus requisitionStatus) {
-    List<Map.Entry<String, RequisitionTemplateColumn>> sorted = map.entrySet().stream()
-        .filter(ent -> !ent.getKey().equals("skipped"))
+    List<Map.Entry<String, RequisitionTemplateColumn>> sorted = map
+        .entrySet()
+        .stream()
+        .filter(ent -> !"skipped".equals(ent.getKey()))
         .filter(ent -> ent.getValue().getIsDisplayed())
-        .filter(ent -> !ent.getKey().equals("approvedQuantity")
+        .filter(ent -> !"approvedQuantity".equals(ent.getKey())
             || requisitionStatus.isAuthorized())
         .sorted(Comparator.comparingInt(ent -> ent.getValue().getDisplayOrder()))
         .collect(Collectors.toList());

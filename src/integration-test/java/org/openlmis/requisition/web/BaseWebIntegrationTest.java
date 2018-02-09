@@ -74,6 +74,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -203,11 +204,9 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected final RequisitionTemplate generateRequisitionTemplate() {
-    RequisitionTemplate template = new RequisitionTemplate();
-
-    template.setId(UUID.randomUUID());
-    template.setColumnsMap(new HashMap<>());
-    template.setNumberOfPeriodsToAverage(1);
+    RequisitionTemplate template = new RequisitionTemplate(
+        UUID.randomUUID(), null,false, null, new HashMap<>(), new HashSet<>()
+    );
     template.addAssignment(UUID.randomUUID(), UUID.randomUUID());
 
     return template;
