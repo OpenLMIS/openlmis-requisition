@@ -15,6 +15,9 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.openlmis.requisition.web.ResourceNames.FACILITY_TYPES;
+import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -32,18 +35,33 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter, RequisitionTemplate.Importer {
 
+  @Setter
+  private String serviceUrl;
+
+  @Getter
+  @Setter
   private String name;
+
+  @Getter
+  @Setter
   private boolean populateStockOnHandFromStockCards;
+
+  @Getter
+  @Setter
   private Map<String, RequisitionTemplateColumnDto> columnsMap;
+
+  @Getter
+  @Setter
   private ObjectReferenceDto program;
+
+  @Getter
+  @Setter
   private Set<ObjectReferenceDto> facilityTypes;
 
   @Override
@@ -54,11 +72,28 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
 
   @Override
   @JsonIgnore
+  public void setProgramId(UUID programId) {
+    this.program = new ObjectReferenceDto(programId, serviceUrl, PROGRAMS);
+  }
+
+  @Override
+  @JsonIgnore
   public Set<UUID> getFacilityTypeIds() {
     return Optional.ofNullable(facilityTypes)
         .orElse(Collections.emptySet())
         .stream()
         .map(ObjectReferenceDto::getId)
+        .collect(Collectors.toSet());
+  }
+
+  @Override
+  @JsonIgnore
+  public void setFacilityTypeIds(Set<UUID> facilityTypeIds) {
+    this.facilityTypes = Optional
+        .ofNullable(facilityTypeIds)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(elem -> new ObjectReferenceDto(elem, serviceUrl, FACILITY_TYPES))
         .collect(Collectors.toSet());
   }
 

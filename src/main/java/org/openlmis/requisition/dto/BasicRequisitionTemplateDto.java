@@ -24,6 +24,8 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -67,5 +69,15 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
         BasicRequisitionTemplateColumnDto.newInstance(requisitionTemplate.getColumnsMap()));
 
     return requisitionTemplateDto;
+  }
+
+  @Override
+  public void setProgramId(UUID programId) {
+    // nothing to do
+  }
+
+  @Override
+  public void setFacilityTypeIds(Set<UUID> facilityTypeIds) {
+    // nothing to do
   }
 }

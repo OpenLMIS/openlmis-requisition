@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -90,7 +91,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @OneToMany(
       cascade = CascadeType.ALL,
       orphanRemoval = true,
-      fetch = FetchType.LAZY,
       mappedBy = "template")
   @DiffIgnore
   private Set<RequisitionTemplateAssignment> templateAssignments = new HashSet<>();
@@ -161,7 +161,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   private synchronized void addFacilityTypeId(UUID facilityTypeId) {
-    facilityTypeIds.add(facilityTypeId);
+    Optional.ofNullable(facilityTypeId).ifPresent(id -> facilityTypeIds.add(id));
   }
 
   /**
@@ -424,6 +424,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setModifiedDate(getModifiedDate());
     exporter.setPopulateStockOnHandFromStockCards(populateStockOnHandFromStockCards);
     exporter.setNumberOfPeriodsToAverage(numberOfPeriodsToAverage);
+    exporter.setProgramId(getProgramId());
+    exporter.setFacilityTypeIds(getFacilityTypeIds());
   }
 
   public interface Importer {
@@ -458,5 +460,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setNumberOfPeriodsToAverage(Integer numberOfPeriodsToAverage);
 
     void setName(String name);
+
+    void setProgramId(UUID programId);
+
+    void setFacilityTypeIds(Set<UUID> facilityTypeIds);
   }
 }

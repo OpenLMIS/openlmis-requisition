@@ -57,8 +57,4 @@ public class ObjectReferenceDto {
     this.href = href;
   }
 
-  public static ObjectReferenceDto create(UUID id, String serviceUrl, String resourceName) {
-    return new ObjectReferenceDto(id, serviceUrl, resourceName);
-  }
-
 }

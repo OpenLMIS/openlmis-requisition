@@ -15,11 +15,7 @@
 
 package org.openlmis.requisition.web;
 
-import static org.openlmis.requisition.web.ResourceNames.FACILITY_TYPES;
-import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
-
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,14 +55,11 @@ public class RequisitionTemplateDtoBuilder {
     }
 
     RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    dto.setServiceUrl(serviceUrl);
+
     template.export(dto);
+
     dto.setColumnsMap(RequisitionTemplateColumnDto.newInstance(template.getColumnsMap()));
-    dto.setProgram(new ObjectReferenceDto(template.getProgramId(), serviceUrl, PROGRAMS));
-    dto.setFacilityTypes(template
-        .getFacilityTypeIds()
-        .stream()
-        .map(elem -> new ObjectReferenceDto(elem, serviceUrl, FACILITY_TYPES))
-        .collect(Collectors.toSet()));
     dto.setName(template.getName());
 
     return dto;
