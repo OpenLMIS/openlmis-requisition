@@ -17,16 +17,20 @@ package org.openlmis.requisition.dto;
 
 import static java.util.Objects.isNull;
 
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class AvailableRequisitionColumnOptionDto implements
+@EqualsAndHashCode
+public final class AvailableRequisitionColumnOptionDto implements
     AvailableRequisitionColumnOption.Importer, AvailableRequisitionColumnOption.Exporter {
 
   private UUID id;

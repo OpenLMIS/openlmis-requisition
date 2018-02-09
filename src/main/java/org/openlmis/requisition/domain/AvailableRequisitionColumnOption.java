@@ -17,8 +17,6 @@ package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,14 +34,12 @@ import javax.persistence.Table;
 @Table(name = "available_requisition_column_options", schema = "requisition")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties("requisitionColumn")
 public class AvailableRequisitionColumnOption extends BaseEntity {
 
   public static final String DEFAULT = "default";
 
   @ManyToOne(cascade = {CascadeType.REFRESH})
   @JoinColumn(name = "columnId", nullable = false)
-  @JsonIgnore
   @Getter
   @Setter
   private AvailableRequisitionColumn requisitionColumn;
