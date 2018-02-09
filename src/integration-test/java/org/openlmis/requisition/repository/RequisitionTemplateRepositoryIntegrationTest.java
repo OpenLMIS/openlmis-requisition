@@ -29,7 +29,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -278,19 +277,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldAllowToNameDuplicationIfThereIsOnlyOneNonLegacyTemplate() {
-    RequisitionTemplate template = generateInstance();
-    template.markAsLegacy();
-    repository.saveAndFlush(template);
-
-    RequisitionTemplate newTemplate = new RequisitionTemplate();
-    newTemplate.updateFrom(template);
-
-    repository.saveAndFlush(newTemplate);
-  }
-
-  @Test(expected = DataIntegrityViolationException.class)
-  public void shouldNotAllowToNameDuplicationIfThereIsMoreThanOneNonLegacyTemplate() {
+  public void shouldSaveCopyOfTemplate() {
     RequisitionTemplate template = generateInstance();
     repository.saveAndFlush(template);
 

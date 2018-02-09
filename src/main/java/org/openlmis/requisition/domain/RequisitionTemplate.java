@@ -28,7 +28,6 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -72,10 +71,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Getter
   private boolean populateStockOnHandFromStockCards;
   private String name;
-
-  @Column(nullable = false)
-  @Getter(AccessLevel.PACKAGE)
-  private boolean legacy = false;
 
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
@@ -392,10 +387,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
     }
     return columnsMap.get(name);
-  }
-
-  public void markAsLegacy() {
-    legacy = true;
   }
 
   /**

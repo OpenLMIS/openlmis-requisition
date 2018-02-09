@@ -54,19 +54,15 @@ public class RequisitionTemplateService {
    * @param template Template to be saved.
    * @return Saved template.
    */
-  public RequisitionTemplate save(final RequisitionTemplate template) {
+  public RequisitionTemplate save(RequisitionTemplate template) {
     List<Requisition> requisitions = requisitionRepository.findByTemplateId(template.getId());
-    RequisitionTemplate newTemplate = template;
-
     if (!requisitions.isEmpty()) {
-      template.markAsLegacy();
-      requisitionTemplateRepository.save(template);
-
-      newTemplate = new RequisitionTemplate();
+      RequisitionTemplate newTemplate = new RequisitionTemplate();
       newTemplate.updateFrom(template);
+      template = newTemplate;
     }
 
-    return requisitionTemplateRepository.save(newTemplate);
+    return requisitionTemplateRepository.save(template);
   }
 
   /**

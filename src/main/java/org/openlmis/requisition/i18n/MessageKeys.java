@@ -169,8 +169,6 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.requestedQuantityExplanationRequired";
   public static final String ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS =
       ERROR_PREFIX + ".validation.cannotAssignTemplateToSeveralPrograms";
-  public static final String ERROR_TEMPLATE_NAME_DUPLICATION =
-      ERROR_PREFIX + ".validation.templateNameDuplication";
   public static final String ERROR_VALIDATION_FIELD_IS_TOO_LONG =
       ERROR_PREFIX + ".validation.fieldIsTooLong";
   public static final String ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND =
