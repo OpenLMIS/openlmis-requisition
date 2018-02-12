@@ -1,5 +1,9 @@
 ALTER TABLE ONLY requisition_templates ADD COLUMN archived boolean NOT NULL DEFAULT FALSE;
-ALTER TABLE ONLY requisition_templates ADD COLUMN name character varying(255) NOT NULL;
+ALTER TABLE ONLY requisition_templates ADD COLUMN name character varying(255);
+
+-- Set default name.
+UPDATE requisition_templates
+SET name = 't-' || replace(id::text, '-', '');
 
 -- set archived flag for old templates
 UPDATE requisition_templates
@@ -23,3 +27,5 @@ WHERE id IN (
 CREATE UNIQUE INDEX requisition_template_name_unique_idx
 ON requisition_templates (name, archived)
 WHERE archived IS FALSE;
+
+ALTER TABLE requisition_templates ALTER COLUMN name SET NOT NULL;
