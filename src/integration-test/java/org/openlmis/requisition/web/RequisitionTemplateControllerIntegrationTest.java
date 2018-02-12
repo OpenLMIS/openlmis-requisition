@@ -92,13 +92,13 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   // GET /api/requisitionTemplates
 
   @Test
-  public void shouldGetAllRequisitionTemplates() {
+  public void shouldGetActiveRequisitionTemplates() {
     // given
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
         .withAssignment(UUID.randomUUID(), null)
         .build();
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
-    given(requisitionTemplateRepository.findAll()).willReturn(templates);
+    given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when

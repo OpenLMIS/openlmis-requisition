@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.repository;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -33,10 +36,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -298,6 +303,41 @@ public class RequisitionTemplateRepositoryIntegrationTest
     newTemplate.updateFrom(template);
 
     repository.saveAndFlush(newTemplate);
+  }
+
+  @Test
+  public void shouldGetActiveTemplates() {
+    int size = 6; // make sure to have an even number here
+    List<UUID> currentTemplates = new ArrayList<>();
+
+    for (int i = 0; i < size; ++i) {
+      RequisitionTemplate requisitionTemplate = generateInstance();
+      requisitionTemplate.addAssignment(UUID.randomUUID(), null);
+
+      if (i % 2 == 0) {
+        requisitionTemplate.archive();
+      }
+
+      requisitionTemplates.add(repository.save(requisitionTemplate));
+
+      if (!requisitionTemplate.isArchived()) {
+        currentTemplates.add(requisitionTemplate.getId());
+      }
+    }
+
+    assertThat(currentTemplates, hasSize(size / 2));
+
+    List<RequisitionTemplate> templates = repository.getActiveTemplates();
+    List<UUID> templateIds = templates
+        .stream()
+        .map(BaseEntity::getId)
+        .sorted()
+        .collect(Collectors.toList());
+
+    Collections.sort(currentTemplates);
+
+    assertThat(templateIds, hasSize(3));
+    assertThat(templateIds, contains(currentTemplates.toArray(new UUID[0])));
   }
 
   private AvailableRequisitionColumn getColumn() {

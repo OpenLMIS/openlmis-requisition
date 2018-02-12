@@ -18,10 +18,16 @@ package org.openlmis.requisition.repository;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface RequisitionTemplateRepository extends
     JpaRepository<RequisitionTemplate, UUID>,
     RequisitionTemplateRepositoryCustom {
+
+  @Query("SELECT t FROM RequisitionTemplate AS t WHERE t.archived IS FALSE")
+  List<RequisitionTemplate> getActiveTemplates();
+
 }

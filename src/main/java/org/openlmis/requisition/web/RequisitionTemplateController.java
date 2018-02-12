@@ -102,10 +102,9 @@ public class RequisitionTemplateController extends BaseController {
   @RequestMapping(value = "/requisitionTemplates", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Iterable<RequisitionTemplateDto> getAllRequisitionTemplates() {
+  public Iterable<RequisitionTemplateDto> getCurrentRequisitionTemplates() {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
-
-    return dtoBuilder.newInstance(requisitionTemplateRepository.findAll());
+    return dtoBuilder.newInstance(requisitionTemplateRepository.getActiveTemplates());
   }
 
   /**
