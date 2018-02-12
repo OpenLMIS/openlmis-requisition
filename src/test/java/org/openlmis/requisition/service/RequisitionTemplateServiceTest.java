@@ -119,7 +119,7 @@ public class RequisitionTemplateServiceTest {
     // then
     assertNotEquals(requisitionTemplate, result);
     verify(requisitionTemplateRepository).saveAndFlush(templateCaptor.capture());
-    assertThat(templateCaptor.getValue(), hasProperty("legacy", is(true)));
+    assertThat(templateCaptor.getValue(), hasProperty("archived", is(true)));
   }
 
   @Test

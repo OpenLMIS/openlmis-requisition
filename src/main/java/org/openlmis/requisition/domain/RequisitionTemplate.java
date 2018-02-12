@@ -74,7 +74,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Column(nullable = false)
   @Getter
-  private boolean legacy = false;
+  private boolean archived = false;
 
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
@@ -329,8 +329,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     return column;
   }
 
-  public void markAsLegacy() {
-    legacy = true;
+  public void archive() {
+    archived = true;
   }
 
   /**

@@ -5,7 +5,7 @@
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
     "name": "Family Planning",
-    "legacy": false
+    "archived": false
   },
   {
     "id": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
@@ -13,7 +13,7 @@
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
     "name": "Essential Meds",
-    "legacy": false
+    "archived": false
   },
   {
     "id": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
@@ -21,7 +21,7 @@
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
     "name": "New Program",
-    "legacy": false
+    "archived": false
   },
   {
     "id": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
@@ -29,6 +29,6 @@
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
     "name": "EPI",
-    "legacy": false
+    "archived": false
   }
 ]
