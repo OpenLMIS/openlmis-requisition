@@ -4,27 +4,31 @@
     "createdDate": "2016-06-14T12:00:00",
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
-    "name": "Family Planning"
+    "name": "Family Planning",
+    "legacy": false
   },
   {
     "id": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
     "createdDate": "2016-03-17T12:00:00",
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
-    "name": "Essential Meds"
+    "name": "Essential Meds",
+    "legacy": false
   },
   {
     "id": "f6d38acd-f928-4a23-9f03-d1b74a706baa",
     "createdDate": "2016-06-22T12:00:00",
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
-    "name": "New Program"
+    "name": "New Program",
+    "legacy": false
   },
   {
     "id": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
     "createdDate": "2016-06-14T12:00:00",
     "numberOfPeriodsToAverage": "3",
     "populateStockOnHandFromStockCards": false,
-    "name": "EPI"
+    "name": "EPI",
+    "legacy": false
   }
 ]
