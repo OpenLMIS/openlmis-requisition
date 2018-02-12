@@ -55,7 +55,7 @@ public class RequisitionTemplateDataBuilder {
     modifiedDate = ZonedDateTime.now();
     numberOfPeriodsToAverage = 6;
     populateStockOnHandFromStockCards = false;
-    name = "template-name-" + RandomStringUtils.randomNumeric(5);
+    name = "template-name-" + RandomStringUtils.randomNumeric(25);
     columnsMap = new HashMap<>();
 
     templateAssignments = new HashSet<>();

@@ -25,9 +25,9 @@ import lombok.NoArgsConstructor;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -47,7 +47,7 @@ public class RequisitionTemplateAssignment extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private UUID facilityTypeId;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "templateId", nullable = false)
   private RequisitionTemplate template;
 
@@ -79,6 +79,4 @@ public class RequisitionTemplateAssignment extends BaseEntity {
   public int hashCode() {
     return Objects.hash(getProgramId(), getFacilityTypeId(), getTemplateId());
   }
-
-
 }

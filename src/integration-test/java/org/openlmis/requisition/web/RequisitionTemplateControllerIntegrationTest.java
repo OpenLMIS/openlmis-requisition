@@ -82,7 +82,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     mockUserAuthenticated();
 
-    given(requisitionTemplateRepository.findOne(templateDto.getId())).willReturn(template);
+    given(requisitionTemplateRepository.findOne(template.getId())).willReturn(template);
 
     // Mock saving objects
     given(requisitionTemplateRepository.save(any(RequisitionTemplate.class)))
@@ -216,7 +216,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // given
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
         .withNumberOfPeriodsToAverage(100)
-        .withAssignment(UUID.randomUUID(), null)
+        .withAssignment(template.getProgramId(), null)
         .build();
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);

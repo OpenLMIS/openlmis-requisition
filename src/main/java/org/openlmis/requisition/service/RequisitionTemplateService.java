@@ -60,7 +60,7 @@ public class RequisitionTemplateService {
 
     if (!requisitions.isEmpty()) {
       template.markAsLegacy();
-      requisitionTemplateRepository.save(template);
+      requisitionTemplateRepository.saveAndFlush(template);
 
       newTemplate = new RequisitionTemplate();
       newTemplate.updateFrom(template);

@@ -30,7 +30,7 @@ public class RequisitionTemplateRepositoryImpl implements RequisitionTemplateRep
   private static final String FIND_BY_PROGRAM = "SELECT DISTINCT t"
       + " FROM RequisitionTemplate AS t"
       + " INNER JOIN FETCH t.templateAssignments AS a"
-      + " WHERE a.id.programId = :programId"
+      + " WHERE a.programId = :programId AND t.legacy IS FALSE"
       + " ORDER BY t.createdDate DESC";
 
   @PersistenceContext

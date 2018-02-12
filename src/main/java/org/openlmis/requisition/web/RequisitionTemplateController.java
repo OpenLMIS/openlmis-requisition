@@ -136,16 +136,16 @@ public class RequisitionTemplateController extends BaseController {
 
     RequisitionTemplate requisitionTemplateToUpdate =
         requisitionTemplateRepository.findOne(requisitionTemplateId);
+
     if (requisitionTemplateToUpdate == null) {
       requisitionTemplateToUpdate = new RequisitionTemplate();
-      requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
       LOGGER.info("Creating new requisitionTemplate");
     } else {
       requisitionTemplate.setId(requisitionTemplateToUpdate.getId());
-      requisitionTemplateToUpdate = requisitionTemplate;
       LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
     }
 
+    requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
     requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
 
     LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
