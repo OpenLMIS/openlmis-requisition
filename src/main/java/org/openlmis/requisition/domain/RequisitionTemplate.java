@@ -28,7 +28,6 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -74,7 +73,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private String name;
 
   @Column(nullable = false)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private boolean legacy = false;
 
   @ElementCollection(fetch = FetchType.LAZY)
