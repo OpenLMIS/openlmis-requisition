@@ -142,4 +142,9 @@ public class RequisitionTemplateDataBuilder {
     this.id = null;
     return this;
   }
+
+  public RequisitionTemplateDataBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
 }

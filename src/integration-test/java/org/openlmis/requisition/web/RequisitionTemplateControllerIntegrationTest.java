@@ -215,6 +215,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldUpdateRequisitionTemplate() {
     // given
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .withName("new_test_name")
         .withNumberOfPeriodsToAverage(100)
         .withAssignment(template.getProgramId(), null)
         .build();
@@ -239,6 +240,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // then
     assertEquals(template.getId(), result.getId());
     assertEquals(newTemplate.getNumberOfPeriodsToAverage(), result.getNumberOfPeriodsToAverage());
+    assertEquals(newTemplateDto.getName(), result.getName());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
