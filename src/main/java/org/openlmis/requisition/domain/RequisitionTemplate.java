@@ -131,14 +131,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     addAssignments(templateAssignments);
   }
 
-  @PostLoad
-  private void postLoad() {
-    for (RequisitionTemplateAssignment assignment : templateAssignments) {
-      setProgramId(assignment.getProgramId());
-      addFacilityTypeId(assignment.getFacilityTypeId());
-    }
-  }
-
   /**
    * Returns current columns view.
    */
@@ -157,20 +149,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     setProgramId(programId);
     addFacilityTypeId(facilityTypeId);
     templateAssignments.add(new RequisitionTemplateAssignment(programId, facilityTypeId, this));
-  }
-
-  private synchronized void setProgramId(UUID programId) {
-    if (null == this.programId) {
-      this.programId = programId;
-    }
-
-    if (!Objects.equals(this.programId, programId)) {
-      throw new ValidationMessageException(ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS);
-    }
-  }
-
-  private synchronized void addFacilityTypeId(UUID facilityTypeId) {
-    Optional.ofNullable(facilityTypeId).ifPresent(id -> facilityTypeIds.add(id));
   }
 
   /**
@@ -313,17 +291,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     addAssignments(requisitionTemplate.templateAssignments);
   }
 
-  private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
-    Optional
-        .ofNullable(templateAssignments)
-        .orElse(Collections.emptySet())
-        .forEach(item -> addAssignment(item.getProgramId(), item.getFacilityTypeId()));
-  }
-
-  private void addColumns(Map<String, RequisitionTemplateColumn> columnsMap) {
-    columnsMap.forEach(this.columnsMap::put);
-  }
-
   public boolean hasColumnsDefined() {
     return columnsMap != null && !columnsMap.isEmpty();
   }
@@ -349,30 +316,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     return isColumnInTemplate(columnName) && isColumnDisplayed(columnName);
   }
 
-  private void moveDownAllColumnsBelowIndex(int beginIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() >= beginIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() + 1);
-      }
-    }
-  }
-
-  private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() <= beginIndex && column.getDisplayOrder() > endIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() - 1);
-      }
-    }
-  }
-
-  private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
-    for (RequisitionTemplateColumn column : columnsMap.values()) {
-      if (column.getDisplayOrder() >= beginIndex && column.getDisplayOrder() < endIndex) {
-        column.setDisplayOrder(column.getDisplayOrder() + 1);
-      }
-    }
-  }
-
   /**
    * Finds a column by column name or throws exception.
    *
@@ -385,13 +328,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       throw new ValidationMessageException(new Message(ERROR_COLUMN_NOT_IN_TEMPLATE, name));
     }
     return column;
-  }
-
-  private RequisitionTemplateColumn getRequisitionTemplateColumn(String name) {
-    if (columnsMap == null) {
-      throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
-    }
-    return columnsMap.get(name);
   }
 
   public void markAsLegacy() {
@@ -444,6 +380,70 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setName(name);
     exporter.setProgramId(programId);
     exporter.setFacilityTypeIds(facilityTypeIds);
+  }
+
+  @PostLoad
+  private void postLoad() {
+    for (RequisitionTemplateAssignment assignment : templateAssignments) {
+      setProgramId(assignment.getProgramId());
+      addFacilityTypeId(assignment.getFacilityTypeId());
+    }
+  }
+
+  private synchronized void setProgramId(UUID programId) {
+    if (null == this.programId) {
+      this.programId = programId;
+    }
+
+    if (!Objects.equals(this.programId, programId)) {
+      throw new ValidationMessageException(ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS);
+    }
+  }
+
+  private synchronized void addFacilityTypeId(UUID facilityTypeId) {
+    Optional.ofNullable(facilityTypeId).ifPresent(id -> facilityTypeIds.add(id));
+  }
+
+  private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
+    Optional
+        .ofNullable(templateAssignments)
+        .orElse(Collections.emptySet())
+        .forEach(item -> addAssignment(item.getProgramId(), item.getFacilityTypeId()));
+  }
+
+  private void addColumns(Map<String, RequisitionTemplateColumn> columnsMap) {
+    columnsMap.forEach(this.columnsMap::put);
+  }
+
+  private void moveDownAllColumnsBelowIndex(int beginIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
+      }
+    }
+  }
+
+  private void moveUpAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() <= beginIndex && column.getDisplayOrder() > endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() - 1);
+      }
+    }
+  }
+
+  private void moveDownAllColumnsBetweenIndexes(int beginIndex, int endIndex) {
+    for (RequisitionTemplateColumn column : columnsMap.values()) {
+      if (column.getDisplayOrder() >= beginIndex && column.getDisplayOrder() < endIndex) {
+        column.setDisplayOrder(column.getDisplayOrder() + 1);
+      }
+    }
+  }
+
+  private RequisitionTemplateColumn getRequisitionTemplateColumn(String name) {
+    if (columnsMap == null) {
+      throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
+    }
+    return columnsMap.get(name);
   }
 
   public interface Importer {
