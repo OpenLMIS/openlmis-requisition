@@ -278,7 +278,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldAllowToNameDuplicationIfThereIsOnlyOneNonLegacyTemplate() {
+  public void shouldAllowDuplicationForLegacyTemplateNames() {
     RequisitionTemplate template = generateInstance();
     template.markAsLegacy();
     repository.saveAndFlush(template);
@@ -290,7 +290,7 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test(expected = DataIntegrityViolationException.class)
-  public void shouldNotAllowToNameDuplicationIfThereIsMoreThanOneNonLegacyTemplate() {
+  public void shouldNotAllowDuplicationForNonLegacyTemplateNames() {
     RequisitionTemplate template = generateInstance();
     repository.saveAndFlush(template);
 
