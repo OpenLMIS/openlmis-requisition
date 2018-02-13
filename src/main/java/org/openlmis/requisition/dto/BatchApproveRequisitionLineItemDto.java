@@ -35,6 +35,7 @@ public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
         + " does not provide stock adjustments export");
   }
 
+  @Override
   public Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter() {
     return Optional.empty();
   }

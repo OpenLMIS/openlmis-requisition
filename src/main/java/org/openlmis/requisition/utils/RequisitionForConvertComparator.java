@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.utils;
 
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_IS_NOT_VALID_FOR_SORTING;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -76,7 +76,7 @@ public class RequisitionForConvertComparator implements
 
       if (null == comparator) {
         throw new ValidationMessageException(
-            new Message(ERROR_COLUMN_iS_NOT_VALID_FOR_SORTING, property)
+            new Message(ERROR_COLUMN_IS_NOT_VALID_FOR_SORTING, property)
         );
       }
 

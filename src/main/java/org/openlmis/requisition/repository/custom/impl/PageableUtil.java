@@ -19,7 +19,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Pageable;
 
-class PageableUtil {
+final class PageableUtil {
+
+  private PageableUtil() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * get {@link javax.persistence.Query}'s {@link javax.persistence.Query#setMaxResults(int)} and

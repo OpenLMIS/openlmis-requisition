@@ -216,6 +216,40 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer idealStockAmount;
 
   /**
+   * Initiates a requisition line item.
+   */
+  public RequisitionLineItem() {
+    stockAdjustments = new ArrayList<>();
+    this.skipped = false;
+    previousAdjustedConsumptions = new ArrayList<>();
+  }
+
+  /**
+   * Initiates a requisition line item with specified requisition and product.
+   *
+   * @param requisition     requisition to apply
+   * @param approvedProduct facilityTypeApprovedProduct to apply
+   */
+  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
+                             Integer idealStockAmount, Integer stockOnHand) {
+    this();
+    this.requisition = requisition;
+    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
+    this.orderableId = approvedProduct.getOrderable().getId();
+
+    ProgramOrderableDto product = approvedProduct.getOrderable()
+        .findProgramOrderableDto(approvedProduct.getProgram().getId());
+
+    LOGGER.debug("ProgramOrderableDto {}", product);
+    Money priceFromProduct = product.getPricePerPack();
+    this.pricePerPack = priceFromProduct == null
+        ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
+        : priceFromProduct;
+    this.idealStockAmount = idealStockAmount;
+    this.stockOnHand = stockOnHand;
+  }
+
+  /**
    * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}
    *
@@ -259,40 +293,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setStockAdjustments(stockAdjustments);
 
     return requisitionLineItem;
-  }
-
-  /**
-   * Initiates a requisition line item.
-   */
-  public RequisitionLineItem() {
-    stockAdjustments = new ArrayList<>();
-    this.skipped = false;
-    previousAdjustedConsumptions = new ArrayList<>();
-  }
-
-  /**
-   * Initiates a requisition line item with specified requisition and product.
-   *
-   * @param requisition     requisition to apply
-   * @param approvedProduct facilityTypeApprovedProduct to apply
-   */
-  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
-                             Integer idealStockAmount, Integer stockOnHand) {
-    this();
-    this.requisition = requisition;
-    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
-    this.orderableId = approvedProduct.getOrderable().getId();
-
-    ProgramOrderableDto product = approvedProduct.getOrderable()
-        .findProgramOrderableDto(approvedProduct.getProgram().getId());
-
-    LOGGER.debug("ProgramOrderableDto {}", product);
-    Money priceFromProduct = product.getPricePerPack();
-    this.pricePerPack = priceFromProduct == null
-        ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
-        : priceFromProduct;
-    this.idealStockAmount = idealStockAmount;
-    this.stockOnHand = stockOnHand;
   }
 
   /**

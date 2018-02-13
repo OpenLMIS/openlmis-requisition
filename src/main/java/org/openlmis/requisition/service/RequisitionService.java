@@ -65,6 +65,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -278,7 +279,7 @@ public class RequisitionService {
               .collect(toSet()),
           endDate)
           .stream()
-          .collect(toMap(card -> card.getOrderable().getId(), card -> card.getStockOnHand()));
+          .collect(toMap(card -> card.getOrderable().getId(), StockCardSummaryDto::getStockOnHand));
     } else {
       return Collections.emptyMap();
     }
@@ -749,9 +750,10 @@ public class RequisitionService {
   }
 
   private boolean isRequisitionNewest(Requisition requisition) {
-    UUID recentRequisitionId = findRecentRegularRequisition(
-        requisition.getProgramId(), requisition.getFacilityId()).getId();
-    return requisition.getId().equals(recentRequisitionId);
+    Requisition recentRequisition = findRecentRegularRequisition(
+        requisition.getProgramId(), requisition.getFacilityId()
+    );
+    return null != recentRequisition && requisition.getId().equals(recentRequisition.getId());
   }
 
   /**
@@ -772,7 +774,7 @@ public class RequisitionService {
         List<Requisition> requisitions = requisitionRepository.searchRequisitions(
             dto.getId(), facilityId, programId, false);
 
-        if (requisitions.size() > 0) {
+        if (!requisitions.isEmpty()) {
           result = requisitions.get(0);
         } else {
           break;

@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import org.springframework.boot.orm.jpa.EntityScan;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
@@ -57,15 +57,11 @@ import java.util.Locale;
 public class Application {
   private Logger logger = LoggerFactory.getLogger(Application.class);
 
-  public static void main(String[] args) {
-    SpringApplication.run(Application.class, args);
-  }
-
   @Value("${defaultLocale}")
   private Locale locale;
 
   @Autowired
-  DialectName dialectName;
+  private DialectName dialectName;
 
   @Autowired
   private JaversProperties javersProperties;
@@ -78,9 +74,13 @@ public class Application {
 
   @Autowired
   private JdbcTemplate template;
-  
+
   @Value("${db.clustering.enabled}")
   private boolean dbClusteringEnabled;
+
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 
   /**
    * Creates new LocaleResolver.

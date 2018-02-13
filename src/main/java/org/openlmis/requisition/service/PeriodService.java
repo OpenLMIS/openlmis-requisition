@@ -245,7 +245,7 @@ public class PeriodService {
         List<Requisition> requisitions = requisitionRepository.searchRequisitions(
             dto.getId(), facilityId, programId, false);
 
-        if (requisitions.size() > 0) {
+        if (!requisitions.isEmpty()) {
           previousStatus = requisitions.get(0).getStatus();
         } else {
           if (null != previousStatus && previousStatus.isPreAuthorize()) {

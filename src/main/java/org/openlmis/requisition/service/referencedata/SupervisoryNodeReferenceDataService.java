@@ -53,7 +53,7 @@ public class SupervisoryNodeReferenceDataService
 
     List<SupervisoryNodeDto> content =
         getPage("search", RequestParameters.init(), requestBody).getContent();
-    return content.size() > 0 ? content.get(0) : null;
+    return !content.isEmpty() ? content.get(0) : null;
   }
 
 }

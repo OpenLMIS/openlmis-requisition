@@ -172,9 +172,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(root.get(PROGRAM_ID), program));
     }
     query.where(predicate);
-    List<Requisition> results = entityManager.createQuery(query).getResultList();
 
-    return results;
+    return entityManager.createQuery(query).getResultList();
   }
 
   /**

@@ -252,7 +252,9 @@ public abstract class BaseCommunicationService<T> {
   }
 
   protected interface HttpTask<T> {
-    ResponseEntity<T> run() throws HttpStatusCodeException;
+
+    ResponseEntity<T> run();
+
   }
 
   protected DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {

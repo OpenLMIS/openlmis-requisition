@@ -90,6 +90,7 @@ import javax.sql.DataSource;
 
 @Service
 public class JasperReportsViewService {
+  private static final String DATASOURCE = "datasource";
   private static final String REQUISITION_REPORT_DIR = "/jasperTemplates/requisition.jrxml";
   private static final String REQUISITION_LINE_REPORT_DIR =
       "/jasperTemplates/requisitionLines.jrxml";
@@ -176,7 +177,7 @@ public class JasperReportsViewService {
 
     ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone,
         dueDays);
-    params.put("datasource", new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
+    params.put(DATASOURCE, new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
 
     if (getApplicationContext(request) != null) {
       jasperView.setApplicationContext(getApplicationContext(request));
@@ -200,7 +201,7 @@ public class JasperReportsViewService {
     Map<String, Object> params = ReportUtils.createParametersMap();
     params.put("subreport", createCustomizedRequisitionLineSubreport(template,
         requisition.getStatus()));
-    params.put("datasource", Collections.singletonList(reportDto));
+    params.put(DATASOURCE, Collections.singletonList(reportDto));
     params.put("template", template);
 
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
@@ -236,7 +237,7 @@ public class JasperReportsViewService {
     }
     List<FacilityDto> facilities = getFacilitiesForTimelinessReport(program, period, district);
 
-    parameters.put("datasource", new JRBeanCollectionDataSource(facilities));
+    parameters.put(DATASOURCE, new JRBeanCollectionDataSource(facilities));
     parameters.put("program", program);
     parameters.put("period", period);
     parameters.put("district", district);
@@ -362,7 +363,7 @@ public class JasperReportsViewService {
             null, validStatuses, null,
             new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
             .getContent();
-        if (requisitions.size() == 0) {
+        if (requisitions.isEmpty()) {
           TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();
           facility.export(timelinessFacility);
           facilitiesMissingRnR.add(timelinessFacility);

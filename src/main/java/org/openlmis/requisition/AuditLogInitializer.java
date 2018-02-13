@@ -17,8 +17,6 @@ package org.openlmis.requisition;
 
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 
-import java.util.List;
-import java.util.Map;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
@@ -38,6 +36,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * AuditLogInitializer runs after its associated Spring application has loaded.
@@ -119,7 +120,7 @@ public class AuditLogInitializer implements CommandLineRunner {
     List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery.build());
 
     //If there are no snapshots of the domain object, then take one
-    if (snapshots.size() == 0) {
+    if (snapshots.isEmpty()) {
       javers.commit("System: AuditLogInitializer", baseEntity);
     }
   }

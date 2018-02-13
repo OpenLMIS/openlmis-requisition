@@ -43,6 +43,7 @@ public class FacilityDto extends MinimalFacilityDto {
    * Get zone with given level number by traversing up geographicZone hierarchy if needed.
    * @return zone of the facility with given level number.
    */
+  @Override
   @JsonIgnore
   public GeographicZoneDto getZoneByLevelNumber(Integer levelNumber) {
     GeographicZoneDto district = this.geographicZone;
