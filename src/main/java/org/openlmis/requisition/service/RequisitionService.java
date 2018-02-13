@@ -753,7 +753,7 @@ public class RequisitionService {
     Requisition recentRequisition = findRecentRegularRequisition(
         requisition.getProgramId(), requisition.getFacilityId()
     );
-    return null != recentRequisition && requisition.getId().equals(recentRequisition.getId());
+    return null == recentRequisition || requisition.getId().equals(recentRequisition.getId());
   }
 
   /**
