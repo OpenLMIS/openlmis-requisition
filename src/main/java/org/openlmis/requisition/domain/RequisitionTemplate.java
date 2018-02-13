@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -404,12 +405,16 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
-    this.templateAssignments.clear();
-
-    Optional
+    Set<RequisitionTemplateAssignment> safe = Optional
         .ofNullable(templateAssignments)
         .orElse(Collections.emptySet())
-        .forEach(item -> addAssignment(item.getProgramId(), item.getFacilityTypeId()));
+        .stream()
+        .map(elem ->
+            new RequisitionTemplateAssignment(elem.getProgramId(), elem.getFacilityTypeId(), this))
+        .collect(Collectors.toSet());
+
+    this.templateAssignments.retainAll(safe);
+    postLoad();
   }
 
   private void addColumns(Map<String, RequisitionTemplateColumn> columnsMap) {
