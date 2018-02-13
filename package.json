@@ -4,8 +4,6 @@
 
   "devDependencies":
   {
-    "api-spec-converter":  "~1.9.0",
-    "raml-to-swagger": "1.0.1",
     "raml2html": "~2.4.0"
   },
 
