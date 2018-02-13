@@ -50,18 +50,6 @@
   },
 
   {
-    "id": "41e72111-ede5-44af-bfb0-23a82c70c462",
-    "programId": "418bdc1d-c303-4bd0-b2d3-d8901150a983",
-    "facilityTypeId": "ac1d268b-ce10-455f-bf87-9c667da8f060",
-    "templateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f"
-  },
-  {
-    "id": "6e37ba65-72c8-4ea5-9b64-d7598e4e07d0",
-    "programId": "418bdc1d-c303-4bd0-b2d3-d8901150a983",
-    "facilityTypeId": "663b1d34-cc17-4d60-9619-e553e45aa441",
-    "templateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f"
-  },
-  {
     "id": "ef52d3b0-4e41-4eee-95d0-22d7a9c7d43a",
     "programId": "418bdc1d-c303-4bd0-b2d3-d8901150a983",
     "facilityTypeId": "5fc213c6-1bd7-46f0-9883-57c05250ca90",
