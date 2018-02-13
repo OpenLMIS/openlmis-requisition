@@ -384,6 +384,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @PostLoad
   private void postLoad() {
+    programId = null;
+    facilityTypeIds = new HashSet<>();
+
     for (RequisitionTemplateAssignment assignment : templateAssignments) {
       setProgramId(assignment.getProgramId());
       addFacilityTypeId(assignment.getFacilityTypeId());
@@ -413,6 +416,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
             new RequisitionTemplateAssignment(elem.getProgramId(), elem.getFacilityTypeId(), this))
         .collect(Collectors.toSet());
 
+    this.templateAssignments.addAll(safe);
     this.templateAssignments.retainAll(safe);
     postLoad();
   }

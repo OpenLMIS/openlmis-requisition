@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -42,6 +43,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -217,5 +219,46 @@ public class RequisitionTemplateTest {
     template.addAssignment(UUID.randomUUID(), null);
 
     assertThat(template.getFacilityTypeIds(), hasSize(0));
+  }
+
+  @Test
+  public void shouldContainCorrectAssignmentsAfterUpdate() {
+    UUID programId = UUID.randomUUID();
+    UUID[] facilityTypeIds = IntStream
+        .range(0, 10)
+        .mapToObj(idx -> UUID.randomUUID())
+        .toArray(UUID[]::new);
+
+    // those two arrays should contain some same and different UUIDs to verify that:
+    // * it is possible to remove assignments (like facilityTypeIds[3])
+    // * it is possible to add assignments (like facilityTypeIds[1])
+    // * existing assignments should not be removed (like facilityTypeIds[0])
+    final UUID[] facilityTypeIds1 = new UUID[]{
+        facilityTypeIds[0], facilityTypeIds[3], facilityTypeIds[5], facilityTypeIds[7]
+    };
+    final UUID[] facilityTypeIds2 = new UUID[]{
+        facilityTypeIds[0], facilityTypeIds[1], facilityTypeIds[2], facilityTypeIds[4],
+        facilityTypeIds[6], facilityTypeIds[7], facilityTypeIds[8], facilityTypeIds[9]
+    };
+
+    RequisitionTemplateDataBuilder templateBuilder1 = new RequisitionTemplateDataBuilder();
+    Arrays
+        .stream(facilityTypeIds1)
+        .forEach(facilityTypeId -> templateBuilder1.withAssignment(programId, facilityTypeId));
+
+    RequisitionTemplate template = templateBuilder1.build();
+    assertThat(template.getProgramId(), is(programId));
+    assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds1.length));
+    assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds1));
+
+    RequisitionTemplateDataBuilder templateBuilder2 = new RequisitionTemplateDataBuilder();
+    Arrays
+        .stream(facilityTypeIds2)
+        .forEach(facilityTypeId -> templateBuilder2.withAssignment(programId, facilityTypeId));
+
+    template.updateFrom(templateBuilder2.build());
+    assertThat(template.getProgramId(), is(programId));
+    assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds2.length));
+    assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds2));
   }
 }
