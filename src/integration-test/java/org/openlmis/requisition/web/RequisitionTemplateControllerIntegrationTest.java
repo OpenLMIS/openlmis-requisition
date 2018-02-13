@@ -15,7 +15,9 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -25,6 +27,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +35,7 @@ import static org.mockito.Mockito.when;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
@@ -214,6 +218,11 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldUpdateRequisitionTemplate() {
     // given
+    mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
+    given(requisitionRepository.findByTemplateId(template.getId()))
+        .willReturn(Collections.emptyList());
+
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
         .withName("new_test_name")
         .withNumberOfPeriodsToAverage(100)
@@ -221,8 +230,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .build();
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
-    mockValidationSuccess();
-    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
     RequisitionTemplateDto result = restAssured.given()
@@ -241,6 +248,46 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertEquals(template.getId(), result.getId());
     assertEquals(newTemplate.getNumberOfPeriodsToAverage(), result.getNumberOfPeriodsToAverage());
     assertEquals(newTemplateDto.getName(), result.getName());
+    verify(requisitionTemplateRepository, never()).saveAndFlush(any(RequisitionTemplate.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldSaveNewRequisitionTemplateIfItHasSomeRequisitions() {
+    // given
+    mockValidationSuccess();
+    doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
+    given(requisitionRepository.findByTemplateId(template.getId()))
+        .willReturn(Collections.singletonList(mock(Requisition.class)));
+
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .withAssignment(template.getProgramId(), UUID.randomUUID())
+        .build();
+
+    RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
+
+    // when
+    RequisitionTemplateDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON)
+        .pathParam("id", template.getId())
+        .body(newTemplateDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(RequisitionTemplateDto.class);
+
+    // then
+    assertThat(result.getId(), is(not(template.getId())));
+
+    ArgumentCaptor<RequisitionTemplate> templateCaptor = ArgumentCaptor
+        .forClass(RequisitionTemplate.class);
+
+    verify(requisitionTemplateRepository).saveAndFlush(templateCaptor.capture());
+    assertThat(templateCaptor.getValue(), hasProperty("archived", is(true)));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -269,7 +316,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // then
     assertEquals(templateDto.getProgramId(), result.getProgramId());
     assertEquals(templateDto.getFacilityTypeIds(), result.getFacilityTypeIds());
-    verify(requisitionTemplateRepository, atLeastOnce()).save(any(RequisitionTemplate.class));
+    verify(requisitionTemplateRepository).save(any(RequisitionTemplate.class));
+    verify(requisitionTemplateRepository, never()).saveAndFlush(any(RequisitionTemplate.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

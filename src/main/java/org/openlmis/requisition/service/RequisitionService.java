@@ -70,6 +70,7 @@ import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -124,7 +125,7 @@ public class RequisitionService {
   private StatusMessageRepository statusMessageRepository;
 
   @Autowired
-  private RequisitionTemplateService requisitionTemplateService;
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -300,7 +301,7 @@ public class RequisitionService {
     }
 
     RequisitionTemplate template =
-        requisitionTemplateService.getTemplateForProgram(programId);
+        requisitionTemplateRepository.getTemplateForProgram(programId);
 
     if (null == template) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));

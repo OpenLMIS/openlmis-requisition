@@ -97,6 +97,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -189,7 +190,7 @@ public class RequisitionServiceTest {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
-  private RequisitionTemplateService requisitionTemplateService;
+  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Mock
   private PeriodService periodService;
@@ -799,7 +800,8 @@ public class RequisitionServiceTest {
         .findOne(requisition.getId()))
         .thenReturn(null);
 
-    doReturn(requisitionTemplate).when(requisitionTemplateService).getTemplateForProgram(programId);
+    doReturn(requisitionTemplate).when(requisitionTemplateRepository)
+        .getTemplateForProgram(programId);
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setStartDate(LocalDate.of(2016, 11, 1));
@@ -1778,7 +1780,7 @@ public class RequisitionServiceTest {
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(mock(FacilityDto.class));
     when(programReferenceDataService.findOne(programId)).thenReturn(mock(ProgramDto.class));
-    when(requisitionTemplateService.getTemplateForProgram(programId))
+    when(requisitionTemplateRepository.getTemplateForProgram(programId))
         .thenReturn(requisitionTemplate);
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();

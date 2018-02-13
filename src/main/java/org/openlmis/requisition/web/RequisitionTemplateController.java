@@ -19,10 +19,11 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class RequisitionTemplateController extends BaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionTemplateController.class);
 
   @Autowired
-  private RequisitionTemplateService requisitionTemplateService;
+  private RequisitionRepository requisitionRepository;
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -110,9 +111,9 @@ public class RequisitionTemplateController extends BaseController {
   /**
    * Allows updating requisitionTemplates.
    *
-   * @param requisitionTemplateId UUID of requisitionTemplate which we want to update
-   * @param requisitionTemplateDto   A requisitionTemplateDto bound to the request body
-   * @param bindingResult         Object used for validation.
+   * @param requisitionTemplateId  UUID of requisitionTemplate which we want to update
+   * @param requisitionTemplateDto A requisitionTemplateDto bound to the request body
+   * @param bindingResult          Object used for validation.
    * @return updated requisitionTemplate.
    */
   @RequestMapping(value = "/requisitionTemplates/{id}", method = RequestMethod.PUT)
@@ -126,29 +127,35 @@ public class RequisitionTemplateController extends BaseController {
 
     validator.validate(requisitionTemplateDto, bindingResult);
 
-    RequisitionTemplate requisitionTemplate =
-        RequisitionTemplate.newInstance(requisitionTemplateDto);
-
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
     }
 
-    RequisitionTemplate requisitionTemplateToUpdate =
-        requisitionTemplateRepository.findOne(requisitionTemplateId);
+    RequisitionTemplate template = RequisitionTemplate.newInstance(requisitionTemplateDto);
+    RequisitionTemplate toUpdate = requisitionTemplateRepository.findOne(requisitionTemplateId);
+    RequisitionTemplate toSave;
 
-    if (requisitionTemplateToUpdate == null) {
-      requisitionTemplateToUpdate = new RequisitionTemplate();
-      LOGGER.info("Creating new requisitionTemplate");
+    if (toUpdate == null) {
+      LOGGER.info("Creating new requisition template");
+      toSave = template;
+    } else if (!requisitionRepository.findByTemplateId(toUpdate.getId()).isEmpty()) {
+      LOGGER.info("Archiving requisition template {}", toUpdate.getId());
+      toUpdate.archive();
+      requisitionTemplateRepository.saveAndFlush(toUpdate);
+
+      LOGGER.info("Creating new requisition template");
+      toSave = template;
     } else {
-      requisitionTemplate.setId(requisitionTemplateToUpdate.getId());
-      LOGGER.debug("Updating requisitionTemplate with id: " + requisitionTemplateId);
+      LOGGER.debug("Updating requisition template {}", requisitionTemplateId);
+      toSave = toUpdate;
+      toSave.updateFrom(template);
     }
 
-    requisitionTemplateToUpdate.updateFrom(requisitionTemplate);
-    requisitionTemplateToUpdate = requisitionTemplateService.save(requisitionTemplateToUpdate);
+    toSave = requisitionTemplateRepository.save(toSave);
 
-    LOGGER.debug("Saved requisitionTemplate with id: " + requisitionTemplateToUpdate.getId());
-    return dtoBuilder.newInstance(requisitionTemplateToUpdate);
+    LOGGER.debug("Saved requisitionTemplate with id: " + toSave.getId());
+
+    return dtoBuilder.newInstance(toSave);
   }
 
   /**
@@ -183,14 +190,21 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
-    RequisitionTemplate requisitionTemplate =
-        requisitionTemplateRepository.findOne(requisitionTemplateId);
-    if (requisitionTemplate == null) {
+    RequisitionTemplate template = requisitionTemplateRepository
+        .findOne(requisitionTemplateId);
+
+    if (template == null) {
       throw new ContentNotFoundMessageException(new Message(
           MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
-    } else {
-      requisitionTemplateService.delete(requisitionTemplate);
     }
+
+    if (!requisitionRepository.findByTemplateId(template.getId()).isEmpty()) {
+      throw new ValidationMessageException(new Message(
+          MessageKeys.ERROR_REQUISITION_TEMPLATE_IN_USE,
+          template.getId()));
+    }
+
+    requisitionTemplateRepository.delete(template);
   }
 
 }

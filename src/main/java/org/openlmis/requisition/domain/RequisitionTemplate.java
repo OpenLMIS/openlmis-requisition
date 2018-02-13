@@ -404,6 +404,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
+    this.templateAssignments.clear();
+
     Optional
         .ofNullable(templateAssignments)
         .orElse(Collections.emptySet())
