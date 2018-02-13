@@ -60,5 +60,12 @@
     "programId": "418bdc1d-c303-4bd0-b2d3-d8901150a983",
     "facilityTypeId": "caecea08-6b2f-4ba9-98b2-b87702ba57ba",
     "templateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f"
+  },
+
+  {
+    "id": "c500d247-a8ab-4321-a170-08bf0b7278f0",
+    "programId": "418bdc1d-c303-4bd0-b2d3-d8901150a983",
+    "facilityTypeId": "ac1d268b-ce10-455f-bf87-9c667da8f060",
+    "templateId": "37f29736-f0db-4de3-98ad-f8d85c848711"
   }
 ]
