@@ -138,6 +138,7 @@ public class RequisitionTemplateController extends BaseController {
     if (toUpdate == null) {
       LOGGER.info("Creating new requisition template");
       toSave = template;
+      toSave.setId(null);
     } else if (!requisitionRepository.findByTemplateId(toUpdate.getId()).isEmpty()) {
       LOGGER.info("Archiving requisition template {}", toUpdate.getId());
       toUpdate.archive();
@@ -145,6 +146,7 @@ public class RequisitionTemplateController extends BaseController {
 
       LOGGER.info("Creating new requisition template");
       toSave = template;
+      toSave.setId(null);
     } else {
       LOGGER.debug("Updating requisition template {}", requisitionTemplateId);
       toSave = toUpdate;
