@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.errorhandling;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMENT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
 
 import org.hibernate.exception.ConstraintViolationException;
@@ -48,6 +49,8 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
 
   static {
     CONSTRAINT_MAP.put("requisition_template_name_unique_idx", ERROR_TEMPLATE_NAME_DUPLICATION);
+    CONSTRAINT_MAP.put("req_tmpl_asgmt_prog_fac_type_tmpl_unique_idx", ERROR_TEMPLATE_ASSIGNMENT);
+    CONSTRAINT_MAP.put("req_tmpl_asgmt_prog_tmpl_unique_idx", ERROR_TEMPLATE_ASSIGNMENT);
   }
 
   /**
