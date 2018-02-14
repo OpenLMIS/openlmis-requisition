@@ -4,6 +4,8 @@
 Contract breaking changes:
 * [OLMIS-4086](https://openlmis.atlassian.net/browse/OLMIS-4086): Support multiple requisition templates per program
   * The requisition template search endpoint has been removed
+* [OLMIS-4054](https://openlmis.atlassian.net/browse/OLMIS-4054): Stock based requisition: Stock on Hand from stock management
+  * Stock on hand requisition column is populated with the stock on hand from Stock.
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
