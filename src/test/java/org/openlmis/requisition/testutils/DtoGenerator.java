@@ -24,10 +24,13 @@ import static org.springframework.util.NumberUtils.parseNumber;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.Primitives;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.assertj.core.util.Lists;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.UserObjectReferenceDto;
+
 import java.beans.PropertyDescriptor;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -102,7 +105,7 @@ public final class DtoGenerator {
   }
 
   private static Object generateValue(Class<?> type, Class<?> propertyType) {
-    Object value = generateBaseValue(propertyType);
+    Object value = generateBaseValue(Primitives.wrap(propertyType));
     value = null == value ? generateCollectionValue(propertyType) : value;
     value = null == value ? generateCustomValue(propertyType) : value;
 

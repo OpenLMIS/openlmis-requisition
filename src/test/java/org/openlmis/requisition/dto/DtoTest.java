@@ -25,10 +25,16 @@ public abstract class DtoTest<T> {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier
+    EqualsVerifier<T> verifier = EqualsVerifier
         .forClass(getTestClass())
-        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
-        .verify();
+        .suppress(Warning.NONFINAL_FIELDS); // fields in DTO cannot be final
+
+    prepare(verifier);
+    verifier.verify();
+  }
+
+  protected void prepare(EqualsVerifier<T> verifier) {
+    // nothing to do here
   }
 
 }

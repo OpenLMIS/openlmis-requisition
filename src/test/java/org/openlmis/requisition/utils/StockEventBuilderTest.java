@@ -36,7 +36,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.StatusChange;
 import org.openlmis.requisition.domain.StockAdjustment;
 import org.openlmis.requisition.domain.StockAdjustmentReason;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
@@ -46,6 +45,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
@@ -442,7 +442,7 @@ public class StockEventBuilderTest {
     ));
     lineItemOneDto.setOrderableId(UUID.randomUUID());
     stockCards.add(StockCardDto.builder()
-        .orderable(OrderableDto.builder().id(lineItemOneDto.getOrderableId()).build())
+        .orderable(new OrderableDtoDataBuilder().withId(lineItemOneDto.getOrderableId()).build())
         .stockOnHand(30)
         .build());
 
@@ -463,7 +463,7 @@ public class StockEventBuilderTest {
     ));
     lineItemTwoDto.setOrderableId(UUID.randomUUID());
     stockCards.add(StockCardDto.builder()
-        .orderable(OrderableDto.builder().id(lineItemTwoDto.getOrderableId()).build())
+        .orderable(new OrderableDtoDataBuilder().withId(lineItemTwoDto.getOrderableId()).build())
         .stockOnHand(30)
         .build());
 

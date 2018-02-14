@@ -22,14 +22,20 @@ import org.joda.money.Money;
 import org.openlmis.requisition.utils.MoneyDeserializer;
 import org.openlmis.requisition.utils.MoneySerializer;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
 @Getter
 @Setter
-public class ProgramOrderableDto {
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+public final class ProgramOrderableDto {
   private UUID programId;
   private UUID orderableDisplayCategoryId;
   private String orderableCategoryDisplayName;
