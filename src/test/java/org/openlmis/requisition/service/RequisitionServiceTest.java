@@ -967,12 +967,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
-    prepareForTestInitiate(SETTING, requisitionTemplate);
-    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    when(stockCardSummariesStockManagementService
-        .search(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
-        .thenReturn(Collections.singletonList(stockCard));
-    ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
+    prepareForGetStockOnHandTest();
 
     mockApprovedProduct(PRODUCT_ID, true);
 
@@ -981,6 +976,19 @@ public class RequisitionServiceTest {
 
     assertEquals(stockCard.getStockOnHand(),
         initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+  }
+
+  @Test
+  public void shouldSetNullStockOnHandFromStockIfFlagIsEnabled() {
+    prepareForGetStockOnHandTest();
+    ReflectionTestUtils.setField(stockCard, "stockOnHand", null);
+
+    mockApprovedProduct(PRODUCT_ID, true);
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
+
+    assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
   }
 
   @Test
@@ -1920,4 +1928,14 @@ public class RequisitionServiceTest {
         .search(any(UUID.class), any(UUID.class), anySetOf(UUID.class),
             any(LocalDate.class)));
   }
+
+  private void prepareForGetStockOnHandTest() {
+    prepareForTestInitiate(SETTING, requisitionTemplate);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(stockCardSummariesStockManagementService
+        .search(programId, facilityId, singleton(PRODUCT_ID), periodEndDate))
+        .thenReturn(singletonList(stockCard));
+    ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
+  }
+
 }

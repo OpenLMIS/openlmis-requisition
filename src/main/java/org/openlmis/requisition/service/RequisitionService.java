@@ -65,7 +65,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -104,6 +103,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -271,15 +271,17 @@ public class RequisitionService {
                                              Collection<ApprovedProductDto> approvedProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      return stockCardSummariesStockManagementService.search(
+      Map<UUID, Integer> orderableSoh = new HashMap<>();
+      stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
           approvedProducts.stream()
               .map(ap -> ap.getOrderable().getId())
               .collect(toSet()),
           endDate)
-          .stream()
-          .collect(toMap(card -> card.getOrderable().getId(), StockCardSummaryDto::getStockOnHand));
+          .forEach(card -> orderableSoh.put(card.getOrderable().getId(), card.getStockOnHand()));
+
+      return orderableSoh;
     } else {
       return Collections.emptyMap();
     }
