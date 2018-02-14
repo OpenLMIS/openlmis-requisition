@@ -15,20 +15,12 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ApprovedProductDto {
+@Data
+public class ApprovedProductDto {
   private UUID id;
   private OrderableDto orderable;
   private ProgramDto program;

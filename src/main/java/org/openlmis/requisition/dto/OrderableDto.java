@@ -19,7 +19,7 @@ import static org.apache.commons.collections.MapUtils.getString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,13 +32,21 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class OrderableDto extends BasicOrderableDto {
-  public static final String COMMODITY_TYPE_IDENTIFIER = "commodityType";
+public class OrderableDto extends BasicOrderableDto {
+  static final String COMMODITY_TYPE_IDENTIFIER = "commodityType";
 
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
   private Map<String, String> identifiers;
+
+  @Builder
+  private OrderableDto(UUID id, String productCode, String fullProductName, long netContent,
+                       long packRoundingThreshold, boolean roundToZero,
+                       Set<ProgramOrderableDto> programs, DispensableDto dispensable) {
+    super(id, productCode, fullProductName, netContent, packRoundingThreshold, roundToZero);
+    this.programs = programs;
+    this.dispensable = dispensable;
+  }
 
   /**
    * Find ProgramOrderableDto in programs using programId.

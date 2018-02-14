@@ -17,7 +17,7 @@ package org.openlmis.requisition.service;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -47,10 +47,12 @@ import static org.openlmis.requisition.domain.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,6 +81,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -110,10 +113,8 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
-import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
-import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
@@ -126,7 +127,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -824,7 +824,7 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false,
@@ -842,7 +842,7 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false,
@@ -860,7 +860,7 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false,
@@ -875,7 +875,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldAssignIdealStockAmount() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
         .thenReturn(Lists.newArrayList(new IdealStockAmountDtoDataBuilder()
@@ -895,7 +895,7 @@ public class RequisitionServiceTest {
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
     prepareForTestInitiate(null);
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, false,
@@ -912,7 +912,7 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, false,
@@ -925,7 +925,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, false,
@@ -947,17 +947,17 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldPopulateFullAndNonFullProductsDuringInitiate() {
+  public void shouldSetStockAdjustmenReasonsDuringInitiate() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
+    mockApprovedProduct(PRODUCT_ID, true);
+    mockApprovedProduct(NON_FULL_PRODUCT_ID, false);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, false,
         stockAdjustmentReasons);
 
-    Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
-    assertThat(availableProducts, hasSize(2));
-    assertThat(availableProducts, hasItems(PRODUCT_ID, NON_FULL_PRODUCT_ID));
+    Set<UUID> availableNonFullSupplyProducts = initiatedRequisition.getAvailableProducts();
+    assertThat(availableNonFullSupplyProducts, hasItem(NON_FULL_PRODUCT_ID));
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -969,7 +969,7 @@ public class RequisitionServiceTest {
   public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
     prepareForGetStockOnHandTest();
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
@@ -983,7 +983,7 @@ public class RequisitionServiceTest {
     prepareForGetStockOnHandTest();
     ReflectionTestUtils.setField(stockCard, "stockOnHand", null);
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
@@ -997,7 +997,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
     whenGetStockCardSummaries().thenThrow(IllegalStateException.class);
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
@@ -1011,7 +1011,7 @@ public class RequisitionServiceTest {
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    mockApprovedProduct(PRODUCT_ID, true);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         programId, facilityId, suggestedPeriodId, false, stockAdjustmentReasons);
@@ -1095,7 +1095,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldCallApproveRequisition() {
-    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder().build();
+    OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
     SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().build();
     when(orderableReferenceDataService.findByIds(any())).thenReturn(
         singletonList(fullSupplyOrderable));
@@ -1668,22 +1668,32 @@ public class RequisitionServiceTest {
   private void setupStubsForTestFindSupplyItems(
       Requisition requisition, List<RequisitionLineItem> fullSupply,
       List<RequisitionLineItem> nonFullSupply) {
-    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
-        .withProgramOrderable(requisition.getProgramId(), true)
-        .build();
-    when(orderableReferenceDataService.findOne(fullSupplyOrderable.getId()))
-        .thenReturn(fullSupplyOrderable);
+    ProgramOrderableDto fullSupplyProduct = mock(ProgramOrderableDto.class);
+    when(fullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
+    when(fullSupplyProduct.getFullSupply()).thenReturn(true);
 
-    OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
-        .withProgramOrderable(requisition.getProgramId(), false)
-        .build();
-    when(orderableReferenceDataService.findOne(nonFullSupplyOrderable.getId()))
+    ProgramOrderableDto nonFullSupplyProduct = mock(ProgramOrderableDto.class);
+    when(nonFullSupplyProduct.getProgramId()).thenReturn(requisition.getProgramId());
+    when(nonFullSupplyProduct.getFullSupply()).thenReturn(false);
+
+    OrderableDto fullSupplyOrderable = mock(OrderableDto.class);
+    UUID fullSupplyLineProductId = UUID.randomUUID();
+    when(orderableReferenceDataService.findOne(fullSupplyLineProductId))
+        .thenReturn(fullSupplyOrderable);
+    when(fullSupplyOrderable.getPrograms())
+        .thenReturn(singleton(fullSupplyProduct));
+
+    OrderableDto nonFullSupplyOrderable = mock(OrderableDto.class);
+    UUID nonFullSupplyLineProductId = UUID.randomUUID();
+    when(orderableReferenceDataService.findOne(nonFullSupplyLineProductId))
         .thenReturn(nonFullSupplyOrderable);
+    when(nonFullSupplyOrderable.getPrograms())
+        .thenReturn(singleton(nonFullSupplyProduct));
 
     fullSupply.forEach(line -> when(line.getOrderableId())
-        .thenReturn(fullSupplyOrderable.getId()));
+        .thenReturn(fullSupplyLineProductId));
     nonFullSupply.forEach(line -> when(line.getOrderableId())
-        .thenReturn(nonFullSupplyOrderable.getId()));
+        .thenReturn(nonFullSupplyLineProductId));
   }
 
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
@@ -1740,25 +1750,27 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.emptyList());
   }
 
-  private void mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
-    assertThat(products.length, is(fullSupply.length));
+  private void mockApprovedProduct(UUID productId, boolean fullSupply) {
+    ProgramDto program = new ProgramDto();
+    program.setId(UUID.randomUUID());
 
-    List<ApprovedProductDto> approvedProducts = new ArrayList<>();
+    ProgramOrderableDto product = new ProgramOrderableDto();
+    product.setProgramId(program.getId());
+    product.setPricePerPack(Money.of(CurrencyUnit.USD, 1));
 
-    for (int i = 0, length = products.length; i < length; ++i) {
-      approvedProducts.add(new ApprovedProductDtoDataBuilder()
-          .withOrderable(new OrderableDtoDataBuilder()
-              .withId(products[i])
-              .withIdentifier(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString())
-              .withProgramOrderable(programId, fullSupply[i])
-              .build())
-          .withProgram(program)
-          .build()
-      );
-    }
+    OrderableDto orderable = new OrderableDto();
+    orderable.setId(productId);
+    orderable.setPrograms(Sets.newHashSet(product));
+    orderable.setIdentifiers(ImmutableMap.of(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString()));
 
-    when(approvedProductReferenceDataService.getApprovedProducts(any(), any()))
-        .thenReturn(approvedProducts);
+    ApprovedProductDto approvedProductDto = new ApprovedProductDto();
+    approvedProductDto.setId(PRODUCT_ID);
+    approvedProductDto.setOrderable(orderable);
+    approvedProductDto.setProgram(program);
+    approvedProductDto.setMaxPeriodsOfStock(7.25);
+
+    when(approvedProductReferenceDataService.getApprovedProducts(any(), any(), eq(fullSupply)))
+        .thenReturn(singletonList(approvedProductDto));
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {

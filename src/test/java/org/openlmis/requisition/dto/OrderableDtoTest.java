@@ -24,8 +24,6 @@ import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIE
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class OrderableDtoTest extends DtoTest {
+public class OrderableDtoTest {
 
   private OrderableDto orderableDto;
   private Set<ProgramOrderableDto> products;
@@ -50,16 +48,6 @@ public class OrderableDtoTest extends DtoTest {
     program.setId(UUID.randomUUID());
     orderableDto = new OrderableDto();
     orderableDto.setId(UUID.randomUUID());
-  }
-
-  @Override
-  protected Class<OrderableDto> getTestClass() {
-    return OrderableDto.class;
-  }
-
-  @Override
-  protected void prepare(EqualsVerifier verifier) {
-    verifier.withRedefinedSuperclass();
   }
 
   @Test

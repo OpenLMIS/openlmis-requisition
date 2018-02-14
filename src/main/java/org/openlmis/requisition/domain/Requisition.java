@@ -19,7 +19,6 @@ import static java.util.Objects.isNull;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
@@ -274,14 +273,14 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param template             the requisition template for this requisition to use (based on
    *                             program)
-   * @param fullSupplyProducts   the full supply products for this requisitions facility to build
+   * @param products             the full supply products for this requisitions facility to build
    *                             requisition lines for
    * @param previousRequisitions the previous requisitions for this program/facility. Used for field
    *                             calculations and set previous adjusted consumptions. Pass empty
    *                             list if there are no previous requisitions.
    */
   public void initiate(RequisitionTemplate template,
-                       Collection<ApprovedProductDto> fullSupplyProducts,
+                       Collection<ApprovedProductDto> products,
                        List<Requisition> previousRequisitions,
                        int numberOfPreviousPeriodsToAverage,
                        ProofOfDeliveryDto proofOfDelivery,
@@ -295,7 +294,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.previousRequisitions = previousRequisitions;
 
     profiler.start("SET_LINE_ITEMS");
-    initiateLineItems(fullSupplyProducts, idealStockAmounts, orderableSoh);
+    initiateLineItems(products, idealStockAmounts, orderableSoh);
 
     profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
@@ -362,20 +361,18 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.stop().log();
   }
 
-  private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
+  private void initiateLineItems(Collection<ApprovedProductDto> products,
                                  Map<UUID, Integer> idealStockAmounts,
                                  Map<UUID, Integer> orderableSoh) {
     this.requisitionLineItems = new ArrayList<>();
 
-    if (isNotTrue(emergency)) {
-      for (ApprovedProductDto product : fullSupplyProducts) {
-        Integer isa = extractIdealStockAmount(idealStockAmounts, product);
-        Integer soh = orderableSoh.get(product.getOrderable().getId());
+    for (ApprovedProductDto product : products) {
+      Integer isa = extractIdealStockAmount(idealStockAmounts, product);
+      Integer soh = orderableSoh.get(product.getOrderable().getId());
 
-        RequisitionLineItem lineItem = new RequisitionLineItem(this, product, isa, soh);
+      RequisitionLineItem lineItem = new RequisitionLineItem(this, product, isa, soh);
 
-        this.requisitionLineItems.add(lineItem);
-      }
+      this.requisitionLineItems.add(lineItem);
     }
   }
 

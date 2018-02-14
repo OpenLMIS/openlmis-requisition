@@ -317,11 +317,10 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldPersistWithMoney() {
-    UUID programId = UUID.randomUUID();
     Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
 
     ProgramDto program = new ProgramDto();
-    program.setId(programId);
+    program.setId(UUID.randomUUID());
 
     ProgramOrderableDto programOrderable = new ProgramOrderableDto();
     programOrderable.setPricePerPack(pricePerPack);
@@ -336,7 +335,7 @@ public class RequisitionRepositoryIntegrationTest
     ftap.setProgram(program);
     ftap.setMaxPeriodsOfStock(7.25);
 
-    Requisition requisition = new Requisition(UUID.randomUUID(), programId,
+    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID(), INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
         Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), emptyMap());
