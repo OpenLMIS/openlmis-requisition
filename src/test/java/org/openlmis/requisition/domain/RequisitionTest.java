@@ -28,14 +28,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIER;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -49,14 +50,14 @@ import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -68,6 +69,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,7 +88,7 @@ public class RequisitionTest {
   private static final Money TOTAL_COST = Money.of(CURRENCY_UNIT, 5);
   private static final int MONTHS_IN_PERIOD = 1;
   private static final int CALCULATED_ORDER_QUANTITY = 5;
-  private static final int REQUESTED_QUANTITY = 10;
+  private static final int REQUESTED_QUANTITY = 5;
   private static final int STOCK_ON_HAND = 10;
   private static final int STOCK_ON_HAND_2 = 11;
 
@@ -94,6 +96,7 @@ public class RequisitionTest {
   private RequisitionLineItem requisitionLineItem;
 
   private UUID productId = UUID.randomUUID();
+  private UUID programId = UUID.randomUUID();
 
   @Mock
   private RequisitionTemplate template;
@@ -551,6 +554,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
+    req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID(),
         emptyMap());
@@ -574,6 +578,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
+    req.setProgramId(programId);
     req.initiate(template, Collections.singleton(product1),
         Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), emptyMap());
 
@@ -609,6 +614,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
+    req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
         emptyMap());
@@ -650,6 +656,7 @@ public class RequisitionTest {
 
     // when
     Requisition req = new Requisition();
+    req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
         emptyMap());
@@ -730,7 +737,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnSubmit() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = mock(OrderableDto.class);
+    OrderableDto product = new OrderableDtoDataBuilder().build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
 
@@ -745,7 +752,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnAuthorize() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = mock(OrderableDto.class);
+    OrderableDto product = new OrderableDtoDataBuilder().build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -761,7 +768,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnApprove() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = mock(OrderableDto.class);
+    OrderableDto product = new OrderableDtoDataBuilder().build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -1127,9 +1134,9 @@ public class RequisitionTest {
     final UUID commodityTypeId = UUID.randomUUID();
 
     ApprovedProductDto product1 = mockApprovedProduct(productId1);
-    OrderableDto orderable = product1.getOrderable();
-    when(orderable.getCommodityTypeIdentifier())
-        .thenReturn(commodityTypeId.toString());
+    product1
+        .getOrderable()
+        .setIdentifiers(ImmutableMap.of(COMMODITY_TYPE_IDENTIFIER, commodityTypeId.toString()));
 
     ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
@@ -1174,6 +1181,29 @@ public class RequisitionTest {
     assertThat(req.findLineByProductId(productId2).getStockOnHand(), is(nullValue()));
   }
 
+  @Test
+  public void shouldNotSetLineItemsForEmergencyRequisition() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    // when
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setEmergency(true);
+
+    req.initiate(template, asList(product1, product2), emptyList(), 0, null,
+        emptyMap(), UUID.randomUUID(), new HashMap<>());
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+    assertThat(lineItems, hasSize(0));
+    assertThat(req.findLineByProductId(productId1), is(nullValue()));
+    assertThat(req.findLineByProductId(productId2), is(nullValue()));
+  }
+
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     this.requisition.setTemplate(requisitionTemplate);
@@ -1186,7 +1216,7 @@ public class RequisitionTest {
   }
 
   private Requisition createRequisitionWithStatusOf(RequisitionStatus status) {
-    return new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID
+    return new Requisition(UUID.randomUUID(), programId, UUID
         .randomUUID(), status, false);
   }
 
@@ -1215,10 +1245,7 @@ public class RequisitionTest {
 
   private void setUpTestUpdatePacksToShip(OrderableDto productMock, long packsToShip) {
     requisitionLineItem.setPacksToShip(packsToShip);
-
-    when(productMock.packsToOrder(anyLong())).thenReturn(packsToShip);
-    when(productMock.getId()).thenReturn(requisitionLineItem.getOrderableId());
-
+    productMock.setId(requisitionLineItem.getOrderableId());
     setUpValidRequisitionTemplate();
   }
 
@@ -1275,17 +1302,13 @@ public class RequisitionTest {
   }
 
   private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
-    ApprovedProductDto approvedProductDto = mock(ApprovedProductDto.class);
-    OrderableDto orderableDto = mock(OrderableDto.class);
-    ProgramDto programDto = mock(ProgramDto.class);
-    when(approvedProductDto.getOrderable()).thenReturn(orderableDto);
-    when(approvedProductDto.getProgram()).thenReturn(programDto);
-    when(orderableDto.getId()).thenReturn(orderableId);
-    UUID programId = UUID.randomUUID();
-    when(programDto.getId()).thenReturn(programId);
-    when(orderableDto.findProgramOrderableDto(programId))
-        .thenReturn(mock(ProgramOrderableDto.class));
-    return approvedProductDto;
+    return new ApprovedProductDtoDataBuilder()
+        .withOrderable(
+            new OrderableDtoDataBuilder()
+                .withId(orderableId)
+                .withProgramOrderable(programId, true)
+                .build())
+        .build();
   }
 
   private SupervisoryNodeDto mockSupervisoryParentNode(UUID parentId) {

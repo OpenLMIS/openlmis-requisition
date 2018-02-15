@@ -22,22 +22,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-
 import com.google.common.collect.Sets;
+
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -111,21 +111,23 @@ public class RequisitionLineItemTest {
   public void shouldUpdatePacksToShip() {
     // given
     UUID productId = UUID.randomUUID();
-    long packsToShip = 5L;
 
-    OrderableDto product = mock(OrderableDto.class);
-    when(product.packsToOrder(anyLong())).thenReturn(packsToShip);
-    when(product.getId()).thenReturn(productId);
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(productId)
+        .build();
 
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
+    item.setRequestedQuantity(5);
+    item.setApprovedQuantity(5);
+    item.setCalculatedOrderQuantity(5);
     item.setOrderableId(productId);
 
     // when
     item.updatePacksToShip(Collections.singletonList(product));
 
     // then
-    assertEquals(item.getPacksToShip().longValue(), packsToShip);
+    assertEquals(5L, item.getPacksToShip().longValue());
   }
 
   @Test
@@ -397,7 +399,7 @@ public class RequisitionLineItemTest {
 
     ProgramOrderableDto programOrderable = ftap.getOrderable().findProgramOrderableDto(programId);
     ProgramDto program = new ProgramDto();
-    program.setId(UUID.randomUUID());
+    program.setId(programId);
 
     when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
 
@@ -446,6 +448,7 @@ public class RequisitionLineItemTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(status);
     when(requisition.isApprovable()).thenReturn(status.duringApproval());
+    when(requisition.getProgramId()).thenReturn(programId);
     return requisition;
   }
 }

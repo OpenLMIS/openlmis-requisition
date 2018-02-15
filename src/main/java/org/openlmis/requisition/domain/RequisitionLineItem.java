@@ -238,10 +238,10 @@ public class RequisitionLineItem extends BaseEntity {
     this.orderableId = approvedProduct.getOrderable().getId();
 
     ProgramOrderableDto product = approvedProduct.getOrderable()
-        .findProgramOrderableDto(approvedProduct.getProgram().getId());
+        .findProgramOrderableDto(requisition.getProgramId());
 
     LOGGER.debug("ProgramOrderableDto {}", product);
-    Money priceFromProduct = product.getPricePerPack();
+    Money priceFromProduct = null == product ? null : product.getPricePerPack();
     this.pricePerPack = priceFromProduct == null
         ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
         : priceFromProduct;

@@ -19,6 +19,7 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
@@ -99,6 +100,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -231,9 +233,12 @@ public class RequisitionService {
     final ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
 
     profiler.start("FIND_APPROVED_PRODUCTS");
-    Collection<ApprovedProductDto> approvedProducts =
-        approvedProductReferenceDataService.getApprovedProducts(
-            facilityId, programId, true);
+    List<ApprovedProductDto> approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(facilityId, programId);
+
+    List<ApprovedProductDto> fullSupplyProducts = getFullSupplyProducts(
+        approvedProducts, programId
+    );
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
     Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
@@ -243,16 +248,15 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_ON_HANDS");
     Map<UUID, Integer> orderableSoh = getStockOnHands(
-        requisitionTemplate, approvedProducts, programId, facilityId, period.getEndDate());
+        requisitionTemplate, fullSupplyProducts, programId, facilityId, period.getEndDate());
 
     profiler.start("INITIATE");
-    requisition.initiate(requisitionTemplate, approvedProducts, previousRequisitions,
+    requisition.initiate(requisitionTemplate, fullSupplyProducts, previousRequisitions,
         numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
         authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
     profiler.start("SET_AVAIL_FULL_SUPPLY");
-    requisition.setAvailableProducts(approvedProductReferenceDataService
-        .getApprovedProducts(facilityId, programId, false)
+    requisition.setAvailableProducts(approvedProducts
         .stream()
         .map(ap -> ap.getOrderable().getId())
         .collect(toSet()));
@@ -267,15 +271,31 @@ public class RequisitionService {
     return requisition;
   }
 
+  private List<ApprovedProductDto> getFullSupplyProducts(List<ApprovedProductDto> approvedProducts,
+                                                         UUID programId) {
+    List<ApprovedProductDto> fullSupplyProducts = new ArrayList<>();
+
+    for (ApprovedProductDto approvedProduct : approvedProducts) {
+      OrderableDto orderable = approvedProduct.getOrderable();
+      ProgramOrderableDto programOrderable = orderable.findProgramOrderableDto(programId);
+
+      if (null != programOrderable && isTrue(programOrderable.getFullSupply())) {
+        fullSupplyProducts.add(approvedProduct);
+      }
+    }
+
+    return fullSupplyProducts;
+  }
+
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
-                                             Collection<ApprovedProductDto> approvedProducts,
+                                             Collection<ApprovedProductDto> fullSupplyProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       Map<UUID, Integer> orderableSoh = new HashMap<>();
       stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
-          approvedProducts.stream()
+          fullSupplyProducts.stream()
               .map(ap -> ap.getOrderable().getId())
               .collect(toSet()),
           endDate)

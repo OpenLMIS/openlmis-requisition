@@ -15,24 +15,17 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-import java.util.UUID;
+public class BasicOrderableDtoTest extends DtoTest {
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ApprovedProductDto {
-  private UUID id;
-  private OrderableDto orderable;
-  private ProgramDto program;
-  private Double maxPeriodsOfStock;
-  private Double minPeriodsOfStock;
-  private Double emergencyOrderPoint;
+  @Override
+  protected Class<BasicOrderableDto> getTestClass() {
+    return BasicOrderableDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier verifier) {
+    verifier.withRedefinedSubclass(OrderableDto.class);
+  }
 }

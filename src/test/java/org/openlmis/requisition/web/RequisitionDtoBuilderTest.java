@@ -20,10 +20,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,9 +30,10 @@ import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -43,7 +43,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
@@ -53,6 +52,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
 
 import java.time.LocalDate;
@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequisitionDtoBuilderTest {
 
   @Mock
@@ -90,12 +91,6 @@ public class RequisitionDtoBuilderTest {
   private ProgramDto programDto;
 
   @Mock
-  private OrderableDto orderableDto;
-
-  @Mock
-  private ProgramOrderableDto programOrderableDto;
-
-  @Mock
   private RequisitionLineItemDto requisitionLineItemDto;
 
   @Mock
@@ -116,14 +111,17 @@ public class RequisitionDtoBuilderTest {
   private UUID supervisoryNodeUuid = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
 
+  private OrderableDto orderableDto;
+
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-
     lineItemDtos = new ArrayList<>();
     lineItemDtos.add(requisitionLineItemDto);
 
     requisition = buildRequisition();
+    orderableDto = new OrderableDtoDataBuilder()
+        .withProgramOrderable(programUuid, false)
+        .build();
   }
 
   @Test
@@ -137,9 +135,6 @@ public class RequisitionDtoBuilderTest {
     when(orderableReferenceDataService
         .findByIds(Collections.singleton(orderableId)))
         .thenReturn(Collections.singletonList(orderableDto));
-    when(orderableDto.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(programOrderableDto);
-    when(programOrderableDto.getFullSupply()).thenReturn(false);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
@@ -165,35 +160,25 @@ public class RequisitionDtoBuilderTest {
 
   @Test
   public void shouldPopulateAvailableProductsCollectionsBasedOnFullSupplyFlag() {
-    OrderableDto fs1 = mock(OrderableDto.class);
-    OrderableDto fs2 = mock(OrderableDto.class);
-    OrderableDto nfs1 = mock(OrderableDto.class);
-    OrderableDto nfs2 = mock(OrderableDto.class);
-    OrderableDto differentProgram = mock(OrderableDto.class);
-
-    ProgramOrderableDto pofs1 = mock(ProgramOrderableDto.class);
-    ProgramOrderableDto pofs2 = mock(ProgramOrderableDto.class);
-    ProgramOrderableDto ponfs1 = mock(ProgramOrderableDto.class);
-    ProgramOrderableDto ponfs2 = mock(ProgramOrderableDto.class);
+    OrderableDto fs1 = new OrderableDtoDataBuilder()
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .build();
+    OrderableDto fs2 = new OrderableDtoDataBuilder()
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .build();
+    OrderableDto nfs1 = new OrderableDtoDataBuilder()
+        .withProgramOrderable(requisition.getProgramId(), false)
+        .build();
+    OrderableDto nfs2 = new OrderableDtoDataBuilder()
+        .withProgramOrderable(requisition.getProgramId(), false)
+        .build();
+    OrderableDto differentProgram = new OrderableDtoDataBuilder()
+        .withProgramOrderable(UUID.randomUUID(), true)
+        .build();
 
     when(orderableReferenceDataService
-        .findByIds(anySet()))
+        .findByIds(anySetOf(UUID.class)))
         .thenReturn(Lists.newArrayList(fs1, fs2, nfs1, nfs2, differentProgram));
-    when(fs1.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(pofs1);
-    when(fs2.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(pofs2);
-    when(nfs1.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(ponfs1);
-    when(nfs2.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(ponfs2);
-    when(differentProgram.findProgramOrderableDto(requisition.getProgramId()))
-        .thenReturn(null);
-
-    when(pofs1.getFullSupply()).thenReturn(true);
-    when(pofs2.getFullSupply()).thenReturn(true);
-    when(ponfs1.getFullSupply()).thenReturn(false);
-    when(ponfs2.getFullSupply()).thenReturn(false);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
