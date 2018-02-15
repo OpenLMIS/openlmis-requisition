@@ -305,6 +305,20 @@ public class RequisitionTemplateRepositoryIntegrationTest
     repository.saveAndFlush(newTemplate);
   }
 
+  @Test(expected = DataIntegrityViolationException.class)
+  public void shouldNotAllowToHaveTwoTemplatesWithSameProgramAndFacilityType() {
+    UUID programId = UUID.randomUUID();
+    UUID facilityTypeId = UUID.randomUUID();
+
+    RequisitionTemplate template = generateInstance();
+    template.addAssignment(programId, facilityTypeId);
+    repository.saveAndFlush(template);
+
+    template = generateInstance();
+    template.addAssignment(programId, facilityTypeId);
+    repository.saveAndFlush(template);
+  }
+
   @Test
   public void shouldGetActiveTemplates() {
     int size = 6; // make sure to have an even number here
