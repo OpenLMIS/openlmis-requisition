@@ -27,11 +27,12 @@ import java.util.Set;
 
 @AllArgsConstructor
 class RequisitionApprovalService {
-  private final Requisition requisition;
+  private final Requisition requisitionUpdater;
+  private final Requisition requisitionToUpdate;
 
   void validateApprovalFields(Map<String, Message> errors) {
-    if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
-      requisition.getNonSkippedFullSupplyRequisitionLineItems()
+    if (!isEmpty(requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems())) {
+      requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateApprovalFields(errors, i));
     }
   }
@@ -52,9 +53,9 @@ class RequisitionApprovalService {
 
   private void rejectIfInvalidStatusAndNotNull(Map<String, Message> errors,
                                                Object value,
-                                               Set<RequisitionStatus> expectedStatuses, Message
-                                                   message) {
-    if (!expectedStatuses.contains(requisition.getStatus()) && value != null) {
+                                               Set<RequisitionStatus> expectedStatuses,
+                                               Message message) {
+    if (!expectedStatuses.contains(requisitionToUpdate.getStatus()) && value != null) {
       errors.put(REQUISITION_LINE_ITEMS, message);
     }
   }

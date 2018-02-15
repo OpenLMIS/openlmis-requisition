@@ -269,7 +269,7 @@ public class Requisition extends BaseTimestampedEntity {
     Map<String, Message> errors = new HashMap<>();
     new RequisitionInvariantsService(requisition, this)
         .validateInvariantsDidNotChange(errors);
-    new RequisitionApprovalService(requisition)
+    new RequisitionApprovalService(requisition, this)
         .validateApprovalFields(errors);
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();

@@ -28,8 +28,8 @@ import java.util.Map;
 
 @AllArgsConstructor
 class RequisitionInvariantsService {
-  private final Requisition requisitionUpdater;
-  private final Requisition requisitionToUpdate;
+  private Requisition requisitionUpdater;
+  private Requisition requisitionToUpdate;
 
   void validateInvariantsDidNotChange(Map<String, Message> errors) {
     rejectIfValueChanged(errors, requisitionUpdater.getFacilityId(),
