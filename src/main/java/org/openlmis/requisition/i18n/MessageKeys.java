@@ -173,6 +173,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.templateNameDuplication";
   public static final String ERROR_TEMPLATE_ASSIGNMENT =
       ERROR_PREFIX + ".validation.templateAssignmentExists";
+  public static final String ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS =
+      ERROR_PREFIX + ".validation.programFacilityTypeAssignmentExists";
   public static final String ERROR_VALIDATION_FIELD_IS_TOO_LONG =
       ERROR_PREFIX + ".validation.fieldIsTooLong";
   public static final String ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND =
