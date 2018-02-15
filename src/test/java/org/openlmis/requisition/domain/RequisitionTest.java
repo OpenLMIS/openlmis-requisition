@@ -359,8 +359,9 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldAddOnlyAddNonFullSupplyLines() throws Exception {
+  public void shouldAddOnlyNonFullSupplyLinesForRegularRequisition() throws Exception {
     requisition.getRequisitionLineItems().clear();
+    requisition.setEmergency(false);
 
     RequisitionLineItem fullSupply = new RequisitionLineItem();
     RequisitionLineItem nonFullSupply = new RequisitionLineItem();
@@ -379,7 +380,9 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldNotRemoveFullSupplyLines() throws Exception {
+  public void shouldNotRemoveFullSupplyLinesForRegularRequisition() throws Exception {
+    requisition.setEmergency(false);
+
     RequisitionLineItem nonFullSupply = new RequisitionLineItem();
     nonFullSupply.setNonFullSupply(true);
 
@@ -403,6 +406,47 @@ public class RequisitionTest {
             .filter(line -> !line.isNonFullSupply()).count(),
         is((long) count)
     );
+  }
+
+  @Test
+  public void shouldAddFullSupplyLinesForEmergencyRequisition() throws Exception {
+    requisition.setRequisitionLineItems(Lists.newArrayList());
+    requisition.setEmergency(true);
+
+    RequisitionLineItem fullSupply = new RequisitionLineItem();
+    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
+    nonFullSupply.setNonFullSupply(true);
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
+
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+
+    assertThat(requisition.getRequisitionLineItems(), hasSize(2));
+    assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(false));
+    assertThat(requisition.getRequisitionLineItems().get(1).isNonFullSupply(), is(true));
+  }
+
+  @Test
+  public void shouldRemoveFullSupplyLinesForEmergencyRequisition() throws Exception {
+    RequisitionLineItem fullSupply = new RequisitionLineItem();
+    fullSupply.setId(UUID.randomUUID());
+
+    requisition.setRequisitionLineItems(Lists.newArrayList(fullSupply));
+    requisition.setEmergency(true);
+
+    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
+    nonFullSupply.setNonFullSupply(true);
+
+    Requisition newRequisition = new Requisition();
+    newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
+
+    requisition.setTemplate(mock(RequisitionTemplate.class));
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+
+    assertThat(requisition.getRequisitionLineItems(), hasSize(1));
+    assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(true));
   }
 
   @Test

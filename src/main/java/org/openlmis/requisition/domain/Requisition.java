@@ -20,6 +20,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
@@ -739,10 +740,11 @@ public class Requisition extends BaseTimestampedEntity {
       RequisitionLineItem existing = requisitionLineItems
           .stream()
           .filter(l -> l.getId().equals(item.getId()))
-          .findFirst().orElse(null);
+          .findFirst()
+          .orElse(null);
 
       if (null == existing) {
-        if (item.isNonFullSupply()) {
+        if (isTrue(emergency) || item.isNonFullSupply()) {
           item.setRequisition(this);
           updatedList.add(item);
         }
@@ -753,19 +755,19 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
 
-    // is there a full supply line that is not in update list
-    // it should be added. Those lines should not be removed
-    // during update. Only non full supply lines can be
-    // added/updated/removed.
-    requisitionLineItems
-        .stream()
-        .filter(line -> !line.isNonFullSupply())
-        .filter(line -> updatedList
-            .stream()
-            .map(BaseEntity::getId)
-            .noneMatch(id -> Objects.equals(id, line.getId()))
-        )
-        .forEach(updatedList::add);
+    if (isNotTrue(emergency)) {
+      // is there a full supply line that is not in update list
+      // it should be added. Those lines should not be removed
+      // during update. Only non full supply lines can be
+      // added/updated/removed.
+      List<UUID> updatedIds = updatedList.stream().map(BaseEntity::getId).collect(toList());
+
+      requisitionLineItems
+          .stream()
+          .filter(line -> !line.isNonFullSupply())
+          .filter(line -> !updatedIds.contains(line.getId()))
+          .forEach(updatedList::add);
+    }
 
     requisitionLineItems.clear();
     requisitionLineItems.addAll(updatedList);
