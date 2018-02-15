@@ -330,7 +330,14 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     return column;
   }
 
+  /**
+   * Archives the given template.
+   */
   public void archive() {
+    // we don't need assignments for archived templates. If there is any requisition in
+    // the system that uses the given template we retrieve it by ID field not by
+    // assignment
+    this.templateAssignments.clear();
     archived = true;
   }
 
