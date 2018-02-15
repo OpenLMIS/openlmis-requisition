@@ -226,7 +226,7 @@ public class StockEventBuilder {
 
   private LocalDate getOccurredDate(Requisition requisition) {
     if (requisition.getDatePhysicalStockCountCompleted() != null) {
-      return requisition.getDatePhysicalStockCountCompleted();
+      return requisition.getDatePhysicalStockCountCompleted().getLocalDate();
     } else if (requisition.getEmergency()) {
       Optional<StatusChange> submitAuditEntry = requisition.getStatusChanges().stream()
           .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)

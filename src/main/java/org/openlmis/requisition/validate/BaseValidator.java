@@ -33,26 +33,28 @@ abstract class BaseValidator implements Validator {
   @Autowired
   private MessageService messageService;
 
-  <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value, String field,
-                               Message message) {
+  protected <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value,
+                                         String field, Message message) {
     if (!collection.contains(value)) {
       rejectValue(errors, field, message);
     }
   }
 
-  void rejectIfLengthTooLong(Errors errors, String value, int max, String field, Message message) {
+  protected void rejectIfLengthTooLong(Errors errors, String value, int max, String field,
+                                       Message message) {
     if (length(value) > max) {
       rejectValue(errors, field, message);
     }
   }
 
-  void rejectIfNotAlphanumeric(Errors errors, String value, String field, Message message) {
+  protected void rejectIfNotAlphanumeric(Errors errors, String value, String field,
+                                         Message message) {
     if (null == value || !ALPHANUMERIC_PATTERN.matcher(value).find()) {
       rejectValue(errors, field, message);
     }
   }
 
-  void rejectValue(Errors errors, String field, Message message) {
+  protected void rejectValue(Errors errors, String field, Message message) {
     errors.rejectValue(field, messageService.localize(message).toString());
   }
 

@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.exception;
 
+import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 /**
@@ -22,13 +23,13 @@ import java.util.Map;
  */
 public class BindingResultException extends RuntimeException {
 
-  private final Map<String, String> errors;
+  private final Map<String, Message.LocalizedMessage> errors;
 
-  public BindingResultException(Map<String, String> errors) {
+  public BindingResultException(Map<String, Message.LocalizedMessage> errors) {
     this.errors = errors;
   }
 
-  public Map<String, String> getErrors() {
+  public Map<String, Message.LocalizedMessage> getErrors() {
     return errors;
   }
 }

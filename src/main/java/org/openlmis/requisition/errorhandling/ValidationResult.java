@@ -102,7 +102,7 @@ public class ValidationResult {
    * @param fieldErrors a map containing errors for specific fields
    * @return a ValidationResult instance containing field validation error
    */
-  public static ValidationResult fieldErrors(Map<String, String> fieldErrors) {
+  public static ValidationResult fieldErrors(Map<String, Message.LocalizedMessage> fieldErrors) {
     ValidationResult result = new ValidationResult();
     ValidationFailure failure = new ValidationFailure(null, fieldErrors, FIELD_VALIDATION);
     result.errors.add(failure);
@@ -126,15 +126,6 @@ public class ValidationResult {
    */
   public void addError(Message message, FailureType type) {
     this.errors.add(new ValidationFailure(message, new HashMap<>(), type));
-  }
-
-  /**
-   * Adds a new error of FIELD_VALIDATION type to this validation result.
-   *
-   * @param fieldErrors a map of errors for specific fields of an entity
-   */
-  public void addFieldErrors(Map<String, String> fieldErrors) {
-    this.errors.add(new ValidationFailure(null, fieldErrors, FIELD_VALIDATION));
   }
 
   /**

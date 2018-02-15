@@ -50,6 +50,7 @@ import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionHelper;
 import org.openlmis.requisition.utils.RightName;
@@ -69,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,10 +78,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -111,6 +116,8 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String EMERGENCY_FIELD = "emergency";
   public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
       "datePhysicalStockCountCompleted";
+  protected static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+
 
   @OneToMany(
       mappedBy = "requisition",
@@ -205,7 +212,12 @@ public class Requisition extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  private LocalDate datePhysicalStockCountCompleted;
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "localDate",
+          column = @Column(name = "datephysicalstockcountcompleted"))
+      })
+  private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
 
   @OneToMany(
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -234,7 +246,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param emergency          whether this Requisition is emergency
    */
   public Requisition(UUID facilityId, UUID programId, UUID processingPeriodId,
-      RequisitionStatus status, Boolean emergency) {
+                     RequisitionStatus status, Boolean emergency) {
     this.facilityId = facilityId;
     this.programId = programId;
     this.processingPeriodId = processingPeriodId;
@@ -250,9 +262,15 @@ public class Requisition extends BaseTimestampedEntity {
    * @param requisition            Requisition with new values.
    * @param products               Collection of orderables.
    */
-  public void updateFrom(
+  public Map<String, Message> updateFrom(
       Requisition requisition, Collection<OrderableDto> products,
-      boolean isDatePhysicalStockCountCompletedEnabled) {
+      boolean isDatePhysicalStockCountCompletedEnabled, DateHelper dateHelper) {
+
+    Map<String, Message> errors = new HashMap<>();
+    new RequisitionInvariantsService(requisition, this)
+        .validateInvariantsDidNotChange(errors);
+    new RequisitionApprovalService(requisition)
+        .validateApprovalFields(errors);
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
@@ -262,12 +280,29 @@ public class Requisition extends BaseTimestampedEntity {
     calculateAndValidateTemplateFields(this.template);
     updateTotalCostAndPacksToShip(products);
 
-    if (isDatePhysicalStockCountCompletedEnabled) {
-      setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
-    }
+    updateDatePhysicalStockCountCompleted(requisition, isDatePhysicalStockCountCompletedEnabled,
+        dateHelper, errors);
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());
+
+    return errors;
+  }
+
+  private void updateDatePhysicalStockCountCompleted(
+      Requisition requisition, boolean isDatePhysicalStockCountCompletedEnabled,
+      DateHelper dateHelper, Map<String, Message> errors) {
+    if (isDatePhysicalStockCountCompletedEnabled && !emergency) {
+      DatePhysicalStockCountCompleted newDate = requisition.getDatePhysicalStockCountCompleted();
+      if (status.isAuthorized()) {
+        DatePhysicalStockCountCompleted
+            .validateDateMatch(errors, datePhysicalStockCountCompleted, newDate);
+      }
+      if (newDate != null) {
+        newDate.validateNotInFuture(errors, dateHelper);
+      }
+      setDatePhysicalStockCountCompleted(newDate);
+    }
   }
 
   /**
@@ -468,7 +503,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param approver    user who approves this requisition.
    */
   public void approve(UUID nodeId, Collection<OrderableDto> products,
-      Collection<SupplyLineDto> supplyLines, UUID approver) {
+                      Collection<SupplyLineDto> supplyLines, UUID approver) {
     if (CollectionUtils.isEmpty(supplyLines) && nodeId != null) {
       status = RequisitionStatus.IN_APPROVAL;
       supervisoryNodeId = nodeId;
@@ -500,7 +535,7 @@ public class Requisition extends BaseTimestampedEntity {
     status = RequisitionStatus.RELEASED;
     statusChanges.add(StatusChange.newStatusChange(this, releaser));
   }
-  
+
   /**
    * Finds first RequisitionLineItem that have productId property equals to the given productId
    * argument.
@@ -632,7 +667,10 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
-    exporter.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
+    if (datePhysicalStockCountCompleted != null) {
+      exporter.setDatePhysicalStockCountCompleted(
+          datePhysicalStockCountCompleted.getLocalDate());
+    }
   }
 
   /**

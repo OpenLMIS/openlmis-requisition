@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -63,7 +64,8 @@ import java.util.UUID;
 @SuppressWarnings("PMD.TooManyMethods")
 public class StockEventBuilderTest {
 
-  private static final LocalDate DATE_PHYSICAL_STOCK_COUNT_COMPLETED = LocalDate.now().minusDays(3);
+  private static final DatePhysicalStockCountCompleted DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
+      new DatePhysicalStockCountCompleted(LocalDate.now().minusDays(3));
   private static final LocalDate PERIOD_END_DATE = LocalDate.now().minusDays(1);
   private static final ZoneId ZONE_ID = ZoneId.systemDefault();
 
@@ -310,7 +312,7 @@ public class StockEventBuilderTest {
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
-        .isEqualByComparingTo(DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
+        .isEqualByComparingTo(DATE_PHYSICAL_STOCK_COUNT_COMPLETED.getLocalDate()));
   }
 
   @Test

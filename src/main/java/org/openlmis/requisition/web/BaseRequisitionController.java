@@ -19,7 +19,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WR
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.ImmutableList;
-
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -33,6 +32,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -49,7 +49,6 @@ import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPred
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
-import org.openlmis.requisition.validate.DraftRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
@@ -60,10 +59,10 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -103,9 +102,6 @@ public abstract class BaseRequisitionController extends BaseController {
   protected RequisitionValidator validator;
 
   @Autowired
-  protected DraftRequisitionValidator draftValidator;
-
-  @Autowired
   protected RequisitionVersionValidator requisitionVersionValidator;
 
   @Autowired
@@ -135,6 +131,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   protected FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
+  @Autowired
+  protected MessageService messageService;
+
   protected ValidationResult validateFields(AbstractRequisitionValidator validator,
                                             Requisition requisition) {
     BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
@@ -148,15 +147,29 @@ public abstract class BaseRequisitionController extends BaseController {
     return ValidationResult.success();
   }
 
-  protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
-    requisitionToUpdate.updateFrom(requisition, orderableReferenceDataService.findByIds(
-            getLineItemOrderableIds(requisition)),
-        predicate.exec(requisitionToUpdate.getProgramId()));
-
+  protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition,
+                                    ValidationResult result) {
+    result.addValidationResult(updateRequisition(requisitionToUpdate, requisition));
+    result.throwExceptionIfHasErrors();
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
     return requisitionDtoBuilder.build(requisitionToUpdate);
+  }
+
+  private ValidationResult updateRequisition(Requisition requisitionToUpdate,
+                                               Requisition requisition) {
+    Map<String, Message> errors =
+        requisitionToUpdate.updateFrom(requisition,
+            orderableReferenceDataService.findByIds(getLineItemOrderableIds(requisition)),
+            predicate.exec(requisitionToUpdate.getProgramId()), dateHelper);
+
+    if (!isEmpty(errors)) {
+      logger.warn("Validation for requisition update failed: {}", errors);
+      return ValidationResult.fieldErrors(getErrors(errors));
+    }
+
+    return ValidationResult.success();
   }
 
   protected BasicRequisitionDto doApprove(Requisition requisition, UserDto user) {

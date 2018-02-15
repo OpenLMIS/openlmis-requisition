@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -644,7 +645,8 @@ public class RequisitionValidatorTest {
     requisition.setProgramId(programId);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setTemplate(generateTemplate());
-    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    requisition.setDatePhysicalStockCountCompleted(
+        new DatePhysicalStockCountCompleted(LocalDate.now()));
     requisition.setStockAdjustmentReasons(Collections.emptyList());
     return requisition;
   }

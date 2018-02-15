@@ -202,14 +202,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
       profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
       result = requisitionVersionValidator.validateRequisitionTimestamps(
           requisition, requisitionToUpdate);
-      result.addValidationResult(validateFields(draftValidator, requisition));
+
+      profiler.start("DO_UPDATE");
+      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition, result);
 
       if (addValidationErrors(processingStatus, result, dto.getId())) {
         continue;
       }
-
-      profiler.start("DO_UPDATE");
-      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
 
       profiler.start("ADD_PROCESSED_REQUISITION");
       processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));

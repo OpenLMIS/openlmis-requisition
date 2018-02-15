@@ -39,7 +39,6 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -59,10 +58,10 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
+import org.openlmis.requisition.utils.DateHelper;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -101,6 +100,9 @@ public class RequisitionTest {
   @Mock
   private RequisitionTemplate template;
 
+  @Mock
+  private DateHelper dateHelper;
+
   @Before
   public void setUp() {
     requisition = new Requisition();
@@ -118,6 +120,9 @@ public class RequisitionTest {
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
     requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
     requisition.setStockAdjustmentReasons(Collections.emptyList());
+    requisition.setEmergency(false);
+
+    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now().plusYears(5));
   }
 
   @Test
@@ -243,7 +248,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     requisition.authorize(Collections.emptyList(), UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.updateFrom(new Requisition(), Collections.emptyList(), true, dateHelper);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -354,7 +359,7 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.updateFrom(new Requisition(), Collections.emptyList(), true, dateHelper);
     verifyStatic(times(1));
   }
 
@@ -371,7 +376,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
 
@@ -391,7 +396,7 @@ public class RequisitionTest {
 
     int count = requisition.getRequisitionLineItems().size();
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(count + 1));
 
@@ -421,7 +426,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(2));
     assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(false));
@@ -443,7 +448,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
     assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(true));
@@ -486,7 +491,7 @@ public class RequisitionTest {
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     // then
     requisition
@@ -505,7 +510,7 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.updateFrom(new Requisition(), Collections.emptyList(), true, dateHelper);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -1026,7 +1031,7 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyList(), true, dateHelper);
 
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
@@ -1253,8 +1258,9 @@ public class RequisitionTest {
     this.requisition.setTemplate(requisitionTemplate);
 
     Requisition requisition = new Requisition();
-    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
-    this.requisition.updateFrom(requisition, Collections.emptyList(), updateStockDate);
+    requisition.setDatePhysicalStockCountCompleted(
+        new DatePhysicalStockCountCompleted(LocalDate.now()));
+    this.requisition.updateFrom(requisition, Collections.emptyList(), updateStockDate, dateHelper);
 
     return requisition;
   }

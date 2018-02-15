@@ -21,6 +21,8 @@ import org.javers.core.changelog.SimpleTextChangeLog;
 import org.javers.core.diff.Change;
 import org.javers.core.json.JsonConverter;
 import org.javers.repository.jql.QueryBuilder;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -39,12 +41,31 @@ public abstract class BaseController {
   @Autowired
   private Javers javers;
 
+  @Autowired
+  private MessageService messageService;
 
-  protected Map<String, String> getErrors(BindingResult bindingResult) {
-    Map<String, String> errors = new HashMap<>();
+  /**
+   * Get errors from {@link BindingResult} instance.
+   *
+   * @deprecated temporarily solution, validators should use map of Field (string)
+   *     and LocalizedMessage
+   */
+  protected Map<String, Message.LocalizedMessage> getErrors(BindingResult bindingResult) {
+    Map<String, Message.LocalizedMessage> errors = new HashMap<>();
 
     for (FieldError error : bindingResult.getFieldErrors()) {
-      errors.put(error.getField(), error.getCode());
+      errors.put(error.getField(),
+          messageService.localize(new Message(error.getCode().split(":")[0])));
+    }
+
+    return errors;
+  }
+
+  protected Map<String, Message.LocalizedMessage> getErrors(Map<String, Message> bindingResult) {
+    Map<String, Message.LocalizedMessage> errors = new HashMap<>();
+
+    for (String field: bindingResult.keySet()) {
+      errors.put(field, messageService.localize(bindingResult.get(field)));
     }
 
     return errors;

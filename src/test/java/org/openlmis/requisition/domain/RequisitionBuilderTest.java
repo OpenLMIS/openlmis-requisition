@@ -134,8 +134,8 @@ public class RequisitionBuilderTest {
     assertEquals(lineItemDtos, requisition.getRequisitionLineItems());
     assertEquals(DRAFT_STATUS_MESSAGE, requisition.getDraftStatusMessage());
     assertEquals(
-        requisitionDto.getDatePhysicalStockCountCompleted(),
-        requisition.getDatePhysicalStockCountCompleted());
+        new DatePhysicalStockCountCompleted(requisitionDto.getDatePhysicalStockCountCompleted()),
+            requisition.getDatePhysicalStockCountCompleted());
     assertEquals(null, requisition.getId());
     assertEquals(null, requisition.getFacilityId());
     assertEquals(null, requisition.getProgramId());

@@ -32,14 +32,15 @@ public class RequisitionErrorMessage {
 
   private UUID requisitionId;
   private Message.LocalizedMessage errorMessage;
-  private Map<String, String> fieldErrors;
+  private Map<String, Message.LocalizedMessage> fieldErrors;
 
   public RequisitionErrorMessage(UUID requisitionId, Message.LocalizedMessage message) {
     this.requisitionId = requisitionId;
     this.errorMessage = message;
   }
 
-  public RequisitionErrorMessage(UUID requisitionId, Map<String, String> fieldErrors) {
+  public RequisitionErrorMessage(UUID requisitionId,
+                                 Map<String, Message.LocalizedMessage> fieldErrors) {
     this.requisitionId = requisitionId;
     this.fieldErrors = fieldErrors;
   }

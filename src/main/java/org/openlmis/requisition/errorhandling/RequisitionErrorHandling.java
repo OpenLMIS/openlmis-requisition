@@ -43,7 +43,7 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(BindingResultException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public Map<String, String> handleBindingRequltException(
+  public Map<String, Message.LocalizedMessage> handleBindingRequltException(
       BindingResultException ex) {
     return ex.getErrors();
   }

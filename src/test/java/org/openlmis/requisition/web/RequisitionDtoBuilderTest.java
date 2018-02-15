@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionStatus;
@@ -148,7 +149,7 @@ public class RequisitionDtoBuilderTest {
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(
-        requisition.getDatePhysicalStockCountCompleted(),
+        requisition.getDatePhysicalStockCountCompleted().getLocalDate(),
         requisitionDto.getDatePhysicalStockCountCompleted());
     assertEquals(requisition.getStatus(), requisitionDto.getStatus());
     assertNotNull(requisitionDto.getModifiedDate());
@@ -249,7 +250,8 @@ public class RequisitionDtoBuilderTest {
     requisition.setTemplate(template);
     requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
-    requisition.setDatePhysicalStockCountCompleted(LocalDate.now());
+    requisition.setDatePhysicalStockCountCompleted(
+        new DatePhysicalStockCountCompleted(LocalDate.now()));
     requisition.setAvailableProducts(Collections.singleton(orderableId));
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();

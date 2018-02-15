@@ -36,6 +36,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -70,7 +71,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -275,11 +275,10 @@ public class RequisitionController extends BaseRequisitionController {
 
     requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
         .throwExceptionIfHasErrors();
-    validateFields(draftValidator, requisition).throwExceptionIfHasErrors();
 
     logger.debug("Updating requisition with id: {}", requisitionId);
 
-    return doUpdate(requisitionToUpdate, requisition);
+    return doUpdate(requisitionToUpdate, requisition, new ValidationResult());
   }
 
   /**
