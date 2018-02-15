@@ -19,7 +19,6 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
@@ -109,6 +108,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -236,8 +236,8 @@ public class RequisitionService {
     List<ApprovedProductDto> approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(facilityId, programId);
 
-    List<ApprovedProductDto> fullSupplyProducts = getFullSupplyProducts(
-        approvedProducts, programId
+    List<ApprovedProductDto> fullSupplyProducts = getSupplyProducts(
+        approvedProducts, programId, true
     );
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
@@ -256,10 +256,21 @@ public class RequisitionService {
         authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
     profiler.start("SET_AVAIL_FULL_SUPPLY");
-    requisition.setAvailableProducts(approvedProducts
-        .stream()
-        .map(ap -> ap.getOrderable().getId())
-        .collect(toSet()));
+    if (emergency) {
+      requisition.setAvailableProducts(approvedProducts
+          .stream()
+          .map(ap -> ap.getOrderable().getId())
+          .collect(toSet()));
+    } else {
+      List<ApprovedProductDto> nonFullSupplyProducts = getSupplyProducts(
+          approvedProducts, programId, false
+      );
+
+      requisition.setAvailableProducts(nonFullSupplyProducts
+          .stream()
+          .map(ap -> ap.getOrderable().getId())
+          .collect(toSet()));
+    }
 
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
@@ -271,20 +282,21 @@ public class RequisitionService {
     return requisition;
   }
 
-  private List<ApprovedProductDto> getFullSupplyProducts(List<ApprovedProductDto> approvedProducts,
-                                                         UUID programId) {
-    List<ApprovedProductDto> fullSupplyProducts = new ArrayList<>();
+  private List<ApprovedProductDto> getSupplyProducts(List<ApprovedProductDto> approvedProducts,
+                                                     UUID programId,
+                                                     boolean fullSupply) {
+    List<ApprovedProductDto> supplyProducts = new ArrayList<>();
 
     for (ApprovedProductDto approvedProduct : approvedProducts) {
       OrderableDto orderable = approvedProduct.getOrderable();
-      ProgramOrderableDto programOrderable = orderable.findProgramOrderableDto(programId);
+      ProgramOrderableDto po = orderable.findProgramOrderableDto(programId);
 
-      if (null != programOrderable && isTrue(programOrderable.getFullSupply())) {
-        fullSupplyProducts.add(approvedProduct);
+      if (null != po && Objects.equals(fullSupply, po.getFullSupply())) {
+        supplyProducts.add(approvedProduct);
       }
     }
 
-    return fullSupplyProducts;
+    return supplyProducts;
   }
 
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,

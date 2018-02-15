@@ -936,7 +936,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSetAvailableNonFullSupplyProductsForRequisition() {
+  public void shouldSetStockAdjustmenReasonsDuringInitiate() {
     prepareForTestInitiate(SETTING);
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -947,12 +947,26 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldPopulateFullAndNonFullProductsDuringInitiate() {
+  public void shouldPopulateOnlyNonFullProductsDuringInitiateForRegularRequisition() {
     prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.programId, facilityId, suggestedPeriodId, false,
+        stockAdjustmentReasons);
+
+    Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
+    assertThat(availableProducts, hasSize(1));
+    assertThat(availableProducts, hasItems(NON_FULL_PRODUCT_ID));
+  }
+
+  @Test
+  public void shouldPopulateFullAndNonFullProductsDuringInitiateForEmergencyRequisition() {
+    prepareForTestInitiate(SETTING);
+    mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        this.programId, facilityId, suggestedPeriodId, true,
         stockAdjustmentReasons);
 
     Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
@@ -1781,7 +1795,8 @@ public class RequisitionServiceTest {
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setDurationInMonths(1);
     periodDto.setEndDate(periodEndDate);
-    when(periodService.findPeriod(programId, facilityId, suggestedPeriodId, false))
+    when(periodService
+        .findPeriod(eq(programId), eq(facilityId), eq(suggestedPeriodId), anyBoolean()))
         .thenReturn(periodDto);
   }
 
