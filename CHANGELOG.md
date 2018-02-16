@@ -6,6 +6,7 @@ Contract breaking changes:
   * The requisition template search endpoint has been removed
 * [OLMIS-4054](https://openlmis.atlassian.net/browse/OLMIS-4054): Stock based requisition: Stock on Hand from stock management
   * Stock on hand requisition column is populated with the stock on hand from Stock.
+* [OLMIS-4112](https://openlmis.atlassian.net/browse/OLMIS-4112): Allow adding/removing line items for emergency requisitions
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
