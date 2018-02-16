@@ -15,22 +15,17 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-import java.util.UUID;
+public class ProgramDtoTest extends DtoTest<ProgramDto> {
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-public class BasicProgramDto {
-  private UUID id;
-  private String code;
-  private String name;
+  @Override
+  protected Class<ProgramDto> getTestClass() {
+    return ProgramDto.class;
+  }
 
+  @Override
+  protected void prepare(EqualsVerifier<ProgramDto> verifier) {
+    verifier.withRedefinedSuperclass();
+  }
 }

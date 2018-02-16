@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -37,6 +36,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 import java.util.Collections;
@@ -378,20 +378,14 @@ public class RequisitionLineItemTest {
   }
 
   private ApprovedProductDto createDefaultApprovedProduct(Money pricePerPack) {
-    ProgramOrderableDto programOrderable = new ProgramOrderableDto();
-    programOrderable.setPricePerPack(pricePerPack);
-    programOrderable.setProgramId(programId);
-    OrderableDto orderable = new OrderableDto();
-    orderable.setId(orderableId);
-    orderable.setPrograms(Sets.newHashSet(programOrderable));
-    ApprovedProductDto ftap = new ApprovedProductDto();
-    ProgramDto programMock = mock(ProgramDto.class);
-    when(programMock.getId()).thenReturn(programId);
-    ftap.setProgram(programMock);
-    ftap.setOrderable(orderable);
-    ftap.setMaxPeriodsOfStock(maxPeriodsOfStock);
-
-    return ftap;
+    return new ApprovedProductDtoDataBuilder()
+        .withOrderable(
+            new OrderableDtoDataBuilder()
+            .withId(orderableId)
+            .withProgramOrderable(programId, pricePerPack)
+            .build())
+        .withMaxPeriodsOfStock(maxPeriodsOfStock)
+        .build();
   }
 
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {

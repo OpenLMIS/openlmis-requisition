@@ -211,9 +211,9 @@ public class ApprovalNotifierTest {
 
   private void mockServices() {
     when(rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE)).thenReturn(right);
-    when(periodReferenceDataService.findOne(any())).thenReturn(mock(ProcessingPeriodDto.class));
-    when(programReferenceDataService.findOne(any())).thenReturn(mock(ProgramDto.class));
-    when(facilityReferenceDataService.findOne(any())).thenReturn(mock(FacilityDto.class));
+    when(periodReferenceDataService.findOne(any())).thenReturn(new ProcessingPeriodDto());
+    when(programReferenceDataService.findOne(any())).thenReturn(new ProgramDto());
+    when(facilityReferenceDataService.findOne(any())).thenReturn(new FacilityDto());
   }
 
   private void mockMessages() {

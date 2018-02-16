@@ -26,6 +26,8 @@ Improvements:
 * [OLMIS-3925](https://openlmis.atlassian.net/browse/OLMIS-3925): Updated requisition approval process to stop at an intermediate supervisory node that has a supply line for the requisition's program.
 * [OLMIS-3930](https://openlmis.atlassian.net/browse/OLMIS-3930): a requisition will be converted to an order if for a supplying facility/program combo locally fulfill flags is set
 * [OLMIS-3938](https://openlmis.atlassian.net/browse/OLMIS-3938): Configured ISA column on requisition template.
+* [OLMIS-4016](https://openlmis.atlassian.net/browse/OLMIS-4016): Change the way how service find a correct requisition template
+  * use both program and facility type IDs
 
 5.1.0 / 2017-11-09
 ==================

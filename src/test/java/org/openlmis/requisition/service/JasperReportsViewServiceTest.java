@@ -21,15 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +41,19 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JasperReportsViewServiceTest {
@@ -73,30 +76,19 @@ public class JasperReportsViewServiceTest {
   @Mock
   private RequisitionService requisitionService;
 
-  @Mock
-  private ProgramDto program;
-
-  @Mock
-  private ProcessingPeriodDto period;
-
-  @Mock
-  private GeographicZoneDto district;
-
-  private UUID programId = UUID.randomUUID();
-  private UUID periodId = UUID.randomUUID();
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class);
+  private ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
+  private GeographicZoneDto district = DtoGenerator.of(GeographicZoneDto.class);
 
   private Map<String, Object> reportParams = new HashMap<>();
 
   @Before
   public void setUp() {
-    when(program.getId()).thenReturn(programId);
-    when(period.getId()).thenReturn(periodId);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
-    when(programReferenceDataService.findOne(programId)).thenReturn(program);
-    when(periodReferenceDataService.findOne(periodId)).thenReturn(period);
-
-    reportParams.put("program", programId.toString());
-    reportParams.put("period", periodId.toString());
+    reportParams.put("program", program.getId().toString());
+    reportParams.put("period", period.getId().toString());
   }
 
   @Test
@@ -304,8 +296,8 @@ public class JasperReportsViewServiceTest {
     when(requisitionPage.getContent()).thenReturn(
         (isMissingRnR) ? Collections.emptyList() : Collections.singletonList(mockRequisition));
     
-    when(requisitionService.searchRequisitions(eq(facilityId), eq(programId), any(), any(),
-        eq(periodId), any(), any(), any(), any()))
+    when(requisitionService.searchRequisitions(eq(facilityId), eq(program.getId()), any(), any(),
+        eq(period.getId()), any(), any(), any(), any()))
         .thenReturn(requisitionPage);
 
     return geographicZoneDto;

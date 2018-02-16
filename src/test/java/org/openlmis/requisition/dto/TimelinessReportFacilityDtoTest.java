@@ -15,22 +15,23 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-import java.util.UUID;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-public class BasicProgramDto {
-  private UUID id;
-  private String code;
-  private String name;
+import java.util.List;
 
+public class TimelinessReportFacilityDtoTest extends DtoTest<TimelinessReportFacilityDto> {
+
+  @Override
+  protected Class<TimelinessReportFacilityDto> getTestClass() {
+    return TimelinessReportFacilityDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<TimelinessReportFacilityDto> verifier) {
+    List<GeographicZoneDto> zones = DtoGenerator.of(GeographicZoneDto.class, 2);
+    verifier.withRedefinedSuperclass();
+    verifier.withPrefabValues(GeographicZoneDto.class, zones.get(0), zones.get(1));
+  }
 }

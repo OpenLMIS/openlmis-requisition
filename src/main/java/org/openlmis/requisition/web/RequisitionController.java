@@ -85,6 +85,7 @@ import java.util.stream.Collectors;
 public class RequisitionController extends BaseRequisitionController {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionController.class);
+  private static final String GET_USER = "GET_USER";
 
   @Autowired
   private PeriodService periodService;
@@ -155,7 +156,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
-        program.getId(), facility.getId(), suggestedPeriod, emergency, stockAdjustmentReasons);
+        program, facility, suggestedPeriod, emergency, stockAdjustmentReasons);
 
     profiler.start("VALIDATE_REASONS");
     reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());
@@ -400,7 +401,7 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ONE_REQUISITION");
     Requisition requisition = requisitionRepository.findOne(requisitionId);
 
-    profiler.start("GET_USER");
+    profiler.start(GET_USER);
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("CHECK_PERM_REQUISITION_APPROVE");
@@ -433,7 +434,7 @@ public class RequisitionController extends BaseRequisitionController {
     Profiler profiler = new Profiler("REQUISITIONS_FOR_APPROVAL");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("GET_USER");
+    profiler.start(GET_USER);
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
@@ -532,7 +533,7 @@ public class RequisitionController extends BaseRequisitionController {
     Profiler profiler = new Profiler("GET_REQUISITIONS_FOR_CONVERT");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("GET_USER");
+    profiler.start(GET_USER);
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("GET_RIGHT");

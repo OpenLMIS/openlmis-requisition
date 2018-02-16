@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
 import java.util.UUID;
 
@@ -39,8 +40,7 @@ public class DatePhysicalStockCountCompletedEnabledPredicateTest {
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
-  @Mock
-  private ProgramDto program;
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class, true);
 
   @Before
   public void setUp() {
@@ -60,16 +60,16 @@ public class DatePhysicalStockCountCompletedEnabledPredicateTest {
 
   @Test
   public void shouldReturnFalseIfProgramFieldIsNull() {
-    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(null);
+    program.setEnableDatePhysicalStockCountCompleted(null);
     assertEquals(false, predicate.exec(UUID.randomUUID()));
   }
 
   @Test
   public void shouldReturnValueOfProgramField() {
-    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(true);
+    program.setEnableDatePhysicalStockCountCompleted(true);
     assertEquals(true, predicate.exec(UUID.randomUUID()));
 
-    when(program.getEnableDatePhysicalStockCountCompleted()).thenReturn(false);
+    program.setEnableDatePhysicalStockCountCompleted(false);
     assertEquals(false, predicate.exec(UUID.randomUUID()));
   }
 

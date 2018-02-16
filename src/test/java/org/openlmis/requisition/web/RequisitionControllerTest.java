@@ -339,9 +339,9 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
 
     when(requisitionDto.getId()).thenReturn(uuid1);
-    when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
-    when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
-    when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
+    when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
+    when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
     when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
@@ -367,9 +367,9 @@ public class RequisitionControllerTest {
   public void shouldNotUpdateWithInvalidRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getTemplate()).thenReturn(templateDto);
-    when(requisitionDto.getFacility()).thenReturn(mock(FacilityDto.class));
-    when(requisitionDto.getProgram()).thenReturn(mock(ProgramDto.class));
-    when(requisitionDto.getProcessingPeriod()).thenReturn(mock(ProcessingPeriodDto.class));
+    when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
+    when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
+    when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
     when(requisitionService.validateCanSaveRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateRequisitionTimestamps(

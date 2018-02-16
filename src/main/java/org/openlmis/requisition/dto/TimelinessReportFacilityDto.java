@@ -17,7 +17,10 @@ package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class TimelinessReportFacilityDto extends FacilityDto implements FacilityDto.Exporter {
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
+public final class TimelinessReportFacilityDto extends FacilityDto implements FacilityDto.Exporter {
 
   public static final Integer DISTRICT_LEVEL = 3;
 

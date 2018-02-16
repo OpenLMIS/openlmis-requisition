@@ -117,12 +117,9 @@ public class RequisitionStatusNotifierTest {
   }
 
   private void mockServices() {
-    when(programReferenceDataService.findOne(any())).thenReturn(
-        mock(ProgramDto.class));
-    when(periodReferenceDataService.findOne(any())).thenReturn(
-        mock(ProcessingPeriodDto.class));
-    when(facilityReferenceDataService.findOne(any())).thenReturn(
-        mock(FacilityDto.class));
+    when(programReferenceDataService.findOne(any())).thenReturn(new ProgramDto());
+    when(periodReferenceDataService.findOne(any())).thenReturn(new ProcessingPeriodDto());
+    when(facilityReferenceDataService.findOne(any())).thenReturn(new FacilityDto());
     when(userReferenceDataService.findOne(eq(user.getId()))).thenReturn(user);
     mockMessages();
   }

@@ -34,7 +34,6 @@ import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -238,48 +237,23 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testSearchRequisitionTemplatesByAllParameters() {
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.addAssignment(UUID.randomUUID(), null);
+      requisitionTemplate.addAssignment(UUID.randomUUID(), UUID.randomUUID());
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
 
     UUID programId = requisitionTemplates
         .get(0)
         .getProgramId();
+    UUID facilityTypeId = requisitionTemplates
+        .get(0)
+        .getFacilityTypeIds()
+        .iterator()
+        .next();
 
-    RequisitionTemplate template = repository.getTemplateForProgram(programId);
+    RequisitionTemplate template = repository.findTemplate(programId, facilityTypeId);
 
     assertNotNull(template);
     assertThat(template.getProgramId(), is(programId));
-  }
-
-  @Test
-  public void shouldFindLastTemplateByProgram() {
-    // given
-    UUID programId = UUID.randomUUID();
-    Integer numberOfPeriodsToAverage = 5;
-    ZonedDateTime createdDate = ZonedDateTime.now().minusMonths(1);
-
-    for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
-      createdDate = createdDate.plusDays(1);
-      RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
-          .withoutId()
-          .withNumberOfPeriodsToAverage(numberOfPeriodsToAverage)
-          .withAssignment(programId, null)
-          .build();
-      requisitionTemplates.add(repository.save(requisitionTemplate));
-
-      requisitionTemplate.setCreatedDate(createdDate);
-      repository.save(requisitionTemplate);
-    }
-
-    // when
-    RequisitionTemplate result = repository.getTemplateForProgram(programId);
-
-    // then
-    assertEquals(
-        requisitionTemplates.get(requisitionTemplates.size() - 1).getId(), result.getId());
-    assertThat(result.getProgramId(), is(programId));
-    assertEquals(numberOfPeriodsToAverage, result.getNumberOfPeriodsToAverage());
   }
 
   @Test

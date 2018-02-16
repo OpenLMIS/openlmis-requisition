@@ -53,6 +53,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
 
@@ -81,16 +82,6 @@ public class RequisitionDtoBuilderTest {
 
   @Mock
   private RequisitionLineItem requisitionLineItem;
-
-  @Mock
-  private FacilityDto facilityDto;
-
-  @Mock
-  private ProcessingPeriodDto processingPeriodDto;
-
-  @Mock
-  private ProgramDto programDto;
-
   @Mock
   private RequisitionLineItemDto requisitionLineItemDto;
 
@@ -100,15 +91,17 @@ public class RequisitionDtoBuilderTest {
   @InjectMocks
   private RequisitionDtoBuilder requisitionDtoBuilder = new RequisitionDtoBuilder();
 
+
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
+  private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class);
+
   private Requisition requisition;
   private StockAdjustmentReason stockAdjustmentReason;
 
   private List<RequisitionLineItemDto> lineItemDtos = new ArrayList<>();
 
   private UUID requisitionUuid = UUID.randomUUID();
-  private UUID facilityUuid = UUID.randomUUID();
-  private UUID processingPeriodUuid = UUID.randomUUID();
-  private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
 
@@ -121,15 +114,15 @@ public class RequisitionDtoBuilderTest {
 
     requisition = buildRequisition();
     orderableDto = new OrderableDtoDataBuilder()
-        .withProgramOrderable(programUuid, false)
+        .withProgramOrderable(program.getId(), false)
         .build();
   }
 
   @Test
   public void shouldBuildDtoFromRequisition() {
-    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facilityDto);
-    when(programReferenceDataService.findOne(programUuid)).thenReturn(programDto);
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
     when(requisitionExportHelper
         .exportToDtos(Collections.singletonList(requisitionLineItem), null, false))
         .thenReturn(lineItemDtos);
@@ -143,9 +136,9 @@ public class RequisitionDtoBuilderTest {
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
-    assertEquals(facilityDto, requisitionDto.getFacility());
-    assertEquals(programDto, requisitionDto.getProgram());
-    assertEquals(processingPeriodDto, requisitionDto.getProcessingPeriod());
+    assertEquals(facility, requisitionDto.getFacility());
+    assertEquals(program, requisitionDto.getProgram());
+    assertEquals(processingPeriod, requisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(
@@ -203,14 +196,14 @@ public class RequisitionDtoBuilderTest {
 
     RequisitionDto requisitionDto =
         requisitionDtoBuilder
-            .buildBatch(requisition, facilityDto,
-                orderables, processingPeriodDto);
+            .buildBatch(requisition, facility,
+                orderables, processingPeriod);
 
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
-    assertEquals(facilityDto, requisitionDto.getFacility());
-    assertEquals(processingPeriodDto, requisitionDto.getProcessingPeriod());
+    assertEquals(facility, requisitionDto.getFacility());
+    assertEquals(processingPeriod, requisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(requisition.getStatus(), requisitionDto.getStatus());
@@ -225,9 +218,9 @@ public class RequisitionDtoBuilderTest {
 
   @Test
   public void shouldBuildDtoFromRequisitionWhenReferenceDataInstancesDoNotExist() {
-    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(null);
-    when(programReferenceDataService.findOne(programUuid)).thenReturn(null);
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(null);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(null);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(null);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(null);
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
@@ -241,8 +234,8 @@ public class RequisitionDtoBuilderTest {
   }
 
   private Requisition buildRequisition() {
-    Requisition requisition = new Requisition(facilityUuid, programUuid, processingPeriodUuid,
-        RequisitionStatus.INITIATED, false);
+    Requisition requisition = new Requisition(facility.getId(), program.getId(),
+        processingPeriod.getId(), RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
     RequisitionTemplate template = new RequisitionTemplate();

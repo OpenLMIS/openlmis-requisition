@@ -16,18 +16,26 @@
 package org.openlmis.requisition.repository;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.repository.custom.RequisitionTemplateRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface RequisitionTemplateRepository extends
-    JpaRepository<RequisitionTemplate, UUID>,
-    RequisitionTemplateRepositoryCustom {
+    JpaRepository<RequisitionTemplate, UUID> {
 
   @Query("SELECT t FROM RequisitionTemplate AS t WHERE t.archived IS FALSE")
   List<RequisitionTemplate> getActiveTemplates();
+
+  @Query("SELECT DISTINCT t"
+      + " FROM RequisitionTemplate AS t"
+      + "   INNER JOIN FETCH t.templateAssignments AS a"
+      + " WHERE a.programId = :programId"
+      + "   AND a.facilityTypeId = :facilityTypeId"
+      + "   AND t.archived IS FALSE")
+  RequisitionTemplate findTemplate(@Param("programId") UUID program,
+                                   @Param("facilityTypeId") UUID facilityType);
 
 }

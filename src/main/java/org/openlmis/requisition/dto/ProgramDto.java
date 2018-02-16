@@ -15,12 +15,14 @@
 
 package org.openlmis.requisition.dto;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ProgramDto extends BasicProgramDto {
+@EqualsAndHashCode(callSuper = true)
+public final class ProgramDto extends BasicProgramDto {
   private String description;
   private Boolean active;
   private Boolean periodsSkippable;

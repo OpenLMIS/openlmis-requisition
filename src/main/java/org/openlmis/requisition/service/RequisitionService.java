@@ -28,7 +28,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWE
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_ID_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
@@ -184,33 +183,35 @@ public class RequisitionService {
   /**
    * Initiated given requisition if possible.
    *
-   * @param programId         UUID of Program.
-   * @param facilityId        UUID of Facility.
-   * @param suggestedPeriodId Period for requisition.
-   * @param emergency         Emergency status.
+   * @param program                Program.
+   * @param facility               Facility.
+   * @param suggestedPeriodId      Period for requisition.
+   * @param emergency              Emergency status.
    * @param stockAdjustmentReasons list of stockAdjustmentReasons
    * @return Initiated requisition.
    */
-  public Requisition initiate(UUID programId, UUID facilityId, UUID suggestedPeriodId,
-                              boolean emergency,
+  public Requisition initiate(ProgramDto program, FacilityDto facility,
+                              UUID suggestedPeriodId, boolean emergency,
                               List<StockAdjustmentReason> stockAdjustmentReasons) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
 
     profiler.start("BUILD_REQUISITION");
     Requisition requisition = RequisitionBuilder.newRequisition(
-        facilityId, programId, emergency);
+        facility.getId(), program.getId(), emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
     profiler.start("FIND_PROCESSING_PERIOD");
     ProcessingPeriodDto period = periodService
-        .findPeriod(programId, facilityId, suggestedPeriodId, emergency);
+        .findPeriod(program.getId(), facility.getId(), suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
 
     profiler.start("FIND_REQUISITION_TEMPLATE");
-    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(programId);
+    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(
+        program.getId(), facility.getType().getId()
+    );
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     int numberOfPreviousPeriodsToAverage;
@@ -234,10 +235,10 @@ public class RequisitionService {
 
     profiler.start("FIND_APPROVED_PRODUCTS");
     List<ApprovedProductDto> approvedProducts = approvedProductReferenceDataService
-        .getApprovedProducts(facilityId, programId);
+        .getApprovedProducts(facility.getId(), program.getId());
 
     List<ApprovedProductDto> fullSupplyProducts = getSupplyProducts(
-        approvedProducts, programId, true
+        approvedProducts, program.getId(), true
     );
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
@@ -248,7 +249,9 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_ON_HANDS");
     Map<UUID, Integer> orderableSoh = getStockOnHands(
-        requisitionTemplate, fullSupplyProducts, programId, facilityId, period.getEndDate());
+        requisitionTemplate, fullSupplyProducts,
+        program.getId(), facility.getId(), period.getEndDate()
+    );
 
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, fullSupplyProducts, previousRequisitions,
@@ -263,7 +266,7 @@ public class RequisitionService {
           .collect(toSet()));
     } else {
       List<ApprovedProductDto> nonFullSupplyProducts = getSupplyProducts(
-          approvedProducts, programId, false
+          approvedProducts, program.getId(), false
       );
 
       requisition.setAvailableProducts(nonFullSupplyProducts
@@ -330,13 +333,9 @@ public class RequisitionService {
     return pod;
   }
 
-  private RequisitionTemplate findRequisitionTemplate(UUID programId) {
-    if (null == programId) {
-      throw new ValidationMessageException(new Message(ERROR_PROGRAM_ID_CANNOT_BE_NULL));
-    }
-
+  private RequisitionTemplate findRequisitionTemplate(UUID programId, UUID facilityTypeId) {
     RequisitionTemplate template =
-        requisitionTemplateRepository.getTemplateForProgram(programId);
+        requisitionTemplateRepository.findTemplate(programId, facilityTypeId);
 
     if (null == template) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));
@@ -344,9 +343,9 @@ public class RequisitionService {
 
     if (!template.hasColumnsDefined()) {
       throw new ValidationMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_DEFINED));
-    } else {
-      return template;
     }
+
+    return template;
   }
 
   /**

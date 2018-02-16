@@ -47,7 +47,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -88,8 +88,6 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
@@ -112,6 +110,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,9 +191,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
-  @MockBean(name = "programReferenceDataService")
-  private ProgramReferenceDataService programReferenceDataService;
-
   @MockBean(name = "facilityReferenceDataService")
   private FacilityReferenceDataService facilityReferenceDataService;
 
@@ -204,9 +202,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   @MockBean
   private StockEventBuilder stockEventBuilder;
-
-  @MockBean
-  private PeriodReferenceDataService periodReferenceDataService;
 
   @MockBean
   private ReasonsValidator reasonsValidator;
@@ -854,25 +849,26 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldInitiateRequisition() {
     // given
-    UUID programId = mockProgram().getId();
-    UUID facilityId = mockFacility().getId();
+    ProgramDto program = mockProgram();
+    FacilityDto facility = mockFacility();
     Requisition requisition =
-        generateRequisition(RequisitionStatus.INITIATED, programId, facilityId);
+        generateRequisition(RequisitionStatus.INITIATED, program.getId(), facility.getId());
     UUID periodId = requisition.getProcessingPeriodId();
 
     doReturn(ValidationResult.success())
-        .when(permissionService).canInitRequisition(programId, facilityId);
+        .when(permissionService)
+        .canInitRequisition(program.getId(), facility.getId());
     doReturn(requisition)
         .when(requisitionService)
-        .initiate(eq(programId), eq(facilityId), eq(periodId), eq(false),
+        .initiate(eq(program), eq(facility), eq(periodId), eq(false),
             anyListOf(StockAdjustmentReason.class));
     mockValidationSuccess();
 
     // when
     RequisitionDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
+        .queryParam(PROGRAM, program.getId())
+        .queryParam(FACILITY, facility.getId())
         .queryParam(SUGGESTED_PERIOD, periodId)
         .queryParam(EMERGENCY, false)
         .when()
@@ -883,12 +879,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertEquals(requisition.getId(), result.getId());
-    verify(facilityReferenceDataService).findOne(facilityId);
-    verify(validReasonStockmanagementService).search(programId, facilityTypeId);
+    verify(facilityReferenceDataService).findOne(facility.getId());
+    verify(validReasonStockmanagementService).search(program.getId(), facilityTypeId);
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
-        .initiate(programId, facilityId, periodId, false, stockAdjustmentReasons);
+        .initiate(program, facility, periodId, false, stockAdjustmentReasons);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -917,33 +913,33 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisitionService, never())
-        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), any());
+        .initiate(any(ProgramDto.class), any(FacilityDto.class), anyUuid(), anyBoolean(), any());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.requestChecks());
   }
 
   @Test
   public void shouldNotInitiateRequisitionWhenPeriodDoesNotExist() {
     // given
-    UUID programId = mockProgram().getId();
-    UUID facilityId = mockFacility().getId();
+    ProgramDto program = mockProgram();
+    FacilityDto facility = mockFacility();
     UUID periodId = UUID.randomUUID();
 
     ValidationMessageException err =
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
     given(requisitionService
-        .initiate(eq(programId), eq(facilityId), eq(periodId), eq(false),
+        .initiate(eq(program), eq(facility), eq(periodId), eq(false),
             anyListOf(StockAdjustmentReason.class)))
         .willThrow(err);
 
     doReturn(ValidationResult.success())
-        .when(permissionService).canInitRequisition(programId, facilityId);
+        .when(permissionService).canInitRequisition(program.getId(), facility.getId());
     mockValidationSuccess();
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .queryParam(PROGRAM, programId)
-        .queryParam(FACILITY, facilityId)
+        .queryParam(PROGRAM, program)
+        .queryParam(FACILITY, facility)
         .queryParam(SUGGESTED_PERIOD, periodId)
         .queryParam(EMERGENCY, false)
         .when()
@@ -980,7 +976,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisitionService, never())
-        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), anyList());
+        .initiate(any(ProgramDto.class), any(FacilityDto.class),
+            anyUuid(), anyBoolean(), anyList());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1009,7 +1006,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisitionService, never())
-        .initiate(anyUuid(), anyUuid(), anyUuid(), anyBoolean(), anyList());
+        .initiate(any(ProgramDto.class), any(FacilityDto.class),
+            anyUuid(), anyBoolean(), anyList());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1576,11 +1574,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private FacilityDto mockFacility() {
-    FacilityDto facilityDto = mock(FacilityDto.class);
     FacilityTypeDto facilityTypeDto = new FacilityTypeDto();
     facilityTypeDto.setId(facilityTypeId);
-    when(facilityDto.getType()).thenReturn(facilityTypeDto);
-    when(facilityDto.getId()).thenReturn(UUID.randomUUID());
+
+    FacilityDto facilityDto = new FacilityDto();
+    facilityDto.setId(UUID.randomUUID());
+    facilityDto.setType(facilityTypeDto);
+
     when(facilityReferenceDataService.findOne(anyUuid()))
         .thenReturn(facilityDto);
 

@@ -53,14 +53,26 @@ public final class DtoGenerator {
   }
 
   public static <T> T of(Class<T> clazz) {
-    return of(clazz, 1).get(0);
+    return of(clazz, 1, false).get(0);
+  }
+
+  public static <T> T of(Class<T> clazz, boolean refresh) {
+    return of(clazz, 1, refresh).get(0);
+  }
+
+  public static <T> List<T> of(Class<T> clazz, int count) {
+    return of(clazz, count, false);
   }
 
   /**
    * Creates a list of instances with the given type. The list size will be equal to the number
    * in the <strong>count</strong> parameter.
    */
-  public static <T> List<T> of(Class<T> clazz, int count) {
+  public static <T> List<T> of(Class<T> clazz, int count, boolean refresh) {
+    if (refresh) {
+      REFERENCES.removeAll(clazz);
+    }
+
     while (REFERENCES.get(clazz).size() < count) {
       generate(clazz);
     }

@@ -40,6 +40,11 @@ public class ApprovedProductDtoDataBuilder {
     return this;
   }
 
+  public ApprovedProductDtoDataBuilder withMaxPeriodsOfStock(double maxPeriodsOfStock) {
+    this.maxPeriodsOfStock = maxPeriodsOfStock;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link ApprovedProductDto} with properties.
    * @return created approved product dto

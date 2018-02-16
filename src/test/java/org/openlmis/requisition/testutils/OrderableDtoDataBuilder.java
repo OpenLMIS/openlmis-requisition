@@ -57,12 +57,21 @@ public class OrderableDtoDataBuilder {
     identifiers = new HashMap<>();
   }
 
+  public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply) {
+    return withProgramOrderable(programId, fullSupply, Money.of(CurrencyUnit.USD, 1));
+  }
+
+  public OrderableDtoDataBuilder withProgramOrderable(UUID programId, Money pricePerPack) {
+    return withProgramOrderable(programId, true, pricePerPack);
+  }
+
   /**
    * Add program orderable with passed properties.
    */
-  public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply) {
+  public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply,
+                                                      Money pricePerPack) {
     this.programs.add(new ProgramOrderableDto(
-        programId, null, null, null, fullSupply, null, Money.of(CurrencyUnit.USD, 1)
+        programId, null, null, null, fullSupply, null, pricePerPack
     ));
 
     return this;

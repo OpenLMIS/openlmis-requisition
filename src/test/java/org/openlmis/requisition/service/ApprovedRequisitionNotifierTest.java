@@ -48,10 +48,10 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
-import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RightName;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -96,25 +96,18 @@ public class ApprovedRequisitionNotifierTest {
   @InjectMocks
   private ApprovedRequisitionNotifier approvedRequisitionNotifier;
 
-  private UserDto clerkOne;
-  private UserDto clerkTwo;
-  private UserDto clerkThree;
-  private UserDto clerkFour;
-
-  private FacilityDto warehouseOne = mock(FacilityDto.class);
-  private FacilityDto warehouseTwo = mock(FacilityDto.class);
-
-  private UUID requisitionId = UUID.randomUUID();
-  private UUID facilityId = UUID.randomUUID();
-  private UUID programId = UUID.randomUUID();
-  private UUID processingPeriodId = UUID.randomUUID();
-  private UUID warehouseOneId = UUID.randomUUID();
-  private UUID warehouseTwoId = UUID.randomUUID();
-
   private Requisition requisition = mock(Requisition.class);
-  private FacilityDto facility = mock(FacilityDto.class);
-  private ProgramDto program = mock(ProgramDto.class);
-  private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
+  private UUID requisitionId = UUID.randomUUID();
+
+  private UserDto clerkOne = new UserDtoDataBuilder().withUsername("ClerkOne").build();
+  private UserDto clerkTwo = new UserDtoDataBuilder().withUsername("ClerkTwo").build();
+  private UserDto clerkThree = new UserDtoDataBuilder().withUsername("ClerkThree").build();
+  private UserDto clerkFour = new UserDtoDataBuilder().withUsername("ClerkFour").build();
+  private FacilityDto warehouseOne = DtoGenerator.of(FacilityDto.class, 3).get(0);
+  private FacilityDto warehouseTwo = DtoGenerator.of(FacilityDto.class, 3).get(1);
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class, 3).get(2);
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class);
+  private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
 
   private StatusChange statusChange = mock(StatusChange.class);
   private ZonedDateTime createdDate = ZonedDateTime.parse("2017-05-08T10:15:30+01:00");
@@ -126,17 +119,6 @@ public class ApprovedRequisitionNotifierTest {
 
   @Before
   public void setUp() {
-    when(facility.getName()).thenReturn("Mock Facility");
-    when(program.getName()).thenReturn("Mock Program");
-    when(processingPeriod.getName()).thenReturn("Mock Period");
-    when(warehouseOne.getId()).thenReturn(warehouseOneId);
-    when(warehouseTwo.getId()).thenReturn(warehouseTwoId);
-
-    clerkOne = new UserDtoDataBuilder().withUsername("ClerkOne").build();
-    clerkTwo = new UserDtoDataBuilder().withUsername("ClerkTwo").build();
-    clerkThree = new UserDtoDataBuilder().withUsername("ClerkThree").build();
-    clerkFour = new UserDtoDataBuilder().withUsername("ClerkFour").build();
-
     prepareStatusChange();
     prepareRequisition();
     mockServices();
@@ -167,7 +149,8 @@ public class ApprovedRequisitionNotifierTest {
   public void notifyClerkShouldNotifyWithCorrectMessageBody() {
     String expectedContent = "Dear ClerkOne:\\n"
         + "This email is informing you that the regular requisition approved on May 8, 2017 "
-        + "10:15:30 AM for the Period Mock Period and Mock Program at Mock Facility is ready to be "
+        + "10:15:30 AM for the Period " + processingPeriod.getName()
+        + " and " + program.getName() + " at " + facility.getName() + " is ready to be "
         + "converted to an order. Please login to convert the requisition to an order.\\n"
         + System.getenv("BASE_URL") + "/#!/requisitions/convertToOrder\\n"
         + "Thank you.";
@@ -227,9 +210,9 @@ public class ApprovedRequisitionNotifierTest {
 
   private void mockServices() {
 
-    when(facilityReferenceDataService.findOne(eq(facilityId))).thenReturn(facility);
-    when(programReferenceDataService.findOne(eq(programId))).thenReturn(program);
-    when(periodReferenceDataService.findOne(eq(processingPeriodId))).thenReturn(processingPeriod);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(processingPeriod.getId())).thenReturn(processingPeriod);
     when(requisitionForConvertBuilder.getAvailableSupplyingDepots(eq(requisitionId)))
         .thenReturn(Arrays.asList(warehouseOne, warehouseTwo));
     when(authenticationHelper.getRight(RightName.ORDERS_EDIT)).thenReturn(right);
@@ -237,13 +220,13 @@ public class ApprovedRequisitionNotifierTest {
         right.getId(),
         null,
         null,
-        warehouseOneId)
+        warehouseOne.getId())
     ).thenReturn(Arrays.asList(clerkOne, clerkTwo, clerkThree));
     when(userReferenceDataService.findUsers(
         right.getId(),
         null,
         null,
-        warehouseTwoId
+        warehouseTwo.getId()
     )).thenReturn(Arrays.asList(clerkThree, clerkTwo, clerkFour));
 
     mockMessages();
@@ -275,9 +258,9 @@ public class ApprovedRequisitionNotifierTest {
 
   private void prepareRequisition() {
     when(requisition.getId()).thenReturn(requisitionId);
-    when(requisition.getFacilityId()).thenReturn(facilityId);
-    when(requisition.getProgramId()).thenReturn(programId);
-    when(requisition.getProcessingPeriodId()).thenReturn(processingPeriodId);
+    when(requisition.getFacilityId()).thenReturn(facility.getId());
+    when(requisition.getProgramId()).thenReturn(program.getId());
+    when(requisition.getProcessingPeriodId()).thenReturn(processingPeriod.getId());
     when(requisition.getEmergency()).thenReturn(false);
     when(requisition.getStatusChanges()).thenReturn(Arrays.asList(statusChange));
   }

@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class MinimalFacilityDto extends BaseDto {
 
   protected String code;

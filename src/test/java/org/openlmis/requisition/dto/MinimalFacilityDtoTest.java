@@ -13,13 +13,27 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.repository.custom;
+package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.RequisitionTemplate;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-import java.util.UUID;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
-public interface RequisitionTemplateRepositoryCustom {
+import java.util.List;
 
-  RequisitionTemplate getTemplateForProgram(UUID program);
+public class MinimalFacilityDtoTest extends DtoTest<MinimalFacilityDto> {
+
+  @Override
+  protected Class<MinimalFacilityDto> getTestClass() {
+    return MinimalFacilityDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<MinimalFacilityDto> verifier) {
+    List<GeographicZoneDto> zones = DtoGenerator.of(GeographicZoneDto.class, 2);
+    verifier.withRedefinedSuperclass();
+    verifier.withRedefinedSubclass(FacilityDto.class);
+    verifier.withRedefinedSubclass(TimelinessReportFacilityDto.class);
+    verifier.withPrefabValues(GeographicZoneDto.class, zones.get(0), zones.get(1));
+  }
 }

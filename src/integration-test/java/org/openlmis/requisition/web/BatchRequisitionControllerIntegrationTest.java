@@ -39,12 +39,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.BaseEntity;
@@ -67,12 +66,16 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -125,8 +128,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
-  @Mock
-  private ProgramDto program;
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class);
 
   private List<Requisition> requisitions;
   private List<ApproveRequisitionDto> approveRequisitions;
@@ -178,9 +180,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     orderablesMap = orderables.stream()
         .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
 
-    doReturn(false)
-        .when(program)
-        .getEnableDatePhysicalStockCountCompleted();
+    program.setEnableDatePhysicalStockCountCompleted(false);
 
     List<FacilityDto> facilityList = requisitions.stream()
         .map(r -> {

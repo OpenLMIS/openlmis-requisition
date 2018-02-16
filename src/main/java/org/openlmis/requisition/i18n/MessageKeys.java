@@ -106,8 +106,6 @@ public abstract class MessageKeys {
       + ".release.mustHaveSupplyingFacility";
   public static final String ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM = ERROR_PREFIX
       + ".facilityDoesNotSupportProgram";
-  public static final String ERROR_PROGRAM_ID_CANNOT_BE_NULL = ERROR_PREFIX
-      + ".programIdCannotBeNull";
   public static final String ERROR_REQUISITION_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".requisitionTemplateNotFound";
   public static final String ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID = ERROR_PREFIX

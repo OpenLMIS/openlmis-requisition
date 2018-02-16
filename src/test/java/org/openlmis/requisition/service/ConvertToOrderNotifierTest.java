@@ -92,10 +92,8 @@ public class ConvertToOrderNotifierTest {
   }
 
   private void mockServices() {
-    when(programReferenceDataService.findOne(any())).thenReturn(
-        mock(ProgramDto.class));
-    when(periodReferenceDataService.findOne(any())).thenReturn(
-        mock(ProcessingPeriodDto.class));
+    when(programReferenceDataService.findOne(any())).thenReturn(new ProgramDto());
+    when(periodReferenceDataService.findOne(any())).thenReturn(new ProcessingPeriodDto());
     when(userReferenceDataService.findOne(eq(user.getId()))).thenReturn(user);
   }
 

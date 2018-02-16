@@ -25,9 +25,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -37,9 +38,12 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.DtoGenerator;
+
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+@RunWith(MockitoJUnitRunner.class)
 public class BasicRequisitionDtoBuilderTest {
 
   @Mock
@@ -51,14 +55,9 @@ public class BasicRequisitionDtoBuilderTest {
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
-  @Mock
-  private FacilityDto facilityDto;
-
-  @Mock
-  private ProcessingPeriodDto processingPeriodDto;
-
-  @Mock
-  private ProgramDto programDto;
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
+  private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
+  private ProgramDto program = DtoGenerator.of(ProgramDto.class);
 
   @InjectMocks
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder = new BasicRequisitionDtoBuilder();
@@ -66,40 +65,35 @@ public class BasicRequisitionDtoBuilderTest {
   private Requisition requisition;
 
   private UUID requisitionUuid = UUID.randomUUID();
-  private UUID facilityUuid = UUID.randomUUID();
-  private UUID processingPeriodUuid = UUID.randomUUID();
-  private UUID programUuid = UUID.randomUUID();
   private UUID supervisoryNodeUuid = UUID.randomUUID();
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-
     requisition = buildRequisition();
   }
 
   @Test
   public void shouldBuildDtoFromRequisition() {
-    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facilityDto);
-    when(programReferenceDataService.findOne(programUuid)).thenReturn(programDto);
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
 
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder.build(requisition);
 
     assertNotNull(basicRequisitionDto);
     assertEquals(requisition.getId(), basicRequisitionDto.getId());
     assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
-    assertEquals(facilityDto, basicRequisitionDto.getFacility());
-    assertEquals(programDto, basicRequisitionDto.getProgram());
-    assertEquals(processingPeriodDto, basicRequisitionDto.getProcessingPeriod());
+    assertEquals(facility, basicRequisitionDto.getFacility());
+    assertEquals(program, basicRequisitionDto.getProgram());
+    assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
   }
 
   @Test
   public void shouldBuildDtoFromRequisitionWhenReferenceDataInstancesDoNotExist() {
-    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(null);
-    when(programReferenceDataService.findOne(programUuid)).thenReturn(null);
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(null);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(null);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(null);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(null);
 
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder.build(requisition);
 
@@ -111,9 +105,9 @@ public class BasicRequisitionDtoBuilderTest {
 
   @Test
   public void shouldCallReferenceDataIfPassedValuesAreNull() {
-    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facilityDto);
-    when(programReferenceDataService.findOne(programUuid)).thenReturn(programDto);
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
 
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder
         .build(requisition, null, null);
@@ -121,39 +115,39 @@ public class BasicRequisitionDtoBuilderTest {
     assertNotNull(basicRequisitionDto);
     assertEquals(requisition.getId(), basicRequisitionDto.getId());
     assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
-    assertEquals(facilityDto, basicRequisitionDto.getFacility());
-    assertEquals(programDto, basicRequisitionDto.getProgram());
-    assertEquals(processingPeriodDto, basicRequisitionDto.getProcessingPeriod());
+    assertEquals(facility, basicRequisitionDto.getFacility());
+    assertEquals(program, basicRequisitionDto.getProgram());
+    assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
 
-    verify(facilityReferenceDataService).findOne(facilityUuid);
-    verify(programReferenceDataService).findOne(programUuid);
-    verify(periodService).getPeriod(processingPeriodUuid);
+    verify(facilityReferenceDataService).findOne(facility.getId());
+    verify(programReferenceDataService).findOne(program.getId());
+    verify(periodService).getPeriod(processingPeriod.getId());
   }
 
   @Test
   public void shouldNotCallReferenceDataIfPassedValuesAreNotNull() {
-    when(periodService.getPeriod(processingPeriodUuid)).thenReturn(processingPeriodDto);
+    when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
 
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder
-        .build(requisition, facilityDto, programDto);
+        .build(requisition, facility, program);
 
     assertNotNull(basicRequisitionDto);
     assertEquals(requisition.getId(), basicRequisitionDto.getId());
     assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
-    assertEquals(facilityDto, basicRequisitionDto.getFacility());
-    assertEquals(programDto, basicRequisitionDto.getProgram());
-    assertEquals(processingPeriodDto, basicRequisitionDto.getProcessingPeriod());
+    assertEquals(facility, basicRequisitionDto.getFacility());
+    assertEquals(program, basicRequisitionDto.getProgram());
+    assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
 
     verify(facilityReferenceDataService, never()).findOne(any(UUID.class));
     verify(programReferenceDataService, never()).findOne(any(UUID.class));
-    verify(periodService).getPeriod(processingPeriodUuid);
+    verify(periodService).getPeriod(processingPeriod.getId());
   }
 
   private Requisition buildRequisition() {
-    Requisition requisition = new Requisition(facilityUuid, programUuid, processingPeriodUuid,
-        RequisitionStatus.INITIATED, false);
+    Requisition requisition = new Requisition(facility.getId(), program.getId(),
+        processingPeriod.getId(), RequisitionStatus.INITIATED, false);
     requisition.setId(requisitionUuid);
     requisition.setSupervisoryNodeId(supervisoryNodeUuid);
     requisition.setModifiedDate(ZonedDateTime.now());
