@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,11 +41,19 @@ public class RequisitionErrorHandling extends AbstractErrorHandling {
     return getLocalizedMessage(ex);
   }
 
+  /**
+   * Handles {@link BindingResultException} exceptions.base
+   */
   @ExceptionHandler(BindingResultException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public Map<String, Message.LocalizedMessage> handleBindingRequltException(
       BindingResultException ex) {
-    return ex.getErrors();
+    Map<String, Message.LocalizedMessage> errors = new HashMap<>();
+
+    ex.getErrors()
+        .forEach((field, message) -> errors.put(field, getLocalizedMessage(message)));
+
+    return errors;
   }
 }

@@ -253,9 +253,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
                                       ValidationResult validationResult, UUID id) {
     if (validationResult.hasErrors()) {
       for (ValidationFailure failure : validationResult.gerErrors()) {
+        Map<String, Message.LocalizedMessage> localizedErrors = new HashMap<>();
+        failure.getFieldErrors()
+            .forEach((field, message) -> localizedErrors.put(field, localizeMessage(message)));
+
         processingStatus.addProcessingError(
             new RequisitionErrorMessage(id, localizeMessage(failure.getMessage()),
-                failure.getFieldErrors()));
+                localizedErrors));
       }
 
       return true;

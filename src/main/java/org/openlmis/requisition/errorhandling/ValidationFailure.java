@@ -26,6 +26,6 @@ import java.util.Map;
 @Getter
 public class ValidationFailure {
   private Message message;
-  private Map<String, Message.LocalizedMessage> fieldErrors;
+  private Map<String, Message> fieldErrors;
   private FailureType type;
 }

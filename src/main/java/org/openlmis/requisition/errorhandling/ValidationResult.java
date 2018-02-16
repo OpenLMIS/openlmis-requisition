@@ -102,7 +102,7 @@ public class ValidationResult {
    * @param fieldErrors a map containing errors for specific fields
    * @return a ValidationResult instance containing field validation error
    */
-  public static ValidationResult fieldErrors(Map<String, Message.LocalizedMessage> fieldErrors) {
+  public static ValidationResult fieldErrors(Map<String, Message> fieldErrors) {
     ValidationResult result = new ValidationResult();
     ValidationFailure failure = new ValidationFailure(null, fieldErrors, FIELD_VALIDATION);
     result.errors.add(failure);

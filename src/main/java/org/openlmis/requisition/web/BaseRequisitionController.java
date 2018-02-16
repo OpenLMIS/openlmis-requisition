@@ -166,7 +166,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     if (!isEmpty(errors)) {
       logger.warn("Validation for requisition update failed: {}", errors);
-      return ValidationResult.fieldErrors(getErrors(errors));
+      return ValidationResult.fieldErrors(errors);
     }
 
     return ValidationResult.success();

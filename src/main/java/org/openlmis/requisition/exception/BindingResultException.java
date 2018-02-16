@@ -23,13 +23,13 @@ import java.util.Map;
  */
 public class BindingResultException extends RuntimeException {
 
-  private final Map<String, Message.LocalizedMessage> errors;
+  private final Map<String, Message> errors;
 
-  public BindingResultException(Map<String, Message.LocalizedMessage> errors) {
+  public BindingResultException(Map<String, Message> errors) {
     this.errors = errors;
   }
 
-  public Map<String, Message.LocalizedMessage> getErrors() {
+  public Map<String, Message> getErrors() {
     return errors;
   }
 }
