@@ -237,7 +237,7 @@ public class RequisitionService {
     List<ApprovedProductDto> approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId());
 
-    List<ApprovedProductDto> fullSupplyProducts = getSupplyProducts(
+    List<ApprovedProductDto> fullSupplyProducts = filterProducts(
         approvedProducts, program.getId(), true
     );
 
@@ -265,7 +265,7 @@ public class RequisitionService {
           .map(ap -> ap.getOrderable().getId())
           .collect(toSet()));
     } else {
-      List<ApprovedProductDto> nonFullSupplyProducts = getSupplyProducts(
+      List<ApprovedProductDto> nonFullSupplyProducts = filterProducts(
           approvedProducts, program.getId(), false
       );
 
@@ -285,21 +285,20 @@ public class RequisitionService {
     return requisition;
   }
 
-  private List<ApprovedProductDto> getSupplyProducts(List<ApprovedProductDto> approvedProducts,
-                                                     UUID programId,
-                                                     boolean fullSupply) {
-    List<ApprovedProductDto> supplyProducts = new ArrayList<>();
+  private List<ApprovedProductDto> filterProducts(List<ApprovedProductDto> approvedProducts,
+                                                  UUID programId, boolean fullSupply) {
+    List<ApprovedProductDto> list = new ArrayList<>();
 
     for (ApprovedProductDto approvedProduct : approvedProducts) {
       OrderableDto orderable = approvedProduct.getOrderable();
       ProgramOrderableDto po = orderable.findProgramOrderableDto(programId);
 
       if (null != po && Objects.equals(fullSupply, po.getFullSupply())) {
-        supplyProducts.add(approvedProduct);
+        list.add(approvedProduct);
       }
     }
 
-    return supplyProducts;
+    return list;
   }
 
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
