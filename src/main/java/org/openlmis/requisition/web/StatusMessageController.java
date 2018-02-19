@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.web;
 
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.PermissionService;

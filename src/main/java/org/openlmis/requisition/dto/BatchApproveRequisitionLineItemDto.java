@@ -16,7 +16,7 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import java.util.List;
 import java.util.Optional;
 

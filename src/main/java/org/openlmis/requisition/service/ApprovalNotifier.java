@@ -19,9 +19,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;

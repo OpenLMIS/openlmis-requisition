@@ -13,12 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class StockAdjustmentReasonsValidator implements DomainValidator {
+class StockAdjustmentReasonsValidator implements DomainValidator {
 
   private final Requisition requisition;
   private final Requisition savedRequisition;

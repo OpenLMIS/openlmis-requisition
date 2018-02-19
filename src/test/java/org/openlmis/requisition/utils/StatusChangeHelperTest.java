@@ -19,9 +19,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import org.junit.Before;
 import org.junit.Test;

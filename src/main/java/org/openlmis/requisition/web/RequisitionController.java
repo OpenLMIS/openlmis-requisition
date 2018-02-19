@@ -21,10 +21,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;

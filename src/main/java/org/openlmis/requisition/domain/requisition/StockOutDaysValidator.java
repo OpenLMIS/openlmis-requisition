@@ -13,18 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.DomainValidator;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-public class StockOutDaysValidator implements DomainValidator {
+class StockOutDaysValidator implements DomainValidator {
 
   private static final int DAYS_IN_MONTH = 30;
 

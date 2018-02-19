@@ -17,8 +17,8 @@ package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.dto.ReasonDto.newInstance;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.BatchApproveRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;

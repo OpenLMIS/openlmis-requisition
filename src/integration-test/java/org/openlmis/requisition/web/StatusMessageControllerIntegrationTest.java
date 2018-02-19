@@ -24,10 +24,10 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.StatusMessageRepository;

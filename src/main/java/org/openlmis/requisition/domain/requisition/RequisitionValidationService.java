@@ -13,11 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompletedValidator;
+import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ public class RequisitionValidationService {
   /**
    * Validates if requisition can be updated. Return errors as {@link ValidationResult}.
    */
-  public ValidationResult validateRequisitionCanBeUpdated() {
+  ValidationResult validateRequisitionCanBeUpdated() {
     Map<String, Message> errors = new HashMap<>();
 
     for (DomainValidator validator : validators) {

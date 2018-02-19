@@ -18,9 +18,9 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 
 public class OrderLineItemDtoTest {
 

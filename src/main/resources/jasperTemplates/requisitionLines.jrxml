@@ -23,7 +23,7 @@
     <parameter name="title" class="java.lang.String" isForPrompting="false">
         <property name="displayName" value="title"/>
     </parameter>
-    <parameter name="requisitionStatus" class="org.openlmis.requisition.domain.RequisitionStatus" isForPrompting="false"/>
+    <parameter name="requisitionStatus" class="org.openlmis.requisition.domain.requisition.RequisitionStatus" isForPrompting="false"/>
     <parameter name="programId" class="java.util.UUID"/>
     <queryString>
         <![CDATA[]]>
@@ -552,7 +552,7 @@
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="approvedQuantity" x="409" y="0" width="32" height="20" uuid="123d5789-9a0e-493b-9dcb-8fd89100a599">
-                    <printWhenExpression><![CDATA[$P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.INITIATED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.REJECTED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED]]></printWhenExpression>
+                    <printWhenExpression><![CDATA[$P{requisitionStatus} != org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.requisition.RequisitionStatus.REJECTED &&  $P{requisitionStatus} != org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED]]></printWhenExpression>
                 </reportElement>
                 <box padding="2">
                     <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -563,7 +563,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalStockoutDays" x="509" y="0" width="30" height="20" uuid="0b535dc6-aa7d-41e4-bf5f-092d578c0ced">
@@ -696,7 +696,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("remarks").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED)) ? $F{remarks} : ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("remarks").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED)) ? $F{remarks} : ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="adjustedConsumption" x="719" y="0" width="40" height="20" uuid="2a43948d-6150-4c4f-ba77-2ad782def76b">

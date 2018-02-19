@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 
 import java.util.Arrays;
 import java.util.Collection;

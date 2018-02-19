@@ -29,7 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import java.util.ArrayList;

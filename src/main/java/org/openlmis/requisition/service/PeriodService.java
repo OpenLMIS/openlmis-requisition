@@ -22,8 +22,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_SHOULD_BE_O
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;

@@ -15,15 +15,27 @@
 
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-interface DomainValidator {
+/**
+ * Interface that all domain validators should implement.
+ */
+public interface DomainValidator {
+
+  /**
+   * Call given validators.
+   *
+   * @param errors a map where errors will be put.
+   */
   void validate(Map<String, Message> errors);
 
+  /**
+   * Rejects if template field is null and calculated.
+   */
   default void rejectIfCalculatedAndNotNull(Map<String, Message> errors,
                                             RequisitionTemplate template,
                                             Object value, String field) {

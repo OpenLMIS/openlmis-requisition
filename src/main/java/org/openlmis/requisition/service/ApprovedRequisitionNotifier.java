@@ -22,8 +22,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR
 
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;

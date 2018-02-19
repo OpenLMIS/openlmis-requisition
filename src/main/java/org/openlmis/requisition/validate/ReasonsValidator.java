@@ -15,13 +15,13 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SPECIAL_REASON_NOT_VALID;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.Message;

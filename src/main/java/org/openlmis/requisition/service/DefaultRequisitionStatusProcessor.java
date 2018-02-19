@@ -15,8 +15,8 @@
 
 package org.openlmis.requisition.service;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

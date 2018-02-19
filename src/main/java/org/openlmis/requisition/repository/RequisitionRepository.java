@@ -16,7 +16,7 @@
 package org.openlmis.requisition.repository;
 
 import org.javers.spring.annotation.JaversSpringDataAuditable;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;

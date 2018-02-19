@@ -21,8 +21,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;

@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;

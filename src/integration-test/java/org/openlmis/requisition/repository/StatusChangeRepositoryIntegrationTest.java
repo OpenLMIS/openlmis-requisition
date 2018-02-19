@@ -22,10 +22,10 @@ import static org.junit.Assert.assertThat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 

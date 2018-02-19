@@ -13,13 +13,14 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import org.hibernate.annotations.Type;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.requisition.domain.BaseTimestampedEntity;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;

@@ -21,7 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.apache.commons.lang3.StringUtils;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.stereotype.Component;

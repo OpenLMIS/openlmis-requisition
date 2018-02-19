@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
@@ -21,6 +21,9 @@ import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;

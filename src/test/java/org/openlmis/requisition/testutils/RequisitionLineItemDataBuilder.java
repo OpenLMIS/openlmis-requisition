@@ -20,9 +20,9 @@ import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 
 import java.math.BigDecimal;
 import java.util.List;

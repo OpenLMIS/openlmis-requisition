@@ -13,14 +13,15 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Set;

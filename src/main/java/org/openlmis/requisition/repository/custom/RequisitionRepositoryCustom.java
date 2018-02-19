@@ -16,8 +16,8 @@
 package org.openlmis.requisition.repository.custom;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

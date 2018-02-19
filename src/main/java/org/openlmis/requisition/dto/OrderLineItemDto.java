@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

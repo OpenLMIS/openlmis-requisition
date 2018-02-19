@@ -21,15 +21,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRChild;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import org.junit.Test;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 

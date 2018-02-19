@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,6 +31,10 @@ import com.google.common.collect.Sets;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
 import java.math.BigDecimal;

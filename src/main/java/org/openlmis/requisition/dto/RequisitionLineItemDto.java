@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.money.Money;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.utils.MoneyDeserializer;
 import org.openlmis.requisition.utils.MoneySerializer;
 

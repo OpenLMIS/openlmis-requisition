@@ -15,20 +15,20 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
-import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.SKIPPED_COLUMN;
-import static org.openlmis.requisition.domain.RequisitionLineItem.STOCK_ON_HAND;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_COLUMN;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 

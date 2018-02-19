@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 

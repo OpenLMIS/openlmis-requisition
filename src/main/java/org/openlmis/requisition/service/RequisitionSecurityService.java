@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

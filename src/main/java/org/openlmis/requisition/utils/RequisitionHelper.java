@@ -15,8 +15,8 @@
 
 package org.openlmis.requisition.utils;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 
 import java.util.Collection;

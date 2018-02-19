@@ -5,15 +5,15 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static java.util.Objects.isNull;
 import static java.util.function.Function.identity;
@@ -22,10 +22,9 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
-import static org.openlmis.requisition.domain.RequisitionLineItem.ADJUSTED_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.AVERAGE_CONSUMPTION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
@@ -42,6 +41,12 @@ import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.CurrencyConfig;
+import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.BaseTimestampedEntity;
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
+import org.openlmis.requisition.domain.OpenLmisNumberUtils;
+import org.openlmis.requisition.domain.RequisitionPermissionString;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -111,7 +116,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String EMERGENCY_FIELD = "emergency";
   public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
       "datePhysicalStockCountCompleted";
-  protected static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+  public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
 
   @OneToMany(
@@ -362,7 +367,7 @@ public class Requisition extends BaseTimestampedEntity {
         // ... and if line exists we set value for Total Received Quantity (B) column
         if (null != proofOfDeliveryLine) {
           requisitionLine.setTotalReceivedQuantity(
-              zeroIfNull(proofOfDeliveryLine.getQuantityAccepted())
+              OpenLmisNumberUtils.zeroIfNull(proofOfDeliveryLine.getQuantityAccepted())
           );
         }
       });

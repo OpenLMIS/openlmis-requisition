@@ -31,11 +31,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.RequisitionStatus.AUTHORIZED;
-import static org.openlmis.requisition.domain.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SKIPPED;
-import static org.openlmis.requisition.domain.RequisitionStatus.SUBMITTED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Lists;
 
@@ -45,8 +45,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;

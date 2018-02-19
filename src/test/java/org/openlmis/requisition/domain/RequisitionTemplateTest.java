@@ -24,9 +24,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 
 import nl.jqno.equalsverifier.EqualsVerifier;

@@ -28,7 +28,7 @@ import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class BaseEntity {
-  static final String TEXT_COLUMN_DEFINITION = "text";
+  protected static final String TEXT_COLUMN_DEFINITION = "text";
   protected static final String UUID_TYPE = "pg-uuid";
 
   @Id

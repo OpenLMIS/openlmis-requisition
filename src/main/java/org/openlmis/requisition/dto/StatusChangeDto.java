@@ -21,9 +21,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 
 @AllArgsConstructor
 @NoArgsConstructor

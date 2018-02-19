@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
+import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
 
 import lombok.EqualsAndHashCode;

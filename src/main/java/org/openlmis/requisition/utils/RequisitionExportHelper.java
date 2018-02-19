@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.utils;
 
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.BatchApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;

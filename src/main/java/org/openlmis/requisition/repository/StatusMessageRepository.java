@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;

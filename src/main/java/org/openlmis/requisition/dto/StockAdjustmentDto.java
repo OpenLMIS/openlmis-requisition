@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 
 import lombok.Getter;
 import lombok.Setter;

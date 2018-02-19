@@ -18,8 +18,8 @@ package org.openlmis.requisition.service;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ShipmentDto;

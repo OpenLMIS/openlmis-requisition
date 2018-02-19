@@ -15,9 +15,9 @@
 
 package org.openlmis.requisition.web;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StatusMessage;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;

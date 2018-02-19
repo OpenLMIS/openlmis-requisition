@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -46,6 +46,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
+import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;

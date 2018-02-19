@@ -13,16 +13,18 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.Requisition.EMERGENCY_FIELD;
-import static org.openlmis.requisition.domain.Requisition.FACILITY_ID;
-import static org.openlmis.requisition.domain.Requisition.PROCESSING_PERIOD_ID;
-import static org.openlmis.requisition.domain.Requisition.PROGRAM_ID;
-import static org.openlmis.requisition.domain.Requisition.SUPERVISORY_NODE_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
+import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.DomainValidator;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 

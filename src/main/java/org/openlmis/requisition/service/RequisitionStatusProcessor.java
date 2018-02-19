@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.service;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 
 public interface RequisitionStatusProcessor {
 

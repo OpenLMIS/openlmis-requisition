@@ -17,7 +17,7 @@ package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.springframework.stereotype.Component;
 

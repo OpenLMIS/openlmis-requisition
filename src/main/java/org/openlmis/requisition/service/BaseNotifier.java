@@ -18,7 +18,7 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.utils.Message;

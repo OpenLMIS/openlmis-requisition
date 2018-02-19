@@ -15,10 +15,10 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.utils.StatusChangeHelper;
 

@@ -15,22 +15,26 @@
 
 package org.openlmis.requisition.domain;
 
-import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
+import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
-class DatePhysicalStockCountCompletedValidator implements DomainValidator {
+public class DatePhysicalStockCountCompletedValidator implements DomainValidator {
   private final DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
   private final Requisition requisitionToUpdate;
   private final LocalDate currentDate;
   private final boolean isDatePhysicalStockCountCompletedEnabled;
 
+  /**
+   * Validates {@link DatePhysicalStockCountCompleted} Value Object.
+   */
   public void validate(Map<String, Message> errors) {
     if (isDatePhysicalStockCountCompletedEnabled) {
       if (dateDifferAfterAuthorize()) {

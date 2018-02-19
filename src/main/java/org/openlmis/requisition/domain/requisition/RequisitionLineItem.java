@@ -13,23 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAdjustedConsumption;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAverageConsumption;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotal;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAdjustedConsumption;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumption;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotal;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -202,7 +204,6 @@ public class RequisitionLineItem extends BaseEntity {
   @JoinColumn(name = "requisitionLineItemId")
   private List<StockAdjustment> stockAdjustments;
 
-  @Column
   @Setter
   @Getter
   private BigDecimal maxPeriodsOfStock;
@@ -211,7 +212,6 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private boolean nonFullSupply;
 
-  @Column
   @Setter
   @Getter
   private Integer idealStockAmount;
@@ -231,7 +231,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisition     requisition to apply
    * @param approvedProduct facilityTypeApprovedProduct to apply
    */
-  public RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
+  RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
                              Integer idealStockAmount, Integer stockOnHand) {
     this();
     this.requisition = requisition;
@@ -261,7 +261,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param importer instance of {@link Importer}
    * @return new instance of RequisitionLineItem.
    */
-  public static RequisitionLineItem newRequisitionLineItem(Importer importer) {
+  static RequisitionLineItem newRequisitionLineItem(Importer importer) {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
@@ -305,7 +305,7 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param requisitionLineItem RequisitionLineItem with new values.
    */
-  public void updateFrom(RequisitionLineItem requisitionLineItem) {
+  void updateFrom(RequisitionLineItem requisitionLineItem) {
     if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();
@@ -359,7 +359,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Returns order quantity.
    */
-  public int getOrderQuantity() {
+  int getOrderQuantity() {
     if (!requisition.getStatus().isPreAuthorize() && approvedQuantity != null) {
       return approvedQuantity;
     }
@@ -421,7 +421,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Resets all quantities and adjustments of a line item.
    */
-  public void resetData() {
+  void resetData() {
     setTotalReceivedQuantity(null);
     setTotalLossesAndAdjustments(null);
     setStockOnHand(null);
@@ -460,7 +460,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Calculate and set all calculated fields in this requisition line item.
    */
-  public void calculateAndSetFields(RequisitionTemplate template,
+  void calculateAndSetFields(RequisitionTemplate template,
                                     Collection<StockAdjustmentReason> stockAdjustmentReasons,
                                     Integer numberOfMonthsInPeriod) {
     calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
@@ -478,7 +478,7 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param products list of orderable products.
    */
-  public void updatePacksToShip(Collection<OrderableDto> products) {
+  void updatePacksToShip(Collection<OrderableDto> products) {
     this.packsToShip = products.stream()
         .filter(product -> product.getId().equals(getOrderableId()))
         .map(product -> product.packsToOrder(getOrderQuantity()))

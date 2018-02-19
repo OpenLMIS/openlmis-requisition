@@ -19,9 +19,9 @@ import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionBuilder;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;

@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import java.util.Optional;
 
 public class BatchApproveRequisitionDto extends RequisitionDto {

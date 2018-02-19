@@ -18,7 +18,7 @@ package org.openlmis.requisition.web;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;

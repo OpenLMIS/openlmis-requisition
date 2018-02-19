@@ -15,22 +15,22 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateMaximumStockQuantity;
-import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateStockOnHand;
-import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
-import static org.openlmis.requisition.domain.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.BEGINNING_BALANCE;
-import static org.openlmis.requisition.domain.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
-import static org.openlmis.requisition.domain.RequisitionLineItem.STOCK_ON_HAND;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_COLUMN;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_COLUMN;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
@@ -38,11 +38,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StockAdjustment;
-import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;

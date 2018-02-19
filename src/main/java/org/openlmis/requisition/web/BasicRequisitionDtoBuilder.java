@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.web;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;

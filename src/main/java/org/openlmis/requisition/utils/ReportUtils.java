@@ -21,7 +21,7 @@ import static net.sf.jasperreports.engine.JRParameter.REPORT_RESOURCE_BUNDLE;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.springframework.context.i18n.LocaleContextHolder;
 

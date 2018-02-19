@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.Requisition.EMERGENCY_FIELD;
+import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 

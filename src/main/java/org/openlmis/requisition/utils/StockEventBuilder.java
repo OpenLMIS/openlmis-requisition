@@ -15,15 +15,15 @@
 
 package org.openlmis.requisition.utils;
 
-import static org.openlmis.requisition.domain.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.StatusChange;
-import org.openlmis.requisition.domain.StockAdjustment;
-import org.openlmis.requisition.domain.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;

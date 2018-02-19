@@ -17,10 +17,10 @@ package org.openlmis.requisition.web;
 
 import java.util.List;
 import java.util.Optional;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionStatus;
-import org.openlmis.requisition.domain.StatusChange;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageKeys;

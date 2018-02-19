@@ -19,9 +19,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WR
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.ImmutableList;
-import org.openlmis.requisition.domain.Requisition;
-import org.openlmis.requisition.domain.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionValidationService;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;

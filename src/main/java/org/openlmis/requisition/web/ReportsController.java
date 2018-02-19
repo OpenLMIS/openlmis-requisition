@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.web;
 
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.i18n.MessageKeys;

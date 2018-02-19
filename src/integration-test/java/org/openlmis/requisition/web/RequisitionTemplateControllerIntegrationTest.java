@@ -36,7 +36,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.openlmis.requisition.domain.Requisition;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;

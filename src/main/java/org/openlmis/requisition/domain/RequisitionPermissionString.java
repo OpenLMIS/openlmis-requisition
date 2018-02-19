@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.requisition.domain.requisition.Requisition;
 
 @Entity
 @Table(name = "requisition_permission_strings")
