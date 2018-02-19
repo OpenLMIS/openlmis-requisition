@@ -36,12 +36,10 @@ public class OrderLineItemDtoTest {
 
     assertThat(orderLineItem.getId(), is(nullValue()));
     assertThat(orderLineItem.getOrderable(), is(product));
-    assertThat(orderLineItem.getFilledQuantity(), is(0L));
     assertThat(
         orderLineItem.getOrderedQuantity(),
-        is(requisitionLineItem.getApprovedQuantity().longValue())
+        is(requisitionLineItem.getPacksToShip())
     );
-    assertThat(orderLineItem.getPacksToShip(), is(requisitionLineItem.getPacksToShip()));
   }
 
 }

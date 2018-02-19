@@ -34,8 +34,6 @@ public class OrderLineItemDto {
   private UUID id;
   private OrderableDto orderable;
   private Long orderedQuantity;
-  private Long filledQuantity;
-  private Long packsToShip;
 
   /**
    * Static factory method for constructing new OrderLineItem based on RequisitionLineItem.
@@ -46,9 +44,7 @@ public class OrderLineItemDto {
                                                   OrderableDto productDto) {
     OrderLineItemDto orderLineItem = new OrderLineItemDto();
     orderLineItem.setOrderable(productDto);
-    orderLineItem.setFilledQuantity(0L);
-    orderLineItem.setOrderedQuantity(lineItem.getApprovedQuantity().longValue());
-    orderLineItem.setPacksToShip(lineItem.getPacksToShip());
+    orderLineItem.setOrderedQuantity(lineItem.getPacksToShip());
 
     return orderLineItem;
   }
