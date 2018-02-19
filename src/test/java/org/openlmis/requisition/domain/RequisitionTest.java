@@ -786,7 +786,7 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnSubmit() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().build();
+    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
 
@@ -794,14 +794,14 @@ public class RequisitionTest {
     requisition.submit(Collections.singletonList(product), UUID.randomUUID(), false);
 
     // then
-    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
   }
 
   @Test
   public void shouldUpdatePacksToShipOnAuthorize() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().build();
+    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -810,14 +810,14 @@ public class RequisitionTest {
     requisition.authorize(Collections.singletonList(product), UUID.randomUUID());
 
     // then
-    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
   }
 
   @Test
   public void shouldUpdatePacksToShipOnApprove() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().build();
+    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -827,7 +827,7 @@ public class RequisitionTest {
         UUID.randomUUID());
 
     // then
-    assertEquals(requisitionLineItem.getPacksToShip().longValue(), packsToShip);
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
   }
 
   @Test

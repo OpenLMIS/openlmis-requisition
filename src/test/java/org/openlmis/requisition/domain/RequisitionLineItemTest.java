@@ -114,6 +114,7 @@ public class RequisitionLineItemTest {
 
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(productId)
+        .withNetContent(1)
         .build();
 
     RequisitionLineItem item = new RequisitionLineItem();

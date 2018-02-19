@@ -49,7 +49,7 @@ public class OrderableDtoDataBuilder {
     id = UUID.randomUUID();
     productCode = "P" + instanceNumber;
     fullProductName = "Product " + instanceNumber;
-    netContent = 1;
+    netContent = 10;
     packRoundingThreshold = 1;
     roundToZero = true;
     programs = new HashSet<>();
@@ -84,6 +84,11 @@ public class OrderableDtoDataBuilder {
 
   public OrderableDtoDataBuilder withId(UUID id) {
     this.id = id;
+    return this;
+  }
+
+  public OrderableDtoDataBuilder withNetContent(long netContent) {
+    this.netContent = netContent;
     return this;
   }
 
