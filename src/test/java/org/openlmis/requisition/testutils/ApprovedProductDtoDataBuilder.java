@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.testutils;
 
-import org.apache.commons.lang3.RandomUtils;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -26,9 +25,9 @@ public class ApprovedProductDtoDataBuilder {
   private UUID id = UUID.randomUUID();
   private OrderableDto orderable = new OrderableDtoDataBuilder().build();
   private ProgramDto program = new ProgramDtoDataBuilder().build();
-  private Double maxPeriodsOfStock = 7.25;
-  private Double minPeriodsOfStock = RandomUtils.nextDouble();
-  private Double emergencyOrderPoint = RandomUtils.nextDouble();
+  private Double maxPeriodsOfStock = 3.0;
+  private Double minPeriodsOfStock = 1.5;
+  private Double emergencyOrderPoint = 1.0;
 
   public ApprovedProductDtoDataBuilder withOrderable(OrderableDto orderable) {
     this.orderable = orderable;
