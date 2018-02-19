@@ -135,10 +135,10 @@ public class OrderFulfillmentServiceParameterizedTest
     URI uri = uriCaptor.getValue();
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
 
-    assertQueryParameter(parse, "supplyingFacility", supplyingFacility);
-    assertQueryParameter(parse, "requestingFacility", requestingFacility);
-    assertQueryParameter(parse, "program", program);
-    assertQueryParameter(parse, "processingPeriod", processingPeriod);
+    assertQueryParameter(parse, "supplyingFacilityId", supplyingFacility);
+    assertQueryParameter(parse, "requestingFacilityId", requestingFacility);
+    assertQueryParameter(parse, "programId", program);
+    assertQueryParameter(parse, "processingPeriodId", processingPeriod);
     assertQueryParameter(parse, "status", status);
 
     assertAuthHeader(entityCaptor.getValue());

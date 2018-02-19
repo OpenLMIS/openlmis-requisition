@@ -30,6 +30,7 @@ Improvements:
 * [OLMIS-3938](https://openlmis.atlassian.net/browse/OLMIS-3938): Configured ISA column on requisition template.
 * [OLMIS-4016](https://openlmis.atlassian.net/browse/OLMIS-4016): Change the way how service find a correct requisition template
   * use both program and facility type IDs
+* [OLMIS-4165](https://openlmis.atlassian.net/browse/OLMIS-4165): Changed Order search endpoint and renamed its parameters.
 
 5.1.0 / 2017-11-09
 ==================

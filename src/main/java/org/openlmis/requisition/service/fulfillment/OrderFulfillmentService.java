@@ -77,13 +77,13 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
                                UUID program, UUID processingPeriod, String status) {
     RequestParameters parameters = RequestParameters
         .init()
-        .set("supplyingFacility", supplyingFacility)
-        .set("requestingFacility", requestingFacility)
-        .set("program", program)
-        .set("processingPeriod", processingPeriod)
+        .set("supplyingFacilityId", supplyingFacility)
+        .set("requestingFacilityId", requestingFacility)
+        .set("programId", program)
+        .set("processingPeriodId", processingPeriod)
         .set("status", status);
 
-    return getPage("search", parameters).getContent();
+    return getPage("", parameters).getContent();
   }
 
   private void postNew(String url, HttpEntity<?> body) {
