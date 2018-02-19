@@ -32,7 +32,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -49,8 +52,8 @@ import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionHelper;
 import org.openlmis.requisition.utils.RightName;
@@ -58,26 +61,6 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.util.CollectionUtils;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
@@ -95,6 +78,18 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -257,20 +252,23 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Validates if requisition can be updated.
+   */
+  public ValidationResult validateCanBeUpdated(
+      RequisitionValidationService validationService) {
+    return validationService.validateRequisitionCanBeUpdated();
+  }
+
+
+  /**
    * Copy values of attributes into new or updated Requisition.
    *
    * @param requisition            Requisition with new values.
    * @param products               Collection of orderables.
    */
-  public Map<String, Message> updateFrom(
+  public void updateFrom(
       Requisition requisition, Collection<OrderableDto> products,
-      boolean isDatePhysicalStockCountCompletedEnabled, DateHelper dateHelper) {
-
-    Map<String, Message> errors = new HashMap<>();
-    new RequisitionInvariantsService(requisition, this)
-        .validateInvariantsDidNotChange(errors);
-    new RequisitionApprovalService(requisition, this)
-        .validateApprovalFields(errors);
+      boolean isDatePhysicalStockCountCompletedEnabled) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
@@ -280,29 +278,12 @@ public class Requisition extends BaseTimestampedEntity {
     calculateAndValidateTemplateFields(this.template);
     updateTotalCostAndPacksToShip(products);
 
-    updateDatePhysicalStockCountCompleted(requisition, isDatePhysicalStockCountCompletedEnabled,
-        dateHelper, errors);
+    if (isDatePhysicalStockCountCompletedEnabled) {
+      setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
+    }
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     setModifiedDate(ZonedDateTime.now());
-
-    return errors;
-  }
-
-  private void updateDatePhysicalStockCountCompleted(
-      Requisition requisition, boolean isDatePhysicalStockCountCompletedEnabled,
-      DateHelper dateHelper, Map<String, Message> errors) {
-    if (isDatePhysicalStockCountCompletedEnabled && !emergency) {
-      DatePhysicalStockCountCompleted newDate = requisition.getDatePhysicalStockCountCompleted();
-      if (status.isAuthorized()) {
-        DatePhysicalStockCountCompleted
-            .validateDateMatch(errors, datePhysicalStockCountCompleted, newDate);
-      }
-      if (newDate != null) {
-        newDate.validateNotInFuture(errors, dateHelper);
-      }
-      setDatePhysicalStockCountCompleted(newDate);
-    }
   }
 
   /**

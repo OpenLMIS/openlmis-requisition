@@ -17,17 +17,14 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Objects;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.Map;
 
 @Embeddable
 @EqualsAndHashCode
@@ -54,18 +51,10 @@ public class DatePhysicalStockCountCompleted {
   }
 
   void validateNotInFuture(Map<String, Message> errors,
-                           DateHelper dateHelper) {
-    if (localDate.isAfter(dateHelper.getCurrentDateWithSystemZone())) {
+                           LocalDate currentDate) {
+    if (localDate.isAfter(currentDate)) {
       errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
           new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE));
-    }
-  }
-
-  static void validateDateMatch(Map<String, Message> errors,
-                                DatePhysicalStockCountCompleted existingDate,
-                                DatePhysicalStockCountCompleted newDate) {
-    if (Objects.equals(existingDate, newDate)) {
-      errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED, new Message(ERROR_DATE_STOCK_COUNT_MISMATCH));
     }
   }
 

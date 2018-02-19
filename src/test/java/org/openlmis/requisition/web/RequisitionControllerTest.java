@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -48,9 +49,11 @@ import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -259,7 +262,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean(), any());
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
   }
 
   @Test
@@ -273,7 +276,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(true));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean(), any());
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
   }
 
   @Test
@@ -289,7 +292,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean(), any());
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -305,7 +308,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean(), any());
+        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
   }
 
   @Test
@@ -347,6 +350,8 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getTemplate()).thenReturn(template);
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
+    when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
+        .thenReturn(ValidationResult.success());
 
     when(requisitionService.validateCanSaveRequisition(uuid1))
         .thenReturn(ValidationResult.success());
@@ -356,7 +361,7 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), eq(true), any());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -655,7 +660,9 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyList(), anyBoolean(), any());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+        anyBoolean());
+    verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never()).submit(eq(emptyList()), any(UUID.class), anyBoolean());
   }
 

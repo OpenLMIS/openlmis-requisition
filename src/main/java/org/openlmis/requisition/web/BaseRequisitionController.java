@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.web;
@@ -21,6 +21,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import com.google.common.collect.ImmutableList;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionLineItem;
+import org.openlmis.requisition.domain.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -62,7 +63,6 @@ import org.springframework.validation.BindingResult;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -117,7 +117,8 @@ public abstract class BaseRequisitionController extends BaseController {
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
-  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
+  private DatePhysicalStockCountCompletedEnabledPredicate
+      datePhysicalStockCountCompletedEnabledPredicate;
 
   @Autowired
   private DateHelper dateHelper;
@@ -147,29 +148,19 @@ public abstract class BaseRequisitionController extends BaseController {
     return ValidationResult.success();
   }
 
-  protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition,
-                                    ValidationResult result) {
-    result.addValidationResult(updateRequisition(requisitionToUpdate, requisition));
-    result.throwExceptionIfHasErrors();
+  protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
+    updateRequisition(requisitionToUpdate, requisition);
     requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
 
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
     return requisitionDtoBuilder.build(requisitionToUpdate);
   }
 
-  private ValidationResult updateRequisition(Requisition requisitionToUpdate,
-                                               Requisition requisition) {
-    Map<String, Message> errors =
-        requisitionToUpdate.updateFrom(requisition,
-            orderableReferenceDataService.findByIds(getLineItemOrderableIds(requisition)),
-            predicate.exec(requisitionToUpdate.getProgramId()), dateHelper);
-
-    if (!isEmpty(errors)) {
-      logger.warn("Validation for requisition update failed: {}", errors);
-      return ValidationResult.fieldErrors(errors);
-    }
-
-    return ValidationResult.success();
+  private void updateRequisition(Requisition requisitionToUpdate,
+                                 Requisition requisition) {
+    requisitionToUpdate.updateFrom(requisition,
+        orderableReferenceDataService.findByIds(getLineItemOrderableIds(requisition)),
+        datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId()));
   }
 
   protected BasicRequisitionDto doApprove(Requisition requisition, UserDto user) {
@@ -253,5 +244,13 @@ public abstract class BaseRequisitionController extends BaseController {
             ERROR_PERIOD_END_DATE_WRONG, DateTimeFormatter.ISO_DATE.format(endDate)));
       }
     }
+  }
+
+  protected ValidationResult validateRequisitionCanBeUpdated(Requisition requisitionToUpdate,
+                                                             Requisition requisition) {
+    return requisitionToUpdate.validateCanBeUpdated(new RequisitionValidationService(
+        requisition, requisitionToUpdate,
+        dateHelper.getCurrentDateWithSystemZone(),
+        datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId())));
   }
 }

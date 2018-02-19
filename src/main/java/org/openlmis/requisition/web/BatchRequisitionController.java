@@ -18,7 +18,6 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.Requisition;
 import org.openlmis.requisition.domain.RequisitionBuilder;
@@ -52,7 +51,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -202,13 +200,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
       profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
       result = requisitionVersionValidator.validateRequisitionTimestamps(
           requisition, requisitionToUpdate);
-
-      profiler.start("DO_UPDATE");
-      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition, result);
+      result.addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition));
 
       if (addValidationErrors(processingStatus, result, dto.getId())) {
         continue;
       }
+
+      profiler.start("DO_UPDATE");
+      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
 
       profiler.start("ADD_PROCESSED_REQUISITION");
       processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));

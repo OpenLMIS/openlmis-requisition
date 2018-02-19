@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 
 @AllArgsConstructor
-class RequisitionApprovalService {
+class ApprovalFieldsValidator implements DomainValidator {
   private final Requisition requisitionUpdater;
   private final Requisition requisitionToUpdate;
 
-  void validateApprovalFields(Map<String, Message> errors) {
+  public void validate(Map<String, Message> errors) {
     if (!isEmpty(requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateApprovalFields(errors, i));

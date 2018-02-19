@@ -36,7 +36,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
-import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -276,10 +275,12 @@ public class RequisitionController extends BaseRequisitionController {
 
     requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
         .throwExceptionIfHasErrors();
+    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition)
+        .throwExceptionIfHasErrors();
 
     logger.debug("Updating requisition with id: {}", requisitionId);
 
-    return doUpdate(requisitionToUpdate, requisition, new ValidationResult());
+    return doUpdate(requisitionToUpdate, requisition);
   }
 
   /**
