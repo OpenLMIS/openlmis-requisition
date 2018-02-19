@@ -228,6 +228,8 @@ public abstract class MessageKeys {
   public static final String REQUISITION_TYPE_REGULAR = "requisition.type.regular";
   public static final String REQUISITION_TYPE_EMERGENCY = "requisition.type.emergency";
   public static final String ERROR_CAN_NOT_SKIP = "requisition.error.can-not-skip";
+  public static final String CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE =
+      ERROR_PREFIX + ".canNotFindProgramDetailsFromOrderable";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

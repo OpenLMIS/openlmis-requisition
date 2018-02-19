@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAdjustedConsumption;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateAverageConsumption;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
@@ -23,12 +24,12 @@ import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculate
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotal;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
+import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -154,13 +155,13 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = CurrencyConfig.CURRENCY_CODE)})
+      parameters = {@Parameter(name = "currencyCode", value = CURRENCY_CODE)})
   private Money pricePerPack;
 
   @Getter
   @Setter
   @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = CurrencyConfig.CURRENCY_CODE)})
+      parameters = {@Parameter(name = "currencyCode", value = CURRENCY_CODE)})
   private Money totalCost;
 
   @Setter
@@ -240,11 +241,15 @@ public class RequisitionLineItem extends BaseEntity {
     ProgramOrderableDto product = approvedProduct.getOrderable()
         .findProgramOrderableDto(requisition.getProgramId());
 
+    if (null == product) {
+      throw new ValidationMessageException(CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE);
+    }
+
     LOGGER.debug("ProgramOrderableDto {}", product);
-    Money priceFromProduct = null == product ? null : product.getPricePerPack();
-    this.pricePerPack = priceFromProduct == null
-        ? Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), PRICE_PER_PACK_IF_NULL)
-        : priceFromProduct;
+    Money priceFromProduct = product.getPricePerPack();
+    this.pricePerPack = Optional
+        .ofNullable(priceFromProduct)
+        .orElseGet(() -> Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
     this.idealStockAmount = idealStockAmount;
     this.stockOnHand = stockOnHand;
   }
