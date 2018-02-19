@@ -258,7 +258,7 @@ public class RequisitionService {
         numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
         authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
-    profiler.start("SET_AVAIL_FULL_SUPPLY");
+    profiler.start("SET_AVAILABLE_PRODUCTS");
     if (emergency) {
       requisition.setAvailableProducts(approvedProducts
           .stream()
