@@ -96,7 +96,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
 
   @Override
   protected String getUrl() {
-    return "/api/orders/";
+    return "/api/orders";
   }
 
   @Override
