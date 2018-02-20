@@ -74,7 +74,7 @@ public final class RequisitionBuilder {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         OrderableDto orderable = orderables.get(item.getOrderableId());
 
-        if(null == orderable) {
+        if (null == orderable) {
           throw new ValidationMessageException(
               new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, item.getOrderableId()));
         }
