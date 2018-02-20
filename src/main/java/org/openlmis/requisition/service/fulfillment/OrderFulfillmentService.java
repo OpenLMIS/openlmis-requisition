@@ -91,7 +91,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   }
 
   protected String getBatchUrl() {
-    return getUrl() + "batch";
+    return getUrl() + "/batch";
   }
 
   @Override
