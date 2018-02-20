@@ -55,9 +55,10 @@ class ApprovalFieldsValidator implements RequisitionUpdateDomainValidator {
   private void rejectIfInvalidStatusAndNotNull(Map<String, Message> errors,
                                                Object value,
                                                Message message) {
-    if (requisitionToUpdate.getStatus().duringApproval() && value != null) {
-      errors.put(REQUISITION_LINE_ITEMS, message);
+    if (requisitionToUpdate.getStatus().duringApproval() || value == null) {
+      return;
     }
+    errors.put(REQUISITION_LINE_ITEMS, message);
   }
 
 }
