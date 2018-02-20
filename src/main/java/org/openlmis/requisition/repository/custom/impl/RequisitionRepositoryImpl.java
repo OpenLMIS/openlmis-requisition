@@ -21,7 +21,7 @@ import org.hibernate.type.BooleanType;
 import org.hibernate.type.PostgresUUIDType;
 import org.hibernate.type.ZonedDateTimeType;
 import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.RequisitionPermissionString;
+import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;

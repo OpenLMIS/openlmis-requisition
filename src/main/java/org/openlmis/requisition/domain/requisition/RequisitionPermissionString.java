@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -27,7 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.BaseEntity;
 
 @Entity
 @Table(name = "requisition_permission_strings")

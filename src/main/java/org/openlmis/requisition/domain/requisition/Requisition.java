@@ -41,7 +41,6 @@ import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.OpenLmisNumberUtils;
-import org.openlmis.requisition.domain.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
