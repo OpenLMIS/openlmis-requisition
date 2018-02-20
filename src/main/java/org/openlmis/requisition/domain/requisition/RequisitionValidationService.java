@@ -18,8 +18,6 @@ package org.openlmis.requisition.domain.requisition;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.domain.DatePhysicalStockCountCompletedValidator;
-import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
@@ -35,8 +33,7 @@ public class RequisitionValidationService {
   private static final Logger logger = LoggerFactory.getLogger(RequisitionValidationService.class);
 
   private final Requisition savedRequisition;
-  private List<DomainValidator> validators = new ArrayList<>();
-  private List<DomainValidator> regularOnlyValidators = new ArrayList<>();
+  private List<RequisitionDomainValidator> validators = new ArrayList<>();
 
   /**
    * Constructs new requisition validation service.
@@ -47,15 +44,13 @@ public class RequisitionValidationService {
     this.savedRequisition = savedRequisition;
     validators.add(new RequisitionInvariantsValidator(requisition, savedRequisition));
     validators.add(new ApprovalFieldsValidator(requisition, savedRequisition));
-    regularOnlyValidators.add(new StockAdjustmentReasonsValidator(requisition, savedRequisition));
-    regularOnlyValidators.add(new DatePhysicalStockCountCompletedValidator(
+    validators.add(new StockAdjustmentReasonsValidator(requisition, savedRequisition));
+    validators.add(new DatePhysicalStockCountCompletedValidator(
         requisition.getDatePhysicalStockCountCompleted(), savedRequisition, currentDate,
         isDatePhysicalStockCountCompletedEnabled));
-    regularOnlyValidators.add(new StockOnHandValidator(
-        requisition, savedRequisition.getTemplate()));
-    regularOnlyValidators.add(new TotalConsumedQuantityValidator(
-        requisition, savedRequisition.getTemplate()));
-    regularOnlyValidators.add(new StockOutDaysValidator(
+    validators.add(new StockOnHandValidator(requisition, savedRequisition.getTemplate()));
+    validators.add(new TotalConsumedQuantityValidator(requisition, savedRequisition.getTemplate()));
+    validators.add(new StockOutDaysValidator(
         requisition, savedRequisition.getNumberOfMonthsInPeriod()));
   }
 
@@ -65,15 +60,15 @@ public class RequisitionValidationService {
   ValidationResult validateRequisitionCanBeUpdated() {
     Map<String, Message> errors = new HashMap<>();
 
-    for (DomainValidator validator : validators) {
-      validator.validate(errors);
-    }
-    if (isNotTrue(savedRequisition.getEmergency())) {
-      for (DomainValidator validator : regularOnlyValidators) {
+    for (RequisitionDomainValidator validator : validators) {
+      if (!validator.isForRegularOnly()) {
         validator.validate(errors);
       }
-    }
+      if (isNotTrue(savedRequisition.getEmergency()) && validator.isForRegularOnly()) {
+        validator.validate(errors);
+      }
 
+    }
     if (!isEmpty(errors)) {
       logger.warn("Validation for requisition update failed: {}", errors);
       return ValidationResult.fieldErrors(errors);

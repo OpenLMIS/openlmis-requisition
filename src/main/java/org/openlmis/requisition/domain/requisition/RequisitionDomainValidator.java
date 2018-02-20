@@ -13,18 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 /**
  * Interface that all domain validators should implement.
  */
-public interface DomainValidator {
+interface RequisitionDomainValidator {
 
   /**
    * Call given validators.
@@ -32,6 +33,8 @@ public interface DomainValidator {
    * @param errors a map where errors will be put.
    */
   void validate(Map<String, Message> errors);
+
+  boolean isForRegularOnly();
 
   /**
    * Rejects if template field is null and calculated.

@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE;

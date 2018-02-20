@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
+import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;

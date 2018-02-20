@@ -15,14 +15,13 @@
 
 package org.openlmis.requisition.validate;
 
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.apache.commons.lang3.StringUtils;
-import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -81,13 +80,6 @@ public abstract class AbstractRequisitionValidator extends BaseValidator {
 
     if (templateValid && StringUtils.isBlank(value)) {
       rejectValue(errors, REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, field));
-    }
-  }
-
-  protected void rejectIfCalculatedAndNotNull(Errors errors, RequisitionTemplate template,
-                                              Object value, String field) {
-    if (template.isColumnCalculated(field) && value != null) {
-      rejectValue(errors, REQUISITION_LINE_ITEMS, new Message(ERROR_FIELD_IS_CALCULATED, field));
     }
   }
 }

@@ -19,7 +19,6 @@ import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST;
 
-import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;

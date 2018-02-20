@@ -23,13 +23,11 @@ import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISOR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.DomainValidator;
-import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class RequisitionInvariantsValidator implements DomainValidator {
+class RequisitionInvariantsValidator implements RequisitionDomainValidator {
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
 
@@ -44,6 +42,11 @@ class RequisitionInvariantsValidator implements DomainValidator {
         requisitionToUpdate.getEmergency(), EMERGENCY_FIELD);
     rejectIfValueChanged(errors, requisitionUpdater.getSupervisoryNodeId(),
         requisitionToUpdate.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return false;
   }
 
   private void rejectIfValueChanged(Map<String, Message> errors, Object value, Object savedValue,

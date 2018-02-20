@@ -19,7 +19,6 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-class StockAdjustmentReasonsValidator implements DomainValidator {
+class StockAdjustmentReasonsValidator implements RequisitionDomainValidator {
 
   private final Requisition requisition;
   private final Requisition savedRequisition;
@@ -35,6 +34,11 @@ class StockAdjustmentReasonsValidator implements DomainValidator {
   @Override
   public void validate(Map<String, Message> errors) {
     validateIfReasonExists(errors, requisition, savedRequisition);
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return true;
   }
 
   private void validateIfReasonExists(Map<String, Message> errors, Requisition requisition,

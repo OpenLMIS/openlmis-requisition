@@ -13,20 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.domain;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class DatePhysicalStockCountCompletedValidator implements DomainValidator {
+public class DatePhysicalStockCountCompletedValidator implements RequisitionDomainValidator {
   private final DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
   private final Requisition requisitionToUpdate;
   private final LocalDate currentDate;
@@ -45,6 +44,11 @@ public class DatePhysicalStockCountCompletedValidator implements DomainValidator
         datePhysicalStockCountCompleted.validateNotInFuture(errors, currentDate);
       }
     }
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return true;
   }
 
   private boolean dateDifferAfterAuthorize() {

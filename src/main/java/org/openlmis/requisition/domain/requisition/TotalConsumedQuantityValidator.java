@@ -18,15 +18,12 @@ package org.openlmis.requisition.domain.requisition;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class TotalConsumedQuantityValidator implements DomainValidator {
+class TotalConsumedQuantityValidator implements RequisitionDomainValidator {
 
   private final Requisition requisition;
   private final RequisitionTemplate requisitionTemplate;
@@ -38,6 +35,11 @@ class TotalConsumedQuantityValidator implements DomainValidator {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, i));
     }
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return true;
   }
 
   private void validateRequisitionLineItem(Map<String, Message> errors,

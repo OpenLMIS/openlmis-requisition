@@ -21,13 +21,12 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Set;
 
 @AllArgsConstructor
-class ApprovalFieldsValidator implements DomainValidator {
+class ApprovalFieldsValidator implements RequisitionDomainValidator {
   private final Requisition requisitionUpdater;
   private final Requisition requisitionToUpdate;
 
@@ -36,6 +35,11 @@ class ApprovalFieldsValidator implements DomainValidator {
       requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateApprovalFields(errors, i));
     }
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return false;
   }
 
   private void validateApprovalFields(Map<String, Message> errors,

@@ -46,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
-import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
@@ -60,7 +59,6 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
-import org.openlmis.requisition.utils.DateHelper;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -102,9 +100,6 @@ public class RequisitionTest {
   @Mock
   private RequisitionTemplate template;
 
-  @Mock
-  private DateHelper dateHelper;
-
   @Before
   public void setUp() {
     requisition = new Requisition();
@@ -123,8 +118,6 @@ public class RequisitionTest {
     requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
     requisition.setStockAdjustmentReasons(Collections.emptyList());
     requisition.setEmergency(false);
-
-    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now().plusYears(5));
   }
 
   @Test

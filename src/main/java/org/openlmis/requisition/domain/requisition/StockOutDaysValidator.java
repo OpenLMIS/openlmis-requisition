@@ -20,14 +20,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.DomainValidator;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class StockOutDaysValidator implements DomainValidator {
+class StockOutDaysValidator implements RequisitionDomainValidator {
 
   private static final int DAYS_IN_MONTH = 30;
 
@@ -41,6 +38,11 @@ class StockOutDaysValidator implements DomainValidator {
           .forEach(i -> rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(
               errors, i));
     }
+  }
+
+  @Override
+  public boolean isForRegularOnly() {
+    return true;
   }
 
   private void rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(
