@@ -1144,5 +1144,17 @@
     "source": 2,
     "definition": "The Ideal Stock Amount is the target quantity for a specific commodity type, facility, and period.",
     "requisitionColumnId": "aa0a1a7e-e5cb-4385-b781-943316fa116a"
+  },
+  {
+    "requisitionTemplateId": "37f29736-f0db-4de3-98ad-f8d85c848711",
+    "key": "calculatedOrderQuantityIsa",
+    "name": "calculatedOrderQuantityIsa",
+    "label": "Calc Order Qty ISA",
+    "indicator": "S",
+    "displayOrder": 25,
+    "isDisplayed": false,
+    "source": 2,
+    "definition": "The calculated order quantity based on Ideal Stock Amount.",
+    "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
   }
 ]
