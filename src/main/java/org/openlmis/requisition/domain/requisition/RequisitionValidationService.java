@@ -69,12 +69,12 @@ public class RequisitionValidationService {
       }
 
     }
-    if (!isEmpty(errors)) {
-      logger.warn("Validation for requisition update failed: {}", errors);
-      return ValidationResult.fieldErrors(errors);
+    if (isEmpty(errors)) {
+      return ValidationResult.success();
     }
 
-    return ValidationResult.success();
+    logger.warn("Validation for requisition update failed: {}", errors);
+    return ValidationResult.fieldErrors(errors);
 
   }
 }

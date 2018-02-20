@@ -10,7 +10,8 @@ Contract breaking changes:
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
-* [OLMIS-4113](https://openlmis.atlassian.net/browse/OLMIS-4113): Populate available products on initiate for emergency requisitions 
+* [OLMIS-4113](https://openlmis.atlassian.net/browse/OLMIS-4113): Populate available products on initiate for emergency requisitions
+* [OLMIS-4114](https://openlmis.atlassian.net/browse/OLMIS-4114): Adjust validations for emergency requisitions
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
