@@ -230,6 +230,8 @@ public abstract class MessageKeys {
   public static final String ERROR_CAN_NOT_SKIP = "requisition.error.can-not-skip";
   public static final String CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE =
       ERROR_PREFIX + ".canNotFindProgramDetailsFromOrderable";
+  public static final String ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST =
+      ERROR_PREFIX + ".orderableNotInAvailableList";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

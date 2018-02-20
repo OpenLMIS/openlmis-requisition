@@ -251,6 +251,7 @@ public abstract class BaseRequisitionController extends BaseController {
     return requisitionToUpdate.validateCanBeUpdated(new RequisitionValidationService(
         requisition, requisitionToUpdate,
         dateHelper.getCurrentDateWithSystemZone(),
-        datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId())));
+        datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId()),
+        orderableReferenceDataService));
   }
 }
