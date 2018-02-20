@@ -273,11 +273,14 @@ public class Requisition extends BaseTimestampedEntity {
    * Returns a set of all orderable IDs in this requisition.
    */
   public Set<UUID> getAllOrderableIds() {
-    Set<UUID> orderableIds = requisitionLineItems
+    Set<UUID> orderableIds = Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList())
         .stream()
         .map(RequisitionLineItem::getOrderableId)
         .collect(Collectors.toSet());
-    orderableIds.addAll(availableProducts);
+
+    Optional.ofNullable(availableProducts).ifPresent(orderableIds::addAll);
 
     return orderableIds;
   }
