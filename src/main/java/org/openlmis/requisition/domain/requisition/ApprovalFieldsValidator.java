@@ -16,33 +16,40 @@
 package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class ApprovalFieldsValidator implements RequisitionUpdateDomainValidator {
+class ApprovalFieldsValidator
+    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
   private final Requisition requisitionUpdater;
   private final Requisition requisitionToUpdate;
-
-  public void validateCanUpdate(Map<String, Message> errors) {
-    if (isEmpty(requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems())) {
-      return;
-    }
-    requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateApprovalFields(errors, i));
-  }
 
   @Override
   public boolean isForRegularOnly() {
     return false;
   }
 
-  private void validateApprovalFields(Map<String, Message> errors,
-                                      RequisitionLineItem item) {
+  @Override
+  public void validateCanUpdate(Map<String, Message> errors) {
+    //TODO: shouldn't it be for non full supply as well?
+    requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(i -> validateLineItemForUpdate(errors, i));
+  }
+
+  @Override
+  public void validateCanChangeStatus(Map<String, Message> errors) {
+    requisitionToUpdate.getNonSkippedRequisitionLineItems()
+        .forEach(i -> validateLineItem(errors, i));
+  }
+
+  private void validateLineItemForUpdate(Map<String, Message> errors,
+                                         RequisitionLineItem item) {
     rejectIfInvalidStatusAndNotNull(errors, item.getApprovedQuantity(),
         new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL,
             RequisitionLineItem.APPROVED_QUANTITY));
@@ -60,5 +67,16 @@ class ApprovalFieldsValidator implements RequisitionUpdateDomainValidator {
     }
     errors.put(REQUISITION_LINE_ITEMS, message);
   }
+
+  private void validateLineItem(Map<String, Message> errors, RequisitionLineItem item) {
+    RequisitionTemplate template = requisitionToUpdate.getTemplate();
+
+    if (requisitionToUpdate.isApprovable()) {
+      rejectIfNull(errors, template, item.getApprovedQuantity(), APPROVED_QUANTITY);
+      rejectIfLessThanZero(errors, template, item.getApprovedQuantity(), APPROVED_QUANTITY);
+    }
+
+  }
+
 
 }

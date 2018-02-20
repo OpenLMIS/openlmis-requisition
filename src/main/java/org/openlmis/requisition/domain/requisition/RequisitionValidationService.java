@@ -51,7 +51,7 @@ public class RequisitionValidationService {
     validators.add(new StockOnHandValidator(requisition, savedRequisition.getTemplate()));
     validators.add(new TotalConsumedQuantityValidator(requisition, savedRequisition.getTemplate()));
     validators.add(new StockOutDaysValidator(
-        requisition, savedRequisition.getNumberOfMonthsInPeriod()));
+        requisition, savedRequisition.getNumberOfMonthsInPeriod(), savedRequisition.getTemplate()));
   }
 
   /**

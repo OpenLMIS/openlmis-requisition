@@ -27,13 +27,12 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 class StockAdjustmentReasonsValidator implements RequisitionUpdateDomainValidator {
-
-  private final Requisition requisition;
-  private final Requisition savedRequisition;
+  private final Requisition requisitionUpdater;
+  private final Requisition requisitionToUpdate;
 
   @Override
   public void validateCanUpdate(Map<String, Message> errors) {
-    validateIfReasonExists(errors, requisition, savedRequisition);
+    validateIfReasonExists(errors, requisitionUpdater, requisitionToUpdate);
   }
 
   @Override
