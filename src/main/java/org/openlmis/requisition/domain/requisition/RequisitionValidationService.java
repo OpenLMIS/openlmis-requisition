@@ -21,11 +21,9 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import org.openlmis.requisition.domain.DatePhysicalStockCountCompletedValidator;
 import org.openlmis.requisition.domain.DomainValidator;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,13 +43,10 @@ public class RequisitionValidationService {
    */
   public RequisitionValidationService(Requisition requisition, Requisition savedRequisition,
                                       LocalDate currentDate,
-                                      boolean isDatePhysicalStockCountCompletedEnabled,
-                                      OrderableReferenceDataService orderableReferenceDataService) {
+                                      boolean isDatePhysicalStockCountCompletedEnabled) {
     this.savedRequisition = savedRequisition;
     validators.add(new RequisitionInvariantsValidator(requisition, savedRequisition));
     validators.add(new ApprovalFieldsValidator(requisition, savedRequisition));
-    validators.add(new AvailableOrderableValidator(
-        orderableReferenceDataService, requisition, savedRequisition));
     regularOnlyValidators.add(new StockAdjustmentReasonsValidator(requisition, savedRequisition));
     regularOnlyValidators.add(new DatePhysicalStockCountCompletedValidator(
         requisition.getDatePhysicalStockCountCompleted(), savedRequisition, currentDate,
