@@ -27,7 +27,7 @@ public class ProofOfDeliveryFulfillmentService extends BaseFulfillmentService<Pr
 
   @Override
   protected String getUrl() {
-    return "/api/proofOfDeliveries/";
+    return "/api/proofsOfDelivery/";
   }
 
   @Override
