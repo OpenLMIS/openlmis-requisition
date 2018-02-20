@@ -26,13 +26,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-class StockAdjustmentReasonsValidator implements RequisitionDomainValidator {
+class StockAdjustmentReasonsValidator implements RequisitionUpdateDomainValidator {
 
   private final Requisition requisition;
   private final Requisition savedRequisition;
 
   @Override
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     validateIfReasonExists(errors, requisition, savedRequisition);
   }
 

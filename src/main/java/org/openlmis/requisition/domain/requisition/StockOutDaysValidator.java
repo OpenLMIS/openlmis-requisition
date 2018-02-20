@@ -24,7 +24,7 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class StockOutDaysValidator implements RequisitionDomainValidator {
+class StockOutDaysValidator implements RequisitionUpdateDomainValidator {
 
   private static final int DAYS_IN_MONTH = 30;
 
@@ -32,7 +32,7 @@ class StockOutDaysValidator implements RequisitionDomainValidator {
   private final Integer numberOfMonthsInPeriod;
 
   @Override
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> rejectIfTotalStockOutDaysIsGreaterThanLengthOfPeriod(

@@ -33,7 +33,7 @@ public class RequisitionValidationService {
   private static final Logger logger = LoggerFactory.getLogger(RequisitionValidationService.class);
 
   private final Requisition savedRequisition;
-  private List<RequisitionDomainValidator> validators = new ArrayList<>();
+  private List<RequisitionUpdateDomainValidator> validators = new ArrayList<>();
 
   /**
    * Constructs new requisition validation service.
@@ -60,12 +60,12 @@ public class RequisitionValidationService {
   ValidationResult validateRequisitionCanBeUpdated() {
     Map<String, Message> errors = new HashMap<>();
 
-    for (RequisitionDomainValidator validator : validators) {
+    for (RequisitionUpdateDomainValidator validator : validators) {
       if (!validator.isForRegularOnly()) {
-        validator.validate(errors);
+        validator.validateCanUpdate(errors);
       }
       if (isNotTrue(savedRequisition.getEmergency()) && validator.isForRegularOnly()) {
-        validator.validate(errors);
+        validator.validateCanUpdate(errors);
       }
 
     }

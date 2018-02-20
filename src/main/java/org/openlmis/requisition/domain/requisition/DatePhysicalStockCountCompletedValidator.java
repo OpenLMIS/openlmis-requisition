@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class DatePhysicalStockCountCompletedValidator implements RequisitionDomainValidator {
+public class DatePhysicalStockCountCompletedValidator implements RequisitionUpdateDomainValidator {
   private final DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
   private final Requisition requisitionToUpdate;
   private final LocalDate currentDate;
@@ -34,7 +34,7 @@ public class DatePhysicalStockCountCompletedValidator implements RequisitionDoma
   /**
    * Validates {@link DatePhysicalStockCountCompleted} Value Object.
    */
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     if (isDatePhysicalStockCountCompletedEnabled) {
       if (dateDifferAfterAuthorize()) {
         errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED,

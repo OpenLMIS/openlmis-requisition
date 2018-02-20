@@ -23,13 +23,13 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class StockOnHandValidator implements RequisitionDomainValidator {
+class StockOnHandValidator implements RequisitionUpdateDomainValidator {
 
   private final Requisition requisition;
   private final RequisitionTemplate requisitionTemplate;
 
   @Override
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
       requisition.getNonSkippedFullSupplyRequisitionLineItems()
           .forEach(i -> validateRequisitionLineItem(errors, i));

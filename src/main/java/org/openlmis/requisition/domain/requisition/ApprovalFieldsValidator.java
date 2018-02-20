@@ -24,11 +24,11 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class ApprovalFieldsValidator implements RequisitionDomainValidator {
+class ApprovalFieldsValidator implements RequisitionUpdateDomainValidator {
   private final Requisition requisitionUpdater;
   private final Requisition requisitionToUpdate;
 
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     if (isEmpty(requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems())) {
       return;
     }

@@ -25,14 +25,14 @@ import java.util.Map;
 /**
  * Interface that all domain validators should implement.
  */
-interface RequisitionDomainValidator {
+interface RequisitionUpdateDomainValidator {
 
   /**
    * Call given validators.
    *
    * @param errors a map where errors will be put.
    */
-  void validate(Map<String, Message> errors);
+  void validateCanUpdate(Map<String, Message> errors);
 
   boolean isForRegularOnly();
 

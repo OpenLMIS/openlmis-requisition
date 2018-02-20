@@ -27,11 +27,11 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class RequisitionInvariantsValidator implements RequisitionDomainValidator {
+class RequisitionInvariantsValidator implements RequisitionUpdateDomainValidator {
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
 
-  public void validate(Map<String, Message> errors) {
+  public void validateCanUpdate(Map<String, Message> errors) {
     rejectIfValueChanged(errors, requisitionUpdater.getFacilityId(),
         requisitionToUpdate.getFacilityId(), FACILITY_ID);
     rejectIfValueChanged(errors, requisitionUpdater.getProgramId(),
