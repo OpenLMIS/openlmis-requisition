@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -23,8 +23,7 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class TotalConsumedQuantityValidator
-    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
+class TotalReceivedQuantityValidator implements RequisitionStatusChangeDomainValidator {
 
   private final Requisition requisitionToValidate;
   private final RequisitionTemplate requisitionTemplate;
@@ -35,25 +34,13 @@ class TotalConsumedQuantityValidator
   }
 
   @Override
-  public void validateCanUpdate(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItemForUpdate(errors, i));
-  }
-
-  @Override
   public void validateCanChangeStatus(Map<String, Message> errors) {
     requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(i -> validateFullSupplyLineItem(errors, i));
   }
 
-  private void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
-                                                   RequisitionLineItem item) {
-    rejectIfCalculatedAndNotNull(errors, requisitionTemplate,
-        item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
-  }
-
   private void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate,
-        item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
+        item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
   }
 }

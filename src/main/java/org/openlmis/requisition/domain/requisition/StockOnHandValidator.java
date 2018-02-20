@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
 
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -23,28 +23,38 @@ import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class StockOnHandValidator implements RequisitionUpdateDomainValidator {
+class StockOnHandValidator
+    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
 
-  private final Requisition requisition;
+  private final Requisition requisitionToValidate;
   private final RequisitionTemplate requisitionTemplate;
-
-  @Override
-  public void validateCanUpdate(Map<String, Message> errors) {
-    if (!isEmpty(requisition.getNonSkippedFullSupplyRequisitionLineItems())) {
-      requisition.getNonSkippedFullSupplyRequisitionLineItems()
-          .forEach(i -> validateRequisitionLineItem(errors, i));
-    }
-  }
 
   @Override
   public boolean isForRegularOnly() {
     return true;
   }
 
-  private void validateRequisitionLineItem(Map<String, Message> errors,
-                                           RequisitionLineItem item) {
+  @Override
+  public void validateCanUpdate(Map<String, Message> errors) {
+    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(i -> validateFullSupplyLineItemForUpdate(errors, i));
+  }
+
+  @Override
+  public void validateCanChangeStatus(Map<String, Message> errors) {
+    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
+        .forEach(i -> validateFullSupplyLineItem(errors, i));
+  }
+
+  private void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
+                                                   RequisitionLineItem item) {
     rejectIfCalculatedAndNotNull(errors, requisitionTemplate, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
+  }
+
+  private void validateFullSupplyLineItem(Map<String, Message> errors,
+                                          RequisitionLineItem item) {
+    rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
   }
 
 }

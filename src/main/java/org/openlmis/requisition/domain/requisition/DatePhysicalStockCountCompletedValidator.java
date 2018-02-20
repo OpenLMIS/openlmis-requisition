@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.utils.Message;
@@ -25,26 +26,42 @@ import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class DatePhysicalStockCountCompletedValidator implements RequisitionUpdateDomainValidator {
-  private final DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
+class DatePhysicalStockCountCompletedValidator
+    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
+  private final DatePhysicalStockCountCompleted datePhysicalStockCountCompletedToValidate;
   private final Requisition requisitionToUpdate;
   private final LocalDate currentDate;
   private final boolean isDatePhysicalStockCountCompletedEnabled;
 
   /**
-   * Validates {@link DatePhysicalStockCountCompleted} Value Object.
+   * Validates {@link DatePhysicalStockCountCompleted} Value Object for Requisition update.
    */
+  @Override
   public void validateCanUpdate(Map<String, Message> errors) {
     if (isDatePhysicalStockCountCompletedEnabled) {
       if (dateDifferAfterAuthorize()) {
         errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
             new Message(ERROR_DATE_STOCK_COUNT_MISMATCH));
       }
-      if (datePhysicalStockCountCompleted != null) {
-        datePhysicalStockCountCompleted.validateNotInFuture(errors, currentDate);
+      if (datePhysicalStockCountCompletedToValidate != null) {
+        datePhysicalStockCountCompletedToValidate.validateNotInFuture(errors, currentDate);
       }
     }
   }
+
+  /**
+   * Validates {@link DatePhysicalStockCountCompleted} Value Object for Requisition status changes.
+   */
+  @Override
+  public void validateCanChangeStatus(Map<String, Message> errors) {
+    if (isDatePhysicalStockCountCompletedEnabled
+        && requisitionToUpdate.isPreAuthorize()
+        && datePhysicalStockCountCompletedToValidate == null) {
+      errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, DATE_PHYSICAL_STOCK_COUNT_COMPLETED));
+    }
+  }
+
 
   @Override
   public boolean isForRegularOnly() {
@@ -54,6 +71,6 @@ public class DatePhysicalStockCountCompletedValidator implements RequisitionUpda
   private boolean dateDifferAfterAuthorize() {
     return requisitionToUpdate.getStatus().isAuthorized()
         && Objects.equals(requisitionToUpdate.getDatePhysicalStockCountCompleted(),
-        datePhysicalStockCountCompleted);
+        datePhysicalStockCountCompletedToValidate);
   }
 }
