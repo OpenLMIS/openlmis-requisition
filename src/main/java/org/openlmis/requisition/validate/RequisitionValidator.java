@@ -40,9 +40,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -257,7 +257,8 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
           new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, CALCULATED_ORDER_QUANTITY));
     }
 
-    if (checkTemplate(errors, template, item.getCalculatedOrderQuantityIsa(),
+    if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
+        && checkTemplate(errors, template, item.getCalculatedOrderQuantityIsa(),
         CALCULATED_ORDER_QUANTITY_ISA) && !Objects.equals(item.getCalculatedOrderQuantityIsa(),
         calculateCalculatedOrderQuantityIsa(item))) {
       rejectValue(errors, REQUISITION_LINE_ITEMS,
