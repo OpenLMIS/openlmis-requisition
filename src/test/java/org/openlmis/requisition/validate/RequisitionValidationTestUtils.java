@@ -18,6 +18,7 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -105,6 +106,10 @@ public class RequisitionValidationTestUtils {
     columns.put(
         CALCULATED_ORDER_QUANTITY,
         generateTemplateColumn(CALCULATED_ORDER_QUANTITY, "I", CALCULATED)
+    );
+    columns.put(
+        CALCULATED_ORDER_QUANTITY_ISA,
+        generateTemplateColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED)
     );
 
     return columns;

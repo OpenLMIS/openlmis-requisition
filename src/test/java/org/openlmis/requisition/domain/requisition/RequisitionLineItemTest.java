@@ -41,6 +41,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -108,6 +109,7 @@ public class RequisitionLineItemTest {
     assertNull(item.getCalculatedOrderQuantity());
     assertEquals(item.getStockAdjustments().size(), 0);
     assertEquals(item.getPreviousAdjustedConsumptions().size(), 0);
+    assertNull(item.getCalculatedOrderQuantityIsa());
   }
 
   @Test
@@ -233,8 +235,11 @@ public class RequisitionLineItemTest {
   @Test
   public void shouldReturnZeroWhenApprovedQuantityAndRequestedQuantityIsNull() {
     // given
+    Requisition requisition = new Requisition();
+    requisition.setTemplate(new RequisitionTemplateDataBuilder().build());
+
     RequisitionLineItem item = new RequisitionLineItem();
-    item.setRequisition(new Requisition());
+    item.setRequisition(requisition);
     item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
 
     item.setApprovedQuantity(null);
@@ -245,6 +250,51 @@ public class RequisitionLineItemTest {
 
     // then
     assertEquals(0, quantity);
+  }
+
+  @Test
+  public void shouldReturnCalculatedOrderQuantityIsaWhenRequisitionIsStockBasedAndItIsNotNull() {
+    // given
+    Requisition requisition = new Requisition();
+    requisition.setTemplate(new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .build());
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
+
+    item.setApprovedQuantity(null);
+    item.setRequestedQuantity(null);
+    item.setCalculatedOrderQuantityIsa(100);
+
+    // when
+    int quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(100, quantity);
+  }
+
+  @Test
+  public void shouldReturnCalculatedOrderQuantityWhenRequisitionIsNotStockBasedAndItIsNotNull() {
+    // given
+    Requisition requisition = new Requisition();
+    requisition.setTemplate(new RequisitionTemplateDataBuilder()
+        .build());
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
+
+    item.setApprovedQuantity(null);
+    item.setRequestedQuantity(null);
+    item.setCalculatedOrderQuantity(50);
+
+    // when
+    int quantity = item.getOrderQuantity();
+
+    // then
+    assertEquals(50, quantity);
   }
 
   @Test
@@ -426,6 +476,8 @@ public class RequisitionLineItemTest {
     assertThat(dto.getTotalCost(), is(requisitionLineItem.getTotalCost()));
     assertThat(dto.getNumberOfNewPatientsAdded(),
         is(requisitionLineItem.getNumberOfNewPatientsAdded()));
+    assertThat(dto.getCalculatedOrderQuantityIsa(),
+        is(requisitionLineItem.getCalculatedOrderQuantityIsa()));
 
     return dto;
   }

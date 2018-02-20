@@ -52,6 +52,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFEREN
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.COLUMNS_MAP;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE_ID;
@@ -65,6 +66,8 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
+
+import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
@@ -690,6 +693,25 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+  }
+
+  @Test
+  public void shouldRejectWhenCalcOrderQtyIsaIsDisplayedAndStockFlagIsDisabled() {
+    when(messageService
+        .localize(new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS)))
+        .thenReturn(message);
+    RequisitionTemplate template = baseTemplateBuilder()
+        .withColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED, ImmutableSet.of(CALCULATED))
+        .build();
+
+    RequisitionTemplateDto dto = buildDto(template);
+    mockResponses(dto);
+
+    dto.getColumnsMap().get(CALCULATED_ORDER_QUANTITY_ISA).setIsDisplayed(true);
+
+    validator.validate(dto, errors);
+
+    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
   }
 
   private RequisitionTemplateDataBuilder baseTemplateBuilder() {

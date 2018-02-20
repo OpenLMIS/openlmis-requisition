@@ -68,6 +68,7 @@ public class RequisitionLineItemDto extends BaseDto
   private Integer maximumStockQuantity;
   private Integer calculatedOrderQuantity;
   private Integer idealStockAmount;
+  private Integer calculatedOrderQuantityIsa;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments = new ArrayList<>();

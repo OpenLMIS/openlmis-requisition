@@ -17,15 +17,20 @@ package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -143,10 +148,14 @@ public class AvailableRequisitionColumn extends BaseEntity {
     availableRequisitionColumn.setId(importer.getId());
     availableRequisitionColumn.setName(importer.getName());
     availableRequisitionColumn.setSources(importer.getSources());
+
     availableRequisitionColumn.setOptions(new HashSet<>());
-    importer.getOptions().forEach(option ->
-        availableRequisitionColumn.getOptions()
+    Optional
+        .ofNullable(importer.getOptions())
+        .orElse(Collections.emptySet())
+        .forEach(option -> availableRequisitionColumn.getOptions()
             .add(AvailableRequisitionColumnOption.newInstance(option)));
+
     availableRequisitionColumn.setLabel(importer.getLabel());
     availableRequisitionColumn.setIndicator(importer.getIndicator());
     availableRequisitionColumn.setMandatory(importer.getMandatory());

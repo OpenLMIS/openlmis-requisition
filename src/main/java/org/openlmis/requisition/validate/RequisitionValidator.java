@@ -16,12 +16,14 @@
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
 import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -253,6 +255,13 @@ public class RequisitionValidator extends AbstractRequisitionValidator {
         calculateCalculatedOrderQuantity(item, template))) {
       rejectValue(errors, REQUISITION_LINE_ITEMS,
           new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, CALCULATED_ORDER_QUANTITY));
+    }
+
+    if (checkTemplate(errors, template, item.getCalculatedOrderQuantityIsa(),
+        CALCULATED_ORDER_QUANTITY_ISA) && !Objects.equals(item.getCalculatedOrderQuantityIsa(),
+        calculateCalculatedOrderQuantityIsa(item))) {
+      rejectValue(errors, REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, CALCULATED_ORDER_QUANTITY_ISA));
     }
   }
 

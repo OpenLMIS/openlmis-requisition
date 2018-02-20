@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public final class LineItemFieldsCalculator {
 
   private LineItemFieldsCalculator() {
@@ -258,6 +259,22 @@ public final class LineItemFieldsCalculator {
     }
 
     return Math.max(0, zeroIfNull(maximumStockQuantity) - zeroIfNull(stockOnHand));
+  }
+
+  /**
+   * Calculates Calculated Order Quantity ISA (S) value and returns it.
+   * The formula is
+   * I = G - E
+   *
+   * @param line the line item to calculate the value for.
+   * @return a {@link Integer} object representing the Calculated Order Quantity ISA for this line.
+   */
+  public static Integer calculateCalculatedOrderQuantityIsa(RequisitionLineItem line) {
+    if (null == line.getIdealStockAmount()) {
+      return null;
+    }
+
+    return Math.max(0, line.getIdealStockAmount() - zeroIfNull(line.getStockOnHand()));
   }
 
 }

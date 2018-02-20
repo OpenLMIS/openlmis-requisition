@@ -17,10 +17,12 @@ package org.openlmis.requisition.domain;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 
@@ -319,4 +321,20 @@ public class LineItemFieldsCalculatorTest {
 
   }
 
+  @Test
+  public void shouldReturnNullForCalculatedOrderQuantityIsaIfIsaIsNull() {
+    RequisitionLineItem line = new RequisitionLineItem();
+    line.setIdealStockAmount(null);
+
+    assertThat(calculateCalculatedOrderQuantityIsa(line), is(nullValue()));
+  }
+
+  @Test
+  public void shouldCalculateCalculatedOrderQuantityIsa() {
+    RequisitionLineItem line = new RequisitionLineItem();
+    line.setIdealStockAmount(1000);
+    line.setStockOnHand(100);
+
+    assertThat(calculateCalculatedOrderQuantityIsa(line), is(900));
+  }
 }

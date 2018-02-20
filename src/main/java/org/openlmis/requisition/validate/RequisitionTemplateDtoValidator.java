@@ -75,6 +75,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
+  static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
   static final String BEGINNING_BALANCE = "beginningBalance";
   static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
   static final String TOTAL = "total";
@@ -128,6 +129,13 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
 
     if (template.isPopulateStockOnHandFromStockCards()) {
       validateStockManagementFields(template);
+    } else {
+      if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
+          && template.findColumn(CALCULATED_ORDER_QUANTITY_ISA).getIsDisplayed()) {
+        rejectIfDisplayed(errors, template, CALCULATED_ORDER_QUANTITY_ISA, COLUMNS_MAP,
+            new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS,
+                CALCULATED_ORDER_QUANTITY_ISA));
+      }
     }
 
     if (null == programReferenceDataService.findOne(template.getProgramId())) {

@@ -19,6 +19,7 @@ import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAdjustedConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotal;
@@ -89,6 +90,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String AVERAGE_CONSUMPTION = "averageConsumption";
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
+  public static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
 
   @Getter
   @Setter
@@ -216,6 +218,10 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer idealStockAmount;
 
+  @Setter
+  @Getter
+  private Integer calculatedOrderQuantityIsa;
+
   /**
    * Initiates a requisition line item.
    */
@@ -289,6 +295,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setMaxPeriodsOfStock(importer.getMaxPeriodsOfStock());
     requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
+    requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -321,6 +328,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.numberOfNewPatientsAdded = requisitionLineItem.getNumberOfNewPatientsAdded();
       this.maximumStockQuantity = requisitionLineItem.getMaximumStockQuantity();
       this.calculatedOrderQuantity = requisitionLineItem.getCalculatedOrderQuantity();
+      this.calculatedOrderQuantityIsa = requisitionLineItem.getCalculatedOrderQuantityIsa();
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
       } else {
@@ -368,8 +376,14 @@ public class RequisitionLineItem extends BaseEntity {
       return requestedQuantity;
     }
 
-    if (calculatedOrderQuantity != null) {
-      return calculatedOrderQuantity;
+    if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      if (null != calculatedOrderQuantityIsa) {
+        return calculatedOrderQuantityIsa;
+      }
+    } else {
+      if (calculatedOrderQuantity != null) {
+        return calculatedOrderQuantity;
+      }
     }
 
     return 0;
@@ -416,6 +430,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
     exporter.setIdealStockAmount(idealStockAmount);
+    exporter.setCalculatedOrderQuantityIsa(calculatedOrderQuantityIsa);
   }
 
   /**
@@ -440,6 +455,7 @@ public class RequisitionLineItem extends BaseEntity {
     setAverageConsumption(null);
     setMaximumStockQuantity(null);
     setCalculatedOrderQuantity(null);
+    setCalculatedOrderQuantityIsa(null);
     stockAdjustments.clear();
     previousAdjustedConsumptions.clear();
   }
@@ -471,6 +487,7 @@ public class RequisitionLineItem extends BaseEntity {
     calculateAndSetAverageConsumption(template);
     calculateAndSetMaximumStockQuantity(template);
     calculateAndSetCalculatedOrderQuantity(template);
+    calculateAndSetCalculatedOrderQuantityIsa(template);
   }
 
   /**
@@ -618,6 +635,17 @@ public class RequisitionLineItem extends BaseEntity {
     }
   }
 
+  private void calculateAndSetCalculatedOrderQuantityIsa(RequisitionTemplate template) {
+    if (template.isColumnInTemplateAndDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
+      Integer calculated = calculateCalculatedOrderQuantityIsa(this);
+      if (getCalculatedOrderQuantityIsa() != null
+          && !Objects.equals(getCalculatedOrderQuantityIsa(), calculated)) {
+        LOGGER.warn("Passed CalculatedOrderQuantityIsa does not match calculated one.");
+      }
+      setCalculatedOrderQuantityIsa(calculated);
+    }
+  }
+
   /**
    * checks if line is skipped. Return false if null.
    */
@@ -684,6 +712,8 @@ public class RequisitionLineItem extends BaseEntity {
     void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter);
 
     void setIdealStockAmount(Integer idealStockAmount);
+
+    void setCalculatedOrderQuantityIsa(Integer calculatedOrderQuantityIsa);
   }
 
   public interface Importer {
@@ -736,5 +766,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getCalculatedOrderQuantity();
 
     Integer getIdealStockAmount();
+
+    Integer getCalculatedOrderQuantityIsa();
   }
 }

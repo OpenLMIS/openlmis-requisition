@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSICAL_STOCK_COUNT_COMPLETED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
@@ -353,6 +354,23 @@ public class RequisitionValidatorTest {
 
     Message message = new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
         CALCULATED_ORDER_QUANTITY);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+
+    requisitionValidator.validate(requisition, errors);
+
+    verify(errors).rejectValue(eq(RequisitionValidator.REQUISITION_LINE_ITEMS),
+        contains(RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
+  }
+
+  @Test
+  public void shouldRejectIfCalculatedOrderQuantityIsaIsIncorrectlyCalculated() {
+    RequisitionLineItem lineItem = generateLineItem();
+    lineItem.setCalculatedOrderQuantityIsa(25);
+    requisitionLineItems.add(lineItem);
+
+    Message message = new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
+        CALCULATED_ORDER_QUANTITY_ISA);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         RequisitionValidator.VALUE_IS_INCORRECTLY_CALCULATED));
 
