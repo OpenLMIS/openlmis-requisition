@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Maps;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,13 +41,17 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -119,7 +125,8 @@ public class RequisitionBuilderTest {
   @Test
   public void shouldInitializeRequisitionFromDtoImporterForUpdate() {
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED);
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED,
+        Maps.newHashMap());
 
     assertNotNull(requisition);
     assertEquals(processingPeriodDto.getDurationInMonths(),
@@ -148,7 +155,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkip(new RequisitionLineItemDto());
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-            requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
+            requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+        getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -162,7 +170,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkip(lineItemDto);
 
     RequisitionBuilder
-        .newRequisition(requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
+        .newRequisition(requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+            getOrderables());
   }
 
   @Test
@@ -170,7 +179,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.AUTHORIZED);
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.AUTHORIZED,
+        getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -180,7 +190,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.APPROVED);
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.APPROVED,
+        getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -190,7 +201,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+        getOrderables());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -200,7 +212,8 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.SUBMITTED);
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.SUBMITTED,
+        getOrderables());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -208,16 +221,15 @@ public class RequisitionBuilderTest {
   @Test
   public void shouldInitializeRequisitionFromDtoImporterWhenProgramIsNull() {
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED);
+        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+        Maps.newHashMap());
 
     assertNotNull(requisition);
     assertNull(requisition.getProgramId());
   }
 
   private void prepareForTestSkip(RequisitionLineItemDto lineItemDto) {
-    OrderableDto orderable = new OrderableDto();
-    orderable.setPrograms(Collections.emptySet());
-    lineItemDto.setOrderable(orderable);
+    lineItemDto.setOrderable(new OrderableDtoDataBuilder().build());
     when(requisitionDto.getRequisitionLineItems())
         .thenReturn(Collections.singletonList(lineItemDto));
   }
@@ -228,5 +240,13 @@ public class RequisitionBuilderTest {
     RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
     lineItemDto.setSkipped(true);
     prepareForTestSkip(lineItemDto);
+  }
+
+  private Map<UUID, OrderableDto> getOrderables() {
+    return requisitionDto
+        .getRequisitionLineItems()
+        .stream()
+        .map(RequisitionLineItem.Importer::getOrderable)
+        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
   }
 }

@@ -18,12 +18,13 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
+
 import org.apache.commons.beanutils.PropertyUtils;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
@@ -225,10 +228,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
+    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
+        .findByIds(requisitionToUpdate.getAllOrderableIds())
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDtoBuilder.build(requisitionToUpdate),
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        requisitionToUpdate.getStatus());
+        requisitionToUpdate.getStatus(), orderables);
     requisition.setTemplate(requisitionToUpdate.getTemplate());
     requisition.setId(requisitionToUpdate.getId());
     return updateOne(dto, requisition);

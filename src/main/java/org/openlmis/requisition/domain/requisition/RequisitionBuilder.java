@@ -17,14 +17,17 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST;
 
 import org.openlmis.requisition.domain.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,20 +64,27 @@ public final class RequisitionBuilder {
   public static Requisition newRequisition(Requisition.Importer importer,
                                            RequisitionTemplate template,
                                            UUID programId,
-                                           RequisitionStatus requisitionStatus) {
+                                           RequisitionStatus requisitionStatus,
+                                           Map<UUID, OrderableDto> orderables) {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(new ArrayList<>());
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
-        Optional<ProgramOrderableDto> program = requisitionLineItem
-            .getOrderable()
+        RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
+        OrderableDto orderable = orderables.get(item.getOrderableId());
+
+        if(null == orderable) {
+          throw new ValidationMessageException(
+              new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, item.getOrderableId()));
+        }
+
+        Optional<ProgramOrderableDto> program = orderable
             .getPrograms()
             .stream()
             .filter(e -> programId.equals(e.getProgramId()))
             .findFirst();
 
-        RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
 
         if (isSkipped(requisitionLineItem) && requisitionStatus.isPreAuthorize()) {

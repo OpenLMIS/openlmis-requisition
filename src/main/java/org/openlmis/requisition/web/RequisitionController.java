@@ -28,6 +28,7 @@ import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonDto;
@@ -70,12 +71,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -268,9 +272,14 @@ public class RequisitionController extends BaseRequisitionController {
         .throwExceptionIfHasErrors();
 
     Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
+    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
+        .findByIds(requisitionToUpdate.getAllOrderableIds())
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        requisitionToUpdate.getStatus());
+        requisitionToUpdate.getStatus(), orderables);
     requisition.setId(requisitionId);
 
     requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)

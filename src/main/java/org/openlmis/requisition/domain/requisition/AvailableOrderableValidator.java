@@ -41,19 +41,17 @@ public class AvailableOrderableValidator implements DomainValidator {
 
   @Override
   public void validate(Map<String, Message> errors) {
-    Set<UUID> currentOrderableIds = getOrderableIds(requisitionUpdater);
+    Set<UUID> current = requisitionUpdater.getAllOrderableIds();
+    Set<UUID> existing = requisitionToUpdate.getAllOrderableIds();
 
-    Set<UUID> existingOrderableIds = getOrderableIds(requisitionToUpdate);
-    existingOrderableIds.addAll(requisitionToUpdate.getAvailableProducts());
+    current.removeAll(existing);
 
-    currentOrderableIds.removeAll(existingOrderableIds);
-
-    if (isEmpty(currentOrderableIds)) {
+    if (isEmpty(current)) {
       // all orderables are present in the available list
       return;
     }
 
-    List<OrderableDto> orderables = orderableReferenceDataService.findByIds(currentOrderableIds);
+    List<OrderableDto> orderables = orderableReferenceDataService.findByIds(current);
     String codes = orderables
         .stream()
         .map(OrderableDto::getProductCode)
@@ -62,11 +60,4 @@ public class AvailableOrderableValidator implements DomainValidator {
     errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, codes));
   }
 
-  private Set<UUID> getOrderableIds(Requisition requisition) {
-    return requisition
-        .getRequisitionLineItems()
-        .stream()
-        .map(RequisitionLineItem::getOrderableId)
-        .collect(Collectors.toSet());
-  }
 }
