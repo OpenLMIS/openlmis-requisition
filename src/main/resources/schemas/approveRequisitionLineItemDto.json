@@ -14,7 +14,10 @@
       "title": "orderable"
     },
     "approvedQuantity": {
-      "type": "integer",
+      "type": [
+        "integer",
+        "null"
+      ],
       "title": "approvedQuantity"
     },
     "pricePerPack": {
@@ -30,5 +33,9 @@
       "title": "skipped"
     }
   },
-  "required": ["id", "approvedQuantity", "orderable"]
+  "required": [
+    "id",
+    "approvedQuantity",
+    "orderable"
+  ]
 }

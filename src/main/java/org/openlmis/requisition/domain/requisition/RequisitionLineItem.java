@@ -26,6 +26,7 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_CANNOT_BE_CHANGED;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -83,7 +84,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String REMARKS_COLUMN = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   public static final String TOTAL_COLUMN = "total";
-  static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
+  public static final BigDecimal PRICE_PER_PACK_IF_NULL = BigDecimal.ZERO;
   public static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   public static final String SKIPPED_COLUMN = "skipped";
   public static final String ADJUSTED_CONSUMPTION = "adjustedConsumption";
@@ -313,6 +314,10 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisitionLineItem RequisitionLineItem with new values.
    */
   void updateFrom(RequisitionLineItem requisitionLineItem) {
+    if (!this.orderableId.equals(requisitionLineItem.getOrderableId())) {
+      throw new ValidationMessageException(ERROR_ORDERABLE_CANNOT_BE_CHANGED);
+    }
+
     if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();

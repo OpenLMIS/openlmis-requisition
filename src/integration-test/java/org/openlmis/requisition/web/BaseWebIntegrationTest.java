@@ -24,10 +24,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.PRICE_PER_PACK_IF_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_CHECK_RESULT;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+
+import com.google.common.collect.Sets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -36,16 +40,18 @@ import com.jayway.restassured.config.ObjectMapperConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 
 import org.assertj.core.util.Lists;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -54,8 +60,10 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -73,8 +81,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -205,18 +211,15 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected final RequisitionTemplate generateRequisitionTemplate() {
-    RequisitionTemplate template = new RequisitionTemplate(
-        UUID.randomUUID(), null,false, null, new HashMap<>(), new HashSet<>()
-    );
-    template.addAssignment(UUID.randomUUID(), UUID.randomUUID());
-
-    return template;
+    return new RequisitionTemplateDataBuilder()
+        .withColumns(RequisitionValidationTestUtils.initiateColumns())
+        .build();
   }
 
   protected OrderableDto generateOrderable(UUID id) {
     OrderableDto orderable = new OrderableDto();
-
     orderable.setId(id);
+    orderable.setPrograms(Sets.newHashSet());
 
     return orderable;
   }
@@ -225,6 +228,10 @@ public abstract class BaseWebIntegrationTest {
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setOrderableId(LINE_ITEM_PRODUCT_ID);
     lineItem.setRequisition(requisition);
+    lineItem.setId(UUID.randomUUID());
+    lineItem.setPricePerPack(Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
+    lineItem.setTotalCost(Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
+
     return Lists.newArrayList(lineItem);
   }
 

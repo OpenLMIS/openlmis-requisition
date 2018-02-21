@@ -7,6 +7,8 @@ Contract breaking changes:
 * [OLMIS-4054](https://openlmis.atlassian.net/browse/OLMIS-4054): Stock based requisition: Stock on Hand from stock management
   * Stock on hand requisition column is populated with the stock on hand from Stock.
 * [OLMIS-4112](https://openlmis.atlassian.net/browse/OLMIS-4112): Allow adding/removing line items for emergency requisitions
+  * if requisition line item will be added/removed from regular requisition, error message will be shown
+  * if orderableId field in requisition line item will be changed (for both regular and emergency requisitions), error message will be shown
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.

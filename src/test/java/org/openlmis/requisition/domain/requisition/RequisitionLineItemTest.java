@@ -24,23 +24,25 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_CANNOT_BE_CHANGED;
 
 import com.google.common.collect.Lists;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
 import java.util.Collections;
@@ -50,6 +52,9 @@ import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   private Requisition initiatedRequisition;
 
@@ -152,7 +157,7 @@ public class RequisitionLineItemTest {
   public void shouldUpdateSubmissionFields() {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
-
+    item.setOrderableId(UUID.randomUUID());
     item.setStockOnHand(1);
     item.setTotalConsumedQuantity(2);
     item.setBeginningBalance(3);
@@ -163,6 +168,7 @@ public class RequisitionLineItemTest {
     item.setNumberOfNewPatientsAdded(1);
 
     RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setOrderableId(item.getOrderableId());
     updateItem.setStockOnHand(11);
     updateItem.setTotalConsumedQuantity(22);
     updateItem.setBeginningBalance(33);
@@ -182,24 +188,6 @@ public class RequisitionLineItemTest {
     assertThat(item.getTotalStockoutDays(), is(66));
     assertThat(item.getTotal(), is(77));
     assertThat(item.getNumberOfNewPatientsAdded(), is(2));
-  }
-
-  @Test
-  public void shouldNotUpdateProduct() {
-    final UUID product1 = UUID.randomUUID();
-    final UUID product2 = UUID.randomUUID();
-
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setRequisition(initiatedRequisition);
-    item.setOrderableId(product1);
-
-    RequisitionLineItem updateItem = new RequisitionLineItem();
-    updateItem.setRequisition(initiatedRequisition);
-    updateItem.setOrderableId(product2);
-
-    item.updateFrom(updateItem);
-
-    assertThat(item.getOrderableId(), is(product1));
   }
 
   @Test
@@ -383,6 +371,17 @@ public class RequisitionLineItemTest {
     assertFalse(requisitionLineItem.isLineSkipped());
   }
 
+  @Test
+  public void shouldThrowExceptionIfOrderableIdHasBeenChanged() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(ERROR_ORDERABLE_CANNOT_BE_CHANGED);
+
+    RequisitionLineItem existing = new RequisitionLineItemDataBuilder().build();
+    RequisitionLineItem current = new RequisitionLineItemDataBuilder().build();
+
+    existing.updateFrom(current);
+  }
+
   private void checkResultsOfConstruction(RequisitionLineItem item) {
     assertEquals(initiatedRequisition, item.getRequisition());
     assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
@@ -394,12 +393,14 @@ public class RequisitionLineItemTest {
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setOrderableId(UUID.randomUUID());
     requisitionLineItem.setRequisition(requisition);
     requisitionLineItem.setApprovedQuantity(1);
     requisitionLineItem.setRemarks("Remarks");
     requisitionLineItem.setStockOnHand(5);
 
     RequisitionLineItem updatedItem = new RequisitionLineItem();
+    updatedItem.setOrderableId(requisitionLineItem.getOrderableId());
     updatedItem.setRequisition(requisition);
     updatedItem.updateFrom(requisitionLineItem);
 

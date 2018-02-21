@@ -45,7 +45,10 @@ import java.util.Map;
 
 public class RequisitionValidationTestUtils {
 
-  static Map<String, RequisitionTemplateColumn> initiateColumns() {
+  /**
+   * Returns a initiate columns map for requisition template.
+   */
+  public static Map<String, RequisitionTemplateColumn> initiateColumns() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
 
     columns.put(REQUESTED_QUANTITY,

@@ -232,6 +232,12 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".canNotFindProgramDetailsFromOrderable";
   public static final String ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST =
       ERROR_PREFIX + ".orderableNotInAvailableList";
+  public static final String ERROR_ORDERABLE_CANNOT_BE_CHANGED =
+      ERROR_PREFIX + ".lineItem.orderableCannotBeChanged";
+  public static final String ERROR_LINE_ITEM_REMOVED =
+      ERROR_PREFIX + ".lineItem.removed";
+  public static final String ERROR_LINE_ITEM_ADDED =
+      ERROR_PREFIX + ".lineItem.added";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

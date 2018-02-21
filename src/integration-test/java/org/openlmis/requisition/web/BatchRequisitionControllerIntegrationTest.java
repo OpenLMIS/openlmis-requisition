@@ -35,11 +35,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
+import com.google.common.collect.Sets;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +60,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.RequisitionService;
@@ -430,7 +434,22 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
       requisition.export(dto);
 
       dto.setTemplate(BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
-      dto.setRequisitionLineItems(Collections.emptyList());
+      dto.setRequisitionLineItems(requisition
+          .getRequisitionLineItems()
+          .stream()
+          .map(line -> {
+            OrderableDto orderableDto = new OrderableDto();
+            orderableDto.setId(line.getOrderableId());
+            orderableDto.setPrograms(Sets.newHashSet());
+            orderableDto.setProductCode(RandomStringUtils.randomAlphanumeric(5));
+            orderableDto.setFullProductName(RandomStringUtils.randomAlphanumeric(5));
+
+            RequisitionLineItemDto lineDto = new RequisitionLineItemDto();
+            line.export(lineDto, orderableDto);
+
+            return lineDto;
+          })
+          .collect(Collectors.toList()));
 
       FacilityDto facility = null;
       if (requisition.getFacilityId() != null) {
