@@ -70,7 +70,7 @@ class DatePhysicalStockCountCompletedValidator
 
   private boolean dateDifferAfterAuthorize() {
     return requisitionToUpdate.getStatus().isAuthorized()
-        && Objects.equals(requisitionToUpdate.getDatePhysicalStockCountCompleted(),
+        && !Objects.equals(requisitionToUpdate.getDatePhysicalStockCountCompleted(),
         datePhysicalStockCountCompletedToValidate);
   }
 }

@@ -50,8 +50,7 @@ public class DatePhysicalStockCountCompleted {
     localDate = LocalDate.MIN;
   }
 
-  void validateNotInFuture(Map<String, Message> errors,
-                           LocalDate currentDate) {
+  void validateNotInFuture(Map<String, Message> errors, LocalDate currentDate) {
     if (localDate.isAfter(currentDate)) {
       errors.put(DATE_PHYSICAL_STOCK_COUNT_COMPLETED,
           new Message(ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE));

@@ -17,15 +17,14 @@ package org.openlmis.requisition.testutils;
 
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
-import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +86,24 @@ public class RequisitionDataBuilder {
     requisition.setId(id);
 
     return requisition;
+  }
+
+  /**
+   * Sets datePhysicalStockCountCompleted.
+   */
+  public RequisitionDataBuilder setDatePhysicalStockCountCompleted(
+      LocalDate datePhysicalStockCountCompleted) {
+    this.datePhysicalStockCountCompleted =
+        new DatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
+    return this;
+  }
+
+  /**
+   * Sets status.
+   */
+  public RequisitionDataBuilder setStatus(RequisitionStatus status) {
+    this.status = status;
+    return this;
   }
 
 }

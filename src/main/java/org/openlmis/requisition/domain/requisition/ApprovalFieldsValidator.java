@@ -75,8 +75,5 @@ class ApprovalFieldsValidator
       rejectIfNull(errors, template, item.getApprovedQuantity(), APPROVED_QUANTITY);
       rejectIfLessThanZero(errors, template, item.getApprovedQuantity(), APPROVED_QUANTITY);
     }
-
   }
-
-
 }
