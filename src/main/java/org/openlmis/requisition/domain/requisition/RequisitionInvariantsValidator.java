@@ -19,18 +19,28 @@ import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
 @AllArgsConstructor
-class RequisitionInvariantsValidator implements RequisitionUpdateDomainValidator {
+class RequisitionInvariantsValidator
+    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
 
+  @Override
+  public boolean isForRegularOnly() {
+    return false;
+  }
+
+  @Override
   public void validateCanUpdate(Map<String, Message> errors) {
     rejectIfValueChanged(errors, requisitionUpdater.getFacilityId(),
         requisitionToUpdate.getFacilityId(), FACILITY_ID);
@@ -45,8 +55,11 @@ class RequisitionInvariantsValidator implements RequisitionUpdateDomainValidator
   }
 
   @Override
-  public boolean isForRegularOnly() {
-    return false;
+  public void validateCanChangeStatus(Map<String, Message> errors) {
+    if (isEmpty(requisitionToUpdate.getNonSkippedRequisitionLineItems())) {
+      errors.put(REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS));
+    }
   }
 
   private void rejectIfValueChanged(Map<String, Message> errors, Object value, Object savedValue,

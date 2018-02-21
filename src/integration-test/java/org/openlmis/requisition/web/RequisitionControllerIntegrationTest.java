@@ -47,7 +47,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -94,13 +94,13 @@ import org.openlmis.requisition.service.stockmanagement.StockEventStockManagemen
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
+import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.PageImplRepresentation;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
-import org.openlmis.requisition.validate.RequisitionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -109,10 +109,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.validation.Errors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,7 +121,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String SIZE = "size";
@@ -174,7 +170,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private RequisitionStatusProcessor requisitionStatusProcessor;
 
   @MockBean
-  private RequisitionValidator requisitionValidator;
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @MockBean
   private PeriodService periodService;
@@ -473,7 +469,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldSubmitValidRequisition() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.INITIATED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
     UUID requisitionId = requisition.getId();
 
     doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
@@ -505,7 +501,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotSubmitWhenPeriodEndDateIsInFuture() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.INITIATED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
     UUID requisitionId = requisition.getId();
 
     doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
@@ -543,7 +539,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotSubmitRequisitionWhenUserHasNoRightForSubmit() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.INITIATED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
     UUID requisitionId = requisition.getId();
 
     String missingPermission = REQUISITION_CREATE;
@@ -749,7 +745,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldAuthorizeRequisition() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.SUBMITTED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     UUID facilityId = requisition.getFacilityId();
     UUID programId = requisition.getProgramId();
     SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
@@ -781,7 +777,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotAuthorizeRequisitionWhenPeriodEndDateIsInFuture() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.SUBMITTED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     UUID facilityId = requisition.getFacilityId();
     UUID programId = requisition.getProgramId();
     SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
@@ -823,7 +819,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotAuthorizeRequisitionWhenUserHasNoRightForAuthorize() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.SUBMITTED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     UUID requisitionId = requisition.getId();
 
     String missingPermission = REQUISITION_AUTHORIZE;
@@ -1014,7 +1010,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotApproveRequisitionWhenPeriodEndDateIsInFuture() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
 
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
@@ -1054,7 +1050,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotApproveRequisitionWhenUserHasNoRightForApprove() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
     UUID requisitionId = requisition.getId();
 
     String missingPermission = REQUISITION_APPROVE;
@@ -1081,7 +1077,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotApproveRequisitionWhenUserHasNoRightToApproveForSupervisoryNode() {
     // given
-    Requisition requisition = spyRequisition(RequisitionStatus.AUTHORIZED);
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
     UUID requisitionId = requisition.getId();
 
     doReturn(ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION,
@@ -1551,7 +1547,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(statusMessageRepository.save(any(StatusMessage.class))).willReturn(null);
 
     doNothing().when(requisitionStatusProcessor).statusChange(any(Requisition.class));
-    doNothing().when(requisitionValidator).validate(any(Object.class), any(Errors.class));
     doNothing().when(facilitySupportsProgramHelper)
         .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
     doNothing().when(facilitySupportsProgramHelper)
@@ -1621,14 +1616,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void mockRepositorySaveAnswer() {
     given(requisitionRepository.save(any(Requisition.class))).willAnswer(new SaveAnswer<>());
-  }
-
-  private Requisition spyRequisition(RequisitionStatus status) {
-    Requisition requisition = spy(generateRequisition(status));
-    UUID requisitionId = requisition.getId();
-
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
-    return requisition;
   }
 
   private ValidationMessageException mockValidationException(String key, Object... args) {

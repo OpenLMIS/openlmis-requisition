@@ -32,4 +32,13 @@ public class BindingResultException extends RuntimeException {
   public Map<String, Message> getErrors() {
     return errors;
   }
+
+  /**
+   * Overrides RuntimeException's public String getMessage().
+   */
+  @Override
+  public String getMessage() {
+    return errors.toString();
+  }
+
 }

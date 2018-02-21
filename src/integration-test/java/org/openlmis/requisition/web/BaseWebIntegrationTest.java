@@ -21,8 +21,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.PRICE_PER_PACK_IF_NULL;
@@ -56,6 +59,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -269,6 +273,19 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
 
+  }
+
+  protected Requisition spyRequisitionAndStubRepository(RequisitionStatus status) {
+    return spyRequisitionAndStubRepository(generateRequisition(status));
+  }
+
+  protected Requisition spyRequisitionAndStubRepository(Requisition requisition) {
+    Requisition requisitionSpy = spy(requisition);
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisitionSpy);
+    doReturn(ValidationResult.success())
+        .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+    return requisitionSpy;
   }
 
   protected static class SaveAnswer<T extends BaseEntity> implements Answer<T> {

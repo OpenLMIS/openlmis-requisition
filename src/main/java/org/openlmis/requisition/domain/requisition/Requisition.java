@@ -269,6 +269,16 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Validates if requisition can be change status.
+   */
+  public ValidationResult validateCanChangeStatus(LocalDate currentDate,
+                                                boolean isDatePhysicalStockCountCompletedEnabled) {
+    return new StatusChangeValidationService(this, currentDate,
+        isDatePhysicalStockCountCompletedEnabled)
+        .validateRequisitionCanChangeStatus();
+  }
+
+  /**
    * Returns a set of all orderable IDs in this requisition.
    */
   public Set<UUID> getAllOrderableIds() {

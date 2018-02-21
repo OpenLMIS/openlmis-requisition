@@ -50,7 +50,6 @@ import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPred
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.AbstractRequisitionValidator;
-import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,9 +98,6 @@ public abstract class BaseRequisitionController extends BaseController {
   protected SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Autowired
-  protected RequisitionValidator validator;
-
-  @Autowired
   protected RequisitionVersionValidator requisitionVersionValidator;
 
   @Autowired
@@ -117,11 +113,11 @@ public abstract class BaseRequisitionController extends BaseController {
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
-  private DatePhysicalStockCountCompletedEnabledPredicate
+  protected DatePhysicalStockCountCompletedEnabledPredicate
       datePhysicalStockCountCompletedEnabledPredicate;
 
   @Autowired
-  private DateHelper dateHelper;
+  protected DateHelper dateHelper;
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -252,5 +248,15 @@ public abstract class BaseRequisitionController extends BaseController {
         requisition, requisitionToUpdate,
         dateHelper.getCurrentDateWithSystemZone(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId())));
+  }
+
+  protected void validateForStatusChange(Requisition requisition) {
+    getValidationResultForStatusChange(requisition)
+        .throwExceptionIfHasErrors();
+  }
+
+  protected ValidationResult getValidationResultForStatusChange(Requisition requisition) {
+    return requisition.validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+        datePhysicalStockCountCompletedEnabledPredicate.exec(requisition.getProgramId()));
   }
 }

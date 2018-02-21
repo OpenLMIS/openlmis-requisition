@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.web;
@@ -18,16 +18,17 @@ package org.openlmis.requisition.web;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.util.Maps.newHashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -46,9 +47,9 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -86,10 +87,9 @@ import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
-import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
-import org.springframework.validation.Errors;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -129,9 +129,6 @@ public class RequisitionControllerTest {
 
   @Mock
   private BasicRequisitionTemplateDto templateDto;
-
-  @Mock
-  private RequisitionValidator validator;
 
   @Mock
   private RequisitionTemplateRepository templateRepository;
@@ -204,6 +201,9 @@ public class RequisitionControllerTest {
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
   private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
+  private ValidationResult fieldErrors = ValidationResult
+      .fieldErrors(newHashMap("someField", new Message("some-key", "someParam")));
+  private String bindingResultMessage = "{someField=some-key: someParam}";
 
   @Before
   public void setUp() {
@@ -229,10 +229,23 @@ public class RequisitionControllerTest {
 
     when(periodReferenceDataService.findOne(any(UUID.class)))
         .thenReturn(processingPeriod);
+
+    stubValidations(initiatedRequsition, submittedRequsition, authorizedRequsition,
+        approvedRequsition);
+    when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now());
+    when(predicate.exec(programUuid)).thenReturn(true);
+  }
+
+  private void stubValidations(Requisition... requisitions) {
+    for (Requisition requisition : requisitions) {
+      when(requisition.getProgramId()).thenReturn(programUuid);
+      when(requisition.validateCanChangeStatus(any(LocalDate.class), anyBoolean()))
+          .thenReturn(ValidationResult.success());
+    }
   }
 
   @Test
-  public void shouldReturnCurrentPeriodForEmergency() throws Exception {
+  public void shouldReturnCurrentPeriodForEmergency() {
     when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
         .thenReturn(ValidationResult.success());
 
@@ -263,6 +276,8 @@ public class RequisitionControllerTest {
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+    verify(initiatedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
 
   @Test
@@ -293,6 +308,8 @@ public class RequisitionControllerTest {
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
         .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+    verify(initiatedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -315,16 +332,14 @@ public class RequisitionControllerTest {
   public void shouldNotSubmitInvalidRequisition() {
     when(permissionService.canSubmitRequisition(uuid1))
         .thenReturn(ValidationResult.success());
-    doAnswer(invocation -> {
-      Errors errors = (Errors) invocation.getArguments()[1];
-      errors.reject("requisitionLineItems",
-          "approvedQuantity is only available during the approval step of the requisition process");
-      return null;
-    }).when(validator).validate(eq(initiatedRequsition), any(Errors.class));
+    doReturn(fieldErrors)
+        .when(initiatedRequsition)
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     assertThatThrownBy(() -> requisitionController.submitRequisition(uuid1))
-        .isInstanceOf(BindingResultException.class);
+        .isInstanceOf(BindingResultException.class)
+        .hasMessage(bindingResultMessage);
 
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
@@ -421,6 +436,8 @@ public class RequisitionControllerTest {
         any(), eq(authorizedRequsition), eq(emptyList()));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
 
   @Test
@@ -449,6 +466,8 @@ public class RequisitionControllerTest {
         any(), eq(authorizedRequsition), eq(null));
 
     verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
 
   @Test
@@ -474,6 +493,8 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
 
   @Test
@@ -492,6 +513,23 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+  }
+
+  @Test
+  public void shouldNotApproveInvalidRequisition() {
+    setUpApprover();
+    doReturn(fieldErrors)
+        .when(authorizedRequsition)
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+
+    assertThatThrownBy(() ->
+        requisitionController.approveRequisition(authorizedRequsition.getId()))
+        .isInstanceOf(BindingResultException.class)
+        .hasMessage(bindingResultMessage);
+
+    verifyNoApproveOrUpdate(authorizedRequsition);
   }
 
   @Test
@@ -574,16 +612,41 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldProcessStatusChangeWhenAuthorizingRequisition() throws Exception {
-    when(permissionService.canAuthorizeRequisition(submittedRequsition.getId()))
-        .thenReturn(ValidationResult.success());
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
+  public void shouldProcessStatusChangeWhenAuthorizingRequisition() {
+    setUpAuthorizer();
 
     mockSupervisoryNodeForAuthorize();
 
     requisitionController.authorizeRequisition(submittedRequsition.getId());
 
     verify(requisitionStatusProcessor).statusChange(submittedRequsition);
+  }
+
+  @Test
+  public void shouldCallValidationsWhenAuthorizingRequisition() {
+    setUpAuthorizer();
+
+    mockSupervisoryNodeForAuthorize();
+
+    requisitionController.authorizeRequisition(submittedRequsition.getId());
+
+    verify(submittedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+  }
+
+  @Test
+  public void shouldNotAuthorizeInvalidRequisition() {
+    setUpAuthorizer();
+    doReturn(fieldErrors)
+        .when(submittedRequsition)
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+
+    assertThatThrownBy(() ->
+        requisitionController.authorizeRequisition(submittedRequsition.getId()))
+        .isInstanceOf(BindingResultException.class)
+        .hasMessage(bindingResultMessage);
+
+    verifyNoAuthorizeOrUpdate(submittedRequsition);
   }
 
   private void mockDependenciesForSubmit() {
@@ -666,6 +729,22 @@ public class RequisitionControllerTest {
     verify(requisition, never()).submit(eq(emptyList()), any(UUID.class), anyBoolean());
   }
 
+  private void verifyNoApproveOrUpdate(Requisition requisition) {
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+        anyBoolean());
+    verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
+    verify(requisition, never())
+        .approve(any(UUID.class), anyCollection(), anyCollection(), any(UUID.class));
+  }
+
+  private void verifyNoAuthorizeOrUpdate(Requisition requisition) {
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+        anyBoolean());
+    verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
+    verify(requisition, never())
+        .authorize(anyCollection(), any(UUID.class));
+  }
+
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
     verify(requisition, never()).setSupervisoryNodeId(any());
     assertNull(requisition.getSupervisoryNodeId());
@@ -674,9 +753,15 @@ public class RequisitionControllerTest {
   private void setUpApprover() {
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-            any(UUID.class),
-            any(UUID.class)))
-            .thenReturn(ValidationResult.success());
+        any(UUID.class),
+        any(UUID.class)))
+        .thenReturn(ValidationResult.success());
+  }
+
+  private void setUpAuthorizer() {
+    when(permissionService.canAuthorizeRequisition(submittedRequsition.getId()))
+        .thenReturn(ValidationResult.success());
+    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
   private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills) {

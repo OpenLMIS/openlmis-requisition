@@ -149,12 +149,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
       Requisition requisition = requisitionRepository.findOne(requisitionId);
 
       ValidationResult validationResult = requisitionService
-              .validateCanApproveRequisition(requisition, requisitionId, user.getId());
+          .validateCanApproveRequisition(requisition, requisitionId, user.getId());
       if (addValidationErrors(processingStatus, validationResult, requisitionId)) {
         continue;
       }
 
-      validationResult = validateFields(validator, requisition);
+      validationResult = getValidationResultForStatusChange(requisition);
       if (addValidationErrors(processingStatus, validationResult, requisitionId)) {
         continue;
       }

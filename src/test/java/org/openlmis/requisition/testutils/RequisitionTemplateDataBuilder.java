@@ -26,7 +26,6 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -15,12 +15,17 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
+import java.util.Objects;
 
 @AllArgsConstructor
 class StockOnHandValidator
@@ -55,6 +60,19 @@ class StockOnHandValidator
   private void validateFullSupplyLineItem(Map<String, Message> errors,
                                           RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
+    validateCalculations(errors, item);
   }
+
+  private void validateCalculations(Map<String, Message> errors,
+                                    RequisitionLineItem item) {
+    boolean templateValid = requisitionTemplate.isColumnDisplayed(STOCK_ON_HAND)
+        && requisitionTemplate.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY);
+
+    if (templateValid && !Objects.equals(item.getStockOnHand(), calculateStockOnHand(item))) {
+      errors.put(REQUISITION_LINE_ITEMS,
+          new Message(ERROR_INCORRECT_VALUE, STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY));
+    }
+  }
+
 
 }

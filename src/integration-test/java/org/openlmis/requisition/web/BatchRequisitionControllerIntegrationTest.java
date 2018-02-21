@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.web;
@@ -24,9 +24,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -43,7 +45,9 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.assertj.core.util.Lists;
+import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,21 +75,21 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
+import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
-import org.openlmis.requisition.validate.RequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
@@ -103,7 +107,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @MockBean
-  private RequisitionValidator validator;
+  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @MockBean
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
@@ -234,7 +238,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(permissionService).canViewRequisition(requisitions.get(0));
 
     Response response = get(RETRIEVE_ALL, requisitionIds);
-    checkErrorResponseBody(response, 400);
+    checkPermissionErrorResponseBody(response, 400);
   }
 
   @Test
@@ -244,8 +248,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(requisition, requisition.getId(), userId)
+            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
     );
+
+    requisitions.forEach(this::spyRequisitionAndStubRepository);
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkResponseBody(response);
@@ -258,15 +264,44 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(requisition, requisition.getId(), userId)
+            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
     );
 
     doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_APPROVE))
         .when(requisitionService)
-        .validateCanApproveRequisition(requisitions.get(0), requisitions.get(0).getId(), userId);
+        .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(requisitions.get(0).getId()),
+            eq(userId));
+
+    requisitions.forEach(this::spyRequisitionAndStubRepository);
 
     Response response = post(APPROVE_ALL, requisitionIds);
-    checkErrorResponseBody(response, 400);
+    checkPermissionErrorResponseBody(response, 400);
+  }
+
+  @Test
+  public void shouldHaveErrorIfValidationFails() throws Exception {
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+
+    requisitions.forEach(requisition ->
+        doReturn(ValidationResult.success())
+            .when(requisitionService)
+            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
+    );
+
+    requisitions = requisitions.stream()
+        .map(this::spyRequisitionAndStubRepository)
+        .collect(Collectors.toList());
+    doReturn(ValidationResult.fieldErrors(Maps.newHashMap("someField", new Message("some-key"))))
+        .when(requisitions.get(0)).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+
+    Response response = post(APPROVE_ALL, requisitionIds);
+    checkValidationErrorResponseBody(response, 400,
+        requisitionErrors -> requisitionErrors.get(0)
+            .get("fieldErrors")
+            .get("someField")
+            .get("messageKey")
+            .asText(),
+        "some-key");
   }
 
   // PUT /api/requisitions?saveAll
@@ -295,7 +330,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(requisitionService).validateCanSaveRequisition(requisitions.get(0).getId());
 
     Response response = put(SAVE_ALL, approveRequisitions);
-    checkErrorResponseBody(response, 400);
+    checkPermissionErrorResponseBody(response, 400);
   }
 
   private void checkResponseBody(Response response) throws IOException {
@@ -319,7 +354,19 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     assertThat(retrieved, hasItems(requisitionIds.toArray(new UUID[requisitionIds.size()])));
   }
 
-  private void checkErrorResponseBody(Response response, int statusCode) throws IOException {
+  private void checkPermissionErrorResponseBody(Response response, int statusCode)
+      throws IOException {
+    checkValidationErrorResponseBody(response, statusCode,
+        requisitionErrors -> requisitionErrors.get(0)
+            .get("errorMessage")
+            .get("messageKey")
+            .asText(),
+        ERROR_NO_FOLLOWING_PERMISSION);
+  }
+
+  private void checkValidationErrorResponseBody(Response response, int statusCode,
+                                                Function<ArrayNode, String> fieldToAssert,
+                                                String expectedKey) throws IOException {
     String jsonString = response
         .then()
         .statusCode(statusCode)
@@ -329,7 +376,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     JsonNode json = objectMapper.readTree(jsonString);
-    ArrayNode requisitionErrors = (ArrayNode) json.get("requisitionErrors");
+    final ArrayNode requisitionErrors = (ArrayNode) json.get("requisitionErrors");
 
     assertThat(requisitionErrors.size(), equalTo(1));
     assertThat(
@@ -337,8 +384,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         equalTo(requisitions.get(0).getId().toString())
     );
     assertThat(
-        requisitionErrors.get(0).get("errorMessage").get("messageKey").asText(),
-        equalTo(ERROR_NO_FOLLOWING_PERMISSION)
+        fieldToAssert.apply(requisitionErrors),
+        equalTo(expectedKey)
     );
 
     ArrayNode requisitionDtos = (ArrayNode) json.get("requisitionDtos");

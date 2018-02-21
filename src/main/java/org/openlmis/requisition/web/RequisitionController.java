@@ -37,7 +37,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
-import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -60,10 +59,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,7 +66,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -215,13 +209,7 @@ public class RequisitionController extends BaseRequisitionController {
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
 
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-    validator.validate(requisition, bindingResult);
-
-    if (bindingResult.hasErrors()) {
-      logger.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      throw new BindingResultException(getErrors(bindingResult));
-    }
+    validateForStatusChange(requisition);
 
     checkIfPeriodIsValid(requisition);
 
@@ -419,7 +407,7 @@ public class RequisitionController extends BaseRequisitionController {
         .throwExceptionIfHasErrors();
 
     profiler.start("VALIDATE_REQUISITION");
-    validateFields(validator, requisition).throwExceptionIfHasErrors();
+    validateForStatusChange(requisition);
 
     profiler.start("DO_APPROVE");
     BasicRequisitionDto requisitionDto = doApprove(requisition, user);
@@ -499,12 +487,7 @@ public class RequisitionController extends BaseRequisitionController {
           new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
     }
 
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-    validator.validate(requisition, bindingResult);
-
-    if (bindingResult.hasErrors()) {
-      throw new BindingResultException(getErrors(bindingResult));
-    }
+    validateForStatusChange(requisition);
 
     checkIfPeriodIsValid(requisition);
 
@@ -578,11 +561,6 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
     permissionService.canConvertToOrder(list).throwExceptionIfHasErrors();
     requisitionService.convertToOrder(list, user);
-  }
-
-  @InitBinder("requisition")
-  protected void initBinder(final WebDataBinder binder) {
-    binder.addValidators(validator);
   }
 
   private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,
