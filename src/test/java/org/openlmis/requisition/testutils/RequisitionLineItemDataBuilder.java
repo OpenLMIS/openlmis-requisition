@@ -23,7 +23,6 @@ import org.joda.money.Money;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +50,9 @@ public class RequisitionLineItemDataBuilder {
   private Integer adjustedConsumption = 100;
   private List<Integer> previousAdjustedConsumptions = Lists.emptyList();
   private Integer averageConsumption = 100;
-  private Integer maximumStockQuantity = 0;
+  //this needs to be always averageConsumption * MaxPeriodsOfStock
+  private Integer maximumStockQuantity = 300;
+  //this needs to be always maximumStockQuantity - stockOnHand
   private Integer calculatedOrderQuantity = 250;
   private List<StockAdjustment> stockAdjustments = Lists.emptyList();
   private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
@@ -63,6 +64,13 @@ public class RequisitionLineItemDataBuilder {
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
   public RequisitionLineItem build() {
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public RequisitionLineItem buildForInitiatedRegularRequisition() {
     RequisitionLineItem lineItem = new RequisitionLineItem(
         orderableId, requisition, beginningBalance, totalReceivedQuantity,
         totalLossesAndAdjustments, stockOnHand, requestedQuantity, totalConsumedQuantity, total,

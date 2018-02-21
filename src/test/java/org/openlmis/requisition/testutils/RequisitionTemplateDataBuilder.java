@@ -26,6 +26,7 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateDataBuilder {
   private static int instanceNumber = 0;
 
@@ -81,6 +83,14 @@ public class RequisitionTemplateDataBuilder {
     }
 
     return template;
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
+  public RequisitionTemplate buildWithAllColumns() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    return build();
   }
 
   public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards() {

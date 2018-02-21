@@ -26,6 +26,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class RequisitionDataBuilder {
   private UUID id = UUID.randomUUID();
   private List<RequisitionLineItem> requisitionLineItems = Lists.newArrayList();
   private String draftStatusMessage = "";
-  private RequisitionTemplate template = new RequisitionTemplateDataBuilder().build();
+  private RequisitionTemplate template = new RequisitionTemplateDataBuilder().buildWithAllColumns();
   private UUID facilityId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
@@ -47,7 +48,8 @@ public class RequisitionDataBuilder {
   private UUID supervisoryNodeId = null;
   private List<Requisition> previousRequisitions = Lists.newArrayList();
   private Set<UUID> availableProducts = Sets.newHashSet();
-  private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted = null;
+  private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted =
+      new DatePhysicalStockCountCompleted(LocalDate.now().minusMonths(1));
   private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
   private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
 
@@ -69,6 +71,13 @@ public class RequisitionDataBuilder {
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
   public Requisition build() {
+    return buildInitiatedRegularRequisition();
+  }
+  
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public Requisition buildInitiatedRegularRequisition() {
     Requisition requisition = new Requisition(
         requisitionLineItems, draftStatusMessage, template, facilityId, programId,
         processingPeriodId, supplyingFacilityId, status, statusChanges, emergency,
@@ -79,5 +88,5 @@ public class RequisitionDataBuilder {
 
     return requisition;
   }
-  
+
 }
