@@ -24,9 +24,11 @@ import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class DatePhysicalStockCountCompletedValidatorTest {
 
   private LocalDate now = LocalDate.now();
+  private boolean isDatePhysicalStockCountCompletedEnabled = true;
 
   @Test
   public void shouldRejectUpdateValidationsIfDateDifferAfterAuthorize() {
@@ -81,6 +83,95 @@ public class DatePhysicalStockCountCompletedValidatorTest {
     validator.validateCanUpdate(errors);
 
     assertThat(errors).hasSize(1);
+  }
+
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringSubmit() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.INITIATED);
+  }
+
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringSubmitAfterReject() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.REJECTED);
+  }
+
+  @Test
+  public void shouldRejectIfDatePhysicalStockCountCompletedIsNullDuringAuthorize() {
+    shouldRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsDisabled() {
+    isDatePhysicalStockCountCompletedEnabled = false;
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.INITIATED);
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.REJECTED);
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringSubmit() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullForStatus(RequisitionStatus.INITIATED);
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullForStatus(RequisitionStatus.REJECTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullDuringAuthorize() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullForStatus(RequisitionStatus.SUBMITTED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringApprove() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringApprovalHierarchy() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.IN_APPROVAL);
+  }
+
+  @Test
+  public void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullDuringRelease() {
+    shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(RequisitionStatus.APPROVED);
+  }
+
+  private void shouldRejectIfDatePhysicalStockCountCompletedIsNullForStatus(
+      RequisitionStatus status) {
+    DatePhysicalStockCountCompletedValidator validator = getValidator(status, null);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(1);
+  }
+
+  private void shouldNotRejectIfDatePhysicalStockCountCompletedIsNotNullForStatus(
+      RequisitionStatus status) {
+    DatePhysicalStockCountCompletedValidator validator =
+        getValidator(status, new DatePhysicalStockCountCompleted(now.minusDays(1)));
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).isEmpty();
+  }
+
+  private void shouldNotRejectIfDatePhysicalStockCountCompletedIsNullForStatus(
+      RequisitionStatus status) {
+    DatePhysicalStockCountCompletedValidator validator = getValidator(status, null);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).isEmpty();
+  }
+
+  private DatePhysicalStockCountCompletedValidator getValidator(RequisitionStatus status,
+                                  DatePhysicalStockCountCompleted datePhysicalStockCountCompleted) {
+    return new DatePhysicalStockCountCompletedValidator(
+        datePhysicalStockCountCompleted,
+        new RequisitionDataBuilder().setStatus(status).build(),
+        now,
+        isDatePhysicalStockCountCompletedEnabled);
   }
 
   private DatePhysicalStockCountCompletedValidator getValidator(LocalDate oldDate,
