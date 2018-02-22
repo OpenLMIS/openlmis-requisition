@@ -37,8 +37,7 @@ class ApprovalFieldsValidator
 
   @Override
   public void validateCanUpdate(Map<String, Message> errors) {
-    //TODO: shouldn't it be for non full supply as well?
-    requisitionUpdater.getNonSkippedFullSupplyRequisitionLineItems()
+    requisitionUpdater.getNonSkippedRequisitionLineItems()
         .forEach(i -> validateLineItemForUpdate(errors, i));
   }
 

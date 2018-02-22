@@ -24,9 +24,11 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
@@ -39,8 +41,8 @@ public class RequisitionLineItemDataBuilder {
   private Integer totalConsumedQuantity = 100;
   private Integer total = 150;
   private String requestedQuantityExplanation = "we need more";
-  private String remarks = "OK";
-  private Integer approvedQuantity = 100;
+  private String remarks;
+  private Integer approvedQuantity;
   private Integer totalStockoutDays = 0;
   private Long packsToShip = 5L;
   private Boolean skipped = false;
@@ -54,11 +56,12 @@ public class RequisitionLineItemDataBuilder {
   private Integer maximumStockQuantity = 300;
   //this needs to be always maximumStockQuantity - stockOnHand
   private Integer calculatedOrderQuantity = 250;
-  private List<StockAdjustment> stockAdjustments = Lists.emptyList();
+  private List<StockAdjustment> stockAdjustments = new ArrayList<>();
   private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
   private boolean nonFullSupply = false;
-  private Integer idealStockAmount = null;
-  private Integer calculatedOrderQuantityIsa = null;
+  private Integer idealStockAmount = 100;
+  //this needs to be always idealStockAmount - stockOnHand
+  private Integer calculatedOrderQuantityIsa = 50;
 
   public RequisitionLineItemDataBuilder withId(UUID id) {
     this.id = id;
@@ -80,8 +83,48 @@ public class RequisitionLineItemDataBuilder {
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
+  public RequisitionLineItem buildSkipped() {
+    this.skipped = true;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
   public RequisitionLineItem buildWithIncorrectStockOnHand() {
     stockOnHand = 10;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public RequisitionLineItem buildWithIncorrectMaximumStockQuantity() {
+    maximumStockQuantity = 1000;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public RequisitionLineItem buildWithIncorrectCalculatedOrderQuantityIsa() {
+    calculatedOrderQuantityIsa = 1;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public RequisitionLineItem buildWithApprovedQuantity() {
+    approvedQuantity = 100;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
+  public RequisitionLineItem buildWithRemarks() {
+    remarks = "OK";
     return buildForInitiatedRegularRequisition();
   }
 
@@ -115,6 +158,16 @@ public class RequisitionLineItemDataBuilder {
 
   public RequisitionLineItemDataBuilder setStockOnHand(Integer stockOnHand) {
     this.stockOnHand = stockOnHand;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setTotalConsumedQuantity(Integer totalConsumedQuantity) {
+    this.totalConsumedQuantity = totalConsumedQuantity;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder addStockAdjustment(StockAdjustment adjustment) {
+    this.stockAdjustments.add(adjustment);
     return this;
   }
 

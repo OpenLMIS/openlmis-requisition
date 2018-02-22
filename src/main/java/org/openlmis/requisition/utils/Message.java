@@ -16,12 +16,10 @@
 package org.openlmis.requisition.utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.MessageSource;
-
 import java.util.Locale;
 
 /**

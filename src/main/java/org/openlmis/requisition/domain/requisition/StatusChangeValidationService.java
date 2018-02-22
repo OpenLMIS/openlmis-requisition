@@ -51,10 +51,7 @@ public class StatusChangeValidationService {
     validators.add(new StockOutDaysValidator(
         requisition, requisition.getNumberOfMonthsInPeriod(), requisition.getTemplate()));
     validators.add(new BeginningBalanceValidator(requisition, requisition.getTemplate()));
-    validators.add(new BeginningBalanceValidator(requisition, requisition.getTemplate()));
     validators.add(new CalculatedFieldsValidator(requisition, requisition.getTemplate()));
-    validators.add(new CalculatedFieldsValidator(requisition, requisition.getTemplate()));
-    validators.add(new NumberOfNewPatientsAddedValidator(requisition));
     validators.add(new NumberOfNewPatientsAddedValidator(requisition));
     validators.add(new RequestedQuantityValidator(requisition));
     validators.add(new StockAdjustmentsValidator(requisition));

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
@@ -29,6 +30,21 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 
 public class ApprovalFieldsValidatorTest {
+
+  @Test
+  public void shouldPassValidations() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).isEmpty();
+  }
 
   @Test
   public void shouldRejectIfApprovedQuantityIsNullForApprovableState() {
@@ -76,6 +92,60 @@ public class ApprovalFieldsValidatorTest {
     validator.validateCanChangeStatus(errors);
 
     assertThat(errors).hasSize(0);
+  }
+
+  @Test
+  public void shouldNotValidateSkippedLineItems() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .setApprovedQuantity(null)
+            .buildSkipped())
+        .setStatus(RequisitionStatus.IN_APPROVAL)
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).isEmpty();
+  }
+
+  @Test
+  public void shouldRejectIfNotDuringApprovalAndApprovedQuantityNotNull() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildWithApprovedQuantity())
+        .setStatus(RequisitionStatus.INITIATED)
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).containsEntry(REQUISITION_LINE_ITEMS,
+        new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL));
+
+  }
+
+  @Test
+  public void shouldRejectIfNotDuringApprovalAndRemarksNotNull() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildWithRemarks())
+        .setStatus(RequisitionStatus.INITIATED)
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).containsEntry(REQUISITION_LINE_ITEMS,
+        new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL));
+
   }
 
   private ApprovalFieldsValidator getApprovalFieldsValidator(Integer approvedQuantity,

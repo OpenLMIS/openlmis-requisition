@@ -116,6 +116,14 @@ public class RequisitionDataBuilder {
   }
 
   /**
+   * Sets template.
+   */
+  public RequisitionDataBuilder addStockAdjustmentReason(StockAdjustmentReason reason) {
+    this.stockAdjustmentReasons.add(reason);
+    return this;
+  }
+
+  /**
    * Sets line item list.
    */
   public RequisitionDataBuilder withLineItems(List<RequisitionLineItem> requisitionLineItems) {

@@ -33,7 +33,7 @@ class StockAdjustmentsValidator
   }
 
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
-                                          RequisitionLineItem item) {
+                                            RequisitionLineItem item) {
     List<UUID> reasons = requisitionToValidate
         .getStockAdjustmentReasons()
         .stream().map(StockAdjustmentReason::getReasonId).collect(Collectors.toList());

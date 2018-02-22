@@ -15,21 +15,41 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.testutils.RequisitionDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
+import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class StatusChangeValidationServiceTest {
 
+  private Requisition requisition = new RequisitionDataBuilder()
+      .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
+      .buildInitiatedRegularRequisition();
+  private Class[] expectedClasses = {
+      RequisitionInvariantsValidator.class,
+      ApprovalFieldsValidator.class,
+      DatePhysicalStockCountCompletedValidator.class,
+      StockOnHandValidator.class,
+      TotalConsumedQuantityValidator.class,
+      StockOutDaysValidator.class,
+      BeginningBalanceValidator.class,
+      CalculatedFieldsValidator.class,
+      NumberOfNewPatientsAddedValidator.class,
+      RequestedQuantityValidator.class,
+      StockAdjustmentsValidator.class,
+      TotalFieldValidator.class,
+      TotalReceivedQuantityValidator.class
+  };
+
   @Test
   public void shouldPassValidations() {
-    Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
-        .buildInitiatedRegularRequisition();
     StatusChangeValidationService statusChangeValidationService =
         new StatusChangeValidationService(requisition, LocalDate.now(), true);
 
@@ -37,6 +57,22 @@ public class StatusChangeValidationServiceTest {
         statusChangeValidationService.validateRequisitionCanChangeStatus();
 
     assertFalse(validationResult.hasErrors());
+  }
+
+  @Test
+  public void shouldUseAllRequiredValidators() {
+    StatusChangeValidationService statusChangeValidationService =
+        new StatusChangeValidationService(requisition, LocalDate.now(), true);
+
+    List<RequisitionStatusChangeDomainValidator> validators =
+        (List<RequisitionStatusChangeDomainValidator>)
+            ReflectionTestUtils.getField(statusChangeValidationService, "validators");
+
+    List<Class> actual = validators.stream()
+            .map(RequisitionStatusChangeDomainValidator::getClass)
+            .collect(Collectors.toList());
+    assertThat(actual).containsExactlyInAnyOrder(expectedClasses);
+
   }
 
 }

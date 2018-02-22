@@ -106,9 +106,27 @@ public class RequisitionTemplateDataBuilder {
   /**
    * Builds {@link RequisitionTemplate} instance with test data.
    */
+  public RequisitionTemplate buildWithAllColumnsExceptTotalConsumedQuantity() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    columnsMap.remove(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
+    return build();
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
   public RequisitionTemplate buildWithStockOnHandColumnHiden() {
     withColumns(RequisitionValidationTestUtils.initiateColumns());
     columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
+    return build();
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
+  public RequisitionTemplate buildWithTotalConsumedQuantityColumnHidden() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    columnsMap.get(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY).setIsDisplayed(false);
     return build();
   }
 
