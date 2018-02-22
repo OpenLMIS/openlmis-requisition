@@ -17,42 +17,30 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-@AllArgsConstructor
 class TotalConsumedQuantityValidator
-    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
+    extends AbstractRegularRequisitionFullSupplyLineItemValidator {
 
-  private final Requisition requisitionToValidate;
   private final RequisitionTemplate requisitionTemplate;
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  TotalConsumedQuantityValidator(Requisition requisitionToValidate,
+                                 RequisitionTemplate requisitionTemplate) {
+    super(requisitionToValidate);
+    this.requisitionTemplate = requisitionTemplate;
   }
 
   @Override
-  public void validateCanUpdate(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItemForUpdate(errors, i));
-  }
-
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
-                                                   RequisitionLineItem item) {
+  protected void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
+                                                     RequisitionLineItem item) {
     rejectIfCalculatedAndNotNull(errors, requisitionTemplate,
         item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
   }
 
-  private void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
+  @Override
+  protected void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate,
         item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
   }

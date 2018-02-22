@@ -19,29 +19,20 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.utils.Message;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
-class StockAdjustmentsValidator implements RequisitionStatusChangeDomainValidator {
-  private final Requisition requisitionToValidate;
+class StockAdjustmentsValidator
+    extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  StockAdjustmentsValidator(Requisition requisitionToValidate) {
+    super(requisitionToValidate);
   }
 
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItem(Map<String, Message> errors,
+  protected void validateFullSupplyLineItem(Map<String, Message> errors,
                                           RequisitionLineItem item) {
     List<UUID> reasons = requisitionToValidate
         .getStockAdjustmentReasons()

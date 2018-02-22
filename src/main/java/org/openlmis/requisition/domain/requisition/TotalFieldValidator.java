@@ -17,30 +17,24 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_COLUMN;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-@AllArgsConstructor
-class TotalFieldValidator implements RequisitionStatusChangeDomainValidator {
 
-  private final Requisition requisitionToValidate;
+class TotalFieldValidator
+    extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
+
   private final RequisitionTemplate requisitionTemplate;
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  TotalFieldValidator(Requisition requisitionToValidate,
+                            RequisitionTemplate requisitionTemplate) {
+    super(requisitionToValidate);
+    this.requisitionTemplate = requisitionTemplate;
   }
 
   @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
-    rejectIfNullOrNegative(errors, requisitionTemplate,
-        item.getTotal(), TOTAL_COLUMN);
+  protected void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
+    rejectIfNullOrNegative(errors, requisitionTemplate, item.getTotal(), TOTAL_COLUMN);
   }
 }

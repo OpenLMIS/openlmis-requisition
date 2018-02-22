@@ -75,6 +75,14 @@ class RequisitionInvariantsValidator
     validateLineItems(errors);
   }
 
+  @Override
+  public void validateCanChangeStatus(Map<String, Message> errors) {
+    if (isEmpty(requisitionToUpdate.getNonSkippedRequisitionLineItems())) {
+      errors.put(REQUISITION_LINE_ITEMS,
+          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS));
+    }
+  }
+
   private void validateLineItems(Map<String, Message> errors) {
     Map<UUID, RequisitionLineItem> existingLineItems = requisitionToUpdate
         .getRequisitionLineItems()
@@ -123,14 +131,6 @@ class RequisitionInvariantsValidator
       errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_ADDED));
     } else if (existingIds.stream().anyMatch(id -> !currentIds.contains(id))) {
       errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_REMOVED));
-    }
-  }
-
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    if (isEmpty(requisitionToUpdate.getNonSkippedRequisitionLineItems())) {
-      errors.put(REQUISITION_LINE_ITEMS,
-          new Message(ERROR_VALUE_MUST_BE_ENTERED, REQUISITION_LINE_ITEMS));
     }
   }
 

@@ -15,20 +15,19 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-class TotalReceivedQuantityValidator
+class BeginningBalanceValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
   private final RequisitionTemplate requisitionTemplate;
 
-
-  TotalReceivedQuantityValidator(Requisition requisitionToValidate,
-                      RequisitionTemplate requisitionTemplate) {
+  BeginningBalanceValidator(Requisition requisitionToValidate,
+                            RequisitionTemplate requisitionTemplate) {
     super(requisitionToValidate);
     this.requisitionTemplate = requisitionTemplate;
   }
@@ -36,6 +35,6 @@ class TotalReceivedQuantityValidator
   @Override
   protected void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate,
-        item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
+        item.getBeginningBalance(), BEGINNING_BALANCE);
   }
 }

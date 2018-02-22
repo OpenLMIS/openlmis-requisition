@@ -19,39 +19,27 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-@AllArgsConstructor
-class StockOutDaysValidator
-    implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
+class StockOutDaysValidator extends AbstractRegularRequisitionFullSupplyLineItemValidator {
 
   private static final int DAYS_IN_MONTH = 30;
 
-  private final Requisition requisitionToValidate;
   private final Integer numberOfMonthsInPeriod;
   private final RequisitionTemplate requisitionTemplate;
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  StockOutDaysValidator(Requisition requisitionToValidate,
+                        Integer numberOfMonthsInPeriod,
+                        RequisitionTemplate requisitionTemplate) {
+    super(requisitionToValidate);
+    this.numberOfMonthsInPeriod = numberOfMonthsInPeriod;
+    this.requisitionTemplate = requisitionTemplate;
   }
 
   @Override
-  public void validateCanUpdate(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItemForUpdate(errors, i));
-  }
-
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItemForUpdate(
+  protected void validateFullSupplyLineItemForUpdate(
       Map<String, Message> errors, RequisitionLineItem requisitionLineItem) {
     if (requisitionLineItem.getTotalStockoutDays() == null) {
       return;
@@ -62,13 +50,14 @@ class StockOutDaysValidator
     }
   }
 
-  private boolean isGreaterThanLengthOfThePeriod(int totalStockoutDays) {
-    return totalStockoutDays > numberOfMonthsInPeriod * DAYS_IN_MONTH;
-  }
-
-  private void validateFullSupplyLineItem(Map<String, Message> errors,
+  @Override
+  protected void validateFullSupplyLineItem(Map<String, Message> errors,
                                           RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
+  }
+
+  private boolean isGreaterThanLengthOfThePeriod(int totalStockoutDays) {
+    return totalStockoutDays > numberOfMonthsInPeriod * DAYS_IN_MONTH;
   }
 
 

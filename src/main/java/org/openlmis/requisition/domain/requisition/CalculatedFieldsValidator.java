@@ -24,30 +24,24 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Objects;
 
-@AllArgsConstructor
-class CalculatedFieldsValidator implements RequisitionStatusChangeDomainValidator {
+class CalculatedFieldsValidator
+    extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
-  private final Requisition requisitionToValidate;
   private final RequisitionTemplate requisitionTemplate;
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+
+  CalculatedFieldsValidator(Requisition requisitionToValidate,
+                            RequisitionTemplate requisitionTemplate) {
+    super(requisitionToValidate);
+    this.requisitionTemplate = requisitionTemplate;
   }
 
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItem(Map<String, Message> errors,
+  protected void validateFullSupplyLineItem(Map<String, Message> errors,
                                           RequisitionLineItem item) {
     validateMaximumStockQuantity(errors, item);
     validateCalculatedOrderQuantity(errors, item);

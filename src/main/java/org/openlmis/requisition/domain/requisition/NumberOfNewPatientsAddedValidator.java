@@ -17,27 +17,19 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-@AllArgsConstructor
-class NumberOfNewPatientsAddedValidator implements RequisitionStatusChangeDomainValidator {
-  private final Requisition requisitionToValidate;
+class NumberOfNewPatientsAddedValidator
+    extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  NumberOfNewPatientsAddedValidator(Requisition requisitionToValidate) {
+    super(requisitionToValidate);
   }
 
   @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
-  }
-
-  private void validateFullSupplyLineItem(Map<String, Message> errors,
-                                          RequisitionLineItem item) {
+  protected void validateFullSupplyLineItem(Map<String, Message> errors,
+                                            RequisitionLineItem item) {
     rejectIfLessThanZero(errors, requisitionToValidate.getTemplate(),
         item.getNumberOfNewPatientsAdded(), NUMBER_OF_NEW_PATIENTS_ADDED);
 

@@ -15,32 +15,20 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
-
-import lombok.AllArgsConstructor;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 
-@AllArgsConstructor
-class BeginnigBalanceValidator implements RequisitionStatusChangeDomainValidator {
+abstract class AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator
+    extends AbstractRegularRequisitionFullSupplyLineItemValidator {
 
-  private final Requisition requisitionToValidate;
-  private final RequisitionTemplate requisitionTemplate;
-
-  @Override
-  public boolean isForRegularOnly() {
-    return true;
+  AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator(
+      Requisition requisitionToValidate) {
+    super(requisitionToValidate);
   }
 
-  @Override
-  public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(i -> validateFullSupplyLineItem(errors, i));
+  protected void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
+                                                              RequisitionLineItem lineItem) {
+    //intentionally left blank
   }
 
-  private void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
-    rejectIfNullOrNegative(errors, requisitionTemplate,
-        item.getBeginningBalance(), BEGINNING_BALANCE);
-  }
 }
