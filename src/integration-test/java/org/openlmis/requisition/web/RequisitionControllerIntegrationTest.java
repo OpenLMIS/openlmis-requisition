@@ -332,7 +332,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(REQUISITION_LINE_ITEMS + ".message", notNullValue());
 
     // then
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

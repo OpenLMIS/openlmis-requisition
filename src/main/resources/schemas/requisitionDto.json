@@ -55,7 +55,7 @@
       "title": "requisitionLineItems",
       "items": {
         "type": "object",
-        "$ref": "schemas/requisitionLineItemDto.json"
+        "$ref": "requisitionLineItemDto.json"
       },
       "uniqueItems": false
     },
@@ -68,7 +68,7 @@
       "title": "stockAdjustmentReasons",
       "items": {
         "type": "object",
-        "$ref": "schemas/stockAdjustmentReason.json"
+        "$ref": "stockAdjustmentReason.json"
       },
       "uniqueItems": true
     },
@@ -77,7 +77,7 @@
       "title": "availableNonFullSupplyProducts",
       "items": {
         "type": "object",
-        "$ref": "schemas/orderableDto.json"
+        "$ref": "orderableDto.json"
       },
       "uniqueItems": true
     },
@@ -86,7 +86,7 @@
       "title": "availableFullSupplyProducts",
       "items": {
         "type": "object",
-        "$ref": "schemas/orderableDto.json"
+        "$ref": "orderableDto.json"
       },
       "uniqueItems": true
     }

@@ -22,8 +22,10 @@
       "title": "level"
     },
     "parent": {
-      "type": "object",
-      "$ref": "geographicZoneDto.json",
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "$ref": "geographicZoneDto.json"}
+      ],
       "title": "parent"
     }
   },
@@ -31,7 +33,6 @@
     "id",
     "code",
     "name",
-    "level",
-    "parent"
+    "level"
   ]
 }
