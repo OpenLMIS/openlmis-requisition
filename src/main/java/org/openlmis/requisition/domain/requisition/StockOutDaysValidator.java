@@ -16,7 +16,7 @@
 package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -53,7 +53,8 @@ class StockOutDaysValidator extends AbstractRegularRequisitionFullSupplyLineItem
   @Override
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
                                           RequisitionLineItem item) {
-    rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
+    rejectIfNullOrNegative(errors, requisitionTemplate,
+        item.getTotalStockoutDays(), TOTAL_STOCKOUT_DAYS);
   }
 
   private boolean isGreaterThanLengthOfThePeriod(int totalStockoutDays) {

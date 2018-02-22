@@ -26,6 +26,7 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -90,6 +91,24 @@ public class RequisitionTemplateDataBuilder {
    */
   public RequisitionTemplate buildWithAllColumns() {
     withColumns(RequisitionValidationTestUtils.initiateColumns());
+    return build();
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
+  public RequisitionTemplate buildWithAllColumnsExceptStockOnHand() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    columnsMap.remove(RequisitionLineItem.STOCK_ON_HAND);
+    return build();
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
+  public RequisitionTemplate buildWithStockOnHandColumnHiden() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
     return build();
   }
 

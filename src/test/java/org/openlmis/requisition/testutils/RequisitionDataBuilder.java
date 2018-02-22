@@ -108,6 +108,14 @@ public class RequisitionDataBuilder {
   }
 
   /**
+   * Sets template.
+   */
+  public RequisitionDataBuilder setTemplate(RequisitionTemplate template) {
+    this.template = template;
+    return this;
+  }
+
+  /**
    * Sets line item list.
    */
   public RequisitionDataBuilder withLineItems(List<RequisitionLineItem> requisitionLineItems) {

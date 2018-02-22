@@ -59,5 +59,4 @@ class StockOnHandValidator extends AbstractRegularRequisitionFullSupplyLineItemV
     }
   }
 
-
 }

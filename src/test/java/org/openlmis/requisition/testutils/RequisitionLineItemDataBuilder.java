@@ -80,6 +80,14 @@ public class RequisitionLineItemDataBuilder {
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
+  public RequisitionLineItem buildWithIncorrectStockOnHand() {
+    stockOnHand = 10;
+    return buildForInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   */
   public RequisitionLineItem buildForInitiatedRegularRequisition() {
     RequisitionLineItem lineItem = new RequisitionLineItem(
         orderableId, requisition, beginningBalance, totalReceivedQuantity,
@@ -93,6 +101,21 @@ public class RequisitionLineItemDataBuilder {
     lineItem.setId(id);
 
     return lineItem;
+  }
+
+  public RequisitionLineItemDataBuilder setTotalStockoutDays(Integer totalStockoutDays) {
+    this.totalStockoutDays = totalStockoutDays;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setApprovedQuantity(Integer approvedQuantity) {
+    this.approvedQuantity = approvedQuantity;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setStockOnHand(Integer approvedQuantity) {
+    this.approvedQuantity = approvedQuantity;
+    return this;
   }
 
   private Money asMoney(Number value) {
