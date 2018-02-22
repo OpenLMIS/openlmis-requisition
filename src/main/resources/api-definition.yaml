@@ -116,6 +116,13 @@ schemas:
 
   - localizedMessage: !include schemas/localizedMessage.json
 
+  - localizedMessageMap: |
+      {
+            "type": "object",
+            "title": "LocalizedMessageMap",
+            "description": "Map of field and localized message"
+      }
+
   - convertToOrderDto: !include schemas/convertToOrderDto.json
 
   - convertToOrderDtoArray: |
@@ -385,7 +392,7 @@ resourceTypes:
                             schema: localizedMessage
           put:
               is: [ secured ]
-              description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode, such attempts will be ignored.
+              description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode, orderableId of line item, such attempts will be ignored.
               body:
                   application/json:
                     schema: requisitionDto
@@ -397,7 +404,7 @@ resourceTypes:
                   "400":
                       body:
                         application/json:
-                            schema: localizedMessage
+                            schema: localizedMessageMap
                   "404":
                       body:
                         application/json:

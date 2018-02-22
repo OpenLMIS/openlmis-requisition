@@ -19,6 +19,8 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -38,6 +40,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
@@ -55,6 +59,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -92,6 +97,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -101,6 +107,7 @@ import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -202,6 +209,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @MockBean
   private ReasonsValidator reasonsValidator;
 
+  @MockBean
+  protected RequisitionVersionValidator requisitionVersionValidator;
+
   @Autowired
   private MessageService messageService;
 
@@ -287,6 +297,42 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenUpdateRequisitionValidationFailure() {
+    // given
+    Requisition requisition = spy(generateRequisition());
+
+    UUID requisitionId = requisition.getId();
+    when(requisitionService
+        .validateCanSaveRequisition(requisitionId))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator
+        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    doReturn(ValidationResult.fieldErrors(
+        Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))
+        .when(requisition).validateCanBeUpdated(any(RequisitionValidationService.class));
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
+
+    // when
+    RequisitionDto requisitionDto = DtoGenerator.of(RequisitionDto.class);
+    requisitionDto.setId(requisitionId);
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionId)
+        .body(requisitionDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .body(REQUISITION_LINE_ITEMS + ".messageKey", is(ERROR_INCORRECT_VALUE))
+        .body(REQUISITION_LINE_ITEMS + ".message", notNullValue());
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
   @Test

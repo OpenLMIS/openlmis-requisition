@@ -4,21 +4,99 @@
   "title": "RequisitionDto",
   "description": "A single requisitionDto",
   "properties": {
-    "id": { "type": "string", "title": "id" },
-    "createdDate": {"type": "string", "title": "createdDate" },
-    "facility": { "type": "object", "$ref": "schemas/facilityDto.json", "title": "facility" },
-    "program": { "type": "object", "$ref": "schemas/programDto.json", "title": "program" },
-    "supplyingFacility" : {"type": ["string", "null"], "title": "supplyingFacility"},
-    "status": { "type": "string", "title": "status" },
-    "emergency": { "type": "boolean", "title": "emergency" },
-    "supervisoryNode": { "type": "string", "title": "supervisoryNode" },
-    "processingPeriod": { "type": "object", "$ref": "schemas/processingPeriodDto.json", "title": "processingPeriod" },
-    "draftStatusMessage": { "type": "string", "title": "draftStatusMessage" },
-    "requisitionLineItems": { "type": "array", "title": "requisitionLineItems", "items": { "type": "object", "$ref":"schemas/requisitionLineItemDto.json" }, "uniqueItems": false },
-    "datePhysicalStockCountCompleted": { "type": "string", "title": "datePhysicalStockCountCompleted" },
-    "stockAdjustmentReasons": { "type": "array", "title": "stockAdjustmentReasons", "items": { "type": "object", "$ref":"schemas/stockAdjustmentReason.json" }, "uniqueItems": true },
-    "availableNonFullSupplyProducts": { "type": "array", "title": "availableNonFullSupplyProducts", "items": { "type": "object", "$ref":"schemas/orderableDto.json" }, "uniqueItems": true },
-    "availableFullSupplyProducts": { "type": "array", "title": "availableFullSupplyProducts", "items": { "type": "object", "$ref":"schemas/orderableDto.json" }, "uniqueItems": true }
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "createdDate": {
+      "type": "string",
+      "title": "createdDate"
+    },
+    "facility": {
+      "type": "object",
+      "$ref": "facilityDto.json",
+      "title": "facility"
+    },
+    "program": {
+      "type": "object",
+      "$ref": "programDto.json",
+      "title": "program"
+    },
+    "supplyingFacility": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "supplyingFacility"
+    },
+    "status": {
+      "type": "string",
+      "title": "status"
+    },
+    "emergency": {
+      "type": "boolean",
+      "title": "emergency"
+    },
+    "supervisoryNode": {
+      "type": "string",
+      "title": "supervisoryNode"
+    },
+    "processingPeriod": {
+      "type": "object",
+      "$ref": "processingPeriodDto.json",
+      "title": "processingPeriod"
+    },
+    "draftStatusMessage": {
+      "type": "string",
+      "title": "draftStatusMessage"
+    },
+    "requisitionLineItems": {
+      "type": "array",
+      "title": "requisitionLineItems",
+      "items": {
+        "type": "object",
+        "$ref": "schemas/requisitionLineItemDto.json"
+      },
+      "uniqueItems": false
+    },
+    "datePhysicalStockCountCompleted": {
+      "type": "string",
+      "title": "datePhysicalStockCountCompleted"
+    },
+    "stockAdjustmentReasons": {
+      "type": "array",
+      "title": "stockAdjustmentReasons",
+      "items": {
+        "type": "object",
+        "$ref": "schemas/stockAdjustmentReason.json"
+      },
+      "uniqueItems": true
+    },
+    "availableNonFullSupplyProducts": {
+      "type": "array",
+      "title": "availableNonFullSupplyProducts",
+      "items": {
+        "type": "object",
+        "$ref": "schemas/orderableDto.json"
+      },
+      "uniqueItems": true
+    },
+    "availableFullSupplyProducts": {
+      "type": "array",
+      "title": "availableFullSupplyProducts",
+      "items": {
+        "type": "object",
+        "$ref": "schemas/orderableDto.json"
+      },
+      "uniqueItems": true
+    }
   },
-  "required": ["id", "facility", "program", "processingPeriod", "status", "supervisoryNode"]
+  "required": [
+    "id",
+    "facility",
+    "program",
+    "processingPeriod",
+    "status",
+    "supervisoryNode"
+  ]
 }
