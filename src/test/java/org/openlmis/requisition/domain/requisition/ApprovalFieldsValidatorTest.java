@@ -18,6 +18,7 @@ package org.openlmis.requisition.domain.requisition;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
@@ -31,14 +32,8 @@ public class ApprovalFieldsValidatorTest {
 
   @Test
   public void shouldRejectIfApprovedQuantityIsNullForApprovableState() {
-    Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder()
-            .setApprovedQuantity(null)
-            .build())
-        .setStatus(RequisitionStatus.IN_APPROVAL)
-        .build();
-
-    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(null, requisition);
+    ApprovalFieldsValidator validator =
+        getApprovalFieldsValidator(null, RequisitionStatus.IN_APPROVAL);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -46,6 +41,53 @@ public class ApprovalFieldsValidatorTest {
     assertThat(errors).hasSize(1);
     assertThat(errors).contains(new AbstractMap.SimpleEntry<>(
         REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, APPROVED_QUANTITY)));
+  }
+
+  @Test
+  public void shouldNotRejectIfApprovedQuantityIsLessThanZeroForApprovableState() {
+    ApprovalFieldsValidator validator =
+        getApprovalFieldsValidator(-15, RequisitionStatus.AUTHORIZED);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).contains(new AbstractMap.SimpleEntry<>(
+        REQUISITION_LINE_ITEMS, new Message(ERROR_MUST_BE_NON_NEGATIVE, APPROVED_QUANTITY)));
+  }
+
+  @Test
+  public void shouldNotRejectIfApprovedQuantityIsNullForNonApprovableState() {
+    ApprovalFieldsValidator validator =
+        getApprovalFieldsValidator(null, RequisitionStatus.SUBMITTED);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(0);
+  }
+
+  @Test
+  public void shouldNotRejectIfApprovedQuantityIsLessThanZeroForNonApprovableState() {
+    ApprovalFieldsValidator validator =
+        getApprovalFieldsValidator(-20, RequisitionStatus.INITIATED);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(0);
+  }
+
+  private ApprovalFieldsValidator getApprovalFieldsValidator(Integer approvedQuantity,
+                                                            RequisitionStatus status) {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .setApprovedQuantity(approvedQuantity)
+            .build())
+        .setStatus(status)
+        .build();
+
+    return new ApprovalFieldsValidator(null, requisition);
   }
 
 }

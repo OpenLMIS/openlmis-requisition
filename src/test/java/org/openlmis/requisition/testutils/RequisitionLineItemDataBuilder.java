@@ -113,8 +113,8 @@ public class RequisitionLineItemDataBuilder {
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setStockOnHand(Integer approvedQuantity) {
-    this.approvedQuantity = approvedQuantity;
+  public RequisitionLineItemDataBuilder setStockOnHand(Integer stockOnHand) {
+    this.stockOnHand = stockOnHand;
     return this;
   }
 

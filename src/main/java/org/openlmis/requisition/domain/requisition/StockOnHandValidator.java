@@ -37,15 +37,15 @@ class StockOnHandValidator extends AbstractRegularRequisitionFullSupplyLineItemV
   }
 
   protected void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,
-                                                   RequisitionLineItem item) {
+                                                     RequisitionLineItem item) {
     rejectIfCalculatedAndNotNull(errors, requisitionTemplate, item.getStockOnHand(),
         RequisitionLineItem.STOCK_ON_HAND);
   }
 
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
-                                          RequisitionLineItem item) {
-    rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
+                                            RequisitionLineItem item) {
     validateCalculations(errors, item);
+    rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
   }
 
   private void validateCalculations(Map<String, Message> errors,

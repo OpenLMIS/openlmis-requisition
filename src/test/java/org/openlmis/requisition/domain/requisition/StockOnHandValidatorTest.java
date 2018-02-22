@@ -21,6 +21,8 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ST
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -33,6 +35,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StockOnHandValidatorTest {
+
+  @Test
+  public void shouldRejectIfValueIsLessThanZeroDuringStatusChange() {
+    StockOnHandValidator validator = getStockOnHandValidator(-10);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).contains(new AbstractMap.SimpleEntry<>(
+        REQUISITION_LINE_ITEMS, new Message(ERROR_MUST_BE_NON_NEGATIVE, STOCK_ON_HAND)));
+  }
+
+  @Test
+  public void shouldRejectIfValueIsNullDuringStatusChange() {
+    StockOnHandValidator validator = getStockOnHandValidator(null);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).contains(new AbstractMap.SimpleEntry<>(
+        REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, STOCK_ON_HAND)));
+  }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
@@ -111,6 +137,16 @@ public class StockOnHandValidatorTest {
     validator.validateCanChangeStatus(errors);
 
     assertThat(errors).isEmpty();
+  }
+
+  private StockOnHandValidator getStockOnHandValidator(Integer stockOnHand) {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .setStockOnHand(stockOnHand)
+            .build())
+        .build();
+
+    return new StockOnHandValidator(requisition, requisition.getTemplate());
   }
 
 }
