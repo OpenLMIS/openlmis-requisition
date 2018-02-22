@@ -84,6 +84,7 @@ public class RequisitionDataBuilder {
         datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings
     );
     requisition.setId(id);
+    requisitionLineItems.forEach(line -> line.setRequisition(requisition));
 
     return requisition;
   }
@@ -106,4 +107,13 @@ public class RequisitionDataBuilder {
     return this;
   }
 
+  /**
+   * Sets line item list.
+   */
+  public RequisitionDataBuilder withLineItems(List<RequisitionLineItem> requisitionLineItems) {
+    this.requisitionLineItems.clear();
+    requisitionLineItems.forEach(this::addLineItem);
+
+    return this;
+  }
 }

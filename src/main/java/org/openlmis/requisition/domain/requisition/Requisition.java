@@ -25,8 +25,6 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AD
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 
@@ -39,7 +37,6 @@ import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.CurrencyConfig;
-import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.OpenLmisNumberUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -803,28 +800,6 @@ public class Requisition extends BaseTimestampedEntity {
         existing.setRequisition(this);
         existing.updateFrom(item);
         updatedList.add(existing);
-      }
-    }
-
-    if (isNotTrue(emergency)) {
-      List<UUID> currentIds = updatedList
-          .stream()
-          .filter(line -> !line.isNonFullSupply())
-          .map(BaseEntity::getId)
-          .collect(toList());
-
-      List<UUID> existingIds = requisitionLineItems
-          .stream()
-          .filter(line -> !line.isNonFullSupply())
-          .map(BaseEntity::getId)
-          .collect(toList());
-
-      if (currentIds.stream().anyMatch(id -> !existingIds.contains(id))) {
-        throw new ValidationMessageException(ERROR_LINE_ITEM_ADDED);
-      }
-
-      if (existingIds.stream().anyMatch(id -> !currentIds.contains(id))) {
-        throw new ValidationMessageException(ERROR_LINE_ITEM_REMOVED);
       }
     }
 

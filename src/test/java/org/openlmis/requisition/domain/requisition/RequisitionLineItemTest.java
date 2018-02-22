@@ -24,25 +24,20 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_CANNOT_BE_CHANGED;
 
 import com.google.common.collect.Lists;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 
 import java.util.Collections;
@@ -52,9 +47,6 @@ import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
-
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
 
   private Requisition initiatedRequisition;
 
@@ -369,17 +361,6 @@ public class RequisitionLineItemTest {
     assertTrue(requisitionLineItem.isLineSkipped());
     requisitionLineItem.setSkipped(false);
     assertFalse(requisitionLineItem.isLineSkipped());
-  }
-
-  @Test
-  public void shouldThrowExceptionIfOrderableIdHasBeenChanged() {
-    exception.expect(ValidationMessageException.class);
-    exception.expectMessage(ERROR_ORDERABLE_CANNOT_BE_CHANGED);
-
-    RequisitionLineItem existing = new RequisitionLineItemDataBuilder().build();
-    RequisitionLineItem current = new RequisitionLineItemDataBuilder().build();
-
-    existing.updateFrom(current);
   }
 
   private void checkResultsOfConstruction(RequisitionLineItem item) {

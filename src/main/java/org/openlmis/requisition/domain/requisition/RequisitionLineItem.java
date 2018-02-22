@@ -26,7 +26,6 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_CANNOT_BE_CHANGED;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -73,6 +72,7 @@ import javax.persistence.Table;
 public class RequisitionLineItem extends BaseEntity {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
+  public static final String ORDERABLE_ID = "orderableId";
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   public static final String BEGINNING_BALANCE = "beginningBalance";
@@ -314,10 +314,6 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisitionLineItem RequisitionLineItem with new values.
    */
   void updateFrom(RequisitionLineItem requisitionLineItem) {
-    if (!this.orderableId.equals(requisitionLineItem.getOrderableId())) {
-      throw new ValidationMessageException(ERROR_ORDERABLE_CANNOT_BE_CHANGED);
-    }
-
     if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();

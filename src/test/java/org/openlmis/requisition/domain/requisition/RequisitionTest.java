@@ -34,8 +34,6 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIER;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.ImmutableMap;
@@ -45,9 +43,7 @@ import com.google.common.collect.Maps;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
@@ -105,9 +101,6 @@ public class RequisitionTest {
 
   @Mock
   private RequisitionTemplate template;
-
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
 
   @Before
   public void setUp() {
@@ -365,43 +358,6 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
     verifyStatic(times(1));
-  }
-
-  @Test
-  public void shouldThrowExceptionIfFullSupplyLineWasRemovedForRegularRequisition() {
-    exception.expect(ValidationMessageException.class);
-    exception.expectMessage(ERROR_LINE_ITEM_REMOVED);
-
-    requisition.setEmergency(false);
-
-    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
-    nonFullSupply.setNonFullSupply(true);
-
-    Requisition newRequisition = new Requisition();
-    newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
-
-    requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
-  }
-
-  @Test
-  public void shouldThrowExceptionIfNewFullSupplyLineWasAddedForRegularRequisition() {
-    exception.expect(ValidationMessageException.class);
-    exception.expectMessage(ERROR_LINE_ITEM_ADDED);
-
-    requisition.setEmergency(false);
-
-    RequisitionLineItem newFullSupply = new RequisitionLineItem();
-    newFullSupply.setOrderableId(UUID.randomUUID());
-    newFullSupply.setNonFullSupply(false);
-
-    Requisition newRequisition = new Requisition();
-    newRequisition.setRequisitionLineItems(new ArrayList<>());
-    newRequisition.getRequisitionLineItems().addAll(requisition.getRequisitionLineItems());
-    newRequisition.getRequisitionLineItems().add(newFullSupply);
-
-    requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
   }
 
   @Test

@@ -60,6 +60,11 @@ public class RequisitionLineItemDataBuilder {
   private Integer idealStockAmount = null;
   private Integer calculatedOrderQuantityIsa = null;
 
+  public RequisitionLineItemDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
@@ -88,5 +93,4 @@ public class RequisitionLineItemDataBuilder {
   private Money asMoney(Number value) {
     return Money.of(CurrencyUnit.of(CURRENCY_CODE), value.doubleValue());
   }
-  
 }
