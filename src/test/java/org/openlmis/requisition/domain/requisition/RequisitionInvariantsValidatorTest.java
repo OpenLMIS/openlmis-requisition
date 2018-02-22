@@ -16,8 +16,14 @@
 package org.openlmis.requisition.domain.requisition;
 
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
+import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
@@ -32,6 +38,7 @@ import org.openlmis.requisition.utils.Message;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class RequisitionInvariantsValidatorTest {
   private Requisition requisitionToUpdate;
@@ -40,12 +47,17 @@ public class RequisitionInvariantsValidatorTest {
   private Map<String, Message> errors;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .withSupervisoryNodeId(UUID.randomUUID())
         .build();
 
     requisitionUpdater = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToUpdate.getFacilityId())
+        .withProgramId(requisitionToUpdate.getProgramId())
+        .withProcessingPeriodId(requisitionToUpdate.getProcessingPeriodId())
+        .withSupervisoryNodeId(requisitionToUpdate.getSupervisoryNodeId())
         .withLineItems(requisitionToUpdate.getRequisitionLineItems())
         .build();
 
@@ -57,7 +69,58 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionIfOrderableIdHasBeenChanged() {
+  public void shouldValidate() {
+    validator.validateCanUpdate(errors);
+    assertThat(errors.entrySet(), hasSize(0));
+  }
+
+  @Test
+  public void shouldRejectIfFacilityIdWasChanged() {
+    requisitionUpdater.setFacilityId(UUID.randomUUID());
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(FACILITY_ID, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfProgramIdWasChanged() {
+    requisitionUpdater.setProgramId(UUID.randomUUID());
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(PROGRAM_ID, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfProcessingPeriodIdWasChanged() {
+    requisitionUpdater.setProcessingPeriodId(UUID.randomUUID());
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(PROCESSING_PERIOD_ID, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfEmergencyFacilityIdWasChanged() {
+    requisitionUpdater.setEmergency(true);
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(EMERGENCY_FIELD, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfSupervisoryNodeIdWasChanged() {
+    requisitionUpdater.setSupervisoryNodeId(UUID.randomUUID());
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(SUPERVISORY_NODE_ID, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfOrderableIdHasBeenChanged() {
     requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(
         new RequisitionLineItemDataBuilder()
             .withId(requisitionToUpdate.getRequisitionLineItems().get(0).getId())
@@ -70,7 +133,7 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionIfFullSupplyLineWasRemovedForRegularRequisition() {
+  public void shouldRejectIfFullSupplyLineWasRemovedForRegularRequisition() {
     requisitionUpdater.setRequisitionLineItems(Lists.newArrayList());
 
     validator.validateCanUpdate(errors);
@@ -79,7 +142,7 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionIfNewFullSupplyLineWasAddedForRegularRequisition() {
+  public void shouldRejectIfNewFullSupplyLineWasAddedForRegularRequisition() {
     requisitionUpdater
         .getRequisitionLineItems()
         .add(new RequisitionLineItemDataBuilder().build());

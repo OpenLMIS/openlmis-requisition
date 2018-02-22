@@ -116,4 +116,24 @@ public class RequisitionDataBuilder {
 
     return this;
   }
+
+  public RequisitionDataBuilder withFacilityId(UUID facilityId) {
+    this.facilityId = facilityId;
+    return this;
+  }
+
+  public RequisitionDataBuilder withProgramId(UUID programId) {
+    this.programId = programId;
+    return this;
+  }
+
+  public RequisitionDataBuilder withProcessingPeriodId(UUID processingPeriodId) {
+    this.processingPeriodId = processingPeriodId;
+    return this;
+  }
+
+  public RequisitionDataBuilder withSupervisoryNodeId(UUID supervisoryNodeId) {
+    this.supervisoryNodeId = supervisoryNodeId;
+    return this;
+  }
 }
