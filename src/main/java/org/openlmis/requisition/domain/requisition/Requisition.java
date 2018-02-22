@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static java.util.Objects.isNull;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -24,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
@@ -760,18 +760,18 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private void populateApprovedQuantity() {
-    if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
-      getNonSkippedRequisitionLineItems().forEach(line -> {
-        if (isNull(line.getRequestedQuantity())) {
-          line.setApprovedQuantity(line.getCalculatedOrderQuantity());
-        } else {
-          line.setApprovedQuantity(line.getRequestedQuantity());
-        }
-      });
-    } else {
-      getNonSkippedRequisitionLineItems().forEach(line ->
-          line.setApprovedQuantity(line.getRequestedQuantity())
-      );
+    for (RequisitionLineItem line : getNonSkippedRequisitionLineItems()) {
+      if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+        line.setApprovedQuantity(Optional
+            .ofNullable(line.getRequestedQuantity())
+            .orElse(line.getCalculatedOrderQuantity()));
+      } else if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
+        line.setApprovedQuantity(Optional
+            .ofNullable(line.getRequestedQuantity())
+            .orElse(line.getCalculatedOrderQuantityIsa()));
+      } else {
+        line.setApprovedQuantity(line.getRequestedQuantity());
+      }
     }
   }
 

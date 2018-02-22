@@ -252,7 +252,7 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldDefaultApprovedQuantityOnAuthorize() {
+  public void shouldDefaultApprovedQuantityOnAuthorizeWhenCalcOrderQuantityColumnDisplayed() {
     requisition.setTemplate(template);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
@@ -265,6 +265,24 @@ public class RequisitionTest {
 
     assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
         requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldDefaultApprovedQuantityOnAuthorizeWhenCalcOrderQuantityIsaColumnDisplayed() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
+        .thenReturn(true);
+
+    requisitionLineItem.setRequestedQuantity(null);
+    requisitionLineItem.setCalculatedOrderQuantityIsa(100);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(100), requisitionLineItem.getApprovedQuantity());
   }
 
   @Test
