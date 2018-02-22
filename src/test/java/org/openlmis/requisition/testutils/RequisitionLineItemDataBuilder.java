@@ -65,6 +65,11 @@ public class RequisitionLineItemDataBuilder {
     return this;
   }
 
+  public RequisitionLineItemDataBuilder withNonFullSupplyFlag() {
+    this.nonFullSupply = true;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */

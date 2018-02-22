@@ -16,12 +16,15 @@
 package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 
-import lombok.AllArgsConstructor;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
+
+import lombok.AllArgsConstructor;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -69,18 +72,29 @@ class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidat
     rejectIfLessThanZero(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
 
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
-      if (template.isColumnDisplayed(REQUESTED_QUANTITY)) {
-        if (item.getRequestedQuantity() != null
-            && !Objects.equals(item.getRequestedQuantity(), item.getCalculatedOrderQuantity())) {
-          rejectIfEmpty(errors, template, item.getRequestedQuantityExplanation(),
-              REQUESTED_QUANTITY_EXPLANATION);
-        }
-      } else {
-        rejectIfNonNullValueForHiddenColumn(errors, item.getRequestedQuantity(),
-            REQUESTED_QUANTITY, template.isColumnDisplayed(REQUESTED_QUANTITY));
-      }
+      validateRequestedQuantityAndExplanation(
+          errors, item, template, item.getCalculatedOrderQuantity());
+    } else if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
+      validateRequestedQuantityAndExplanation(
+          errors, item, template, item.getCalculatedOrderQuantityIsa());
     } else {
       rejectIfNull(errors, template, item.getRequestedQuantity(), REQUESTED_QUANTITY);
+    }
+  }
+
+  private void validateRequestedQuantityAndExplanation(Map<String, Message> errors,
+                                                       RequisitionLineItem item,
+                                                       RequisitionTemplate template,
+                                                       Integer calculatedValue) {
+    if (template.isColumnDisplayed(REQUESTED_QUANTITY)) {
+      if (item.getRequestedQuantity() != null
+          && !Objects.equals(item.getRequestedQuantity(), calculatedValue)) {
+        rejectIfEmpty(errors, template, item.getRequestedQuantityExplanation(),
+            REQUESTED_QUANTITY_EXPLANATION);
+      }
+    } else {
+      rejectIfNonNullValueForHiddenColumn(errors, item.getRequestedQuantity(),
+          REQUESTED_QUANTITY, template.isColumnDisplayed(REQUESTED_QUANTITY));
     }
   }
 
