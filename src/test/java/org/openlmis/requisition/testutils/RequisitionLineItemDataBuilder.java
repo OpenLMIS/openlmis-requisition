@@ -166,6 +166,21 @@ public class RequisitionLineItemDataBuilder {
     return this;
   }
 
+  public RequisitionLineItemDataBuilder setTotalReceivedQuantity(Integer totalReceivedQuantity) {
+    this.totalReceivedQuantity = totalReceivedQuantity;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setBeginningBalance(Integer beginningBalance) {
+    this.beginningBalance = beginningBalance;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setTotal(Integer total) {
+    this.total = total;
+    return this;
+  }
+
   public RequisitionLineItemDataBuilder addStockAdjustment(StockAdjustment adjustment) {
     this.stockAdjustments.add(adjustment);
     return this;
