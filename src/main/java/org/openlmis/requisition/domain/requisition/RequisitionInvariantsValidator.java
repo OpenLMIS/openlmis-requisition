@@ -23,7 +23,6 @@ import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING
 import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ORDERABLE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 class RequisitionInvariantsValidator
     implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
-  static final String ORDERABLE_ID_FIELD = REQUISITION_LINE_ITEMS + '.' + ORDERABLE_ID;
 
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
@@ -107,7 +105,7 @@ class RequisitionInvariantsValidator
         // has been removed.
 
         rejectIfValueChanged(errors, current.getOrderableId(),
-            existing.getOrderableId(), ORDERABLE_ID_FIELD);
+            existing.getOrderableId(), REQUISITION_LINE_ITEMS);
       }
     }
   }

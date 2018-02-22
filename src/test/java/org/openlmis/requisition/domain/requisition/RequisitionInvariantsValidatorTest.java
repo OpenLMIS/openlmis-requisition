@@ -18,7 +18,6 @@ package org.openlmis.requisition.domain.requisition;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
-import static org.openlmis.requisition.domain.requisition.RequisitionInvariantsValidator.ORDERABLE_ID_FIELD;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
@@ -67,7 +66,7 @@ public class RequisitionInvariantsValidatorTest {
 
     validator.validateCanUpdate(errors);
 
-    assertThat(errors, hasEntry(ORDERABLE_ID_FIELD, new Message(ERROR_IS_INVARIANT)));
+    assertThat(errors, hasEntry(REQUISITION_LINE_ITEMS, new Message(ERROR_IS_INVARIANT)));
   }
 
   @Test
