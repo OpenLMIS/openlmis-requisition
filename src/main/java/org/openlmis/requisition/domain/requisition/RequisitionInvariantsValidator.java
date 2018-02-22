@@ -70,7 +70,7 @@ class RequisitionInvariantsValidator
       validateRegularLineItemSize(errors);
     }
 
-    validateLineItems(errors);
+    validateIfOrderableIdChanged(errors);
   }
 
   @Override
@@ -81,7 +81,7 @@ class RequisitionInvariantsValidator
     }
   }
 
-  private void validateLineItems(Map<String, Message> errors) {
+  private void validateIfOrderableIdChanged(Map<String, Message> errors) {
     Map<UUID, RequisitionLineItem> existingLineItems = requisitionToUpdate
         .getRequisitionLineItems()
         .stream()
@@ -100,10 +100,6 @@ class RequisitionInvariantsValidator
       RequisitionLineItem current = currentLineItems.get(entry.getKey());
 
       if (null != current) {
-        // current can be null only if requisition has emergency flag set
-        // for regular there should be error in errors map that line item
-        // has been removed.
-
         rejectIfValueChanged(errors, current.getOrderableId(),
             existing.getOrderableId(), REQUISITION_LINE_ITEMS);
       }
