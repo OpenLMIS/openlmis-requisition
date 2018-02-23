@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
@@ -27,6 +28,7 @@ import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.Map;
 
 public class StockOutDaysValidatorTest {
 
@@ -67,6 +69,28 @@ public class StockOutDaysValidatorTest {
     assertThat(errors).hasSize(1);
     assertThat(errors).contains(new AbstractMap.SimpleEntry<>(
         REQUISITION_LINE_ITEMS, new Message(ERROR_VALUE_MUST_BE_ENTERED, TOTAL_STOCKOUT_DAYS)));
+  }
+
+  @Test
+  public void shouldRejectIfNumberOfTotalStockoutDaysIsGreaterThanLengthOfPeriod() {
+    StockOutDaysValidator validator = getStockOutDaysValidator(91);
+
+    Map<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors).containsEntry(REQUISITION_LINE_ITEMS,
+        new Message(ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD));
+  }
+
+  @Test
+  public void shouldNotRejectIfNumberOfTotalStockoutDaysIsLessThanLengthOfPeriod() {
+    StockOutDaysValidator validator = getStockOutDaysValidator(89);
+
+    Map<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).isEmpty();
   }
 
   private StockOutDaysValidator getStockOutDaysValidator(Integer totalStockoutDays) {

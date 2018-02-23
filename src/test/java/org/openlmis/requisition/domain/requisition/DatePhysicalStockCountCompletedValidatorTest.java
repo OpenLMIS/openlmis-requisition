@@ -42,7 +42,7 @@ public class DatePhysicalStockCountCompletedValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectUpdateValidationsIfDateDifferBeforeAuthorize() {
+  public void shouldNotRejectUpdateValidationsIfDateDifferBeforeAuthorizeAndNotInFuture() {
     DatePhysicalStockCountCompletedValidator validator =
         getValidator(now.minusDays(2), now.minusDays(1), RequisitionStatus.INITIATED, true);
 
@@ -83,6 +83,18 @@ public class DatePhysicalStockCountCompletedValidatorTest {
     validator.validateCanUpdate(errors);
 
     assertThat(errors).hasSize(1);
+  }
+
+  @Test
+  public void shouldNotRejectUpdateValidationsIfDateIsNull() {
+    DatePhysicalStockCountCompletedValidator validator =
+        new DatePhysicalStockCountCompletedValidator(
+            null, new RequisitionDataBuilder().build(), now, true);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).isEmpty();
   }
 
   @Test

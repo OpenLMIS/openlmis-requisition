@@ -19,12 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
@@ -137,6 +139,25 @@ public class StockOnHandValidatorTest {
     validator.validateCanChangeStatus(errors);
 
     assertThat(errors).isEmpty();
+  }
+
+  @Test
+  public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .build())
+        .build();
+
+    requisition.getTemplate()
+        .changeColumnSource(RequisitionLineItem.STOCK_ON_HAND, SourceType.CALCULATED);
+
+    Map<String, Message> errors = new HashMap<>();
+    new StockOnHandValidator(requisition, requisition.getTemplate())
+        .validateCanUpdate(errors);
+
+    assertThat(errors).hasSize(1);
+    assertThat(errors)
+        .containsEntry(REQUISITION_LINE_ITEMS, new Message(ERROR_FIELD_IS_CALCULATED));
   }
 
   private StockOnHandValidator getStockOnHandValidator(Integer stockOnHand) {

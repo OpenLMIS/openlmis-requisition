@@ -127,7 +127,21 @@ public class ApprovalFieldsValidatorTest {
     assertThat(errors).hasSize(1);
     assertThat(errors).containsEntry(REQUISITION_LINE_ITEMS,
         new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL));
+  }
 
+  @Test
+  public void shouldNotRejectIfDuringApprovalAndApprovedQuantityNotNull() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildWithApprovedQuantity())
+        .setStatus(RequisitionStatus.IN_APPROVAL)
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).isEmpty();
   }
 
   @Test
@@ -145,7 +159,21 @@ public class ApprovalFieldsValidatorTest {
     assertThat(errors).hasSize(1);
     assertThat(errors).containsEntry(REQUISITION_LINE_ITEMS,
         new Message(ERROR_ONLY_AVAILABLE_FOR_APPROVAL));
+  }
 
+  @Test
+  public void shouldNotRejectIfDuringApprovalAndRemarksNotNull() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildWithRemarks())
+        .setStatus(RequisitionStatus.IN_APPROVAL)
+        .build();
+
+    ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors).isEmpty();
   }
 
   private ApprovalFieldsValidator getApprovalFieldsValidator(Integer approvedQuantity,
