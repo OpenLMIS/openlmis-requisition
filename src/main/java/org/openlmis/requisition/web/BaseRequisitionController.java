@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -190,11 +191,13 @@ public abstract class BaseRequisitionController extends BaseController {
         getLineItemOrderableIds(requisition), requisition, supplyLines);
 
     if (requisition.getStatus().isApproved()) {
-      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
-      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
+      if (isNotTrue(requisition.getEmergency())) {
+        profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
+        StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
 
-      profiler.start("SUBMIT_STOCK_EVENT");
-      stockEventStockManagementService.submit(stockEventDto);
+        profiler.start("SUBMIT_STOCK_EVENT");
+        stockEventStockManagementService.submit(stockEventDto);
+      }
 
       if (!isEmpty(supplyLines)) {
         profiler.start("RETRIEVE_SUPPLYING_FACILITY");

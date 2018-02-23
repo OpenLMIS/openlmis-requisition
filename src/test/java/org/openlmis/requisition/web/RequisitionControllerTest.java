@@ -62,6 +62,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -170,10 +171,10 @@ public class RequisitionControllerTest {
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @Mock
-  private StockEventBuilder inventoryDraftBuilder;
+  private StockEventBuilder stockEventBuilderBuilder;
 
   @Mock
-  private StockEventStockManagementService inventoryService;
+  private StockEventStockManagementService stockEventService;
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
@@ -435,7 +436,7 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(emptyList()));
 
-    verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -465,7 +466,7 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(null));
 
-    verifyZeroInteractions(inventoryDraftBuilder, inventoryService);
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -479,10 +480,7 @@ public class RequisitionControllerTest {
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
 
-    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
-
-    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
-    setUpApprover();
+    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -499,10 +497,11 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
-    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
-
-    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
-    setUpApprover();
+    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
+    when(authorizedRequsition.getEmergency()).thenReturn(false);
+    StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
+    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class)))
+        .thenReturn(stockEventDto);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -511,6 +510,27 @@ public class RequisitionControllerTest {
         any(UUID.class),
         any(UUID.class));
 
+    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition);
+    verify(stockEventService).submit(stockEventDto);
+    verify(requisitionService, times(1)).doApprove(eq(null), any(),
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+  }
+
+  @Test
+  public void shouldNotSendStockEventOnFinalApprovalForEmergencyRequisition() {
+    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
+    when(authorizedRequsition.getEmergency()).thenReturn(true);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
+        any(UUID.class),
+        any(UUID.class));
+
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
@@ -783,4 +803,12 @@ public class RequisitionControllerTest {
 
     return supplyLine;
   }
+
+  private SupplyLineDto prepareForApproveWithSupplyLine() {
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
+    setUpApprover();
+    return supplyLineDto;
+  }
+
 }
