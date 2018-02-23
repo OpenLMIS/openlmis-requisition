@@ -48,7 +48,7 @@ import org.openlmis.requisition.service.stockmanagement.StockCardStockManagement
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

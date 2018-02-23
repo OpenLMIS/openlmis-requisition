@@ -18,6 +18,7 @@ package org.openlmis.requisition.testutils;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;

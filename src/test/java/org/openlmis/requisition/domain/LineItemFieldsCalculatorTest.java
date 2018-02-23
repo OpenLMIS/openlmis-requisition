@@ -37,7 +37,7 @@ import org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

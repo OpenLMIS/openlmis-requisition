@@ -26,7 +26,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;

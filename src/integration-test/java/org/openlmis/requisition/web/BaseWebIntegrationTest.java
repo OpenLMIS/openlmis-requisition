@@ -64,7 +64,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;

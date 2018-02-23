@@ -18,7 +18,7 @@ package org.openlmis.requisition.domain;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 
 public class RequisitionTemplateAssignmentTest {
 

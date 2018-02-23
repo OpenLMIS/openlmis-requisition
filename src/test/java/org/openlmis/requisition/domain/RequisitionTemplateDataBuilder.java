@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.testutils;
+package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -22,11 +22,9 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.RE
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -118,6 +116,15 @@ public class RequisitionTemplateDataBuilder {
   public RequisitionTemplate buildWithStockOnHandColumnHiden() {
     withColumns(RequisitionValidationTestUtils.initiateColumns());
     columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
+    return build();
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data.
+   */
+  public RequisitionTemplate buildWithStockOnHandColumnCalculated() {
+    withColumns(RequisitionValidationTestUtils.initiateColumns());
+    columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
     return build();
   }
 

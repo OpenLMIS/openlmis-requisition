@@ -42,7 +42,7 @@ import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;

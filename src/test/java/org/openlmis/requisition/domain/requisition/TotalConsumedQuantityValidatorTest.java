@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.HashMap;
 import java.util.Map;

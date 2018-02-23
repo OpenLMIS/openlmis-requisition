@@ -54,7 +54,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

@@ -26,11 +26,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
-import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -146,10 +145,8 @@ public class StockOnHandValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .build())
+        .setTemplate(new RequisitionTemplateDataBuilder().buildWithStockOnHandColumnCalculated())
         .build();
-
-    requisition.getTemplate()
-        .changeColumnSource(RequisitionLineItem.STOCK_ON_HAND, SourceType.CALCULATED);
 
     Map<String, Message> errors = new HashMap<>();
     new StockOnHandValidator(requisition, requisition.getTemplate())

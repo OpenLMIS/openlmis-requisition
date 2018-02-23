@@ -41,7 +41,7 @@ import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
