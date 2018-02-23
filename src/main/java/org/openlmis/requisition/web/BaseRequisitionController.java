@@ -191,13 +191,7 @@ public abstract class BaseRequisitionController extends BaseController {
         getLineItemOrderableIds(requisition), requisition, supplyLines);
 
     if (requisition.getStatus().isApproved()) {
-      if (isNotTrue(requisition.getEmergency())) {
-        profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
-        StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
-
-        profiler.start("SUBMIT_STOCK_EVENT");
-        stockEventStockManagementService.submit(stockEventDto);
-      }
+      submitStockEvent(requisition, profiler);
 
       if (!isEmpty(supplyLines)) {
         profiler.start("RETRIEVE_SUPPLYING_FACILITY");
@@ -226,6 +220,16 @@ public abstract class BaseRequisitionController extends BaseController {
     profiler.stop().log();
     XLOGGER.exit(basicRequisitionDto);
     return basicRequisitionDto;
+  }
+
+  private void submitStockEvent(Requisition requisition, Profiler profiler) {
+    if (isNotTrue(requisition.getEmergency())) {
+      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
+      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
+
+      profiler.start("SUBMIT_STOCK_EVENT");
+      stockEventStockManagementService.submit(stockEventDto);
+    }
   }
 
   protected Set<UUID> getLineItemOrderableIds(Requisition requisition) {
