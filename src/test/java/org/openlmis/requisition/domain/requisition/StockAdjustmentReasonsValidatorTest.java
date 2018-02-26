@@ -20,8 +20,6 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.HashMap;

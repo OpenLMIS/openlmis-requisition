@@ -23,8 +23,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -49,7 +47,7 @@ public class StockOutDaysValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsLessThanZeroDuringStatusChange() {
-    StockOutDaysValidator validator = getStockOutDaysValidator(-10);
+    StockOutDaysValidator validator = getStockOutDaysValidatorWithStockOutDays(-10);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -61,7 +59,7 @@ public class StockOutDaysValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsNullDuringStatusChange() {
-    StockOutDaysValidator validator = getStockOutDaysValidator(null);
+    StockOutDaysValidator validator = getStockOutDaysValidatorWithStockOutDays(null);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -73,7 +71,7 @@ public class StockOutDaysValidatorTest {
 
   @Test
   public void shouldRejectIfNumberOfTotalStockoutDaysIsGreaterThanLengthOfPeriod() {
-    StockOutDaysValidator validator = getStockOutDaysValidator(91);
+    StockOutDaysValidator validator = getStockOutDaysValidatorWithStockOutDays(91);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanUpdate(errors);
@@ -85,7 +83,7 @@ public class StockOutDaysValidatorTest {
 
   @Test
   public void shouldNotRejectIfNumberOfTotalStockoutDaysIsLessThanLengthOfPeriod() {
-    StockOutDaysValidator validator = getStockOutDaysValidator(89);
+    StockOutDaysValidator validator = getStockOutDaysValidatorWithStockOutDays(89);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanUpdate(errors);
@@ -93,7 +91,8 @@ public class StockOutDaysValidatorTest {
     assertThat(errors).isEmpty();
   }
 
-  private StockOutDaysValidator getStockOutDaysValidator(Integer totalStockoutDays) {
+  private StockOutDaysValidator getStockOutDaysValidatorWithStockOutDays(
+      Integer totalStockoutDays) {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .setTotalStockoutDays(totalStockoutDays)

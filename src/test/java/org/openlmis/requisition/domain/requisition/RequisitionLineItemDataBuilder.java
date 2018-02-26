@@ -13,16 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.testutils;
+package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

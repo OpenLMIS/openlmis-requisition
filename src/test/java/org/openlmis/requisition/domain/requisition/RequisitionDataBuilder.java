@@ -13,19 +13,12 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.testutils;
+package org.openlmis.requisition.domain.requisition;
 
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
-import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

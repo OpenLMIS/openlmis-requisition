@@ -20,8 +20,6 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDate;
 import java.util.List;

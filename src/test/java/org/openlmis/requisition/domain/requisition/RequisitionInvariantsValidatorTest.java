@@ -29,13 +29,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.utils.Message;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

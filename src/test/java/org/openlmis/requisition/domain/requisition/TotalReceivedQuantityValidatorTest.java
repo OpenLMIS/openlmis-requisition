@@ -21,8 +21,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.util.HashMap;
 

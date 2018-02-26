@@ -92,7 +92,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;

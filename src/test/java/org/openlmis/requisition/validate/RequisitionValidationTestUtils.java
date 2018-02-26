@@ -38,7 +38,7 @@ import com.google.common.collect.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 
 import java.util.HashMap;
 import java.util.Map;

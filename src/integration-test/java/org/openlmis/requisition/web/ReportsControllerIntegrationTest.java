@@ -26,6 +26,7 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -49,7 +50,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import guru.nidi.ramltester.junit.RamlMatchers;

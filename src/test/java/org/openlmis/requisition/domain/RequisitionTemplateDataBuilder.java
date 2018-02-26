@@ -24,7 +24,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
-import org.openlmis.requisition.testutils.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import java.time.ZonedDateTime;
 import java.util.HashMap;

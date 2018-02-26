@@ -13,13 +13,11 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.testutils;
+package org.openlmis.requisition.domain;
 
 import org.javers.common.collections.Sets;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
 
 import java.util.Collections;
 import java.util.Optional;

@@ -19,7 +19,6 @@ package org.openlmis.requisition.domain.requisition;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.openlmis.requisition.testutils.RequisitionDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.HashMap;
