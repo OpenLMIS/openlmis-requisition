@@ -32,8 +32,8 @@ public class RequisitionHelper {
   /**
    * Check if all required fields for template are not filled.
    */
-  public static boolean areFieldsNotFilled(RequisitionTemplate template,
-                                           List<RequisitionLineItem> requisitionLineItems) {
+  public static boolean areRequiredRegularRequisitionFieldsNotFilled(RequisitionTemplate template,
+                                                   List<RequisitionLineItem> requisitionLineItems) {
     boolean isTotalConsumedQuantityCalculated =
         template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY);
     boolean isStockOnHandCalculated =

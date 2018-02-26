@@ -160,6 +160,25 @@ public class RequisitionTest {
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
 
+  @Test(expected = ValidationMessageException.class)
+  public void shouldNotSubmitRegularRequisitionIfRegularFieldsNotFilled() {
+    prepareRequisitionToHaveRequiredFieldNotFilled();
+
+    requisition.submit(Collections.emptyList(), UUID.randomUUID(), true);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
+  @Test
+  public void shouldSubmitEmergencyRequisitionIfRegularFieldsNotFilled() {
+    prepareRequisitionToHaveRequiredFieldNotFilled();
+    requisition.setEmergency(true);
+
+    requisition.submit(Collections.emptyList(), UUID.randomUUID(), true);
+
+    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+  }
+
   @Test
   public void shouldAuthorizeRequisitionIfItsStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
@@ -1235,7 +1254,7 @@ public class RequisitionTest {
         .randomUUID(), status, false);
   }
 
-  private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition, 
+  private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition,
       RequisitionStatus status, UUID authorId) {
     Optional<StatusChange> change = requisition.getStatusChanges().stream()
         .filter(statusChange -> statusChange.getStatus() == status)
@@ -1350,5 +1369,13 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(Lists.newArrayList(notSkipped, skipped));
     return requisition;
+  }
+
+  private void prepareRequisitionToHaveRequiredFieldNotFilled() {
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+    when(template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY)).thenReturn(true);
+    requisition.getRequisitionLineItems().get(0).setStockOnHand(null);
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.INITIATED);
   }
 }

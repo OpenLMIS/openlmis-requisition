@@ -27,6 +27,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
+import static org.openlmis.requisition.utils.RequisitionHelper.areRequiredRegularRequisitionFieldsNotFilled;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -446,7 +447,7 @@ public class Requisition extends BaseTimestampedEntity {
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
     }
 
-    if (RequisitionHelper.areFieldsNotFilled(template,
+    if (isNotTrue(emergency) && areRequiredRegularRequisitionFieldsNotFilled(template,
         getNonSkippedFullSupplyRequisitionLineItems())) {
       throw new ValidationMessageException(new Message(ERROR_FIELD_MUST_HAVE_VALUES, getId()));
     }
