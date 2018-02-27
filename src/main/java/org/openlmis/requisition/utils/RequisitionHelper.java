@@ -15,9 +15,12 @@
 
 package org.openlmis.requisition.utils;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,8 +35,9 @@ public class RequisitionHelper {
   /**
    * Check if all required fields for template are not filled.
    */
-  public static boolean areRequiredRegularRequisitionFieldsNotFilled(RequisitionTemplate template,
-                                                   List<RequisitionLineItem> requisitionLineItems) {
+  public static boolean validateAreRequiredRegularRequisitionFieldsNotFilled(
+      RequisitionTemplate template, List<RequisitionLineItem> requisitionLineItems,
+      UUID requisitionId) {
     boolean isTotalConsumedQuantityCalculated =
         template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY);
     boolean isStockOnHandCalculated =
@@ -42,12 +46,16 @@ public class RequisitionHelper {
     for (RequisitionLineItem line : requisitionLineItems) {
       if (isTotalConsumedQuantityCalculated
           && line.allRequiredCalcFieldsNotFilled(Requisition.TOTAL_CONSUMED_QUANTITY)) {
-        return true;
+        throw new ValidationMessageException(
+            new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId, Requisition.STOCK_ON_HAND,
+                Requisition.TOTAL_CONSUMED_QUANTITY));
       }
 
       if (isStockOnHandCalculated
           && line.allRequiredCalcFieldsNotFilled(Requisition.STOCK_ON_HAND)) {
-        return true;
+        throw new ValidationMessageException(
+            new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId,
+                Requisition.TOTAL_CONSUMED_QUANTITY, Requisition.STOCK_ON_HAND));
       }
     }
 

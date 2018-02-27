@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.domain.requisition;
@@ -18,6 +18,7 @@ package org.openlmis.requisition.domain.requisition;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -31,9 +32,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIER;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.ImmutableMap;
@@ -59,6 +63,7 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
+import org.openlmis.requisition.utils.Message;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -88,7 +93,7 @@ public class RequisitionTest {
   private static final int MONTHS_IN_PERIOD = 1;
   private static final int CALCULATED_ORDER_QUANTITY = 5;
   private static final int REQUESTED_QUANTITY = 5;
-  private static final int STOCK_ON_HAND = 10;
+  private static final int STOCK_ON_HAND_VALUE = 10;
   private static final int STOCK_ON_HAND_2 = 11;
 
   private Requisition requisition;
@@ -96,6 +101,7 @@ public class RequisitionTest {
 
   private UUID productId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
+  private UUID requisitionId = UUID.randomUUID();
 
   @Mock
   private RequisitionTemplate template;
@@ -113,6 +119,7 @@ public class RequisitionTest {
     requisitionLineItem.setOrderableId(productId);
     requisitionLineItem.setCalculatedOrderQuantity(CALCULATED_ORDER_QUANTITY);
 
+    requisition.setId(requisitionId);
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
     requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
@@ -160,23 +167,29 @@ public class RequisitionTest {
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
 
-  @Test(expected = ValidationMessageException.class)
+  @Test
   public void shouldNotSubmitRegularRequisitionIfRegularFieldsNotFilled() {
-    prepareRequisitionToHaveRequiredFieldNotFilled();
+    prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
+    assertThatThrownBy(() -> requisition.submit(Collections.emptyList(), UUID.randomUUID(), false))
+        .isInstanceOf(ValidationMessageException.class)
+        .hasMessage(getRequiredFieldErrorMessage(STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY));
 
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), true);
+    prepareRequisitionToHaveRequiredFieldTotalConsumedQuantityNotFilled();
+    assertThatThrownBy(() -> requisition.submit(Collections.emptyList(), UUID.randomUUID(), false))
+        .isInstanceOf(ValidationMessageException.class)
+        .hasMessage(getRequiredFieldErrorMessage(TOTAL_CONSUMED_QUANTITY, STOCK_ON_HAND));
 
-    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+    assertEquals(requisition.getStatus(), RequisitionStatus.INITIATED);
   }
 
   @Test
   public void shouldSubmitEmergencyRequisitionIfRegularFieldsNotFilled() {
-    prepareRequisitionToHaveRequiredFieldNotFilled();
+    prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
     requisition.setEmergency(true);
 
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), true);
+    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
 
-    assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
+    assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
 
   @Test
@@ -574,7 +587,7 @@ public class RequisitionTest {
 
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
     items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
@@ -595,7 +608,7 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
@@ -628,7 +641,7 @@ public class RequisitionTest {
 
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
     items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
@@ -655,7 +668,7 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(
         req.findLineByProductId(productId1).getTotalReceivedQuantity(),
@@ -673,7 +686,7 @@ public class RequisitionTest {
 
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND));
+    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
     items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
@@ -697,7 +710,7 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND));
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
     assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
     assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
     assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
@@ -1255,7 +1268,7 @@ public class RequisitionTest {
   }
 
   private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition,
-      RequisitionStatus status, UUID authorId) {
+                                                          RequisitionStatus status, UUID authorId) {
     Optional<StatusChange> change = requisition.getStatusChanges().stream()
         .filter(statusChange -> statusChange.getStatus() == status)
         .findFirst();
@@ -1326,7 +1339,7 @@ public class RequisitionTest {
   }
 
   private RequisitionLineItem mockReqLine(Requisition requisition, UUID productId,
-                           int stockOnHand) {
+                                          int stockOnHand) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
     when(item.getOrderableId()).thenReturn(productId);
     when(item.getStockOnHand()).thenReturn(stockOnHand);
@@ -1371,11 +1384,26 @@ public class RequisitionTest {
     return requisition;
   }
 
-  private void prepareRequisitionToHaveRequiredFieldNotFilled() {
-    RequisitionTemplate template = mock(RequisitionTemplate.class);
-    when(template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY)).thenReturn(true);
+  private void prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled() {
+    mockTemplateWithCalculatedColumn(TOTAL_CONSUMED_QUANTITY);
     requisition.getRequisitionLineItems().get(0).setStockOnHand(null);
+    requisition.getRequisitionLineItems().get(0).setTotalConsumedQuantity(10);
+  }
+
+  private void prepareRequisitionToHaveRequiredFieldTotalConsumedQuantityNotFilled() {
+    mockTemplateWithCalculatedColumn(STOCK_ON_HAND);
+    requisition.getRequisitionLineItems().get(0).setTotalConsumedQuantity(null);
+    requisition.getRequisitionLineItems().get(0).setStockOnHand(10);
+  }
+
+  private String getRequiredFieldErrorMessage(String requiredField, String calculatedColumn) {
+    return new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId,
+        requiredField, calculatedColumn).toString();
+  }
+
+  private void mockTemplateWithCalculatedColumn(String column) {
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+    when(template.isColumnCalculated(column)).thenReturn(true);
     requisition.setTemplate(template);
-    requisition.setStatus(RequisitionStatus.INITIATED);
   }
 }
