@@ -202,7 +202,7 @@ public abstract class BaseRequisitionController extends BaseController {
         SupportedProgramDto supportedProgram = facilitySupportsProgramHelper
             .getSupportedProgram(facility, requisition.getProgramId());
 
-        if (supportedProgram.isSupportLocallyFulfilled()) {
+        if (supportedProgram != null && supportedProgram.isSupportLocallyFulfilled()) {
           profiler.start("CONVERT_TO_ORDER");
           ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
           requisitionService.convertToOrder(ImmutableList.of(entry), user);

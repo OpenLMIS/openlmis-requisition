@@ -556,7 +556,7 @@ public class RequisitionControllerTest {
   public void shouldAutomaticallyConvertIfLocalFulfillsIsSet() {
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
-    SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, true);
+    SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, true, true);
     setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -564,6 +564,18 @@ public class RequisitionControllerTest {
     ConvertToOrderDto entry = new ConvertToOrderDto(uuid4, supplyLineDto.getSupplyingFacility());
     ImmutableList<ConvertToOrderDto> list = ImmutableList.of(entry);
     verify(requisitionService).convertToOrder(eq(list), any(UserDto.class));
+  }
+
+  @Test
+  public void shouldNotAutomaticallyConvertIfSupplyingFacilityDoesNotSupportProgram() {
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    prepareSupplyLine(authorizedRequsition, true, false);
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, never()).convertToOrder(anyList(), any(UserDto.class));
   }
 
   @Test(expected = PermissionMessageException.class)
@@ -784,7 +796,8 @@ public class RequisitionControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
-  private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills) {
+  private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills,
+                                          boolean withSupportedProgram) {
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     FacilityDto facility = new FacilityDto();
@@ -799,14 +812,14 @@ public class RequisitionControllerTest {
     when(facilityReferenceDataService.findOne(supplyLine.getSupplyingFacility()))
         .thenReturn(facility);
     when(facilitySupportsProgramHelper.getSupportedProgram(facility, requisition.getProgramId()))
-        .thenReturn(supportedProgram);
+        .thenReturn(withSupportedProgram ? supportedProgram : null);
 
     return supplyLine;
   }
 
   private SupplyLineDto prepareForApproveWithSupplyLine() {
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
-    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false);
+    final SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, false, true);
     setUpApprover();
     return supplyLineDto;
   }
