@@ -35,23 +35,19 @@ public class RequisitionHelper {
   /**
    * Check if all required fields for template are not filled.
    */
-  public static boolean validateAreRequiredRegularRequisitionFieldsNotFilled(
+  public static void validateAreRequiredRegularRequisitionFieldsNotFilled(
       RequisitionTemplate template, List<RequisitionLineItem> requisitionLineItems,
       UUID requisitionId) {
-    boolean isTotalConsumedQuantityCalculated =
-        template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY);
-    boolean isStockOnHandCalculated =
-        template.isColumnCalculated(Requisition.STOCK_ON_HAND);
 
     for (RequisitionLineItem line : requisitionLineItems) {
-      if (isTotalConsumedQuantityCalculated
+      if (template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY)
           && line.allRequiredCalcFieldsNotFilled(Requisition.TOTAL_CONSUMED_QUANTITY)) {
         throw new ValidationMessageException(
             new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId, Requisition.STOCK_ON_HAND,
                 Requisition.TOTAL_CONSUMED_QUANTITY));
       }
 
-      if (isStockOnHandCalculated
+      if (template.isColumnCalculated(Requisition.STOCK_ON_HAND)
           && line.allRequiredCalcFieldsNotFilled(Requisition.STOCK_ON_HAND)) {
         throw new ValidationMessageException(
             new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId,
@@ -59,7 +55,6 @@ public class RequisitionHelper {
       }
     }
 
-    return false;
   }
 
   /**
