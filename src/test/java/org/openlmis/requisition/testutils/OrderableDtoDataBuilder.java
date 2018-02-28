@@ -92,6 +92,11 @@ public class OrderableDtoDataBuilder {
     return this;
   }
 
+  public OrderableDtoDataBuilder withFullProductName(String fullProductName) {
+    this.fullProductName = fullProductName;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link OrderableDto} with properties.
    * @return created orderable.

@@ -27,6 +27,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
@@ -64,6 +65,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -112,6 +114,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -306,19 +309,48 @@ public class RequisitionService {
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       Map<UUID, Integer> orderableSoh = new HashMap<>();
-      stockCardSummariesStockManagementService.search(
+      List<StockCardSummaryDto> cards = stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
           fullSupplyProducts.stream()
               .map(ap -> ap.getOrderable().getId())
               .collect(toSet()),
-          endDate)
-          .forEach(card -> orderableSoh.put(card.getOrderable().getId(), card.getStockOnHand()));
+          endDate);
+
+      validateNoSohIsMissing(fullSupplyProducts, cards);
+
+      cards.forEach(card -> orderableSoh.put(card.getOrderable().getId(), card.getStockOnHand()));
 
       return orderableSoh;
     } else {
       return Collections.emptyMap();
     }
+  }
+
+  private void validateNoSohIsMissing(Collection<ApprovedProductDto> fullSupplyProducts,
+                                      List<StockCardSummaryDto> cards) {
+    List<StockCardSummaryDto> cardsWithNullSoh = cards.stream()
+        .filter(c -> c.getStockOnHand() == null)
+        .collect(Collectors.toList());
+
+    if (!cardsWithNullSoh.isEmpty()) {
+      OrderableDto orderableWithNoSoh =
+          getFirstOrderableWithNullSoh(fullSupplyProducts, cardsWithNullSoh);
+
+      throw new ValidationMessageException(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
+          orderableWithNoSoh.getFullProductName(), cardsWithNullSoh.size());
+    }
+  }
+
+  private OrderableDto getFirstOrderableWithNullSoh(
+      Collection<ApprovedProductDto> fullSupplyProducts,
+      List<StockCardSummaryDto> cardsWithNullSoh) {
+    UUID orderableIdWithNoSoh = cardsWithNullSoh.get(0).getOrderable().getId();
+    return fullSupplyProducts.stream()
+        .filter(p -> p.getOrderable().getId().equals(orderableIdWithNoSoh))
+        .findAny()
+        .orElseThrow(IllegalStateException::new)
+        .getOrderable();
   }
 
   private ProofOfDeliveryDto getProofOfDeliveryDto(boolean emergency, Requisition requisition) {

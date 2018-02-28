@@ -18,6 +18,7 @@ package org.openlmis.requisition.service;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -47,6 +48,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.REJE
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 import static org.openlmis.requisition.utils.Pagination.NO_PAGINATION;
 import static org.openlmis.requisition.utils.Pagination.getPage;
@@ -117,6 +119,7 @@ import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
@@ -241,7 +244,7 @@ public class RequisitionServiceTest {
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
   private UserDto user = DtoGenerator.of(UserDto.class);
-  private StockCardSummaryDto stockCard = DtoGenerator.of(StockCardSummaryDto.class);
+  private StockCardSummaryDto stockCardSummaryDto = DtoGenerator.of(StockCardSummaryDto.class);
   private ProgramDto program = DtoGenerator.of(ProgramDto.class, true);
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
@@ -256,6 +259,7 @@ public class RequisitionServiceTest {
   private static final UUID PRODUCT_ID = UUID.randomUUID();
   private static final UUID NON_FULL_PRODUCT_ID = UUID.randomUUID();
   private LocalDate periodEndDate = LocalDate.of(2017, 12, 30);
+  private String productNamePrefix = "Product ";
 
   @Before
   public void setUp() {
@@ -955,27 +959,29 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetStockOnHandFromStockIfFlagIsEnabled() {
     prepareForGetStockOnHandTest();
+    stockCardSummaryDto.setStockOnHand(10);
 
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod.getId(), false, stockAdjustmentReasons);
 
-    assertEquals(stockCard.getStockOnHand(),
+    assertEquals(stockCardSummaryDto.getStockOnHand(),
         initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
   }
 
   @Test
-  public void shouldSetNullStockOnHandFromStockIfFlagIsEnabled() {
+  public void shouldThrowExceptionWhenAnyNullStockOnHandFromStockIfFlagIsEnabled() {
     prepareForGetStockOnHandTest();
-    ReflectionTestUtils.setField(stockCard, "stockOnHand", null);
+    stockCardSummaryDto.setStockOnHand(null);
 
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
-    Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod.getId(), false, stockAdjustmentReasons);
-
-    assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+    assertThatThrownBy(() -> requisitionService.initiate(
+        program, facility, processingPeriod.getId(), false, stockAdjustmentReasons))
+        .isInstanceOf(ValidationMessageException.class)
+        .hasMessage(new Message(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
+            productNamePrefix + "0", 1).toString());
   }
 
   @Test
@@ -1736,6 +1742,7 @@ public class RequisitionServiceTest {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(products[i])
+              .withFullProductName(productNamePrefix + i)
               .withIdentifier(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString())
               .withProgramOrderable(program.getId(), fullSupply[i])
               .build())
@@ -1903,8 +1910,8 @@ public class RequisitionServiceTest {
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     when(stockCardSummariesStockManagementService
         .search(program.getId(), facility.getId(), singleton(PRODUCT_ID), periodEndDate))
-        .thenReturn(singletonList(stockCard));
-    ReflectionTestUtils.setField(stockCard.getOrderable(), "id", PRODUCT_ID);
+        .thenReturn(singletonList(stockCardSummaryDto));
+    ReflectionTestUtils.setField(stockCardSummaryDto.getOrderable(), "id", PRODUCT_ID);
   }
 
 }

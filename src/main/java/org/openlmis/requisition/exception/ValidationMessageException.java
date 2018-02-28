@@ -19,6 +19,10 @@ import org.openlmis.requisition.utils.Message;
 
 public class ValidationMessageException extends BaseMessageException {
 
+  public ValidationMessageException(String messageKey, Object... messageParameters) {
+    this(new Message(messageKey, messageParameters));
+  }
+
   public ValidationMessageException(Message message) {
     super(message);
   }
