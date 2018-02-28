@@ -32,7 +32,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.utils.Message;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,6 +85,19 @@ public class RequestedQuantityValidatorTest {
 
     fullSupply.setCalculatedOrderQuantityIsa(10);
     fullSupply.setRequestedQuantity(null);
+
+    validator.validateCanChangeStatus(errors);
+    assertThat(errors.entrySet(), hasSize(0));
+  }
+
+  @Test
+  public void shouldValidateIfCalcOrderQtyIsaNotExists() {
+    Map<String, RequisitionTemplateColumn> columns = new HashMap<>(template.viewColumns());
+    columns.get(CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
+    columns.remove(CALCULATED_ORDER_QUANTITY_ISA);
+
+    template = new RequisitionTemplate(columns);
+    requisitionToValidate.setTemplate(template);
 
     validator.validateCanChangeStatus(errors);
     assertThat(errors.entrySet(), hasSize(0));

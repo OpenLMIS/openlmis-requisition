@@ -304,6 +304,8 @@ public class RequisitionTest {
 
     when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
         .thenReturn(false);
+    when(template.isColumnInTemplate(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
+        .thenReturn(true);
     when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
         .thenReturn(true);
 
@@ -350,6 +352,42 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+
+    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldPopulateWithRequestedQuantityWhenCalculatedOrderQuantityIsaIsNotDisplayed() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+    when(template.isColumnInTemplate(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
+        .thenReturn(true);
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
+        .thenReturn(false);
+
+    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
+
+    requisition.authorize(Collections.emptyList(), null);
+
+    assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
+  }
+
+  @Test
+  public void shouldPopulateWithRequestedQuantityWhenCalculatedOrderQuantityIsaNotExists() {
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
+        .thenReturn(false);
+    when(template.isColumnInTemplate(RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA))
         .thenReturn(false);
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);

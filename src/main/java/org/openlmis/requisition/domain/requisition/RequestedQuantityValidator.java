@@ -74,7 +74,8 @@ class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidat
     if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
       validateRequestedQuantityAndExplanation(
           errors, item, template, item.getCalculatedOrderQuantity());
-    } else if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
+    } else if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
+        && template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
       validateRequestedQuantityAndExplanation(
           errors, item, template, item.getCalculatedOrderQuantityIsa());
     } else {
