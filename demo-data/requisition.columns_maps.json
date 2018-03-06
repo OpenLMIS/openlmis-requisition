@@ -605,7 +605,7 @@
     "label": "Beginning balance",
     "indicator": "A",
     "displayOrder": 4,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 0,
     "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -617,7 +617,7 @@
     "label": "Total received quantity",
     "indicator": "B",
     "displayOrder": 5,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 0,
     "definition": "Total quantity received in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -629,7 +629,7 @@
     "label": "Total consumed quantity",
     "indicator": "C",
     "displayOrder": 6,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "definition": "Quantity dispensed/consumed in the reporting period. This is quantified in dispensing units.",
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
@@ -641,7 +641,7 @@
     "label": "Total losses and adjustments",
     "indicator": "D",
     "displayOrder": 7,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 0,
     "definition": "All kind of losses/adjustments made at the facility.",
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
@@ -653,7 +653,7 @@
     "label": "Total stockout days",
     "indicator": "X",
     "displayOrder": 8,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 0,
     "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
@@ -666,7 +666,7 @@
     "indicator": "E",
     "displayOrder": 9,
     "isDisplayed": true,
-    "source": 0,
+    "source": 3,
     "definition": "Current physical count of stock on hand. This is quantified in dispensing units.",
     "requisitionColumnId": "752cda76-0db5-4b6e-bb79-0f531ab78e2c"
   },
@@ -677,7 +677,7 @@
     "label": "Average consumption",
     "indicator": "P",
     "displayOrder": 10,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "definition": "Average consumption over a specified number of periods/months. Quantified in dispensing units.",
     "requisitionColumnId": "89113ec3-40e9-4d81-9516-b56adba7f8cd"
@@ -689,7 +689,7 @@
     "label": "Calculated order quantity",
     "indicator": "I",
     "displayOrder": 11,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "definition": "Actual quantity needed after deducting stock in hand. This is quantified in dispensing units.",
     "requisitionColumnId": "5528576b-b1e7-48d9-bf32-fd0eefefaa9a"
@@ -785,7 +785,7 @@
     "label": "Total",
     "indicator": "Y",
     "displayOrder": 19,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "definition": "Total of beginning balance and quantity received.",
     "requisitionColumnId": "ef524868-9d0a-11e6-80f5-76304dec7eb7"
@@ -822,7 +822,7 @@
     "label": "Adjusted consumption",
     "indicator": "N",
     "displayOrder": 22,
-    "isDisplayed": true,
+    "isDisplayed": false,
     "source": 1,
     "definition": "Total consumed quantity after adjusting for stockout days. Quantified in dispensing units.",
     "requisitionColumnId": "720dd95b-b765-4afb-b7f2-7b22261c32f3"
@@ -847,7 +847,7 @@
     "label": "Ideal Stock Amount",
     "indicator": "G",
     "displayOrder": 24,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 2,
     "definition": "The Ideal Stock Amount is the target quantity for a specific commodity type, facility, and period.",
     "requisitionColumnId": "aa0a1a7e-e5cb-4385-b781-943316fa116a"
@@ -859,7 +859,7 @@
     "label": "Calc Order Qty ISA",
     "indicator": "S",
     "displayOrder": 25,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "definition": "The calculated order quantity based on Ideal Stock Amount.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
@@ -1152,7 +1152,7 @@
     "label": "Ideal Stock Amount",
     "indicator": "G",
     "displayOrder": 24,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 2,
     "definition": "The Ideal Stock Amount is the target quantity for a specific commodity type, facility, and period.",
     "requisitionColumnId": "aa0a1a7e-e5cb-4385-b781-943316fa116a"
@@ -1164,7 +1164,7 @@
     "label": "Calc Order Qty ISA",
     "indicator": "S",
     "displayOrder": 25,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 1,
     "definition": "The calculated order quantity based on Ideal Stock Amount.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"

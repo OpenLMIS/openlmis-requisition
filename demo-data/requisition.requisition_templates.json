@@ -19,7 +19,7 @@
     "id": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
     "createdDate": "2016-06-14T12:00:00",
     "numberOfPeriodsToAverage": "3",
-    "populateStockOnHandFromStockCards": false,
+    "populateStockOnHandFromStockCards": true,
     "name": "EPI",
     "archived": false
   },
