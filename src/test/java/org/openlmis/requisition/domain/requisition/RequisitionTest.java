@@ -1195,22 +1195,6 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldSetPreviousStatusChangeId() {
-    // given
-    UUID expectedId = UUID.randomUUID();
-    StatusChange firstStatusChange = StatusChange.newStatusChange(requisition, UUID.randomUUID());
-    firstStatusChange.setId(expectedId);
-    firstStatusChange.setCreatedDate(ZonedDateTime.now());
-    requisition.setStatusChanges(Collections.singletonList(firstStatusChange));
-
-    // when
-    StatusChange statusChange = StatusChange.newStatusChange(requisition, UUID.randomUUID());
-
-    // then
-    assertEquals(expectedId, statusChange.getPreviousStatusChangeId());
-  }
-
-  @Test
   public void shouldSetIdealStockAmountForLineItems() {
     // given
     final UUID productId1 = UUID.randomUUID();

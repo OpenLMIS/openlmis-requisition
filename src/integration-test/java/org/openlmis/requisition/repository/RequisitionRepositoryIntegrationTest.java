@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.repository;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
@@ -30,7 +29,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIP
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.RandomStringUtils;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
@@ -39,29 +38,25 @@ import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.CurrencyConfig;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
-import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
-import org.openlmis.requisition.dto.ReasonCategory;
-import org.openlmis.requisition.dto.ReasonType;
-import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import java.time.ZonedDateTime;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -69,61 +64,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
+
 import javax.persistence.PersistenceException;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
-    extends BaseCrudRepositoryIntegrationTest<Requisition> {
-
-  @Autowired
-  private RequisitionRepository repository;
-
-  @Autowired
-  private RequisitionTemplateRepository templateRepository;
-
-  @Autowired
-  private EntityManager entityManager;
-  
-  private RequisitionTemplate testTemplate;
+    extends BaseRequisitionRepositoryIntegrationTest {
 
   private List<Requisition> requisitions;
   
-  private List<String> userPermissionStrings = new ArrayList<>();
-  
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
-
-  @Override
-  RequisitionRepository getRepository() {
-    return this.repository;
-  }
-
-  @Override
-  Requisition generateInstance() {
-    return generateInstance(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-  }
-
-  private Requisition generateInstance(UUID facilityId, UUID programId, UUID processingPeriodId) {
-    // Add permission to user for each facility and program
-    userPermissionStrings.add("REQUISITION_VIEW|" + facilityId + "|" + programId);
-
-    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
-            INITIATED, getNextInstanceNumber() % 2 == 0);
-    requisition.setCreatedDate(ZonedDateTime.now().plusDays(requisitions.size()));
-    requisition.setSupervisoryNodeId(UUID.randomUUID());
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setTemplate(testTemplate);
-    requisition.setDraftStatusMessage(RandomStringUtils.randomAlphanumeric(500));
-    List<StatusChange> statusChanges = new ArrayList<>();
-    statusChanges.add(StatusChange.newStatusChange(requisition, UUID.randomUUID()));
-    requisition.setStatusChanges(statusChanges);
-
-    StockAdjustmentReason reason = generateStockAdjustmentReason();
-    requisition.setStockAdjustmentReasons(newArrayList(reason));
-
-    return requisition;
-  }
 
   @Before
   public void setUp() {
@@ -605,17 +556,6 @@ public class RequisitionRepositoryIntegrationTest
 
     assertEquals(1, requisitions.size());
     assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
-  }
-
-  private StockAdjustmentReason generateStockAdjustmentReason() {
-    StockAdjustmentReason reason = new StockAdjustmentReason();
-    reason.setReasonId(UUID.randomUUID());
-    reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.CREDIT);
-    reason.setDescription("simple description");
-    reason.setIsFreeTextAllowed(false);
-    reason.setName(RandomStringUtils.random(5));
-    return reason;
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
