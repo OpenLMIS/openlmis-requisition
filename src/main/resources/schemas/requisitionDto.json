@@ -89,6 +89,14 @@
         "$ref": "orderableDto.json"
       },
       "uniqueItems": true
+    },
+    "statusHistory": {
+      "type": "array",
+      "title": "statusHistory",
+      "items": {
+        "type": "object",
+        "$ref": "statusChangeDto.json"
+      }
     }
   },
   "required": [

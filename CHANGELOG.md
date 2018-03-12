@@ -9,6 +9,7 @@ Contract breaking changes:
 * [OLMIS-4112](https://openlmis.atlassian.net/browse/OLMIS-4112): Allow adding/removing line items for emergency requisitions
   * if requisition line item will be added/removed from regular requisition, error message will be shown
   * if orderableId field in requisition line item will be changed (for both regular and emergency requisitions), error message will be shown
+* [OLMIS-4076](https://openlmis.atlassian.net/browse/OLMIS-4076): The constraint to verify uniqueness of status changes was replaced with a trigger. The status changes do no longer link to previous status change. 
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
