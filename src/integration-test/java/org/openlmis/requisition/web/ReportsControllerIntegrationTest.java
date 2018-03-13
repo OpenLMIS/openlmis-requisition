@@ -370,7 +370,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     orderable.setProductCode("productCode");
     orderable.setFullProductName("fullName");
     orderable.setPrograms(products);
-    orderable.setDispensable(new DispensableDto("unit"));
+    orderable.setDispensable(new DispensableDto("unit", "display unit"));
 
     return orderable;
   }

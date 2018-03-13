@@ -53,7 +53,7 @@ public class OrderableDtoDataBuilder {
     packRoundingThreshold = 1;
     roundToZero = true;
     programs = new HashSet<>();
-    dispensable = new DispensableDto("pack");
+    dispensable = new DispensableDto("pack", "Pack");
     identifiers = new HashMap<>();
   }
 
