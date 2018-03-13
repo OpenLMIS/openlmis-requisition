@@ -28,4 +28,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DispensableDto {
   private String dispensingUnit;
+  private String displayUnit;
 }
