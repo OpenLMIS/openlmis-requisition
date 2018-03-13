@@ -238,6 +238,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".lineItem.removed";
   public static final String ERROR_LINE_ITEM_ADDED =
       ERROR_PREFIX + ".lineItem.added";
+  public static final String ERROR_DUPLICATE_STATUS_CHANGE =
+      ERROR_PREFIX + ".validation.duplicateStatusChange";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

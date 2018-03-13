@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.errorhandling;
 
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_CHANGE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMENT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
@@ -31,13 +32,17 @@ import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.persistence.PersistenceException;
 
 /**
  * Global error handling for all controllers in the service.
@@ -45,8 +50,8 @@ import java.util.Map;
  */
 @ControllerAdvice
 public class GlobalErrorHandling extends AbstractErrorHandling {
-
   private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
+  private static final Map<String, String> SQL_STATES = new HashMap<>();
 
   static {
     CONSTRAINT_MAP.put("requisition_template_name_unique_idx", ERROR_TEMPLATE_NAME_DUPLICATION);
@@ -55,6 +60,9 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
     CONSTRAINT_MAP.put(
         "req_tmpl_asgmt_prog_fac_type_unique_idx", ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS
     );
+
+    // https://www.postgresql.org/docs/9.6/static/errcodes-appendix.html
+    SQL_STATES.put("23505", ERROR_DUPLICATE_STATUS_CHANGE);
   }
 
   /**
@@ -78,6 +86,33 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
     }
 
     return getLocalizedMessage(dive.getMessage());
+  }
+
+  /**
+   * Handles Jpa System Exception.
+   * @param exp the Jpa System Exception
+   * @return the user-oriented error message.
+   */
+  @ExceptionHandler(JpaSystemException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public Message.LocalizedMessage handleJpaSystemException(JpaSystemException exp) {
+    logger.info(exp.getMessage());
+
+    if (exp.getCause() instanceof PersistenceException) {
+      PersistenceException persistence = (PersistenceException) exp.getCause();
+
+      if (persistence.getCause() instanceof SQLException) {
+        SQLException sql = (SQLException) persistence.getCause();
+        String message = SQL_STATES.get(sql.getSQLState());
+
+        if (null != message) {
+          return getLocalizedMessage(message);
+        }
+      }
+    }
+
+    return getLocalizedMessage(exp.getMessage());
   }
 
   /**

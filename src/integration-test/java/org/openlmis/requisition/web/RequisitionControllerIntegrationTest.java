@@ -41,6 +41,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_CHANGE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
@@ -51,7 +52,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -108,6 +109,8 @@ import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -116,6 +119,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.orm.jpa.JpaSystemException;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,6 +134,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.persistence.PersistenceException;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -606,6 +615,51 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid(),
         anyBoolean());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAllowForStatusChangeDuplicationOnSubmit() {
+    // given
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
+    UUID requisitionId = requisition.getId();
+
+    doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
+    doReturn(ValidationResult.success())
+        .when(permissionService).canSubmitRequisition(requisitionId);
+    doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
+        .when(programReferenceDataService).findOne(anyUuid());
+
+    // specific psql format
+    // C<<numbers>> -> sql state
+    // M<<string>> -> short error message
+    // \u0000 -> use for splitting parts of message
+    // there are more fields but we need only those two for tests
+    PSQLException psqlException = new PSQLException(
+        new ServerErrorMessage(
+            "C23505\u0000MERROR: Duplicate status change: SUBMITTED at supervisory node: <NULL>"
+        )
+    );
+
+    doThrow(new JpaSystemException((RuntimeException) new PersistenceException(psqlException)))
+        .when(requisitionRepository)
+        .save(any(Requisition.class));
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionId)
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE, is(getMessage(ERROR_DUPLICATE_STATUS_CHANGE)));
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
