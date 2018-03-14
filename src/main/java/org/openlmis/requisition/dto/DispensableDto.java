@@ -17,6 +17,7 @@ package org.openlmis.requisition.dto;
 
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +27,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DispensableDto {
+@EqualsAndHashCode
+public final class DispensableDto {
   private String dispensingUnit;
   private String displayUnit;
 }
