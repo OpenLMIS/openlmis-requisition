@@ -861,7 +861,7 @@
     "displayOrder": 25,
     "isDisplayed": true,
     "source": 1,
-    "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type",
+    "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
   },
 
@@ -1166,7 +1166,7 @@
     "displayOrder": 25,
     "isDisplayed": true,
     "source": 1,
-    "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type",
+    "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
   }
 ]
