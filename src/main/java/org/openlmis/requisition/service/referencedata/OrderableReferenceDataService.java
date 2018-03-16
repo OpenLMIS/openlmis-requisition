@@ -15,17 +15,14 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class OrderableReferenceDataService
@@ -57,13 +54,10 @@ public class OrderableReferenceDataService
    * @param ids ids to look for.
    * @return a page of orderables
    */
-  public List<OrderableDto> findByIds(Set<UUID> ids) {
+  public List<OrderableDto> findByIds(Collection<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Collections.emptyList();
     }
-    Map<String, Object> requestBody = new HashMap<>();
-    requestBody.put("ids", ids);
-
-    return getPage("search", RequestParameters.init(), requestBody).getContent();
+    return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
 }

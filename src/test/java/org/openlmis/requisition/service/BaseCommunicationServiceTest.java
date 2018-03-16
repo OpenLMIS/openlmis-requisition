@@ -82,6 +82,8 @@ public abstract class BaseCommunicationServiceTest<T> {
   @Rule
   public final ExpectedException expectedException = ExpectedException.none();
 
+  protected boolean checkAuth = true;
+
   @Before
   public void setUp() {
     mockAuth();
@@ -248,7 +250,9 @@ public abstract class BaseCommunicationServiceTest<T> {
   }
 
   private void checkAuth() {
-    verify(authService, atLeastOnce()).obtainAccessToken();
+    if (checkAuth) {
+      verify(authService, atLeastOnce()).obtainAccessToken();
+    }
   }
 
   protected T mockPageResponseEntityAndGetDto() {
