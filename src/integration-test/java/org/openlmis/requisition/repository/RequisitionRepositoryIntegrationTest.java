@@ -504,17 +504,8 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldGetAllApprovedRequisitions() {
-    Requisition requisition1 = generateInstance();
-    requisition1.setStatus(RequisitionStatus.APPROVED);
-    requisition1.setStatusChanges(Collections.singletonList(
-        StatusChange.newStatusChange(requisition1, UUID.randomUUID())));
-    requisition1 = repository.save(requisition1);
-
-    Requisition requisition2 = generateInstance();
-    requisition2.setStatus(RequisitionStatus.APPROVED);
-    requisition2.setStatusChanges(Collections.singletonList(
-        StatusChange.newStatusChange(requisition2, UUID.randomUUID())));
-    requisition2 = repository.save(requisition2);
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
 
     List<Requisition> requisitions = repository.searchApprovedRequisitions(null, null, null);
 
@@ -531,31 +522,73 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFilterApprovedRequisitions() {
-    Requisition requisition1 = generateInstance();
-    requisition1.setStatus(RequisitionStatus.APPROVED);
-    requisition1.setStatusChanges(Collections.singletonList(
-        StatusChange.newStatusChange(requisition1, UUID.randomUUID())));
-    requisition1 = repository.save(requisition1);
+  public void shouldFilterApprovedRequisitionsByAnyField() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    Requisition requisition2 = generateInstance();
-    requisition2.setStatus(RequisitionStatus.APPROVED);
-    requisition2.setStatusChanges(Collections.singletonList(
-        StatusChange.newStatusChange(requisition2, UUID.randomUUID())));
-    repository.save(requisition2);
-
-    Requisition requisition3 = generateInstance();
-    requisition3.setStatus(RequisitionStatus.SUBMITTED);
-    requisition3.setFacilityId(requisition1.getFacilityId());
-    requisition3.setProgramId(requisition1.getProgramId());
-    repository.save(requisition3);
-
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("some text",
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("all",
         Collections.singletonList(requisition1.getFacilityId()),
         Collections.singletonList(requisition1.getProgramId()));
 
     assertEquals(1, requisitions.size());
     assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+  }
+
+  @Test
+  public void shouldFilterApprovedRequisitionsByFacility() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Lists.newArrayList(requisition1.getFacilityId()), null);
+
+    assertEquals(1, requisitions.size());
+    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+  }
+
+  @Test
+  public void shouldFilterApprovedRequisitionsByProgram() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("programName",
+        null, Lists.newArrayList(requisition1.getProgramId()));
+
+    assertEquals(1, requisitions.size());
+    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+  }
+
+  @Test
+  public void shouldFilterApprovedRequisitionsByMultipleValues() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Lists.newArrayList(requisition1.getFacilityId(), requisition2.getFacilityId()), null);
+
+    assertEquals(2, requisitions.size());
+    List<UUID> requisitionIds = requisitions.stream()
+        .map(Requisition::getId)
+        .collect(Collectors.toList());
+    assertTrue(requisitionIds.contains(requisition1.getId()));
+    assertTrue(requisitionIds.contains(requisition2.getId()));
+  }
+
+  @Test
+  public void shouldReturnEmptyListOnEmptyFiltersWhenFilteringByFields() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
+
+    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Collections.emptyList(), Collections.emptyList());
+
+    assertNotNull(requisitions);
+    assertTrue(requisitions.isEmpty());
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
@@ -565,5 +598,23 @@ public class RequisitionRepositoryIntegrationTest
 
     return templateRepository.save(new RequisitionTemplate(
         Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));
+  }
+
+  private Requisition generateRequisition(RequisitionStatus status) {
+    return generateRequisition(status, UUID.randomUUID(), UUID.randomUUID());
+  }
+
+  private Requisition generateRequisition(RequisitionStatus status, UUID facility, UUID program) {
+    Requisition requisition = generateInstance();
+    requisition.setStatus(status);
+    requisition.setFacilityId(facility);
+    requisition.setProgramId(program);
+
+    requisition.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+
+    repository.save(requisition);
+
+    return requisition;
   }
 }

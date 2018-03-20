@@ -15,6 +15,28 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
+import com.google.common.collect.Lists;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
 import org.hibernate.type.BooleanType;
@@ -35,29 +57,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
@@ -81,6 +80,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String CREATED_DATE = "createdDate";
   private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+  private static final String PROGRAM_NAME = "programName";
+  private static final String FACILITY_CODE = "facilityCode";
+  private static final String FACILITY_NAME = "facilityName";
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -189,6 +191,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
                                                       Collection<UUID> facilityIds,
                                                       Collection<UUID> programIds) {
     XLOGGER.entry(filterBy, facilityIds, programIds);
+
+    if (allFiltersEmpty(filterBy, facilityIds, programIds)) {
+      return Lists.newArrayList();
+    }
+
     Query query = createQuery(filterBy, facilityIds, programIds);
     addScalars(query);
 
@@ -409,8 +416,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         programs = String.format("r.programid in %s", mergeIds(programIds));
       }
 
-      if (facilities != null && programs != null) {
+      if (facilities != null && programs != null && "all".equals(filterBy)) {
         builder.append(String.format(" AND (%s OR %s)", facilities, programs));
+      } else if (facilities != null && programs != null) {
+        builder.append(String.format(" AND %s AND %s", facilities, programs));
       } else if (facilities != null) {
         builder.append(String.format(" AND %s", facilities));
       } else if (programs != null) {
@@ -463,5 +472,21 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     requisition.setStatusChanges(Collections.singletonList(statusChange));
 
     return requisition;
+  }
+
+  private boolean allFiltersEmpty(String filterBy, Collection<UUID> facilityIds,
+      Collection<UUID> programIds) {
+
+    boolean byEmptyProgram = PROGRAM_NAME.equals(filterBy)
+        && CollectionUtils.isEmpty(programIds);
+
+    boolean byEmptyFacility = (FACILITY_CODE.equals(filterBy) || FACILITY_NAME.equals(filterBy))
+        && CollectionUtils.isEmpty(facilityIds);
+
+    boolean byEmptyAll = !StringUtils.isEmpty(filterBy)
+        && CollectionUtils.isEmpty(programIds)
+        && CollectionUtils.isEmpty(facilityIds);
+
+    return byEmptyFacility || byEmptyProgram || byEmptyAll;
   }
 }
