@@ -25,7 +25,8 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-2695](https://openlmis.atlassian.net/browse/OLMIS-2695): Handle new version of processing period search endpoint
 * [OLMIS-3941](https://openlmis.atlassian.net/browse/OLMIS-3941): Snapshot ISA for products on requisition initialization
 * [OLMIS-3492](https://openlmis.atlassian.net/browse/OLMIS-3492): Allow to save comment in requisition longer than 255 characters
-* [OLMIS-3956](https://openlmis.atlassian.net/browse/OLMIS-3956): Updated Proof of Delivery service to use new fulfillment API.
+* [OLMIS-3956](https://openlmis.atlassian.net/browse/OLMIS-3956): Updated Proof of Delivery service to use new fulfillment API
+* [OLMIS-4281](https://openlmis.atlassian.net/browse/OLMIS-4281): Updated Orderable service to use new reference data API
 
 Improvements:
 * [OLMIS-3955](https://openlmis.atlassian.net/browse/OLMIS-3955): Renamed PICKING order status to FULFILLING. Removed PICKED and IN_TRANSIT.
