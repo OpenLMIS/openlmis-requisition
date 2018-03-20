@@ -405,16 +405,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     StringBuilder builder = new StringBuilder(SEARCH_APPROVED_SQL);
 
     if (!StringUtils.isEmpty(filterBy)) {
-      String facilities = null;
-      String programs = null;
-
-      if (!CollectionUtils.isEmpty(facilityIds)) {
-        facilities = String.format("r.facilityid in %s", mergeIds(facilityIds));
-      }
-
-      if (!CollectionUtils.isEmpty(programIds)) {
-        programs = String.format("r.programid in %s", mergeIds(programIds));
-      }
+      String facilities = idsSubquery("r.facilityid in %s", facilityIds);
+      String programs = idsSubquery("r.programid in %s", programIds);
 
       if (facilities != null && programs != null && "all".equals(filterBy)) {
         builder.append(String.format(" AND (%s OR %s)", facilities, programs));
@@ -439,6 +431,14 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("node_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("approved_date", ZonedDateTimeType.INSTANCE);
+  }
+
+  private String idsSubquery(String base, Collection<UUID> uuids) {
+    if (CollectionUtils.isEmpty(uuids)) {
+      return null;
+    } else {
+      return String.format(base, mergeIds(uuids));
+    }
   }
 
   private String mergeIds(Collection<UUID> ids) {
