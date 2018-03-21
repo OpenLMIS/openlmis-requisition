@@ -23,13 +23,17 @@ import static org.openlmis.requisition.utils.RequestHelper.createUri;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
 import org.openlmis.requisition.utils.DynamicResultDtoTypeReference;
+import org.openlmis.requisition.utils.Merger;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.PageImplRepresentation;
 import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +41,9 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Array;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,6 +56,9 @@ public abstract class BaseCommunicationService<T> {
   protected RestOperations restTemplate = new RestTemplate();
 
   protected AuthService authService;
+
+  @Value("${request.maxUrlLength}")
+  private int maxUrlLength;
 
   protected abstract String getServiceUrl();
 
@@ -166,12 +176,9 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters);
 
     try {
-      ResponseEntity<P[]> response = runWithTokenRetry(() -> restTemplate.exchange(
-              createUri(url, params),
-              method,
-              RequestHelper.createEntity(authService.obtainAccessToken(), payload),
-              type
-      ));
+      ResponseEntity<P[]> response = runWithTokenRetry(
+          () -> doListRequest(url, params, payload, method, type)
+      );
 
       return Stream.of(response.getBody()).collect(Collectors.toList());
     } catch (HttpStatusCodeException ex) {
@@ -207,15 +214,10 @@ public abstract class BaseCommunicationService<T> {
         .setAll(parameters);
 
     try {
-      ResponseEntity<PageImplRepresentation<P>> response =
-          runWithTokenRetry(() -> restTemplate.exchange(
-              createUri(url, params),
-              method,
-              RequestHelper.createEntity(authService.obtainAccessToken(), payload),
-              new DynamicPageTypeReference<>(type)
-      ));
+      ResponseEntity<PageImplRepresentation<P>> response = runWithTokenRetry(
+          () -> doPageRequest(url, params, payload, method, type)
+      );
       return response.getBody();
-
     } catch (HttpStatusCodeException ex) {
       throw buildDataRetrievalException(ex);
     }
@@ -238,7 +240,49 @@ public abstract class BaseCommunicationService<T> {
     return response.getBody();
   }
 
-  protected <T> ResponseEntity<T> runWithTokenRetry(HttpTask<T> task) {
+  private <E> ResponseEntity<E[]> doListRequest(String url, RequestParameters parameters,
+                                                Object payload, HttpMethod method,
+                                                Class<E[]> type) {
+    HttpEntity<Object> entity = RequestHelper
+        .createEntity(authService.obtainAccessToken(), payload);
+    List<E[]> arrays = new ArrayList<>();
+
+    for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
+      arrays.add(restTemplate.exchange(uri, method, entity, type).getBody());
+    }
+
+    E[] body = Merger
+        .ofArrays(arrays)
+        .withDefaultValue(() -> (E[]) Array.newInstance(type.getComponentType(), 0))
+        .merge();
+
+    return new ResponseEntity<>(body, HttpStatus.OK);
+  }
+
+  private <E> ResponseEntity<PageImplRepresentation<E>> doPageRequest(String url,
+                                                                      RequestParameters parameters,
+                                                                      Object payload,
+                                                                      HttpMethod method,
+                                                                      Class<E> type) {
+    HttpEntity<Object> entity = RequestHelper
+        .createEntity(authService.obtainAccessToken(), payload);
+    ParameterizedTypeReference<PageImplRepresentation<E>> parameterizedType =
+        new DynamicPageTypeReference<>(type);
+    List<PageImplRepresentation<E>> pages = new ArrayList<>();
+
+    for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
+      pages.add(restTemplate.exchange(uri, method, entity, parameterizedType).getBody());
+    }
+
+    PageImplRepresentation<E> body = Merger
+        .ofPages(pages)
+        .withDefaultValue(PageImplRepresentation::new)
+        .merge();
+
+    return new ResponseEntity<>(body, HttpStatus.OK);
+  }
+
+  protected <P> ResponseEntity<P> runWithTokenRetry(HttpTask<P> task) {
     try {
       return task.run();
     } catch (HttpStatusCodeException ex) {
@@ -251,6 +295,7 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
+  @FunctionalInterface
   protected interface HttpTask<T> {
 
     ResponseEntity<T> run();

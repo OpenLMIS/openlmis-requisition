@@ -15,7 +15,11 @@
 
 package org.openlmis.requisition.utils;
 
+import com.google.common.collect.Lists;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,8 +32,7 @@ import java.util.List;
  * Because the former lacks a default constructor, it is inconvenient to
  * deserialize. PageImplRepresentation may be used in its stead.
  */
-public class PageImplRepresentation<T> extends PageImpl<T> {
-
+public final class PageImplRepresentation<T> extends PageImpl<T> {
   private static final long serialVersionUID = 1L;
   private boolean last;
   private boolean first;
@@ -42,13 +45,30 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
 
   private Sort sort;
 
-  private List<T> content;
-
+  private transient List<T> content = new ArrayList<>();
 
   public PageImplRepresentation() {
-    super(new ArrayList<T>());
+    this(new PageImpl<>(Lists.newArrayList()));
   }
 
+  /**
+   * Creates new instance based on data from {@link Page} instance.
+   */
+  public PageImplRepresentation(Page<T> page) {
+    super(page.getContent());
+    this.last = page.isLast();
+    this.first = page.isFirst();
+    this.totalPages = page.getTotalPages();
+    this.totalElements = page.getTotalElements();
+    this.size = page.getSize();
+    this.number = page.getNumber();
+    this.numberOfElements = page.getNumberOfElements();
+    this.sort = page.getSort();
+    // null check is done in the super class
+    this.content.addAll(page.getContent());
+  }
+
+  @Override
   public int getNumber() {
     return number;
   }
@@ -57,6 +77,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.number = number;
   }
 
+  @Override
   public int getSize() {
     return size;
   }
@@ -65,6 +86,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.size = size;
   }
 
+  @Override
   public int getTotalPages() {
     return totalPages;
   }
@@ -73,6 +95,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.totalPages = totalPages;
   }
 
+  @Override
   public int getNumberOfElements() {
     return numberOfElements;
   }
@@ -81,6 +104,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.numberOfElements = numberOfElements;
   }
 
+  @Override
   public long getTotalElements() {
     return totalElements;
   }
@@ -89,7 +113,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.totalElements = totalElements;
   }
 
-
+  @Override
   public boolean isFirst() {
     return first;
   }
@@ -98,6 +122,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.first = first;
   }
 
+  @Override
   public boolean isLast() {
     return last;
   }
@@ -106,6 +131,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.last = last;
   }
 
+  @Override
   public List<T> getContent() {
     return content;
   }
@@ -114,6 +140,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
     this.content = content;
   }
 
+  @Override
   public Sort getSort() {
     return sort;
   }
@@ -124,7 +151,7 @@ public class PageImplRepresentation<T> extends PageImpl<T> {
   }
 
   public PageImpl<T> pageImpl() {
-    return new PageImpl<T>(getContent(), new PageRequest(getNumber(),
+    return new PageImpl<>(getContent(), new PageRequest(getNumber(),
             getSize(), getSort()), getTotalElements());
   }
 }

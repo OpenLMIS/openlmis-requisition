@@ -27,7 +27,7 @@ import java.util.List;
  * obtain a Page (courtesy of the getPage set of overridden methods) as well as work with
  * existing pages (via the getPageNumber and getPageSize methods).
  */
-public class Pagination {
+public final class Pagination {
 
   /*
     Because Spring itself uses 0 as the default pageNumber, this value probably shouldn't be changed
@@ -39,6 +39,9 @@ public class Pagination {
    */
   public static final int NO_PAGINATION = Integer.MAX_VALUE;
 
+  private Pagination() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns the pageNumber of the specified pageable.
@@ -66,9 +69,17 @@ public class Pagination {
    * Convenience method for getPage(List originalList, Pageable pageable).
    */
   public static <T> Page<T> getPage(Iterable<T> data, Pageable pageable) {
-    List<T> resultList = new ArrayList<T>();
+    List<T> resultList = new ArrayList<>();
     data.forEach(resultList::add);
     return getPage(resultList, pageable);
+  }
+
+  /**
+   * Return Page of the list using Page defaults.
+   * See {@link #getPage(List, Pageable)}
+   */
+  public static <T> Page<T> getPage(List<T> originalList) {
+    return getPage(originalList, null);
   }
 
   /**
@@ -101,8 +112,7 @@ public class Pagination {
 
     List<T> subList = originalList.subList(fromIndex, toIndex);
 
-    Page pageImpl = new PageImpl<T>(subList, pageable, originalList.size());
-    return pageImpl;
+    return new PageImpl<>(subList, pageable, originalList.size());
   }
 
 
@@ -112,7 +122,7 @@ public class Pagination {
    * no need to return a subset of it.
    */
   public static <T> Page<T> getPage(List<T> subList, Pageable pageable, long fullListSize) {
-    return new PageImpl<T>(subList, pageable, fullListSize);
+    return new PageImpl<>(subList, pageable, fullListSize);
   }
 
 }

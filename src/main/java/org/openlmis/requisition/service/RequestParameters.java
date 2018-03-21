@@ -15,17 +15,31 @@
 
 package org.openlmis.requisition.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.web.util.UriUtils.encodeQueryParam;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.openlmis.requisition.exception.EncodingException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import lombok.EqualsAndHashCode;
+
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
+@EqualsAndHashCode
 public final class RequestParameters {
-  private MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+  private final MultiValueMap<String, String> params;
 
   private RequestParameters() {
+    params = new LinkedMultiValueMap<>();
   }
 
   public static RequestParameters init() {
@@ -33,14 +47,22 @@ public final class RequestParameters {
   }
 
   /**
+   * Constructs new RequestParameters based on Map with request parameters.
+   */
+  public static RequestParameters of(Map<String, Object> params) {
+    RequestParameters requestParameters = new RequestParameters();
+    params.forEach(requestParameters::set);
+    return requestParameters;
+  }
+
+  /**
    * Set parameter (key argument) with the value only if the value is not null.
    */
-  public RequestParameters set(String key, Collection valueCollection) {
-    if (null != valueCollection) {
-      for (Object value : valueCollection) {
-        params.add(key, value);
-      }
-    }
+  public RequestParameters set(String key, Collection<?> valueCollection) {
+    Optional
+        .ofNullable(valueCollection)
+        .orElse(Collections.emptyList())
+        .forEach(elem -> set(key, elem));
 
     return this;
   }
@@ -50,19 +72,71 @@ public final class RequestParameters {
    */
   public RequestParameters set(String key, Object value) {
     if (null != value) {
-      params.add(key, value);
+      try {
+        String valueAsString = encodeQueryParam(String.valueOf(value), UTF_8.name());
+
+        params.add(key, valueAsString);
+      } catch (UnsupportedEncodingException exp) {
+        throw new EncodingException(exp);
+      }
     }
 
     return this;
   }
 
+  /**
+   * Copy parameters from the existing {@link RequestParameters}. If null value has been passed,
+   * the method will return non changed instance.
+   */
   public RequestParameters setAll(RequestParameters parameters) {
-    parameters.forEach(entry -> set(entry.getKey(), entry.getValue()));
+    if (null != parameters) {
+      parameters.forEach(entry -> set(entry.getKey(), entry.getValue()));
+    }
+
     return this;
   }
 
-  public void forEach(Consumer<Map.Entry<String, List<Object>>> action) {
+  public void forEach(Consumer<Map.Entry<String, List<String>>> action) {
     params.entrySet().forEach(action);
   }
 
+  /**
+   * Split this request parameters into two smaller chunks.
+   */
+  public Pair<RequestParameters, RequestParameters> split() {
+    if (params.isEmpty()) {
+      return Pair.of(this, null);
+    }
+
+    Set<Map.Entry<String, List<String>>> entries = params.entrySet();
+
+    if (entries.stream().noneMatch(entry -> entry.getValue().size() > 1)) {
+      return Pair.of(this, null);
+    }
+
+    Map.Entry<String, List<String>> max = entries.iterator().next();
+    for (Map.Entry<String, List<String>> entry : entries) {
+      if (entry.getValue().size() > max.getValue().size()) {
+        max = entry;
+      }
+    }
+
+    RequestParameters left = init().setAll(this);
+    RequestParameters right = init().setAll(this);
+
+    left.params.remove(max.getKey());
+    right.params.remove(max.getKey());
+
+    List<String> list = max.getValue();
+    int chunkSize = list.size() / 2;
+    int leftOver = list.size() % 2;
+
+    List<String> leftCollection = list.subList(0, chunkSize + leftOver);
+    List<String> rightCollection = list.subList(chunkSize + leftOver, list.size());
+
+    left.set(max.getKey(), leftCollection);
+    right.set(max.getKey(), rightCollection);
+
+    return Pair.of(left, right);
+  }
 }
