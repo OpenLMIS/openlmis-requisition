@@ -103,7 +103,7 @@ import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.PageImplRepresentation;
+import org.openlmis.requisition.utils.PageDto;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
@@ -467,7 +467,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     ).willReturn(Pagination.getPage(singletonList(requisition), pageRequest));
 
     // when
-    PageImplRepresentation resultPage = restAssured.given()
+    PageDto resultPage = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, programId)
         .queryParam(PROCESSING_PERIOD, periodId)
@@ -481,7 +481,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, resultPage.getContent().size());
@@ -504,7 +504,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     ).willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
-    PageImplRepresentation resultPage = restAssured.given()
+    PageDto resultPage = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(REQUISITION_STATUS, submittedStatus)
         .queryParam(REQUISITION_STATUS, authorizedStatus)
@@ -512,7 +512,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(2, resultPage.getContent().size());
@@ -1212,14 +1212,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(Arrays.asList(requisitions), pageRequest));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(SUBMITTED_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(2, response.getContent().size());
@@ -1268,14 +1268,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
-    PageImplRepresentation result = restAssured.given()
+    PageDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(REQ_FOR_APPROVAL_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, result.getContent().size());
@@ -1295,7 +1295,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when
-    PageImplRepresentation result = restAssured.given()
+    PageDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, program)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -1303,7 +1303,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(REQ_FOR_APPROVAL_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, result.getContent().size());
@@ -1337,7 +1337,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
@@ -1349,7 +1349,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, response.getContent().size());
@@ -1381,7 +1381,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
@@ -1393,7 +1393,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, response.getContent().size());
@@ -1427,7 +1427,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FILTER_VALUE, filterValue)
         .queryParam(FILTER_BY, filterBy)
@@ -1440,7 +1440,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, response.getContent().size());
@@ -1472,7 +1472,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(requisitions, pageable, totalElements));
 
     // when
-    PageImplRepresentation result = restAssured.given()
+    PageDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 1)
@@ -1481,7 +1481,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(REQ_FOR_APPROVAL_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, result.getContent().size());
@@ -1498,14 +1498,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(0, response.getContent().size());
@@ -1527,14 +1527,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(APPROVED_REQUISITIONS_SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     // then
     assertEquals(1, response.getContent().size());

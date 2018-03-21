@@ -47,7 +47,7 @@ public class MergerTest {
         arrayContaining("a"));
 
     assertThat(
-        Merger.ofPages(null).withDefaultValue(PageImplRepresentation::new).merge(),
+        Merger.ofPages(null).withDefaultValue(PageDto::new).merge(),
         hasProperty("content", hasSize(0)));
   }
 
@@ -64,15 +64,15 @@ public class MergerTest {
         arrayContaining("a"));
 
     assertThat(
-        Merger.ofPages(newArrayList()).withDefaultValue(PageImplRepresentation::new).merge(),
+        Merger.ofPages(newArrayList()).withDefaultValue(PageDto::new).merge(),
         hasProperty("content", hasSize(0)));
   }
 
   @Test
   public void shouldReturnElementIfArgumentListContainsOnlyOne() {
     List<String[]> arrays = ImmutableList.of(new String[]{"a", "b"});
-    List<PageImplRepresentation<String>> pages = ImmutableList
-        .of(new PageImplRepresentation<>(new PageImpl<>(ImmutableList.of("a"))));
+    List<PageDto<String>> pages = ImmutableList
+        .of(new PageDto<>(new PageImpl<>(ImmutableList.of("a"))));
 
     assertThat(Merger.ofArrays(arrays).merge(), is(arrays.get(0)));
     assertThat(Merger.ofPages(pages).merge(), is(pages.get(0)));
@@ -92,13 +92,13 @@ public class MergerTest {
 
   @Test
   public void shouldMergePages() {
-    PageImplRepresentation<String> page1 = new PageImplRepresentation<>(
+    PageDto<String> page1 = new PageDto<>(
         new PageImpl<>(ImmutableList.of("a")));
-    PageImplRepresentation<String> page2 = new PageImplRepresentation<>(
+    PageDto<String> page2 = new PageDto<>(
         new PageImpl<>(ImmutableList.of("b", "d")));
-    PageImplRepresentation<String> page3 = new PageImplRepresentation<>(
+    PageDto<String> page3 = new PageDto<>(
         new PageImpl<>(ImmutableList.of("c")));
-    PageImplRepresentation<String> merged = Merger
+    PageDto<String> merged = Merger
         .ofPages(ImmutableList.of(page1, page2, page3))
         .merge();
 

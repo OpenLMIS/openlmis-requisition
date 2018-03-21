@@ -48,7 +48,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.openlmis.requisition.utils.PageImplRepresentation;
+import org.openlmis.requisition.utils.PageDto;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -268,15 +268,15 @@ public abstract class BaseCommunicationServiceTest<T> {
   }
 
   protected void mockPageResponseEntity(Object dto) {
-    ResponseEntity<PageImplRepresentation<T>> response = stubRestTemplateAndGetPageResponseEntity();
+    ResponseEntity<PageDto<T>> response = stubRestTemplateAndGetPageResponseEntity();
 
-    doReturn(new PageImplRepresentation<>(new PageImpl<>(ImmutableList.of(dto))))
+    doReturn(new PageDto<>(new PageImpl<>(ImmutableList.of(dto))))
         .when(response)
         .getBody();
   }
 
-  private ResponseEntity<PageImplRepresentation<T>> stubRestTemplateAndGetPageResponseEntity() {
-    ResponseEntity<PageImplRepresentation<T>> response = mock(ResponseEntity.class);
+  private ResponseEntity<PageDto<T>> stubRestTemplateAndGetPageResponseEntity() {
+    ResponseEntity<PageDto<T>> response = mock(ResponseEntity.class);
     when(restTemplate.exchange(
         any(URI.class),
         any(HttpMethod.class),
