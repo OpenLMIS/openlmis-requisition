@@ -16,6 +16,26 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.SQLQuery;
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.PostgresUUIDType;
+import org.hibernate.type.ZonedDateTimeType;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.openlmis.requisition.utils.DateHelper;
+import org.openlmis.requisition.utils.Pagination;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -37,26 +57,6 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.SQLQuery;
-import org.hibernate.type.BooleanType;
-import org.hibernate.type.PostgresUUIDType;
-import org.hibernate.type.ZonedDateTimeType;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
-import org.openlmis.requisition.utils.DateHelper;
-import org.openlmis.requisition.utils.Pagination;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
@@ -180,6 +180,10 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   /**
    * Get approved requisitions matching all of provided parameters.
+   * Empty list is returned if:
+   * - facilityIds collection is empty and filterBy is facilityName or facilityCode,
+   * - programIds collection is empty and filterBy is programName,
+   * - both facilityIds and programIds collections are empty and filterBy is all.
    *
    * @param filterBy    Field used to filter: programName, facilityCode, facilityName or all.
    * @param facilityIds Desired facility UUID list.

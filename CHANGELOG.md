@@ -27,7 +27,7 @@ Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3492](https://openlmis.atlassian.net/browse/OLMIS-3492): Allow to save comment in requisition longer than 255 characters
 * [OLMIS-3956](https://openlmis.atlassian.net/browse/OLMIS-3956): Updated Proof of Delivery service to use new fulfillment API
 * [OLMIS-4281](https://openlmis.atlassian.net/browse/OLMIS-4281): Updated Orderable service to use new reference data API
-* [OLMIS-3513](https://openlmis.atlassian.net/browse/OLMIS-3513): The filter in /requisitionsForConvert endpoint now works properly
+* [OLMIS-3513](https://openlmis.atlassian.net/browse/OLMIS-3513): Endpoint api/requisitionsForConvert returns empty list if no facilities/programs were found for given filter.
 * [OLMIS-4368](https://openlmis.atlassian.net/browse/OLMIS-4368): Split huge requests to other services into smaller chunks
 
 Improvements:
