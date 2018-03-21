@@ -48,7 +48,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.openlmis.requisition.utils.PageDto;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

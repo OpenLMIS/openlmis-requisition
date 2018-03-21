@@ -16,6 +16,7 @@
 package org.openlmis.requisition.utils;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openlmis.requisition.service.PageDto;
 import org.springframework.data.domain.Page;
 
 import lombok.AccessLevel;

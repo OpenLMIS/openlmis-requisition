@@ -13,12 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.utils;
+package org.openlmis.requisition.service;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import org.openlmis.requisition.utils.CustomSortDeserializer;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

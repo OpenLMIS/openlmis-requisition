@@ -103,7 +103,7 @@ import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.PageDto;
+import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;

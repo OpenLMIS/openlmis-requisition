@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
+import org.openlmis.requisition.service.PageDto;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.List;

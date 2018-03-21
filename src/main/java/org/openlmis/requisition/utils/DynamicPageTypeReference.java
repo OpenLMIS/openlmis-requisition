@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.utils;
 
+import org.openlmis.requisition.service.PageDto;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.lang.reflect.Type;

@@ -25,7 +25,6 @@ import org.openlmis.requisition.utils.DynamicPageTypeReference;
 import org.openlmis.requisition.utils.DynamicResultDtoTypeReference;
 import org.openlmis.requisition.utils.Merger;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.PageDto;
 import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
