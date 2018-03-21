@@ -27,6 +27,7 @@ public class PageDtoTest {
     EqualsVerifier
         .forClass(PageDto.class)
         .suppress(Warning.NONFINAL_FIELDS) // fields cannot be final
+        .suppress()
         .verify();
   }
 

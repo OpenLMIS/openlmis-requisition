@@ -17,6 +17,8 @@ package org.openlmis.requisition.utils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -52,6 +54,7 @@ public final class PageDto<T> implements Page<T> {
   private int number;
   private int numberOfElements;
 
+  @JsonDeserialize(using = CustomSortDeserializer.class)
   private Sort sort;
 
   private List<T> content;
