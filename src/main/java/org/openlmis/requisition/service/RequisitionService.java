@@ -39,13 +39,27 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -98,23 +112,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -655,12 +653,19 @@ public class RequisitionService {
    */
   public List<Requisition> releaseRequisitionsAsOrder(
       List<ConvertToOrderDto> convertToOrderDtos, UserDto user) {
+    Profiler profiler = new Profiler("RELEASE_REQUISITIONS_AS_ORDER");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("GET_ORDERS_EDIT_RIGHT_DTO");
     RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
     List<Requisition> releasedRequisitions = new ArrayList<>();
+
+    profiler.start("GET_USER_FULFILLMENT_FACILITIES");
     Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
         .collect(toSet());
 
+    profiler.start("RELEASE");
     for (ConvertToOrderDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
@@ -683,6 +688,7 @@ public class RequisitionService {
       releasedRequisitions.add(loadedRequisition);
     }
 
+    profiler.stop().log();
     return releasedRequisitions;
   }
 
@@ -755,10 +761,14 @@ public class RequisitionService {
   /**
    * Converting Requisition list to Orders.
    */
-  @Transactional
   public void convertToOrder(List<ConvertToOrderDto> list, UserDto user) {
+    Profiler profiler = new Profiler("CONVERT_TO_ORDER");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("RELEASE_REQUISITIONS_AS_ORDER");
     List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
 
+    profiler.start("BUILD_ORDER_DTOS_AND_SAVE_REQUISITION");
     List<OrderDto> orders = new ArrayList<>();
     for (Requisition requisition : releasedRequisitions) {
       OrderDto order = orderDtoBuilder.build(requisition, user);
@@ -768,7 +778,10 @@ public class RequisitionService {
       requisitionStatusProcessor.statusChange(requisition);
     }
 
+    profiler.start("CREATE_ORDER_IN_FULFILLMENT");
     orderFulfillmentService.create(orders);
+
+    profiler.stop().log();
   }
 
   /**

@@ -20,6 +20,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WR
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.ImmutableList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -50,7 +56,6 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
-import org.openlmis.requisition.validate.AbstractRequisitionValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,14 +63,6 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.BindingResult;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public abstract class BaseRequisitionController extends BaseController {
 
@@ -132,25 +129,23 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   protected MessageService messageService;
 
-  protected ValidationResult validateFields(AbstractRequisitionValidator validator,
-                                            Requisition requisition) {
-    BindingResult bindingResult = new BeanPropertyBindingResult(requisition, REQUISITION);
-    validator.validate(requisition, bindingResult);
-
-    if (bindingResult.hasErrors()) {
-      logger.warn("Validation for requisition failed: {}", getErrors(bindingResult));
-      return ValidationResult.fieldErrors(getErrors(bindingResult));
-    }
-
-    return ValidationResult.success();
-  }
-
   protected RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
-    updateRequisition(requisitionToUpdate, requisition);
-    requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
+    Profiler profiler = new Profiler("UPDATE_REQUISITION");
+    profiler.setLogger(XLOGGER);
 
+    profiler.start("UPDATE");
+    updateRequisition(requisitionToUpdate, requisition);
+
+    profiler.start("SAVE");
+    requisitionToUpdate = requisitionRepository.save(requisitionToUpdate);
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
-    return requisitionDtoBuilder.build(requisitionToUpdate);
+
+    profiler.start("BUILD_DTO");
+    RequisitionDto dto = requisitionDtoBuilder.build(requisitionToUpdate);
+
+    profiler.stop().log();
+    XLOGGER.exit(dto);
+    return dto;
   }
 
   private void updateRequisition(Requisition requisitionToUpdate,
