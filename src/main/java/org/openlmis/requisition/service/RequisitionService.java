@@ -900,7 +900,7 @@ public class RequisitionService {
 
   private Map<UUID, ProgramDto> findProgramsWithFilter(String filterBy,
                                                        List<String> filterValues) {
-    List<ProgramDto> foundPrograms = new ArrayList<>();
+    Collection<ProgramDto> foundPrograms = new HashSet<>();
 
     if (CollectionUtils.isEmpty(filterValues)
         || !isFilterByProgramProperty(filterBy)) {
@@ -916,7 +916,7 @@ public class RequisitionService {
 
   private Map<UUID, MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
                                                                   List<String> filterValues) {
-    Collection<MinimalFacilityDto> foundFacilities = new ArrayList<>();
+    Collection<MinimalFacilityDto> foundFacilities = new HashSet<>();
 
     if (CollectionUtils.isEmpty(filterValues)
         || !isFilterByFacilityProperty(filterBy)) {

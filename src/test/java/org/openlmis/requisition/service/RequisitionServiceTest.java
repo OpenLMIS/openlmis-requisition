@@ -1237,6 +1237,7 @@ public class RequisitionServiceTest {
     final String filterBy = "programName";
     final String fpProgram = "Family Planning";
     final String emProgram = "Essential Meds";
+    final String em = "Essential";
 
     UUID supplyingDepotId = UUID.randomUUID();
     List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
@@ -1252,13 +1253,20 @@ public class RequisitionServiceTest {
         null, null, supplyingDepots, pageable, pageSize, pageNumber);
     setupStubsForTestApprovedRequisition(familyPlanningRequisitions, filterBy, fpProgram,
         null, null, supplyingDepots, pageable, pageSize, pageNumber);
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, filterBy, em,
+        null, null, supplyingDepots, pageable, pageSize, pageNumber);
+
+    when(programReferenceDataService.search(emProgram)).thenReturn(Lists.newArrayList(program));
+    when(programReferenceDataService.search(em)).thenReturn(Lists.newArrayList(program));
+
     //when
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        Lists.newArrayList(emProgram, fpProgram), filterBy, pageable,
+        Lists.newArrayList(emProgram, em, fpProgram), filterBy, pageable,
         Arrays.asList(supplyingDepotId));
 
     // then
     verify(programReferenceDataService).search(emProgram);
+    verify(programReferenceDataService).search(em);
     verify(programReferenceDataService).search(fpProgram);
     verify(facilityReferenceDataService, never())
         .search(anyString(), anyString(), any(UUID.class), anyBoolean());
