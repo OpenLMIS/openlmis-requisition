@@ -21,6 +21,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -39,10 +42,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Service
@@ -109,8 +108,17 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canUpdateRequisition(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    return canUpdateRequisition(requisitionRepository.findOne(requisitionId));
+  }
 
+  /**
+   * Checks if current user has permission to update a requisition.
+   * Permissions needed to perform update action depend on the requisition status.
+   *
+   * @param requisition the requisition.
+   * @return ValidationResult containing info about the result of this check
+   */
+  public ValidationResult canUpdateRequisition(Requisition requisition) {
     if (requisition != null) {
       switch (requisition.getStatus()) {
         case INITIATED:

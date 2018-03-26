@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -26,9 +24,9 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
@@ -46,20 +44,16 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.validate.ReasonsValidator;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -80,17 +74,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Controller
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
-
-  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionController.class);
-  private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
-  private static final String GET_REQUISITION_BY_ID = "GET_REQUISITION_BY_ID";
-  private static final String VALIDATE_CAN_CHANGE_STATUS = "VALIDATE_CAN_CHANGE_STATUS";
-  private static final String CHECK_IF_PERIOD_IS_VALID = "CHECK_IF_PERIOD_IS_VALID";
-  private static final String GET_CURRENT_USER = "GET_CURRENT_USER";
   private static final String GET_ORDERABLES_FOR_LINE_ITEMS = "GET_ORDERABLES_FOR_LINE_ITEMS";
-  private static final String SAVE = "SAVE";
-  private static final String CALL_STATUS_CHANGE_PROCESSOR = "CALL_STATUS_CHANGE_PROCESSOR";
-  private static final String BUILD_BASIC_REQUISITION_DTO = "BUILD_BASIC_REQUISITION_DTO";
   private static final String BUILD_DTO_LIST = "BUILD_DTO_LIST";
 
   @Autowired
@@ -101,9 +85,6 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
@@ -127,31 +108,18 @@ public class RequisitionController extends BaseRequisitionController {
                     @RequestParam(value = "facility") UUID facilityId,
                     @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
                     @RequestParam(value = "emergency") boolean emergency) {
-    XLOGGER.entry(programId, facilityId, suggestedPeriod, emergency);
-    Profiler profiler = new Profiler("POST_REQUISITION_INITIATE");
-    profiler.setLogger(XLOGGER);
+    Profiler profiler = getProfiler(
+        "POST_REQUISITION_INITIATE",
+        programId, facilityId, suggestedPeriod, emergency
+    );
 
     if (null == facilityId || null == programId) {
       throw new ValidationMessageException(
           new Message(MessageKeys.ERROR_INITIALIZE_MISSING_PARAMETERS));
     }
 
-    profiler.start("GET_FACILITY");
-    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
-    if (facility == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_FACILITY_NOT_FOUND, facilityId));
-    }
-
-    profiler.start("GET_PROGRAM");
-    ProgramDto program = programReferenceDataService.findOne(programId);
-    if (program == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_PROGRAM_NOT_FOUND, programId));
-    }
-
-    profiler.start("CHECK_PERM_TO_INITIATE");
-    permissionService.canInitRequisition(programId, facilityId).throwExceptionIfHasErrors();
+    checkPermission(profiler, () -> permissionService.canInitRequisition(programId, facilityId));
+    FacilityDto facility = findFacility(facilityId, profiler);
 
     profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
@@ -160,6 +128,8 @@ public class RequisitionController extends BaseRequisitionController {
     List<StockAdjustmentReason> stockAdjustmentReasons =
         getStockAdjustmentReasons(programId, facility);
 
+    ProgramDto program = findProgram(programId, profiler);
+
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
         program, facility, suggestedPeriod, emergency, stockAdjustmentReasons);
@@ -167,11 +137,13 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("VALIDATE_REASONS");
     reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());
 
-    profiler.start("Build DTO");
-    RequisitionDto requisitionDto = requisitionDtoBuilder.build(newRequisition, facility, program);
+    RequisitionDto requisitionDto = buildDto(
+        profiler, newRequisition,
+        findOrderables(newRequisition, profiler),
+        facility, program
+    );
+    stopProfiler(profiler, requisitionDto);
 
-    profiler.stop().log();
-    XLOGGER.exit(requisitionDto);
     return requisitionDto;
   }
 
@@ -198,9 +170,10 @@ public class RequisitionController extends BaseRequisitionController {
           new Message(MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS));
     }
 
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canInitOrAuthorizeRequisition(programId, facilityId)
-        .throwExceptionIfHasErrors();
+    checkPermission(
+        profiler,
+        () -> permissionService.canInitOrAuthorizeRequisition(programId, facilityId)
+    );
 
     profiler.start("CHECK_IF_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
@@ -209,8 +182,9 @@ public class RequisitionController extends BaseRequisitionController {
     Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
         programId, facilityId, emergency
     );
-    profiler.stop().log();
-    XLOGGER.exit(periods);
+
+    stopProfiler(profiler, periods);
+
     return periods;
   }
 
@@ -222,47 +196,34 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("SUBMIT_REQUISITION", requisitionId);
-
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canSubmitRequisition(requisitionId).throwExceptionIfHasErrors();
-
-    profiler.start(GET_REQUISITION_BY_ID);
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    }
-
-    profiler.start(VALIDATE_CAN_CHANGE_STATUS);
-    validateForStatusChange(requisition);
-
-    profiler.start(CHECK_IF_PERIOD_IS_VALID);
-    checkIfPeriodIsValid(requisition);
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canSubmitRequisition(requisitionId));
+    validateForStatusChange(requisition, profiler);
+    checkIfPeriodIsValid(requisition, profiler);
 
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
-    profiler.start("GET_REQUISITION_PROGRAM");
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
 
     profiler.start(GET_ORDERABLES_FOR_LINE_ITEMS);
-    List<OrderableDto> orderableIds = orderableReferenceDataService.findByIds(
-        getLineItemOrderableIds(requisition));
+    List<OrderableDto> orderableIds = orderableReferenceDataService
+        .findByIds(getLineItemOrderableIds(requisition));
 
     profiler.start("SUBMIT");
     requisition.submit(orderableIds, getCurrentUser(profiler).getId(),
         program.getSkipAuthorization());
 
-    profiler.start(SAVE);
+    profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition);
     requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, requisition);
     logger.debug("Requisition with id " + requisition.getId() + " submitted");
 
-    BasicRequisitionDto dto = buildBasicRequisitionDto(profiler, requisition);
+    BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
 
-    profiler.stop().log();
-    XLOGGER.exit(dto);
+    stopProfiler(profiler, dto);
+
     return dto;
   }
 
@@ -273,15 +234,12 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
-
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canDeleteRequisition(requisitionId).throwExceptionIfHasErrors();
+    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisitionId));
 
     profiler.start("DELETE");
     requisitionService.delete(requisitionId);
 
-    profiler.stop().log();
-    XLOGGER.exit();
+    stopProfiler(profiler);
   }
 
   /**
@@ -298,23 +256,17 @@ public class RequisitionController extends BaseRequisitionController {
                                           @PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
-    if (isNotTrue(isNull(requisitionDto.getId()))
-        && isNotTrue(requisitionId.equals(requisitionDto.getId()))) {
+    if (null != requisitionDto.getId() && !Objects.equals(requisitionDto.getId(), requisitionId)) {
       throw new ValidationMessageException(ERROR_ID_MISMATCH);
     }
 
-    profiler.start(CHECK_PERMISSION);
-    requisitionService.validateCanSaveRequisition(requisitionId)
-        .throwExceptionIfHasErrors();
+    Requisition requisitionToUpdate = findRequisition(requisitionId, profiler);
+    checkPermission(
+        profiler,
+        () -> requisitionService.validateCanSaveRequisition(requisitionToUpdate)
+    );
 
-    profiler.start(GET_REQUISITION_BY_ID);
-    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-
-    profiler.start(GET_ORDERABLES_FOR_LINE_ITEMS);
-    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
-        .findByIds(requisitionToUpdate.getAllOrderableIds())
-        .stream()
-        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+    Map<UUID, OrderableDto> orderables = findOrderables(requisitionToUpdate, profiler);
 
     profiler.start("BUILD_REQUISITION_UPDATER");
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
@@ -325,17 +277,22 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("VALIDATE_TIMESTAMPS");
     requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
         .throwExceptionIfHasErrors();
+
+    ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
+
     profiler.start("VALIDATE_CAN_BE_UPDATED");
-    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition)
+    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program)
         .throwExceptionIfHasErrors();
 
     logger.debug("Updating requisition with id: {}", requisitionId);
 
-    profiler.start("UPDATE");
-    RequisitionDto dto = doUpdate(requisitionToUpdate, requisition);
+    FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
 
-    profiler.stop().log();
-    XLOGGER.exit(dto);
+    RequisitionDto dto = doUpdate(
+        requisitionToUpdate, requisition, orderables, facility, program, profiler
+    );
+
+    stopProfiler(profiler, dto);
     return dto;
   }
 
@@ -350,24 +307,17 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
+    checkPermission(profiler, () -> permissionService.canViewRequisition(requisitionId));
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    RequisitionDto requisitionDto = buildDto(
+        profiler, requisition,
+        findOrderables(requisition, profiler),
+        findFacility(requisition.getFacilityId(), profiler),
+        findProgram(requisition.getProgramId(), profiler)
+    );
 
-    profiler.start("CHECK_PERM_REQUISITION_VIEW");
-    permissionService.canViewRequisition(requisitionId).throwExceptionIfHasErrors();
-
-    profiler.start("FIND_ONE_REQUISITION");
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      profiler.stop().log();
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    } else {
-      profiler.start("REQUISITION_DTO_BUILD");
-      RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-      
-      profiler.stop().log();
-      XLOGGER.exit(requisitionDto);
-      return requisitionDto;
-    }
+    stopProfiler(profiler, requisitionDto);
+    return requisitionDto;
   }
 
   /**
@@ -390,9 +340,11 @@ public class RequisitionController extends BaseRequisitionController {
           Set<RequisitionStatus> requisitionStatuses,
       @RequestParam(value = "emergency", required = false) Boolean emergency,
       Pageable pageable) {
-    Profiler profiler = getProfiler("REQUISITIONS_SEARCH", facility, program,
-        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        pageable);
+    Profiler profiler = getProfiler(
+        "REQUISITIONS_SEARCH",
+        facility, program, initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode,
+        requisitionStatuses, pageable
+    );
 
     profiler.start("REQUISITION_SERVICE_SEARCH");
     Page<Requisition> requisitionPage = requisitionService.searchRequisitions(facility, program,
@@ -406,8 +358,7 @@ public class RequisitionController extends BaseRequisitionController {
         pageable,
         requisitionPage.getTotalElements());
 
-    profiler.stop().log();
-    XLOGGER.exit(requisitionDtoPage);
+    stopProfiler(profiler, requisitionDtoPage);
     return requisitionDtoPage;
   }
 
@@ -419,19 +370,16 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
-
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canUpdateRequisition(requisitionId).throwExceptionIfHasErrors();
+    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisitionId));
 
     profiler.start("SKIP");
     Requisition requisition = requisitionService.skip(requisitionId);
 
     callStatusChangeProcessor(profiler, requisition);
 
-    BasicRequisitionDto dto = buildBasicRequisitionDto(profiler, requisition);
+    BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
 
-    profiler.stop().log();
-    XLOGGER.exit(dto);
+    stopProfiler(profiler, dto);
     return dto;
   }
 
@@ -443,9 +391,7 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("REJECT", requisitionId);
-
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canApproveRequisition(requisitionId).throwExceptionIfHasErrors();
+    checkPermission(profiler, () -> permissionService.canApproveRequisition(requisitionId));
 
     profiler.start("REJECT");
     Requisition rejectedRequisition = requisitionService.reject(requisitionId);
@@ -455,10 +401,9 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("NOTIFY_STATUS_CHANGED");
     requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
 
-    BasicRequisitionDto dto = buildBasicRequisitionDto(profiler, rejectedRequisition);
+    BasicRequisitionDto dto = buildBasicDto(profiler, rejectedRequisition);
 
-    profiler.stop().log();
-    XLOGGER.exit(dto);
+    stopProfiler(profiler, dto);
     return dto;
   }
 
@@ -470,25 +415,20 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("APPROVE_REQUISITION", requisitionId);
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    UserDto user = getCurrentUser(profiler);
+    checkPermission(
+        profiler,
+        () -> requisitionService
+            .validateCanApproveRequisition(requisition, requisitionId, user.getId())
+    );
 
-    profiler.start("FIND_ONE_REQUISITION");
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    profiler.start(GET_CURRENT_USER);
-    UserDto user = authenticationHelper.getCurrentUser();
-
-    profiler.start("CHECK_PERM_REQUISITION_APPROVE");
-    requisitionService.validateCanApproveRequisition(requisition, requisitionId, user.getId())
-        .throwExceptionIfHasErrors();
-
-    profiler.start("VALIDATE_REQUISITION");
-    validateForStatusChange(requisition);
+    validateForStatusChange(requisition, profiler);
 
     profiler.start("DO_APPROVE");
     BasicRequisitionDto requisitionDto = doApprove(requisition, user);
-    
-    profiler.stop().log();
-    XLOGGER.exit(requisitionDto);
+
+    stopProfiler(profiler, requisitionDto);
     return requisitionDto;
   }
 
@@ -504,9 +444,7 @@ public class RequisitionController extends BaseRequisitionController {
           @RequestParam(value = "program", required = false) UUID programId,
           Pageable pageable) {
     Profiler profiler = getProfiler("REQUISITIONS_FOR_APPROVAL", programId, pageable);
-
-    profiler.start(GET_CURRENT_USER);
-    UserDto user = authenticationHelper.getCurrentUser();
+    UserDto user = getCurrentUser(profiler);
 
     profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     Page<Requisition> approvalRequisitions = requisitionService
@@ -518,8 +456,7 @@ public class RequisitionController extends BaseRequisitionController {
         pageable,
         approvalRequisitions.getTotalElements());
 
-    profiler.stop().log();
-    XLOGGER.exit();
+    stopProfiler(profiler);
     return dtoPage;
   }
 
@@ -544,8 +481,7 @@ public class RequisitionController extends BaseRequisitionController {
         pageable,
         submittedRequisitions.getTotalElements());
 
-    profiler.stop().log();
-    XLOGGER.exit();
+    stopProfiler(profiler);
     return page;
   }
 
@@ -560,25 +496,12 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("AUTHORIZE_REQUISITION", requisitionId);
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canAuthorizeRequisition(requisitionId));
+    validateForStatusChange(requisition, profiler);
+    checkIfPeriodIsValid(requisition, profiler);
 
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canAuthorizeRequisition(requisitionId).throwExceptionIfHasErrors();
-
-    profiler.start(GET_REQUISITION_BY_ID);
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    }
-
-    profiler.start(VALIDATE_CAN_CHANGE_STATUS);
-    validateForStatusChange(requisition);
-
-    profiler.start(CHECK_IF_PERIOD_IS_VALID);
-    checkIfPeriodIsValid(requisition);
-
-    profiler.start(GET_CURRENT_USER);
-    UserDto user = authenticationHelper.getCurrentUser();
+    UserDto user = getCurrentUser(profiler);
 
     profiler.start(GET_ORDERABLES_FOR_LINE_ITEMS);
     List<OrderableDto> orderableIds = orderableReferenceDataService.findByIds(
@@ -587,17 +510,16 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("AUTHORIZE");
     requisition.authorize(orderableIds, user.getId());
 
-    profiler.start(SAVE);
+    profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition);
     requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, requisition);
     logger.debug("Requisition: " + requisitionId + " authorized.");
 
-    BasicRequisitionDto dto = buildBasicRequisitionDto(profiler, requisition);
+    BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
 
-    profiler.stop().log();
-    XLOGGER.exit(dto);
+    stopProfiler(profiler, dto);
     return dto;
   }
 
@@ -618,11 +540,12 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(required = false) List<String> filterValue,
       @RequestParam(required = false) String filterBy,
       Pageable pageable) {
-    Profiler profiler = getProfiler("GET_REQUISITIONS_FOR_CONVERT", filterBy, filterValue,
-        pageable);
+    Profiler profiler = getProfiler(
+        "GET_REQUISITIONS_FOR_CONVERT",
+        filterBy, filterValue, pageable
+    );
 
-    profiler.start(GET_CURRENT_USER);
-    UserDto user = authenticationHelper.getCurrentUser();
+    UserDto user = getCurrentUser(profiler);
 
     profiler.start("GET_RIGHT");
     RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
@@ -640,8 +563,7 @@ public class RequisitionController extends BaseRequisitionController {
             pageable,
             userManagedFacilities);
 
-    profiler.stop().log();
-    XLOGGER.exit(page);
+    stopProfiler(profiler, page);
     return page;
   }
 
@@ -654,15 +576,12 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.CREATED)
   public void convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
     Profiler profiler = getProfiler("CONVERT_TO_ORDER", list);
-
-    profiler.start(CHECK_PERMISSION);
-    permissionService.canConvertToOrder(list).throwExceptionIfHasErrors();
+    checkPermission(profiler, () -> permissionService.canConvertToOrder(list));
 
     profiler.start("CONVERT");
     requisitionService.convertToOrder(list, getCurrentUser(profiler));
 
-    profiler.stop().log();
-    XLOGGER.exit();
+    stopProfiler(profiler);
   }
 
   private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,
@@ -678,25 +597,4 @@ public class RequisitionController extends BaseRequisitionController {
     return StockAdjustmentReason.newInstance(reasonDtos);
   }
 
-  private Profiler getProfiler(String name, Object... entryArgs) {
-    XLOGGER.entry(entryArgs);
-    Profiler profiler = new Profiler(name);
-    profiler.setLogger(XLOGGER);
-    return profiler;
-  }
-
-  private UserDto getCurrentUser(Profiler profiler) {
-    profiler.start(GET_CURRENT_USER);
-    return authenticationHelper.getCurrentUser();
-  }
-
-  private void callStatusChangeProcessor(Profiler profiler, Requisition requisition) {
-    profiler.start(CALL_STATUS_CHANGE_PROCESSOR);
-    requisitionStatusProcessor.statusChange(requisition);
-  }
-
-  private BasicRequisitionDto buildBasicRequisitionDto(Profiler profiler, Requisition requisition) {
-    profiler.start(BUILD_BASIC_REQUISITION_DTO);
-    return basicRequisitionDtoBuilder.build(requisition);
-  }
 }

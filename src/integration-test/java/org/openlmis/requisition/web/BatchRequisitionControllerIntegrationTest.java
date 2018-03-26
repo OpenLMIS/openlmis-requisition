@@ -26,6 +26,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
@@ -194,6 +195,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .map(r -> {
           FacilityDto facilityDto = new FacilityDto();
           facilityDto.setId(r.getFacilityId());
+
+          when(facilityReferenceDataService.findOne(r.getFacilityId())).thenReturn(facilityDto);
+
           return facilityDto;
         })
         .collect(Collectors.toList());
@@ -449,6 +453,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
+        .willAnswer(new BuildRequisitionDtoAnswer());
+    given(requisitionDtoBuilder
+        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .buildBatch(any(Requisition.class), any(FacilityDto.class),

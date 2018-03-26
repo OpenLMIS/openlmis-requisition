@@ -15,12 +15,12 @@
 
 package org.openlmis.requisition.utils;
 
+import java.util.UUID;
+import org.apache.commons.lang3.BooleanUtils;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 /**
  * Utility class for retrieving program from ReferenceData service
@@ -35,18 +35,21 @@ public class DatePhysicalStockCountCompletedEnabledPredicate {
   /**
    * Checks if program has Date Physical Stock Count Completed enabled.
    *
-   * @param  programId requisition program ID
-   * @return           if Date Physical Stock Count Completed is enabled
+   * @param programId requisition program ID
+   * @return if Date Physical Stock Count Completed is enabled
    */
   public boolean exec(UUID programId) {
-    if (programId != null) {
-      ProgramDto program = programReferenceDataService.findOne(programId);
+    return programId != null && exec(programReferenceDataService.findOne(programId));
+  }
 
-      if (program != null && program.getEnableDatePhysicalStockCountCompleted() != null) {
-        return program.getEnableDatePhysicalStockCountCompleted();
-      }
-    }
-
-    return false;
+  /**
+   * Checks if program has Date Physical Stock Count Completed enabled.
+   *
+   * @param program requisition program
+   * @return if Date Physical Stock Count Completed is enabled
+   */
+  public boolean exec(ProgramDto program) {
+    return null != program
+        && BooleanUtils.toBoolean(program.getEnableDatePhysicalStockCountCompleted());
   }
 }

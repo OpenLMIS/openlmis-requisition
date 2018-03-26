@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.web;
@@ -29,6 +29,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -52,7 +53,19 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_CRE
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.persistence.PersistenceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -88,6 +101,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.DataRetrievalException;
+import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -103,7 +117,6 @@ import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
@@ -120,22 +133,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.JpaSystemException;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.PersistenceException;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -247,6 +244,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldGetChosenRequisition() {
     // given
+    mockFacility();
     Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
     doReturn(ValidationResult.success())
         .when(permissionService).canViewRequisition(requisition.getId());
@@ -315,7 +313,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     UUID requisitionId = requisition.getId();
     when(requisitionService
-        .validateCanSaveRequisition(requisitionId))
+        .validateCanSaveRequisition(requisition))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class)))
@@ -1709,6 +1707,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
+        .willAnswer(new BuildRequisitionDtoAnswer());
+    given(requisitionDtoBuilder
+        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());

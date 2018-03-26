@@ -20,25 +20,32 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -56,14 +63,6 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionDtoBuilderTest {
@@ -114,6 +113,7 @@ public class RequisitionDtoBuilderTest {
 
     requisition = buildRequisition();
     orderableDto = new OrderableDtoDataBuilder()
+        .withId(orderableId)
         .withProgramOrderable(program.getId(), false)
         .build();
   }
@@ -123,11 +123,12 @@ public class RequisitionDtoBuilderTest {
     when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
-    when(requisitionExportHelper
-        .exportToDtos(Collections.singletonList(requisitionLineItem), null, false))
+    when(requisitionExportHelper.exportToDtos(
+        Collections.singletonList(requisitionLineItem),
+        ImmutableMap.of(orderableId, orderableDto), false))
         .thenReturn(lineItemDtos);
     when(orderableReferenceDataService
-        .findByIds(Collections.singleton(orderableId)))
+        .findByIds(requisition.getAllOrderableIds()))
         .thenReturn(Collections.singletonList(orderableDto));
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
@@ -225,7 +226,7 @@ public class RequisitionDtoBuilderTest {
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
 
     verify(requisitionExportHelper)
-        .exportToDtos(anyListOf(RequisitionLineItem.class), isNull(Map.class), eq(false));
+        .exportToDtos(anyListOf(RequisitionLineItem.class), anyMap(), eq(false));
 
     assertNotNull(requisitionDto);
     assertNull(requisitionDto.getFacility());

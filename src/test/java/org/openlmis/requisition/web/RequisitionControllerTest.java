@@ -225,6 +225,7 @@ public class RequisitionControllerTest {
         .thenReturn(Collections.singletonList(processingPeriods.get(0)));
 
     when(predicate.exec(any(UUID.class))).thenReturn(true);
+    when(predicate.exec(any(ProgramDto.class))).thenReturn(true);
 
     mockRequisitionRepository();
 
@@ -369,10 +370,14 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
         .thenReturn(ValidationResult.success());
 
-    when(requisitionService.validateCanSaveRequisition(uuid1))
+    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateRequisitionTimestamps(
         any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
+    when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
+        new ProgramDtoDataBuilder().build());
+    when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
+        DtoGenerator.of(FacilityDto.class));
 
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
@@ -391,7 +396,7 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
     when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
     when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
-    when(requisitionService.validateCanSaveRequisition(any(UUID.class)))
+    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateRequisitionTimestamps(
         any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
@@ -402,7 +407,7 @@ public class RequisitionControllerTest {
     assertThatThrownBy(() -> requisitionController.updateRequisition(requisitionDto, uuid1))
         .isInstanceOf(VersionMismatchException.class);
 
-    verify(requisitionService).validateCanSaveRequisition(any(UUID.class));
+    verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);
     verifyNoSubmitOrUpdate(initiatedRequsition);
   }
 

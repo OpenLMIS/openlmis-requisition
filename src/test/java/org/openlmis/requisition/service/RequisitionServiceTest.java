@@ -724,7 +724,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFailValidationIfUserHasNoUpdateRightsAssigned() {
-    when(permissionService.canUpdateRequisition(requisitionDto.getId()))
+    when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.noPermission("no.permission"));
 
     ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
@@ -735,7 +735,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFailValidationIfRequisitionDoesNotExistOnSave() {
-    when(permissionService.canUpdateRequisition(any(UUID.class)))
+    when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(null);
 
@@ -747,7 +747,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFailValidationIfRequisitionIsInIncorrectStatus() {
-    when(permissionService.canUpdateRequisition(any(UUID.class)))
+    when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
     requisition.setStatus(RELEASED);
@@ -760,7 +760,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPassValidationIfUserCanUpdateRequisition() {
-    when(permissionService.canUpdateRequisition(any(UUID.class)))
+    when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
     requisition.setStatus(SUBMITTED);
@@ -1635,7 +1635,7 @@ public class RequisitionServiceTest {
 
   private RequisitionDto generateRequisitionDto() {
     requisitionDto = new RequisitionDto();
-    requisitionDto.setId(UUID.randomUUID());
+    requisitionDto.setId(requisition.getId());
     requisitionDto.setSupervisoryNode(supervisoryNode.getId());
     requisitionDto.setStatus(AUTHORIZED);
     return requisitionDto;
