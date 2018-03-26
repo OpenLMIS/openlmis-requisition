@@ -17,6 +17,14 @@ package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.dto.ReasonDto.newInstance;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
@@ -38,14 +46,6 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class RequisitionDtoBuilder {
@@ -116,13 +116,44 @@ public class RequisitionDtoBuilder {
       XLOGGER.exit();
       return null;
     }
+    Profiler profiler = new Profiler("REQUISITION_DTO_BUILD_WITHOUT_ORDERABLES");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("GET_ORDERABLES");
+    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
+        .findByIds(requisition.getAllOrderableIds())
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+
+    profiler.start("CALL_REQUISITION_DTO_BUILD");
+    RequisitionDto requisitionDto = build(requisition, orderables, facility, program);
+
+    profiler.stop().log();
+    XLOGGER.exit(requisitionDto);
+    return requisitionDto;
+  }
+
+  /**
+   * Create a new instance of RequisitionDto based on data from {@link Requisition}.
+   *
+   * @param requisition instance used to create {@link RequisitionDto} (can be {@code null})
+   * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
+   * null}.
+   */
+  public RequisitionDto build(Requisition requisition, Map<UUID, OrderableDto> orderables,
+      FacilityDto facility, ProgramDto program) {
+    XLOGGER.entry(requisition, facility, program);
+    if (null == requisition) {
+      XLOGGER.exit();
+      return null;
+    }
+
     Profiler profiler = new Profiler("REQUISITION_DTO_BUILD");
     profiler.setLogger(XLOGGER);
 
     RequisitionDto requisitionDto = new RequisitionDto();
 
     profiler.start("EXPORT");
-
     requisition.export(requisitionDto);
 
     profiler.start("SET_SUB_RESOURCES");
@@ -133,18 +164,19 @@ public class RequisitionDtoBuilder {
 
     profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisitionLineItems, null, false);
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, false);
 
     profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
 
-    profiler.start("SET_NON_FULL_SUPPLY_PRODUCTS");
     if (requisition.getAvailableProducts() != null) {
-      setAvailableProductsDto(requisitionDto, requisition);
+      profiler.start("SET_AVAILABLE_PRODUCTS");
+      setAvailableProductsDto(requisitionDto, requisition, orderables.values());
     }
+
     profiler.start("SET_STOCK_ADJ_REASONS");
-    requisitionDto.setStockAdjustmentReasons(
-        newInstance(requisition.getStockAdjustmentReasons()));
+    requisitionDto.setStockAdjustmentReasons(newInstance(requisition.getStockAdjustmentReasons()));
+
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
     return requisitionDto;
@@ -210,14 +242,16 @@ public class RequisitionDtoBuilder {
     requisitionDto.setProgram(program);
   }
 
-  private void setAvailableProductsDto(RequisitionDto requisitionDto, Requisition requisition) {
-    List<OrderableDto> orderables = orderableReferenceDataService
-        .findByIds(requisition.getAvailableProducts());
+  private void setAvailableProductsDto(RequisitionDto requisitionDto, Requisition requisition,
+      Collection<OrderableDto> orderables) {
+    Collection<OrderableDto> localOrderables = null == orderables
+        ? orderableReferenceDataService.findByIds(requisition.getAvailableProducts())
+        : orderables;
 
     Set<OrderableDto> availableFullSupply = new HashSet<>();
     Set<OrderableDto> availableNonFullSupply = new HashSet<>();
 
-    for (OrderableDto orderableDto : orderables) {
+    for (OrderableDto orderableDto : localOrderables) {
       ProgramOrderableDto poDto = orderableDto.findProgramOrderableDto(requisition.getProgramId());
       if (poDto == null) {
         continue;

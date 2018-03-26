@@ -625,20 +625,32 @@ public class RequisitionService {
    * @return ValidationResult instance containing the outcome of this validation
    */
   public ValidationResult validateCanSaveRequisition(UUID requisitionId) {
-    ValidationResult permissionCheck = permissionService.canUpdateRequisition(requisitionId);
+    Requisition requisition = requisitionRepository.findOne(requisitionId);
+
+    if (isNull(requisition)) {
+      return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
+    }
+
+    return validateCanSaveRequisition(requisition);
+  }
+
+  /**
+   * Performs several validation checks to ensure that the given requisition can be saved.
+   * It makes sure that the user has got rights to save the requisition, that the requisition
+   * exists and that it has got correct status to be eligible for saving.
+   *
+   * @param requisition the requisition for which the request was made
+   * @return ValidationResult instance containing the outcome of this validation
+   */
+  public ValidationResult validateCanSaveRequisition(Requisition requisition) {
+    ValidationResult permissionCheck = permissionService.canUpdateRequisition(requisition);
     if (permissionCheck.hasErrors()) {
       return permissionCheck;
     }
 
-    Requisition requisitionToUpdate = requisitionRepository.findOne(requisitionId);
-    if (isNull(requisitionToUpdate)) {
-      return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
-    }
-
-    RequisitionStatus status = requisitionToUpdate.getStatus();
+    RequisitionStatus status = requisition.getStatus();
     if (!status.isUpdatable()) {
-      return ValidationResult.failedValidation(ERROR_CANNOT_UPDATE_WITH_STATUS,
-          requisitionToUpdate.getStatus());
+      return ValidationResult.failedValidation(ERROR_CANNOT_UPDATE_WITH_STATUS, status);
     }
 
     return ValidationResult.success();
