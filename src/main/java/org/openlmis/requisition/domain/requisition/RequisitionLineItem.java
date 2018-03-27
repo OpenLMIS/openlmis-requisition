@@ -33,6 +33,7 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.requisition.StockAdjustment.Exporter;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -410,9 +411,11 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalConsumedQuantity(totalConsumedQuantity);
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
-    if (exporter.provideStockAdjustmentExporter().isPresent()) {
+    Optional<StockAdjustment.Exporter> stockAdjustmentExporter =
+        exporter.provideStockAdjustmentExporter();
+    if (stockAdjustmentExporter.isPresent()) {
       for (StockAdjustment stockAdjustment : stockAdjustments) {
-        StockAdjustment.Exporter providedExporter = exporter.provideStockAdjustmentExporter().get();
+        StockAdjustment.Exporter providedExporter = stockAdjustmentExporter.get();
         stockAdjustment.export(providedExporter);
         exporter.addStockAdjustment(providedExporter);
       }

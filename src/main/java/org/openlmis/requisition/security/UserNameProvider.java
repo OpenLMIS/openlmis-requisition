@@ -18,6 +18,8 @@ package org.openlmis.requisition.security;
 import org.javers.spring.auditable.AuthorProvider;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * JaVers then associates audited changes being made with this particular user.
  */
 public class UserNameProvider implements AuthorProvider {
+  private static final Logger LOGGER = LoggerFactory.getLogger(UserNameProvider.class);
 
   @Autowired
   AuthenticationHelper authenticationHelper;
@@ -39,6 +42,7 @@ public class UserNameProvider implements AuthorProvider {
         return "unauthenticated user";
       }
     } catch (Exception ex) {
+      LOGGER.info("unknown user", ex);
       return "unknown user";
     }
   }
