@@ -18,17 +18,16 @@ package org.openlmis.requisition.domain.requisition;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 public final class RequisitionBuilder {
 
@@ -58,13 +57,12 @@ public final class RequisitionBuilder {
    * @param template the requisition template of updated requisition.
    * @param programId the program id of updated requisition.
    * @param requisitionStatus the requisition status of updated requisition.
+   * @param orderables orderables for line items.
    * @return new instance of requisition.
    */
-  public static Requisition newRequisition(Requisition.Importer importer,
-                                           RequisitionTemplate template,
-                                           UUID programId,
-                                           RequisitionStatus requisitionStatus,
-                                           Map<UUID, OrderableDto> orderables) {
+  public static Requisition newRequisition(
+      Requisition.Importer importer, RequisitionTemplate template, UUID programId,
+      RequisitionStatus requisitionStatus, Map<UUID, OrderableDto> orderables) {
     Requisition requisition = new Requisition();
     requisition.setRequisitionLineItems(new ArrayList<>());
 
@@ -78,14 +76,14 @@ public final class RequisitionBuilder {
               new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, item.getOrderableId()));
         }
 
-        Optional<ProgramOrderableDto> program = orderable
-            .getPrograms()
-            .stream()
-            .filter(e -> programId.equals(e.getProgramId()))
-            .findFirst();
+        ProgramOrderableDto programOrderable = orderable.findProgramOrderableDto(programId);
 
-        program.ifPresent(p -> item.setNonFullSupply(isFalse(p.getFullSupply())));
-
+        if (programOrderable != null) {
+          item.setNonFullSupply(isFalse(programOrderable.getFullSupply()));
+          item.setPricePerPack(programOrderable.getPricePerPack());
+        } else {
+          throw new ValidationMessageException(ERROR_PROGRAM_NOT_FOUND, programId);
+        }
         if (isSkipped(requisitionLineItem) && requisitionStatus.isPreAuthorize()) {
           item.skipLineItem(template);
         }

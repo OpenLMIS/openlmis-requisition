@@ -85,8 +85,8 @@ public final class RequestHelper {
    * @param token the token to put into the authorization header
    * @return the {@link HttpEntity} to use
    */
-  public static HttpEntity createEntity(String token) {
-    return new HttpEntity(createHeadersWithAuth(token));
+  public static <E> HttpEntity<E> createEntity(String token) {
+    return new HttpEntity<>(createHeadersWithAuth(token));
   }
 
   private static HttpHeaders createHeadersWithAuth(String token) {

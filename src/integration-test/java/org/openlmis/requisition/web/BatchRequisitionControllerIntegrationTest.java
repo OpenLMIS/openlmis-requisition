@@ -37,15 +37,22 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
-import com.google.common.collect.Sets;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Sets;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-
-import org.apache.commons.lang3.RandomStringUtils;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
@@ -82,15 +89,6 @@ import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -180,7 +178,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
     List<OrderableDto> orderables =
-        Collections.singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID));
+        Collections.singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID, requisitions));
     doReturn(orderables)
         .when(orderableReferenceDataService)
         .findByIds(Collections.singleton(LINE_ITEM_PRODUCT_ID));
@@ -466,7 +464,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
 
     @Override
-    public RequisitionDto answer(InvocationOnMock invocation) throws Throwable {
+    public RequisitionDto answer(InvocationOnMock invocation) {
       Requisition requisition = (Requisition) invocation.getArguments()[0];
 
       if (null == requisition) {
@@ -530,7 +528,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   protected static class BuildListOfRequisitionDtosAnswer implements Answer<List<RequisitionDto>> {
 
     @Override
-    public List<RequisitionDto> answer(InvocationOnMock invocation) throws Throwable {
+    public List<RequisitionDto> answer(InvocationOnMock invocation) {
       Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
 
       if (null == collection) {

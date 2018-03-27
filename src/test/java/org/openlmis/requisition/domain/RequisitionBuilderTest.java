@@ -18,13 +18,24 @@ package org.openlmis.requisition.domain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Maps;
-
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -41,22 +52,16 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionBuilderTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
   private RequisitionDto requisitionDto;
@@ -78,6 +83,7 @@ public class RequisitionBuilderTest {
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
 
   private static final String DRAFT_STATUS_MESSAGE = "draft status message";
+  private Money pricePerPack;
 
   @Before
   public void setUp() {
@@ -153,10 +159,10 @@ public class RequisitionBuilderTest {
   public void shouldReturnFalseIfSkippedIsNotSetInDto() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
-    prepareForTestSkip(new RequisitionLineItemDto());
+    prepareLineItem(new RequisitionLineItemDto());
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-            requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+            requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED,
         getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
@@ -168,11 +174,11 @@ public class RequisitionBuilderTest {
         .thenReturn(false);
     RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
     lineItemDto.setSkipped(true);
-    prepareForTestSkip(lineItemDto);
+    prepareLineItem(lineItemDto);
 
     RequisitionBuilder
-        .newRequisition(requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
-            getOrderables());
+        .newRequisition(requisitionDto, requisitionTemplate, program.getId(),
+            RequisitionStatus.INITIATED, getOrderables());
   }
 
   @Test
@@ -180,7 +186,7 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.AUTHORIZED,
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.AUTHORIZED,
         getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
@@ -191,7 +197,7 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.APPROVED,
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.APPROVED,
         getOrderables());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
@@ -202,7 +208,7 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED,
         getOrderables());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
@@ -213,26 +219,31 @@ public class RequisitionBuilderTest {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.SUBMITTED,
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.SUBMITTED,
         getOrderables());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
-  public void shouldInitializeRequisitionFromDtoImporterWhenProgramIsNull() {
-    Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, null, RequisitionStatus.INITIATED,
-        Maps.newHashMap());
+  public void shouldThrowExceptionWhenProgramOrderableIsNotFound() {
+    expectedException.expect(ValidationMessageException.class);
+    expectedException.expectMessage(MessageKeys.ERROR_PROGRAM_NOT_FOUND);
 
-    assertNotNull(requisition);
-    assertNull(requisition.getProgramId());
+    prepareLineItem(new RequisitionLineItemDto());
+    RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, UUID.randomUUID(), RequisitionStatus.INITIATED,
+        getOrderables());
   }
 
-  private void prepareForTestSkip(RequisitionLineItemDto lineItemDto) {
-    lineItemDto.setOrderable(new OrderableDtoDataBuilder().build());
-    when(requisitionDto.getRequisitionLineItems())
-        .thenReturn(Collections.singletonList(lineItemDto));
+  @Test
+  public void shouldCreateRequisitionWithPricePerPackFromProgramOrderable() {
+    prepareLineItem(new RequisitionLineItemDto());
+    Requisition requisition = RequisitionBuilder.newRequisition(
+        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED,
+        getOrderables());
+
+    assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
   }
 
   private void prepareForTestSkipped() {
@@ -240,7 +251,16 @@ public class RequisitionBuilderTest {
         .thenReturn(true);
     RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
     lineItemDto.setSkipped(true);
-    prepareForTestSkip(lineItemDto);
+    prepareLineItem(lineItemDto);
+  }
+
+  private void prepareLineItem(RequisitionLineItemDto lineItemDto) {
+    pricePerPack = Money.of(CurrencyUnit.GBP, 20);
+    lineItemDto.setOrderable(new OrderableDtoDataBuilder()
+        .withProgramOrderable(program.getId(), pricePerPack)
+        .build());
+    when(requisitionDto.getRequisitionLineItems())
+        .thenReturn(Collections.singletonList(lineItemDto));
   }
 
   private Map<UUID, OrderableDto> getOrderables() {
