@@ -23,7 +23,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -104,17 +108,6 @@ public class PermissionService {
    * Checks if current user has permission to update a requisition.
    * Permissions needed to perform update action depend on the requisition status.
    *
-   * @param requisitionId UUID of requisition.
-   * @return ValidationResult containing info about the result of this check
-   */
-  public ValidationResult canUpdateRequisition(UUID requisitionId) {
-    return canUpdateRequisition(requisitionRepository.findOne(requisitionId));
-  }
-
-  /**
-   * Checks if current user has permission to update a requisition.
-   * Permissions needed to perform update action depend on the requisition status.
-   *
    * @param requisition the requisition.
    * @return ValidationResult containing info about the result of this check
    */
@@ -142,8 +135,8 @@ public class PermissionService {
    *
    * @return ValidationResult containing info about the result of this check
    */
-  public ValidationResult canSubmitRequisition(UUID requisitionId) {
-    return checkPermission(REQUISITION_CREATE, requisitionId);
+  public ValidationResult canSubmitRequisition(Requisition requisition) {
+    return checkPermission(REQUISITION_CREATE, requisition);
   }
 
   /**
@@ -151,8 +144,8 @@ public class PermissionService {
    *
    * @return ValidationResult containing info about the result of this check
    */
-  public ValidationResult canApproveRequisition(UUID requisitionId) {
-    return checkPermission(REQUISITION_APPROVE, requisitionId);
+  public ValidationResult canApproveRequisition(Requisition requisition) {
+    return checkPermission(REQUISITION_APPROVE, requisition);
   }
 
   /**
@@ -160,8 +153,8 @@ public class PermissionService {
    *
    * @return ValidationResult containing info about the result of this check
    */
-  public ValidationResult canAuthorizeRequisition(UUID requisitionId) {
-    return checkPermission(REQUISITION_AUTHORIZE, requisitionId);
+  public ValidationResult canAuthorizeRequisition(Requisition requisition) {
+    return checkPermission(REQUISITION_AUTHORIZE, requisition);
   }
 
   /**
@@ -169,21 +162,17 @@ public class PermissionService {
    *
    * @return ValidationResult containing info about the result of this check
    */
-  public ValidationResult canDeleteRequisition(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition != null) {
-      ValidationResult permissionCheck = checkPermission(REQUISITION_DELETE, requisition);
-      if (permissionCheck.hasErrors()) {
-        return permissionCheck;
-      }
-      if (requisition.getStatus().isSubmittable() || requisition.getStatus().isSkipped()) {
-        return checkPermission(REQUISITION_CREATE, requisition);
-      } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
-        return checkPermission(REQUISITION_AUTHORIZE, requisition);
-      }
-    } else {
-      return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
+  public ValidationResult canDeleteRequisition(Requisition requisition) {
+    ValidationResult permissionCheck = checkPermission(REQUISITION_DELETE, requisition);
+    if (permissionCheck.hasErrors()) {
+      return permissionCheck;
     }
+    if (requisition.getStatus().isSubmittable() || requisition.getStatus().isSkipped()) {
+      return checkPermission(REQUISITION_CREATE, requisition);
+    } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
+      return checkPermission(REQUISITION_AUTHORIZE, requisition);
+    }
+
     return ValidationResult.success();
   }
 
@@ -193,7 +182,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canViewRequisition(UUID requisitionId) {
-    return checkPermission(REQUISITION_VIEW, requisitionId);
+    return checkPermission(REQUISITION_VIEW, requisitionRepository.findOne(requisitionId));
   }
 
   /**
@@ -202,8 +191,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canViewRequisition(Requisition requisition) {
-    return checkPermission(REQUISITION_VIEW, requisition.getProgramId(),
-        requisition.getFacilityId(), null);
+    return checkPermission(REQUISITION_VIEW, requisition);
   }
 
   /**
@@ -213,18 +201,28 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canConvertToOrder(List<ConvertToOrderDto> list) {
+    Map<UUID, Requisition> requisitions = requisitionRepository
+        .findAll(list.stream().map(ConvertToOrderDto::getRequisitionId).collect(Collectors.toSet()))
+        .stream()
+        .collect(Collectors.toMap(BaseEntity::getId, Function.identity()));
+
     for (ConvertToOrderDto convertToOrder : list) {
-      Requisition requisition = requisitionRepository.findOne(convertToOrder.getRequisitionId());
+      Requisition requisition = requisitions.get(convertToOrder.getRequisitionId());
+
       if (requisition == null) {
         return ValidationResult.notFound(
             ERROR_REQUISITION_NOT_FOUND, convertToOrder.getRequisitionId());
       }
-      ValidationResult validation = checkPermission(ORDERS_EDIT, null, null,
-          convertToOrder.getSupplyingDepotId());
+
+      ValidationResult validation = checkPermission(
+          ORDERS_EDIT, null, null, convertToOrder.getSupplyingDepotId()
+      );
+
       if (validation.hasErrors()) {
         return validation;
       }
     }
+
     return ValidationResult.success();
   }
 
@@ -265,16 +263,6 @@ public class PermissionService {
           ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE, status.toString(), rightName);
     }
     return ValidationResult.success();
-  }
-
-  private ValidationResult checkPermission(String rightName, UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    if (null != requisition) {
-      return checkPermission(rightName, requisition);
-    } else {
-      return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
-    }
   }
 
   private ValidationResult checkPermission(String rightName, Requisition requisition) {

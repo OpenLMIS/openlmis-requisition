@@ -54,7 +54,18 @@ import static org.openlmis.requisition.utils.Pagination.NO_PAGINATION;
 import static org.openlmis.requisition.utils.Pagination.getPage;
 
 import com.google.common.collect.Lists;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,10 +77,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -95,7 +106,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
@@ -129,19 +139,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -290,7 +287,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(INITIATED);
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
   }
 
@@ -309,7 +306,7 @@ public class RequisitionServiceTest {
         .searchRequisitions(secondPeriod.getId(), facility.getId(), program.getId(), false))
         .thenReturn(Collections.emptyList());
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
   }
 
@@ -322,7 +319,7 @@ public class RequisitionServiceTest {
         .thenReturn(statusMessages);
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
     verify(statusMessageRepository).delete(statusMessages);
   }
@@ -333,7 +330,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(AUTHORIZED);
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -342,7 +339,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -351,7 +348,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(APPROVED);
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -360,7 +357,7 @@ public class RequisitionServiceTest {
 
     prepareRequisitionIsNotNewest();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
   }
 
   @Test
@@ -369,24 +366,14 @@ public class RequisitionServiceTest {
     requisition.setEmergency(true);
     prepareRequisitionIsNotNewest();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldThrowExceptionWhenDeletingNotExistingRequisition()
-      throws ContentNotFoundMessageException {
-    UUID deletedRequisitionId = requisition.getId();
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-    requisitionService.delete(deletedRequisitionId);
   }
 
   @Test
   public void shouldSkipRequisitionIfItIsValid() {
     requisition.setStatus(INITIATED);
-    Requisition skippedRequisition = requisitionService.skip(requisition.getId());
+    Requisition skippedRequisition = requisitionService.skip(requisition);
     verify(lineItem1).skipLineItem(requisition.getTemplate());
     verify(lineItem2).skipLineItem(requisition.getTemplate());
 
@@ -396,64 +383,55 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingNotSkippableProgram() {
     program.setPeriodsSkippable(false);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingSubmittedRequisition() {
     requisition.setStatus(SUBMITTED);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() {
     requisition.setStatus(AUTHORIZED);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingInApprovalRequisition() {
     requisition.setStatus(IN_APPROVAL);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingApprovedRequisition() {
     requisition.setStatus(APPROVED);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingReleasedRequisition() {
     requisition.setStatus(RELEASED);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSkippingEmergencyRequisition() {
     requisition.setEmergency(true);
-    requisitionService.skip(requisition.getId());
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldThrowExceptionWhenSkippingNotExistingRequisition()
-      throws ContentNotFoundMessageException {
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-    requisitionService.skip(requisition.getId());
+    requisitionService.skip(requisition);
   }
 
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+    Requisition returnedRequisition = requisitionService.reject(requisition);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -461,12 +439,12 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsInApproval() {
     requisition.setStatus(IN_APPROVAL);
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+    Requisition returnedRequisition = requisitionService.reject(requisition);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -475,12 +453,12 @@ public class RequisitionServiceTest {
   public void shouldSaveStatusMessageWhileRejectingRequisition() {
     requisition.setStatus(AUTHORIZED);
     requisition.setDraftStatusMessage("some_message");
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition.getId());
+    Requisition returnedRequisition = requisitionService.reject(requisition);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
@@ -490,21 +468,14 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {
     requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition.getId());
+    requisitionService.reject(requisition);
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws ValidationMessageException {
     requisition.setStatus(APPROVED);
-    requisitionService.reject(requisition.getId());
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldThrowExceptionWhenRejectingNotExistingRequisition()
-      throws ContentNotFoundMessageException {
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
-    requisitionService.reject(requisition.getId());
+    requisitionService.reject(requisition);
   }
 
   @Test
@@ -673,50 +644,38 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPassValidationIfUserCanApproveRequisition() {
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
 
     ValidationResult result = requisitionService.validateCanApproveRequisition(
-        requisition, requisition.getId(), user.getId());
+        requisition, user.getId());
 
     assertTrue(result.isSuccess());
   }
 
   @Test
   public void shouldFailValidationIfUserHasNoApproveRightAssigned() {
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.noPermission("no.permission"));
 
     ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
-        requisition.getId(), user.getId());
+        user.getId());
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
   }
 
   @Test
-  public void shouldFailValidationIfRequisitionDoesNotExist() {
-    when(permissionService.canApproveRequisition(any(UUID.class)))
-        .thenReturn(ValidationResult.success());
-
-    ValidationResult result = requisitionService.validateCanApproveRequisition(null,
-        UUID.randomUUID(), user.getId());
-
-    assertTrue(result.hasErrors());
-    assertEquals(FailureType.NOT_FOUND, result.getError().getType());
-  }
-
-  @Test
   public void shouldFailValidationIfRequisitionIsInIncorrectState() {
-    when(permissionService.canApproveRequisition(any(UUID.class)))
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     requisition.setStatus(INITIATED);
 
     ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
-        UUID.randomUUID(), user.getId());
+        user.getId());
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.VALIDATION, result.getError().getType());
@@ -1566,7 +1525,7 @@ public class RequisitionServiceTest {
         .thenReturn(Collections.emptyList());
     stubRecentRequisition();
 
-    requisitionService.delete(requisition.getId());
+    requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
   }
 

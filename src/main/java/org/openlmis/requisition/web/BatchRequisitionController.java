@@ -119,8 +119,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("REMOVE_SKIPPED_PRODUCTS");
     processingStatus.removeSkippedProducts();
 
-    profiler.start("BUILD_RESPONSE");
-    ResponseEntity<RequisitionsProcessingStatusDto> response = buildResponse(processingStatus);
+    ResponseEntity<RequisitionsProcessingStatusDto> response = buildResponse(processingStatus,
+        profiler);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -149,23 +149,18 @@ public class BatchRequisitionController extends BaseRequisitionController {
       Requisition requisition = requisitionRepository.findOne(requisitionId);
 
       ValidationResult validationResult = requisitionService
-          .validateCanApproveRequisition(requisition, requisitionId, user.getId());
-      if (addValidationErrors(processingStatus, validationResult, requisitionId)) {
-        continue;
+          .validateCanApproveRequisition(requisition, user.getId());
+      if (!addValidationErrors(processingStatus, validationResult, requisitionId)) {
+        validationResult = getValidationResultForStatusChange(requisition);
+        if (!addValidationErrors(processingStatus, validationResult, requisitionId)) {
+          doApprove(requisition, user);
+          processingStatus.addProcessedRequisition(
+              new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
+        }
       }
-
-      validationResult = getValidationResultForStatusChange(requisition);
-      if (addValidationErrors(processingStatus, validationResult, requisitionId)) {
-        continue;
-      }
-
-      doApprove(requisition, user);
-      processingStatus.addProcessedRequisition(
-          new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
     }
 
-    profiler.start("BUILD_RESPONSE");
-    ResponseEntity response = buildResponse(processingStatus);
+    ResponseEntity response = buildResponse(processingStatus, profiler);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -190,37 +185,33 @@ public class BatchRequisitionController extends BaseRequisitionController {
     for (ApproveRequisitionDto dto : dtos) {
       profiler.start("VALIDATE_AND_CHECK_SAVE_REQUISITION");
       ValidationResult result = requisitionService.validateCanSaveRequisition(dto.getId());
-      if (addValidationErrors(processingStatus, result, dto.getId())) {
-        continue;
+      if (!addValidationErrors(processingStatus, result, dto.getId())) {
+        profiler.start("FIND_REQUISITION");
+        Requisition requisitionToUpdate = requisitionRepository.findOne(dto.getId());
+
+        profiler.start("BUILD_REQUISITION");
+        Requisition requisition = buildRequisition(dto, requisitionToUpdate);
+
+        profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
+        result = requisitionVersionValidator.validateRequisitionTimestamps(
+            requisition, requisitionToUpdate);
+        result
+            .addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition));
+
+        if (!addValidationErrors(processingStatus, result, dto.getId())) {
+          profiler.start("DO_UPDATE");
+          RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
+
+          profiler.start("ADD_PROCESSED_REQUISITION");
+          processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));
+        }
       }
-
-      profiler.start("FIND_REQUISITION");
-      Requisition requisitionToUpdate = requisitionRepository.findOne(dto.getId());
-
-      profiler.start("BUILD_REQUISITION");
-      Requisition requisition = buildRequisition(dto, requisitionToUpdate);
-
-      profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
-      result = requisitionVersionValidator.validateRequisitionTimestamps(
-          requisition, requisitionToUpdate);
-      result.addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition));
-
-      if (addValidationErrors(processingStatus, result, dto.getId())) {
-        continue;
-      }
-
-      profiler.start("DO_UPDATE");
-      RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
-
-      profiler.start("ADD_PROCESSED_REQUISITION");
-      processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));
     }
 
     profiler.start("REMOVE_SKIPPED_PRODUCTS");
     processingStatus.removeSkippedProducts();
 
-    profiler.start("BUILD_RESPONSE");
-    ResponseEntity response = buildResponse(processingStatus);
+    ResponseEntity response = buildResponse(processingStatus, profiler);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -252,7 +243,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .ifPresent(original -> original.setApprovedQuantity(line.getApprovedQuantity()));
     }
     requisition.setModifiedDate(dto.getModifiedDate());
-    nullCalculatedFields(requisition);
+    setNullForCalculatedFields(requisition);
     return requisition;
   }
 
@@ -275,26 +266,31 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return false;
   }
 
-  private void nullCalculatedFields(Requisition requisition) {
+  private void setNullForCalculatedFields(Requisition requisition) {
     for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
       for (RequisitionTemplateColumn column : requisition.getTemplate().viewColumns().values()) {
         if (isFalse(column.getIsDisplayed()) || column.getSource() == SourceType.CALCULATED) {
-          String field = column.getName();
-
-          try {
-            PropertyUtils.setSimpleProperty(lineItem, field, null);
-          } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException exp) {
-            throw new IllegalArgumentException(
-                "Could not set null value for property >" + field + "< in line item", exp
-            );
-          }
+          setNullForField(lineItem, column);
         }
       }
     }
   }
 
+  private void setNullForField(RequisitionLineItem lineItem, RequisitionTemplateColumn column) {
+    String field = column.getName();
+
+    try {
+      PropertyUtils.setSimpleProperty(lineItem, field, null);
+    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException exp) {
+      throw new IllegalArgumentException(
+          "Could not set null value for property >" + field + "< in line item", exp
+      );
+    }
+  }
+
   private ResponseEntity<RequisitionsProcessingStatusDto> buildResponse(
-      RequisitionsProcessingStatusDto processingStatus) {
+      RequisitionsProcessingStatusDto processingStatus, Profiler profiler) {
+    profiler.start("BUILD_RESPONSE");
     return new ResponseEntity<>(processingStatus, processingStatus.getRequisitionErrors().isEmpty()
         ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
   }

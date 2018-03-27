@@ -205,7 +205,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldRetrieveAll() throws Exception {
+  public void shouldRetrieveAll() throws IOException {
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(permissionService).canViewRequisition(requisition)
@@ -230,7 +230,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldHaveErrorIfUserHasNoRightToView() throws Exception {
+  public void shouldHaveErrorIfUserHasNoRightToView() throws IOException {
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(permissionService).canViewRequisition(requisition)
@@ -244,13 +244,13 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldApproveAll() throws Exception {
+  public void shouldApproveAll() throws IOException {
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     requisitions.forEach(this::spyRequisitionAndStubRepository);
@@ -260,19 +260,18 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldHaveErrorIfUserHasNoRightToApprove() throws Exception {
+  public void shouldHaveErrorIfUserHasNoRightToApprove() throws IOException {
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_APPROVE))
         .when(requisitionService)
-        .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(requisitions.get(0).getId()),
-            eq(userId));
+        .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(userId));
 
     requisitions.forEach(this::spyRequisitionAndStubRepository);
 
@@ -281,13 +280,13 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldHaveErrorIfValidationFails() throws Exception {
+  public void shouldHaveErrorIfValidationFails() throws IOException {
     UUID userId = authenticationHelper.getCurrentUser().getId();
 
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(requisition.getId()), eq(userId))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     requisitions = requisitions.stream()
@@ -309,7 +308,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   // PUT /api/requisitions?saveAll
 
   @Test
-  public void shouldSaveAll() throws Exception {
+  public void shouldSaveAll() throws IOException {
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
@@ -321,7 +320,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldHaveErrorIfUserHasNoRightToUpdate() throws Exception {
+  public void shouldHaveErrorIfUserHasNoRightToUpdate() throws IOException {
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
@@ -539,7 +538,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
       Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
 
       if (null == collection) {
-        return null;
+        return Collections.emptyList();
       }
 
       return collection
