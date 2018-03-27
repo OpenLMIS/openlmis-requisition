@@ -21,7 +21,14 @@ import org.openlmis.requisition.utils.Message;
  * Exception thrown when resource was not found.
  */
 public class ContentNotFoundMessageException extends BaseMessageException {
+  private static final long serialVersionUID = 6586834132550189267L;
+
+  public ContentNotFoundMessageException(String message, Object... params) {
+    this(new Message(message, params));
+  }
+
   public ContentNotFoundMessageException(Message message) {
     super(message);
   }
+
 }
