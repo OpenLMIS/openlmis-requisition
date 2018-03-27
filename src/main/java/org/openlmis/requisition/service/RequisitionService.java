@@ -380,20 +380,16 @@ public class RequisitionService {
   /**
    * Delete given Requisition if possible.
    *
-   * @param requisitionId UUID of Requisition to be deleted.
+   * @param requisition Requisition to be deleted.
    */
-  public void delete(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
-          requisitionId));
-    } else if (!requisition.isDeletable()) {
+  public void delete(Requisition requisition) {
+    if (!requisition.isDeletable()) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_WRONG_STATUS);
     } else if (!requisition.getEmergency() && !isRequisitionNewest(requisition)) {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);
     } else {
-      statusMessageRepository.delete(statusMessageRepository.findByRequisitionId(requisitionId));
+      statusMessageRepository
+          .delete(statusMessageRepository.findByRequisitionId(requisition.getId()));
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
     }
@@ -402,51 +398,39 @@ public class RequisitionService {
   /**
    * Skip given requisition if possible.
    *
-   * @param requisitionId UUID of Requisition to be skipped.
+   * @param requisition Requisition to be skipped.
    * @return Skipped Requisition.
    */
-  public Requisition skip(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
-          requisitionId));
+  public Requisition skip(Requisition requisition) {
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+    if (!requisition.getStatus().isSubmittable()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
+    } else if (!program.getPeriodsSkippable()) {
+      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
+    } else if (requisition.getEmergency()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
     } else {
-      ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-      if (!requisition.getStatus().isSubmittable()) {
-        throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
-      } else if (!program.getPeriodsSkippable()) {
-        throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
-      } else if (requisition.getEmergency()) {
-        throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
-      } else {
-        LOGGER.debug("Requisition skipped");
+      LOGGER.debug("Requisition skipped");
 
-        for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
-          item.skipLineItem(requisition.getTemplate());
-        }
-        requisition.setStatus(SKIPPED);
-        return requisitionRepository.save(requisition);
+      for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
+        item.skipLineItem(requisition.getTemplate());
       }
+      requisition.setStatus(SKIPPED);
+      return requisitionRepository.save(requisition);
     }
   }
 
   /**
    * Reject given requisition if possible.
    *
-   * @param requisitionId UUID of Requisition to be rejected.
+   * @param requisition Requisition to be rejected.
    */
-  public Requisition reject(UUID requisitionId) {
-
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_NOT_FOUND,
-          requisitionId));
-    } else if (requisition.isApprovable()) {
+  public Requisition reject(Requisition requisition) {
+    if (requisition.isApprovable()) {
       UUID userId = authenticationHelper.getCurrentUser().getId();
-      validateCanApproveRequisition(requisition, requisitionId, userId).throwExceptionIfHasErrors();
+      validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
-      LOGGER.debug("Requisition rejected: {}", requisitionId);
+      LOGGER.debug("Requisition rejected: {}", requisition.getId());
       Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
               RequisitionLineItem::getOrderableId).collect(toSet());
       requisition.reject(orderableReferenceDataService.findByIds(orderableIds), userId);
@@ -454,7 +438,7 @@ public class RequisitionService {
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
-          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisitionId));
+          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
     }
   }
 
@@ -584,21 +568,14 @@ public class RequisitionService {
    * exists and that it has got correct status to be eligible for approval.
    *
    * @param requisition the requisition to verify
-   * @param requisitionId requisition ID for which the request was made
    * @param userId the UUID of the user approving the requisition
    * @return ValidationResult instance containing the outcome of this validation
    */
-  public ValidationResult validateCanApproveRequisition(Requisition requisition, UUID requisitionId,
-                                                        UUID userId) {
+  public ValidationResult validateCanApproveRequisition(Requisition requisition, UUID userId) {
 
-    ValidationResult permissionCheck = permissionService.canApproveRequisition(requisitionId);
+    ValidationResult permissionCheck = permissionService.canApproveRequisition(requisition);
     if (permissionCheck.hasErrors()) {
       return permissionCheck;
-    }
-
-    if (requisition == null) {
-      return ValidationResult.notFound(
-          MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId);
     }
 
     if (!requisition.isApprovable()) {
@@ -935,10 +912,10 @@ public class RequisitionService {
       foundFacilities.addAll(facilityReferenceDataService.findAll());
     } else {
       for (String expression : filterValues) {
-        foundFacilities.addAll(facilityReferenceDataService.search(
-            isFilterAll(filterBy) || "facilityCode".equals(filterBy) ? expression : null,
-            isFilterAll(filterBy) || "facilityName".equals(filterBy) ? expression : null,
-            null, false));
+        String code = isFilterAll(filterBy) || "facilityCode".equals(filterBy) ? expression : null;
+        String name = isFilterAll(filterBy) || "facilityName".equals(filterBy) ? expression : null;
+
+        foundFacilities.addAll(facilityReferenceDataService.search(code, name, null, false));
       }
     }
 

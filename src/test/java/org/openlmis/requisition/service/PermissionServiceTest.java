@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asApiKey;
@@ -38,6 +37,12 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_DEL
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_TEMPLATES_MANAGE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,11 +67,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
@@ -142,6 +142,8 @@ public class PermissionServiceTest {
         manageRequisitionTemplateRight);
 
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
+    when(requisitionRepository.findAll(ImmutableSet.of(requisitionId)))
+        .thenReturn(Lists.newArrayList(requisition));
 
     ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
     ReflectionTestUtils.setField(permissionService, "apiKeyPrefix", API_KEY_PREFIX);
@@ -169,7 +171,7 @@ public class PermissionServiceTest {
 
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    expectValidationSucceeds(permissionService.canUpdateRequisition(requisitionId));
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
@@ -179,7 +181,7 @@ public class PermissionServiceTest {
   public void cannotUpdateRequisition() {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisitionId),
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
         RequisitionStatus.INITIATED, REQUISITION_CREATE);
   }
 
@@ -187,7 +189,7 @@ public class PermissionServiceTest {
   public void canSubmitRequisition() throws Exception {
     hasRight(requisitionCreateRight, true);
 
-    permissionService.canSubmitRequisition(requisitionId);
+    permissionService.canSubmitRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
@@ -195,7 +197,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotSubmitRequisition() {
-    expectMissingPermission(permissionService.canSubmitRequisition(requisitionId),
+    expectMissingPermission(permissionService.canSubmitRequisition(requisition),
         REQUISITION_CREATE);
   }
 
@@ -203,7 +205,7 @@ public class PermissionServiceTest {
   public void canApproveRequisition() {
     hasRight(requisitionApproveRight, true);
 
-    permissionService.canApproveRequisition(requisitionId);
+    permissionService.canApproveRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
@@ -211,7 +213,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotApproveRequisition() {
-    expectMissingPermission(permissionService.canApproveRequisition(requisitionId),
+    expectMissingPermission(permissionService.canApproveRequisition(requisition),
         REQUISITION_APPROVE);
   }
 
@@ -219,7 +221,7 @@ public class PermissionServiceTest {
   public void canAuthorizeRequisition() {
     hasRight(requisitionAuthorizeRight, true);
 
-    permissionService.canAuthorizeRequisition(requisitionId);
+    permissionService.canAuthorizeRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRight);
@@ -227,7 +229,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotAuthorizeRequisition() {
-    expectMissingPermission(permissionService.canAuthorizeRequisition(requisitionId),
+    expectMissingPermission(permissionService.canAuthorizeRequisition(requisition),
         REQUISITION_AUTHORIZE);
   }
 
@@ -237,7 +239,7 @@ public class PermissionServiceTest {
     hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionService.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -248,7 +250,7 @@ public class PermissionServiceTest {
     hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+    expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_CREATE);
   }
 
@@ -258,7 +260,7 @@ public class PermissionServiceTest {
     hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
-    permissionService.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -269,7 +271,7 @@ public class PermissionServiceTest {
     hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
-    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+    expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_CREATE);
   }
 
@@ -279,7 +281,7 @@ public class PermissionServiceTest {
     hasRight(requisitionAuthorizeRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
-    permissionService.canDeleteRequisition(requisitionId);
+    permissionService.canDeleteRequisition(requisition);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -290,24 +292,14 @@ public class PermissionServiceTest {
     hasRight(requisitionDeleteRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
-    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+    expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_AUTHORIZE);
   }
 
   @Test
   public void cannotDeleteRequisitionWhenHasNoDeleteRight() {
-    expectMissingPermission(permissionService.canDeleteRequisition(requisitionId),
+    expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_DELETE);
-  }
-
-  @Test
-  public void shouldThrowContentNotFoundMessageExceptionRequisitionWhenIsNotInRepository() {
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
-
-    ValidationResult result = permissionService.canDeleteRequisition(requisitionId);
-    assertEquals(FailureType.NOT_FOUND, result.getError().getType());
-    assertEquals(new Message(ERROR_REQUISITION_NOT_FOUND, requisitionId),
-        result.getError().getMessage());
   }
 
   @Test
@@ -367,11 +359,11 @@ public class PermissionServiceTest {
         is(true)
     );
     assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(true));
-    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(true));
-    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(true));
-    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(true));
-    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(true));
-    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(true));
+    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(true));
+    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(true));
+    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(true));
+    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(true));
+    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(true));
     assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(true));
 
     // Report permissions
@@ -391,11 +383,11 @@ public class PermissionServiceTest {
 
     assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(false));
     assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
-    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
 
     // Report permissions
@@ -415,11 +407,11 @@ public class PermissionServiceTest {
         is(false)
     );
     assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
-    assertThat(permissionService.canApproveRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canAuthorizeRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canDeleteRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canSubmitRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canUpdateRequisition(requisitionId).isSuccess(), is(false));
+    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
+    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
 
     // Report permissions

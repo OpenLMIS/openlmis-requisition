@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -46,6 +47,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_C
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -95,7 +97,6 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
@@ -247,7 +248,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockFacility();
     Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
     doReturn(ValidationResult.success())
-        .when(permissionService).canViewRequisition(requisition.getId());
+        .when(permissionService).canViewRequisition(requisition);
 
     // when
     RequisitionDto result = restAssured.given()
@@ -269,8 +270,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotGetChosenRequisitionWhenUserHasNoRightForView() {
     // given
     String missingPermission = REQUISITION_AUTHORIZE;
+    doReturn(mock(Requisition.class)).when(requisitionRepository).findOne(anyUuid());
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(permissionService).canViewRequisition(anyUuid());
+        .when(permissionService).canViewRequisition(any(Requisition.class));
 
     // when
     restAssured.given()
@@ -347,8 +349,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     Requisition requisition = generateRequisition();
     doReturn(ValidationResult.success())
-        .when(permissionService).canDeleteRequisition(requisition.getId());
-    doNothing().when(requisitionService).delete(requisition.getId());
+        .when(permissionService).canDeleteRequisition(requisition);
+    doNothing().when(requisitionService).delete(requisition);
 
     // when
     restAssured.given()
@@ -361,7 +363,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(204);
 
     // then
-    verify(requisitionService, atLeastOnce()).delete(requisition.getId());
+    verify(requisitionService, atLeastOnce()).delete(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -371,7 +373,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String missingPermission = REQUISITION_DELETE;
     Requisition requisition = generateRequisition();
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(permissionService).canDeleteRequisition(requisition.getId());
+        .when(permissionService).canDeleteRequisition(requisition);
 
     // when
     restAssured.given()
@@ -392,10 +394,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotDeleteNonExistentRequisition() {
     // given
     UUID requisitionId = UUID.randomUUID();
-
-    String errorKey = MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-    doReturn(ValidationResult.notFound(errorKey, requisitionId))
-        .when(permissionService).canDeleteRequisition(requisitionId);
+    given(requisitionRepository.findOne(requisitionId)).willReturn(null);
 
     // when
     restAssured.given()
@@ -416,11 +415,11 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
     doReturn(ValidationResult.success())
-        .when(permissionService).canDeleteRequisition(requisition.getId());
+        .when(permissionService).canDeleteRequisition(requisition);
 
     String errorKey = MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
     ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(requisitionService).delete(requisition.getId());
+    doThrow(exception).when(requisitionService).delete(requisition);
 
     // when
     restAssured.given()
@@ -523,11 +522,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldSubmitValidRequisition() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
 
     doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
     doReturn(ValidationResult.success())
-        .when(permissionService).canSubmitRequisition(requisitionId);
+        .when(permissionService).canSubmitRequisition(requisition);
     doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
         .when(programReferenceDataService).findOne(anyUuid());
 
@@ -538,7 +536,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     BasicRequisitionDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(SUBMIT_URL)
         .then()
@@ -546,7 +544,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .extract().as(BasicRequisitionDto.class);
 
     // then
-    assertEquals(requisitionId, result.getId());
+    assertEquals(requisition.getId(), result.getId());
     verify(requisition, atLeastOnce()).submit(any(), any(UUID.class), anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -555,11 +553,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitWhenPeriodEndDateIsInFuture() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
 
     doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
     doReturn(ValidationResult.success())
-        .when(permissionService).canSubmitRequisition(requisitionId);
+        .when(permissionService).canSubmitRequisition(requisition);
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -574,7 +571,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(SUBMIT_URL)
         .then()
@@ -593,17 +590,16 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSubmitRequisitionWhenUserHasNoRightForSubmit() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
 
     String missingPermission = REQUISITION_CREATE;
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(permissionService).canSubmitRequisition(requisitionId);
+        .when(permissionService).canSubmitRequisition(requisition);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(SUBMIT_URL)
         .then()
@@ -620,11 +616,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotAllowForStatusChangeDuplicationOnSubmit() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
 
     doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
     doReturn(ValidationResult.success())
-        .when(permissionService).canSubmitRequisition(requisitionId);
+        .when(permissionService).canSubmitRequisition(requisition);
     doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
         .when(programReferenceDataService).findOne(anyUuid());
 
@@ -650,7 +645,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(SUBMIT_URL)
         .then()
@@ -667,27 +662,26 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldSkipRequisition() {
     // given
     Requisition requisition = generateRequisition();
-    UUID requisitionId = requisition.getId();
 
     doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisitionId);
+        .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-    given(requisitionService.skip(requisition.getId())).willReturn(requisition);
+    given(requisitionService.skip(requisition)).willReturn(requisition);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .put(SKIP_URL)
         .then()
         .statusCode(200);
 
     // then
-    verify(requisitionService, atLeastOnce()).skip(requisitionId);
+    verify(requisitionService, atLeastOnce()).skip(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -695,13 +689,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotSkipRequisitionIfUserHasNoRightForCreate() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
-    UUID requisitionId = requisition.getId();
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
 
     String missingPermission = REQUISITION_CREATE;
 
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(permissionService).canUpdateRequisition(requisitionId);
+        .when(permissionService).canUpdateRequisition(requisition);
 
     // when
     restAssured.given()
@@ -715,7 +708,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).skip(requisition.getId());
+    verify(requisitionService, never()).skip(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -733,12 +726,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldReturnNotFoundWhenSkippingNonExistentRequisition() {
     // given
     UUID requisitionId = UUID.randomUUID();
-
-    String errorKey = MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-    ContentNotFoundMessageException exception = mockNotFoundException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).skip(requisitionId);
-    doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisitionId);
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
 
     // when
     restAssured.given()
@@ -749,7 +737,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .put(SKIP_URL)
         .then()
         .statusCode(404)
-        .body(MESSAGE, equalTo(getMessage(errorKey, requisitionId)));
+        .body(MESSAGE, equalTo(getMessage(ERROR_REQUISITION_NOT_FOUND, requisitionId)));
 
     // then
     verify(requisitionRepository, never()).save(any(Requisition.class));
@@ -762,9 +750,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldRejectRequisition() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition.getId())).willReturn(requisition);
+    given(requisitionService.reject(requisition)).willReturn(requisition);
     doReturn(ValidationResult.success())
-        .when(permissionService).canApproveRequisition(requisition.getId());
+        .when(permissionService).canApproveRequisition(requisition);
 
     // when
     restAssured.given()
@@ -777,25 +765,24 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200);
 
     // then
-    verify(requisitionService, atLeastOnce()).reject(requisition.getId());
+    verify(requisitionService, atLeastOnce()).reject(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotRejectRequisitionWhenUserHasNoRightForApprove() {
     // given
-    Requisition requisition = spy(generateRequisition(RequisitionStatus.AUTHORIZED));
-    UUID requisitionId = requisition.getId();
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
 
     String missingPermission = REQUISITION_APPROVE;
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(permissionService).canApproveRequisition(requisitionId);
+        .when(permissionService).canApproveRequisition(requisition);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .put(REJECT_URL)
         .then()
@@ -803,7 +790,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).reject(requisitionId);
+    verify(requisitionService, never()).reject(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -815,12 +802,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
 
     doReturn(ValidationResult.success())
-        .when(permissionService).canApproveRequisition(requisitionId);
+        .when(permissionService).canApproveRequisition(requisition);
 
     String errorKey = MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 
     ValidationMessageException exception = mockValidationException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).reject(requisition.getId());
+    doThrow(exception).when(requisitionService).reject(requisition);
 
     // when
     restAssured.given()
@@ -855,7 +842,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
-        .canAuthorizeRequisition(anyUuid());
+        .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
 
     // when
@@ -887,7 +874,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
-        .canAuthorizeRequisition(anyUuid());
+        .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
 
     ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
@@ -922,7 +909,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     String missingPermission = REQUISITION_AUTHORIZE;
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, REQUISITION_AUTHORIZE))
-        .when(permissionService).canAuthorizeRequisition(requisitionId);
+        .when(permissionService).canAuthorizeRequisition(requisition);
 
     // when
     restAssured.given()
@@ -1112,7 +1099,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
-        anyUuid(), anyUuid());
+        anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
@@ -1153,8 +1140,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     String missingPermission = REQUISITION_APPROVE;
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class), anyUuid(),
-        anyUuid());
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class), anyUuid());
 
     // when
     restAssured.given()
@@ -1181,7 +1167,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION,
         requisitionId))
         .when(requisitionService)
-        .validateCanApproveRequisition(any(Requisition.class), anyUuid(), anyUuid());
+        .validateCanApproveRequisition(any(Requisition.class), anyUuid());
 
     // when
     restAssured.given()
@@ -1619,17 +1605,18 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
   private void testSkipRequisitionValidationFailure(String messageKey, Object... messageParams) {
     // given
+    Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
     doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(any(UUID.class));
+        .when(permissionService).canUpdateRequisition(requisition);
 
     ValidationMessageException exception = mockValidationException(messageKey, messageParams);
-    doThrow(exception).when(requisitionService).skip(any(UUID.class));
+    doThrow(exception).when(requisitionService).skip(requisition);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
+        .pathParam("id", requisition.getId())
         .when()
         .put(SKIP_URL)
         .then()
@@ -1637,7 +1624,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(messageKey, messageParams)));
 
     // then
-    verify(requisitionService, atLeastOnce()).skip(any(UUID.class));
+    verify(requisitionService, atLeastOnce()).skip(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1735,14 +1722,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return exception;
   }
 
-  private ContentNotFoundMessageException mockNotFoundException(String key, Object... args) {
-    ContentNotFoundMessageException exception = mock(ContentNotFoundMessageException.class);
-    Message errorMessage = new Message(key, args);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
-  }
-
   private void mockStockEventServiceResponses() {
     when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
@@ -1831,7 +1810,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
       Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
 
       if (null == collection) {
-        return null;
+        return emptyList();
       }
 
       return collection

@@ -197,7 +197,7 @@ public class RequisitionController extends BaseRequisitionController {
   public BasicRequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("SUBMIT_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
-    checkPermission(profiler, () -> permissionService.canSubmitRequisition(requisitionId));
+    checkPermission(profiler, () -> permissionService.canSubmitRequisition(requisition));
     validateForStatusChange(requisition, profiler);
     checkIfPeriodIsValid(requisition, profiler);
 
@@ -234,10 +234,11 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
-    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisitionId));
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
 
     profiler.start("DELETE");
-    requisitionService.delete(requisitionId);
+    requisitionService.delete(requisition);
 
     stopProfiler(profiler);
   }
@@ -307,8 +308,8 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
-    checkPermission(profiler, () -> permissionService.canViewRequisition(requisitionId));
     Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
     RequisitionDto requisitionDto = buildDto(
         profiler, requisition,
         findOrderables(requisition, profiler),
@@ -370,14 +371,15 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
-    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisitionId));
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
 
     profiler.start("SKIP");
-    Requisition requisition = requisitionService.skip(requisitionId);
+    Requisition skippedRequisition = requisitionService.skip(requisition);
 
-    callStatusChangeProcessor(profiler, requisition);
+    callStatusChangeProcessor(profiler, skippedRequisition);
 
-    BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
+    BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
 
     stopProfiler(profiler, dto);
     return dto;
@@ -391,10 +393,11 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public BasicRequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("REJECT", requisitionId);
-    checkPermission(profiler, () -> permissionService.canApproveRequisition(requisitionId));
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canApproveRequisition(requisition));
 
     profiler.start("REJECT");
-    Requisition rejectedRequisition = requisitionService.reject(requisitionId);
+    Requisition rejectedRequisition = requisitionService.reject(requisition);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
@@ -419,8 +422,7 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
     checkPermission(
         profiler,
-        () -> requisitionService
-            .validateCanApproveRequisition(requisition, requisitionId, user.getId())
+        () -> requisitionService.validateCanApproveRequisition(requisition, user.getId())
     );
 
     validateForStatusChange(requisition, profiler);
@@ -497,7 +499,7 @@ public class RequisitionController extends BaseRequisitionController {
   public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("AUTHORIZE_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
-    checkPermission(profiler, () -> permissionService.canAuthorizeRequisition(requisitionId));
+    checkPermission(profiler, () -> permissionService.canAuthorizeRequisition(requisition));
     validateForStatusChange(requisition, profiler);
     checkIfPeriodIsValid(requisition, profiler);
 

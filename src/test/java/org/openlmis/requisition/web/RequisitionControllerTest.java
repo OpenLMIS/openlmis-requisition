@@ -332,7 +332,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotSubmitInvalidRequisition() {
-    when(permissionService.canSubmitRequisition(uuid1))
+    when(permissionService.canSubmitRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
     doReturn(fieldErrors)
         .when(initiatedRequsition)
@@ -435,7 +435,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
@@ -465,7 +464,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
@@ -491,7 +489,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
@@ -512,7 +509,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition);
@@ -532,7 +528,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
@@ -592,7 +587,6 @@ public class RequisitionControllerTest {
     PermissionMessageException exception = mock(PermissionMessageException.class);
     doThrow(exception).when(requisitionService).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -600,30 +594,30 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
-    when(permissionService.canApproveRequisition(authorizedRequsition.getId()))
+    when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).reject(authorizedRequsition.getId());
+    verify(requisitionService, times(1)).reject(authorizedRequsition);
   }
 
   @Test
   public void shouldNotRejectRequisitionWhenUserCanNotApproveRequisition() {
     doReturn(ValidationResult.noPermission("notAuthorized"))
-        .when(permissionService).canApproveRequisition(uuid4);
+        .when(permissionService).canApproveRequisition(authorizedRequsition);
 
-    assertThatThrownBy(() -> requisitionController.rejectRequisition(uuid4))
+    assertThatThrownBy(() -> requisitionController.rejectRequisition(authorizedRequsition.getId()))
         .isInstanceOf(PermissionMessageException.class);
 
-    verify(requisitionService, times(0)).reject(uuid4);
+    verify(requisitionService, times(0)).reject(authorizedRequsition);
   }
 
   @Test
   public void shouldCallRequisitionStatusNotifierWhenReject() {
-    when(permissionService.canApproveRequisition(authorizedRequsition.getId()))
+    when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition.getId())).thenReturn(initiatedRequsition);
+    when(requisitionService.reject(authorizedRequsition)).thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
@@ -633,7 +627,6 @@ public class RequisitionControllerTest {
   @Test
   public void shouldProcessStatusChangeWhenApprovingRequisition() throws Exception {
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class),
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
@@ -642,7 +635,6 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
-        any(UUID.class),
         any(UUID.class));
 
     verify(requisitionStatusProcessor).statusChange(authorizedRequsition);
@@ -687,7 +679,7 @@ public class RequisitionControllerTest {
   }
 
   private void mockDependenciesForSubmit() {
-    when(permissionService.canSubmitRequisition(uuid1))
+    when(permissionService.canSubmitRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
@@ -790,13 +782,12 @@ public class RequisitionControllerTest {
   private void setUpApprover() {
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class),
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
   }
 
   private void setUpAuthorizer() {
-    when(permissionService.canAuthorizeRequisition(submittedRequsition.getId()))
+    when(permissionService.canAuthorizeRequisition(submittedRequsition))
         .thenReturn(ValidationResult.success());
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
