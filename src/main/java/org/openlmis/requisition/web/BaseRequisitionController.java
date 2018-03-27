@@ -16,7 +16,10 @@
 package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.ImmutableList;
@@ -24,6 +27,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -46,7 +50,6 @@ import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -285,46 +288,33 @@ public abstract class BaseRequisitionController extends BaseController {
 
   Requisition findRequisition(UUID requisitionId, Profiler profiler) {
     profiler.start("GET_REQUISITION_BY_ID");
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-
-    if (requisition == null) {
-      stopProfiler(profiler);
-
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, requisitionId));
-    }
-
-    return requisition;
+    return findResource(
+        profiler, requisitionId, requisitionRepository::findOne, ERROR_REQUISITION_NOT_FOUND
+    );
   }
 
   FacilityDto findFacility(UUID facilityId, Profiler profiler) {
     profiler.start("GET_FACILITY");
-
-    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
-
-    if (facility == null) {
-      stopProfiler(profiler);
-
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_FACILITY_NOT_FOUND, facilityId));
-    }
-
-    return facility;
+    return findResource(
+        profiler, facilityId, facilityReferenceDataService::findOne, ERROR_FACILITY_NOT_FOUND
+    );
   }
 
   ProgramDto findProgram(UUID programId, Profiler profiler) {
     profiler.start("GET_PROGRAM");
+    return findResource(
+        profiler, programId, programReferenceDataService::findOne, ERROR_PROGRAM_NOT_FOUND
+    );
+  }
 
-    ProgramDto program = programReferenceDataService.findOne(programId);
-
-    if (program == null) {
-      stopProfiler(profiler);
-
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_PROGRAM_NOT_FOUND, programId));
-    }
-
-    return program;
+  private <R> R findResource(Profiler profiler, UUID id, Function<UUID, R> finder,
+      String errorMessage) {
+    return Optional
+        .ofNullable(finder.apply(id))
+        .orElseThrow(() -> {
+          stopProfiler(profiler);
+          return new ContentNotFoundMessageException(errorMessage, id);
+        });
   }
 
   Map<UUID, OrderableDto> findOrderables(Requisition requisition, Profiler profiler) {
