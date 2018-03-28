@@ -18,19 +18,24 @@ package org.openlmis.requisition.domain.requisition;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.utils.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 
 public class RequisitionValidationService {
-
-  private static final Logger logger = LoggerFactory.getLogger(RequisitionValidationService.class);
+  private static final XLogger XLOGGER = XLoggerFactory
+      .getXLogger(RequisitionValidationService.class);
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(RequisitionValidationService.class);
 
   private final Requisition savedRequisition;
   private List<RequisitionUpdateDomainValidator> validators = new ArrayList<>();
@@ -58,23 +63,31 @@ public class RequisitionValidationService {
    * Validates if requisition can be updated. Return errors as {@link ValidationResult}.
    */
   ValidationResult validateRequisitionCanBeUpdated() {
+    XLOGGER.entry();
+    Profiler profiler = new Profiler("VALIDATE_REQUISITION_CAN_BE_UPDATE");
+
     Map<String, Message> errors = new HashMap<>();
 
     for (RequisitionUpdateDomainValidator validator : validators) {
-      if (!validator.isForRegularOnly()) {
+      if (!validator.isForRegularOnly()
+          || isNotTrue(savedRequisition.getEmergency()) && validator.isForRegularOnly()) {
+        profiler.start("USE_" + validator.getName());
         validator.validateCanUpdate(errors);
       }
-      if (isNotTrue(savedRequisition.getEmergency()) && validator.isForRegularOnly()) {
-        validator.validateCanUpdate(errors);
-      }
-
     }
+
+    ValidationResult result;
+
     if (isEmpty(errors)) {
-      return ValidationResult.success();
+      result = ValidationResult.success();
+    } else {
+      LOGGER.warn("Validation for requisition update failed: {}", errors);
+      result = ValidationResult.fieldErrors(errors);
     }
 
-    logger.warn("Validation for requisition update failed: {}", errors);
-    return ValidationResult.fieldErrors(errors);
+    profiler.stop().log();
+    XLOGGER.exit(result);
 
+    return result;
   }
 }

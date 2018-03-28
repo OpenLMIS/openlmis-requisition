@@ -37,6 +37,13 @@ interface RequisitionUpdateDomainValidator {
   boolean isForRegularOnly();
 
   /**
+   * Returns validator name.
+   */
+  default String getName() {
+    return getClass().getName();
+  }
+
+  /**
    * Rejects if template field is null and calculated.
    */
   default void rejectIfCalculatedAndNotNull(Map<String, Message> errors,
