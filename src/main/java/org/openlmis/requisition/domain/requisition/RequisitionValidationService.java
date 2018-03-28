@@ -65,12 +65,17 @@ public class RequisitionValidationService {
   ValidationResult validateRequisitionCanBeUpdated() {
     XLOGGER.entry();
     Profiler profiler = new Profiler("VALIDATE_REQUISITION_CAN_BE_UPDATE");
+    profiler.setLogger(XLOGGER);
 
     Map<String, Message> errors = new HashMap<>();
 
     for (RequisitionUpdateDomainValidator validator : validators) {
-      if (!validator.isForRegularOnly()
-          || isNotTrue(savedRequisition.getEmergency()) && validator.isForRegularOnly()) {
+      if (!validator.isForRegularOnly()) {
+        profiler.start("USE_" + validator.getName());
+        validator.validateCanUpdate(errors);
+      }
+
+      if (validator.isForRegularOnly() && isNotTrue(savedRequisition.getEmergency())) {
         profiler.start("USE_" + validator.getName());
         validator.validateCanUpdate(errors);
       }
