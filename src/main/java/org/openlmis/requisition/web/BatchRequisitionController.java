@@ -15,10 +15,25 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 import com.google.common.collect.Lists;
-
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -34,35 +49,29 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.security.SpringSecurityRunnableWrapper;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Controller
 public class BatchRequisitionController extends BaseRequisitionController {
@@ -75,6 +84,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private PeriodService periodService;
+
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeService;
+
+  @Value("${batchRequisition.poolSize}")
+  private int poolSize;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -145,21 +160,42 @@ public class BatchRequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_VALIDATE_AND_APPROVE_REQUISITIONS");
-    for (UUID requisitionId : uuids) {
-      Requisition requisition = requisitionRepository.findOne(requisitionId);
 
-      ValidationResult validationResult = requisitionService
-          .validateCanApproveRequisition(requisition, user.getId());
-      if (!addValidationErrors(processingStatus, validationResult, requisitionId)) {
-        validationResult = getValidationResultForStatusChange(requisition);
-        if (!addValidationErrors(processingStatus, validationResult, requisitionId)) {
-          doApprove(requisition, user);
-          processingStatus.addProcessedRequisition(
-              new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
-        }
+    List<Requisition> requisitions = uuids.stream()
+        .map(id -> requisitionRepository.findOne(id))
+        .collect(toList());
+
+    List<UUID> supervisoryNodeIds = requisitions.stream()
+        .map(Requisition::getSupervisoryNodeId)
+        .collect(toList());
+
+    Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = supervisoryNodeService
+        .findByIds(supervisoryNodeIds)
+        .stream()
+        .collect(toMap(SupervisoryNodeDto::getId, supervisoryNode -> supervisoryNode));
+
+    ExecutorService executor = Executors.newFixedThreadPool(poolSize);
+    List<CompletableFuture<Void>> futures = Lists.newArrayList();
+
+    profiler.start("DO_READ");
+    try {
+      for (Requisition requisition : requisitions) {
+        SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
+            .get(requisition.getSupervisoryNodeId());
+        Runnable runnable =
+            () -> validateAndApprove(requisition, processingStatus, user, supervisoryNode);
+        Runnable runnableWrapper = new SpringSecurityRunnableWrapper(
+            SecurityContextHolder.getContext(), runnable);
+        CompletableFuture<Void> future = runAsync(runnableWrapper, executor);
+        futures.add(future);
       }
+    } finally {
+      profiler.start("JOIN_RESULTS");
+
+      futures.forEach(CompletableFuture::join);
     }
 
+    profiler.start("BUILD_RESPONSE");
     ResponseEntity response = buildResponse(processingStatus, profiler);
 
     profiler.stop().log();
@@ -211,18 +247,35 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("REMOVE_SKIPPED_PRODUCTS");
     processingStatus.removeSkippedProducts();
 
-    ResponseEntity response = buildResponse(processingStatus, profiler);
+    ResponseEntity<RequisitionsProcessingStatusDto> response =
+        buildResponse(processingStatus, profiler);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
     return response;
   }
 
+  private void validateAndApprove(Requisition requisition,
+      RequisitionsProcessingStatusDto processingStatus,
+      UserDto user,
+      SupervisoryNodeDto supervisoryNode) {
+    ValidationResult validationResult = requisitionService
+        .validateCanApproveRequisition(requisition, user.getId());
+    if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
+      validationResult = getValidationResultForStatusChange(requisition);
+      if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
+        doApprove(requisition, user, supervisoryNode);
+        processingStatus.addProcessedRequisition(
+            new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
+      }
+    }
+  }
+
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
     Map<UUID, OrderableDto> orderables = orderableReferenceDataService
         .findByIds(requisitionToUpdate.getAllOrderableIds())
         .stream()
-        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+        .collect(toMap(OrderableDto::getId, Function.identity()));
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDtoBuilder.build(requisitionToUpdate),
@@ -336,6 +389,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     return orderableReferenceDataService.findByIds(orderableIds)
         .stream()
-        .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
+        .collect(toMap(BasicOrderableDto::getId, orderable -> orderable));
   }
 }

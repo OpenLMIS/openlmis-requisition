@@ -58,7 +58,6 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -99,9 +98,6 @@ public abstract class BaseRequisitionController extends BaseController {
 
   @Autowired
   BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
-
-  @Autowired
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Autowired
   RequisitionVersionValidator requisitionVersionValidator;
@@ -168,26 +164,24 @@ public abstract class BaseRequisitionController extends BaseController {
     return buildDto(profiler, toUpdate, orderables, facility, program);
   }
 
-  BasicRequisitionDto doApprove(Requisition requisition, UserDto user) {
+  BasicRequisitionDto doApprove(Requisition requisition, UserDto user,
+        SupervisoryNodeDto supervisoryNode) {
     Profiler profiler = getProfiler("DO_APPROVE", requisition, user);
     checkIfPeriodIsValid(requisition, profiler);
-
-    profiler.start("GET_SUPERVISORY_NODE");
-    SupervisoryNodeDto supervisoryNodeDto =
-        supervisoryNodeReferenceDataService.findOne(requisition.getSupervisoryNodeId());
 
     SupervisoryNodeDto parentNode = null;
     UUID parentNodeId = null;
 
     profiler.start("SET_PARENT_NODE_ID");
-    if (supervisoryNodeDto != null) {
-      parentNode = supervisoryNodeDto.getParentNode();
+    if (supervisoryNode != null) {
+      parentNode = supervisoryNode.getParentNode();
     }
 
     if (parentNode != null) {
       parentNodeId = parentNode.getId();
     }
 
+    profiler.start("GET_SUPPLY_LINE");
     List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
 

@@ -15,17 +15,15 @@
 
 package org.openlmis.requisition.dto;
 
-import org.apache.commons.lang3.BooleanUtils;
-
-import lombok.Getter;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import org.apache.commons.lang3.BooleanUtils;
 
 /**
  * Represents the results of a batch processing of requisitions.
@@ -37,8 +35,8 @@ public class RequisitionsProcessingStatusDto {
   private List<RequisitionErrorMessage> requisitionErrors;
 
   public RequisitionsProcessingStatusDto() {
-    this.requisitionDtos = new ArrayList<>();
-    this.requisitionErrors = new ArrayList<>();
+    this.requisitionDtos = new CopyOnWriteArrayList<>();
+    this.requisitionErrors = new CopyOnWriteArrayList<>();
   }
 
   public void addProcessedRequisition(ApproveRequisitionDto requisitionDto) {

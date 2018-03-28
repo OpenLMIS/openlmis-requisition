@@ -42,12 +42,14 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
@@ -87,6 +89,9 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
+
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeService;
 
   @Autowired
   private ReasonsValidator reasonsValidator;
@@ -430,8 +435,12 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateForStatusChange(requisition, profiler);
 
+    profiler.start("GET_SUPERVISORY_NODE");
+    SupervisoryNodeDto supervisoryNodeDto = supervisoryNodeService
+        .findOne(requisition.getSupervisoryNodeId());
+
     profiler.start("DO_APPROVE");
-    BasicRequisitionDto requisitionDto = doApprove(requisition, user);
+    BasicRequisitionDto requisitionDto = doApprove(requisition, user, supervisoryNodeDto);
 
     stopProfiler(profiler, requisitionDto);
     return requisitionDto;

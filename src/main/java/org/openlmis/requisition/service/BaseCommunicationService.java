@@ -294,6 +294,33 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
+  protected <P> ResponseEntity<P> runWithRetryAndTokenRetry(HttpTask<P> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
+        // the token has (most likely) expired - clear the cache and retry once
+        authService.clearTokenCache();
+        return runWithRetry(task);
+      }
+      if (ex.getStatusCode().is4xxClientError() || ex.getStatusCode().is5xxServerError()) {
+        return runWithTokenRetry(task);
+      }
+      throw ex;
+    }
+  }
+
+  private <P> ResponseEntity<P> runWithRetry(HttpTask<P> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (ex.getStatusCode().is4xxClientError() || ex.getStatusCode().is5xxServerError()) {
+        return task.run();
+      }
+      throw ex;
+    }
+  }
+
   @FunctionalInterface
   protected interface HttpTask<T> {
 

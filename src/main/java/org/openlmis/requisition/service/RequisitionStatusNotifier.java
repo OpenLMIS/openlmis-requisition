@@ -76,8 +76,8 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
     List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
-      LOGGER.error("Could not find status changes for requisition " + requisition.getId() + "to "
-          + "notify for requisition status change.");
+      LOGGER.error("Could not find status changes for requisition {} to "
+          + "notify for requisition status change.", requisition.getId());
       return;
     }
 
@@ -121,16 +121,22 @@ public class RequisitionStatusNotifier extends BaseNotifier {
   }
 
   private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
-    Optional<StatusChange> initiateAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.INITIATED)
-        .findFirst();
-    if (!initiateAuditEntry.isPresent() || initiateAuditEntry.get().getAuthorId() == null) {
+    UUID initiatorId = getInitiatorId(statusChanges);
+    if (initiatorId == null) {
       LOGGER.warn("Could not find initiator for requisition %s to notify "
           + "for requisition status change.", requisitionId);
       return null;
     }
+    return userReferenceDataService.findOne(initiatorId);
+  }
 
-    return userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
+  private UUID getInitiatorId(List<StatusChange> statusChanges) {
+    for (StatusChange statusChange : statusChanges) {
+      if (statusChange.getStatus() == RequisitionStatus.INITIATED) {
+        return statusChange.getAuthorId();
+      }
+    }
+    return null;
   }
 
   private String getRequisitionUrl(Requisition requisition) {

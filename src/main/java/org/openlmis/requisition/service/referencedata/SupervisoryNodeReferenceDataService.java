@@ -15,11 +15,14 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class SupervisoryNodeReferenceDataService
@@ -51,4 +54,16 @@ public class SupervisoryNodeReferenceDataService
     return content.isEmpty() ? null : content.get(0);
   }
 
+  /**
+   * Finds orderables by their ids.
+   *
+   * @param ids ids to look for.
+   * @return a page of orderables
+   */
+  public List<SupervisoryNodeDto> findByIds(Collection<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Collections.emptyList();
+    }
+    return getPage(RequestParameters.init().set("id", ids)).getContent();
+  }
 }

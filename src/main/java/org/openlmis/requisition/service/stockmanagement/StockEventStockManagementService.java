@@ -56,7 +56,7 @@ public class StockEventStockManagementService
     LOGGER.debug("Sending Stock Events to Stock Management: {}", stockEventDto);
 
     try {
-      runWithTokenRetry(() ->
+      runWithRetryAndTokenRetry(() ->
           restTemplate.exchange(
               createUri(url),
               HttpMethod.POST,
