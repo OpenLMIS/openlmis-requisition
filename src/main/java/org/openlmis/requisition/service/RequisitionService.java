@@ -425,15 +425,13 @@ public class RequisitionService {
    *
    * @param requisition Requisition to be rejected.
    */
-  public Requisition reject(Requisition requisition) {
+  public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
     if (requisition.isApprovable()) {
       UUID userId = authenticationHelper.getCurrentUser().getId();
       validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
       LOGGER.debug("Requisition rejected: {}", requisition.getId());
-      Set<UUID> orderableIds = requisition.getRequisitionLineItems().stream().map(
-              RequisitionLineItem::getOrderableId).collect(toSet());
-      requisition.reject(orderableReferenceDataService.findByIds(orderableIds), userId);
+      requisition.reject(orderables, userId);
       saveStatusMessage(requisition);
       return requisitionRepository.save(requisition);
     } else {
@@ -797,18 +795,16 @@ public class RequisitionService {
 
   /**
    * Approves requisition.
-   * @param parentNodeId  supervisoryNode that has a supply line for the requisition's program.
-   * @param userId        user who approves this requisition.
-   * @param orderableIds  orderable products that will be used by line items
- *                      to update packs to ship.
-   * @param requisition   requisition to be approved
-   * @param supplyLines supplyLineDtos of the supervisoryNode that has
-   *                    a supply line for the requisition's program.
+   *
+   * @param parentNodeId supervisoryNode that has a supply line for the requisition's program.
+   * @param userId user who approves this requisition.
+   * @param orderables orderable products that will be used by line items to update packs to ship.
+   * @param requisition requisition to be approved
+   * @param supplyLines supplyLineDtos of the supervisoryNode that has a supply line for the
+   *                    requisition's program.
    */
-  public void doApprove(UUID parentNodeId, UUID userId, Set<UUID> orderableIds,
+  public void doApprove(UUID parentNodeId, UUID userId, Map<UUID, OrderableDto> orderables,
                         Requisition requisition, List<SupplyLineDto> supplyLines) {
-    Collection<OrderableDto> orderables = orderableReferenceDataService.findByIds(orderableIds);
-
     requisition.approve(parentNodeId, orderables, supplyLines, userId);
 
     saveStatusMessage(requisition);

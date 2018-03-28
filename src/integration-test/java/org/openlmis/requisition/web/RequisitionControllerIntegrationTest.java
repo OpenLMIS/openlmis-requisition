@@ -17,6 +17,7 @@ package org.openlmis.requisition.web;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -31,6 +32,7 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -581,7 +583,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
                 processingPeriodDto.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid(),
+    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
         anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -607,7 +609,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid(),
+    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
         anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -750,7 +752,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldRejectRequisition() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition)).willReturn(requisition);
+    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -765,7 +767,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200);
 
     // then
-    verify(requisitionService, atLeastOnce()).reject(requisition);
+    verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -790,7 +792,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).reject(requisition);
+    verify(requisitionService, never()).reject(requisition, emptyMap());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -807,7 +809,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     String errorKey = MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 
     ValidationMessageException exception = mockValidationException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).reject(requisition);
+    doThrow(exception).when(requisitionService).reject(requisition, emptyMap());
 
     // when
     restAssured.given()
@@ -840,7 +842,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(supervisoryNode);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -855,7 +857,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200);
 
     // then
-    verify(requisition, atLeastOnce()).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
+    verify(requisition, atLeastOnce())
+        .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -872,7 +875,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .willReturn(supervisoryNode);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyCollectionOf(OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -896,7 +899,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
                 processingPeriodDto.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid(),
+    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
         anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -922,7 +925,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).authorize(anyCollectionOf(OrderableDto.class), any(UUID.class));
+    verify(requisition, never())
+        .authorize(anyMapOf(UUID.class, OrderableDto.class), any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1100,7 +1104,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
-    doNothing().when(requisition).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
@@ -1127,7 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             MESSAGE, containsString(ISO_DATE.format(processingPeriodDto.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyCollectionOf(OrderableDto.class), anyUuid(),
+    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
         anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1153,7 +1157,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+    verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1181,7 +1185,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
             requisitionId, "")));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyCollectionOf(OrderableDto.class),
+    verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

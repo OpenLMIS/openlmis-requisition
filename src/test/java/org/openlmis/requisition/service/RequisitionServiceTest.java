@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +54,7 @@ import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 import static org.openlmis.requisition.utils.Pagination.NO_PAGINATION;
 import static org.openlmis.requisition.utils.Pagination.getPage;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -431,7 +433,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition);
+    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -444,7 +446,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition);
+    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -458,7 +460,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition);
+    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
@@ -468,14 +470,14 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {
     requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition);
+    requisitionService.reject(requisition, emptyMap());
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws ValidationMessageException {
     requisition.setStatus(APPROVED);
-    requisitionService.reject(requisition);
+    requisitionService.reject(requisition, emptyMap());
   }
 
   @Test
@@ -1054,14 +1056,14 @@ public class RequisitionServiceTest {
 
     UUID parentId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-    Set<UUID> orderableIds = singleton(UUID.randomUUID());
 
     requisitionService.doApprove(
-        parentId, userId, orderableIds, requisitionMock, singletonList(supplyLineDto)
+        parentId, userId, ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable),
+        requisitionMock, singletonList(supplyLineDto)
     );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
-        eq(singletonList(fullSupplyOrderable)),
+        eq(ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable)),
         eq(singletonList(supplyLineDto)), eq(userId));
   }
 

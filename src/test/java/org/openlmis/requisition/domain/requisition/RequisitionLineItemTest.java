@@ -125,7 +125,7 @@ public class RequisitionLineItemTest {
     item.setOrderableId(productId);
 
     // when
-    item.updatePacksToShip(Collections.singletonList(product));
+    item.updatePacksToShip(product);
 
     // then
     assertEquals(5L, item.getPacksToShip().longValue());

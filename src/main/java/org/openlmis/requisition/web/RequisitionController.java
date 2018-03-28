@@ -74,7 +74,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Controller
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
-  private static final String GET_ORDERABLES_FOR_LINE_ITEMS = "GET_ORDERABLES_FOR_LINE_ITEMS";
   private static final String BUILD_DTO_LIST = "BUILD_DTO_LIST";
 
   @Autowired
@@ -139,7 +138,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     RequisitionDto requisitionDto = buildDto(
         profiler, newRequisition,
-        findOrderables(newRequisition, profiler),
+        findOrderables(profiler, newRequisition::getAllOrderableIds),
         facility, program
     );
     stopProfiler(profiler, requisitionDto);
@@ -204,13 +203,12 @@ public class RequisitionController extends BaseRequisitionController {
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
-
-    profiler.start(GET_ORDERABLES_FOR_LINE_ITEMS);
-    List<OrderableDto> orderableIds = orderableReferenceDataService
-        .findByIds(getLineItemOrderableIds(requisition));
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
 
     profiler.start("SUBMIT");
-    requisition.submit(orderableIds, getCurrentUser(profiler).getId(),
+    requisition.submit(orderables, getCurrentUser(profiler).getId(),
         program.getSkipAuthorization());
 
     profiler.start("SAVE");
@@ -267,7 +265,9 @@ public class RequisitionController extends BaseRequisitionController {
         () -> requisitionService.validateCanSaveRequisition(requisitionToUpdate)
     );
 
-    Map<UUID, OrderableDto> orderables = findOrderables(requisitionToUpdate, profiler);
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, requisitionToUpdate::getAllOrderableIds
+    );
 
     profiler.start("BUILD_REQUISITION_UPDATER");
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
@@ -312,7 +312,7 @@ public class RequisitionController extends BaseRequisitionController {
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
     RequisitionDto requisitionDto = buildDto(
         profiler, requisition,
-        findOrderables(requisition, profiler),
+        findOrderables(profiler, requisition::getAllOrderableIds),
         findFacility(requisition.getFacilityId(), profiler),
         findProgram(requisition.getProgramId(), profiler)
     );
@@ -395,9 +395,12 @@ public class RequisitionController extends BaseRequisitionController {
     Profiler profiler = getProfiler("REJECT", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canApproveRequisition(requisition));
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
 
     profiler.start("REJECT");
-    Requisition rejectedRequisition = requisitionService.reject(requisition);
+    Requisition rejectedRequisition = requisitionService.reject(requisition, orderables);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
@@ -505,12 +508,12 @@ public class RequisitionController extends BaseRequisitionController {
 
     UserDto user = getCurrentUser(profiler);
 
-    profiler.start(GET_ORDERABLES_FOR_LINE_ITEMS);
-    List<OrderableDto> orderableIds = orderableReferenceDataService.findByIds(
-        getLineItemOrderableIds(requisition));
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
 
     profiler.start("AUTHORIZE");
-    requisition.authorize(orderableIds, user.getId());
+    requisition.authorize(orderables, user.getId());
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition);

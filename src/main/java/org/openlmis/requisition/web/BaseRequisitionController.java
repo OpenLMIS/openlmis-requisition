@@ -142,7 +142,9 @@ public abstract class BaseRequisitionController extends BaseController {
 
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
-    Map<UUID, OrderableDto> orderables = findOrderables(requisitionToUpdate, profiler);
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, requisitionToUpdate::getAllOrderableIds
+    );
 
     RequisitionDto dto = doUpdate(
         requisitionToUpdate, requisition, orderables, facility, program, profiler
@@ -156,7 +158,7 @@ public abstract class BaseRequisitionController extends BaseController {
       Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
       Profiler profiler) {
     profiler.start("UPDATE");
-    toUpdate.updateFrom(requisition, orderables.values(),
+    toUpdate.updateFrom(requisition, orderables,
         datePhysicalStockCountCompletedEnabledPredicate.exec(program));
 
     profiler.start("SAVE");
@@ -189,8 +191,11 @@ public abstract class BaseRequisitionController extends BaseController {
     List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
 
-    requisitionService.doApprove(parentNodeId, user.getId(),
-        getLineItemOrderableIds(requisition), requisition, supplyLines);
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
+
+    requisitionService.doApprove(parentNodeId, user.getId(), orderables, requisition, supplyLines);
 
     if (requisition.getStatus().isApproved()) {
       submitStockEvent(requisition, profiler);
@@ -317,10 +322,10 @@ public abstract class BaseRequisitionController extends BaseController {
         });
   }
 
-  Map<UUID, OrderableDto> findOrderables(Requisition requisition, Profiler profiler) {
+  Map<UUID, OrderableDto> findOrderables(Profiler profiler, Supplier<Set<UUID>> supplier) {
     profiler.start("GET_ORDERABLES");
     return orderableReferenceDataService
-        .findByIds(requisition.getAllOrderableIds())
+        .findByIds(supplier.get())
         .stream()
         .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
   }

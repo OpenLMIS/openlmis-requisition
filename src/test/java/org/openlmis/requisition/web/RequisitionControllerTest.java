@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Maps.newHashMap;
@@ -27,7 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -40,6 +41,13 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +62,6 @@ import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
@@ -91,13 +98,6 @@ import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPred
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
@@ -274,10 +274,10 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+        .updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -290,10 +290,10 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(true));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+        .updateFrom(any(Requisition.class), anyMap(), anyBoolean());
   }
 
   @Test
@@ -306,10 +306,10 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+        .updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -324,10 +324,10 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1);
 
-    verify(initiatedRequsition).submit(eq(emptyList()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyList(), anyBoolean());
+        .updateFrom(any(Requisition.class), anyMap(), anyBoolean());
   }
 
   @Test
@@ -382,7 +382,7 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyList(), eq(true));
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -599,7 +599,7 @@ public class RequisitionControllerTest {
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
-    verify(requisitionService, times(1)).reject(authorizedRequsition);
+    verify(requisitionService, times(1)).reject(authorizedRequsition, Collections.emptyMap());
   }
 
   @Test
@@ -610,14 +610,15 @@ public class RequisitionControllerTest {
     assertThatThrownBy(() -> requisitionController.rejectRequisition(authorizedRequsition.getId()))
         .isInstanceOf(PermissionMessageException.class);
 
-    verify(requisitionService, times(0)).reject(authorizedRequsition);
+    verify(requisitionService, times(0)).reject(authorizedRequsition, Collections.emptyMap());
   }
 
   @Test
   public void shouldCallRequisitionStatusNotifierWhenReject() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition)).thenReturn(initiatedRequsition);
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+        .thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
@@ -752,26 +753,26 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
         anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
-    verify(requisition, never()).submit(eq(emptyList()), any(UUID.class), anyBoolean());
+    verify(requisition, never()).submit(eq(emptyMap()), any(UUID.class), anyBoolean());
   }
 
   private void verifyNoApproveOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
         anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
-        .approve(any(UUID.class), anyCollection(), anyCollection(), any(UUID.class));
+        .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class));
   }
 
   private void verifyNoAuthorizeOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyListOf(OrderableDto.class),
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
         anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
-        .authorize(anyCollection(), any(UUID.class));
+        .authorize(anyMap(), any(UUID.class));
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {

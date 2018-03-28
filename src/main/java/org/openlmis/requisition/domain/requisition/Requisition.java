@@ -293,8 +293,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param requisition            Requisition with new values.
    * @param products               Collection of orderables.
    */
-  public void updateFrom(
-      Requisition requisition, Collection<OrderableDto> products,
+  public void updateFrom(Requisition requisition, Map<UUID, OrderableDto> products,
       boolean isDatePhysicalStockCountCompletedEnabled) {
 
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
@@ -436,7 +435,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Collection<OrderableDto> products, UUID submitter, boolean skipAuthorize) {
+  public void submit(Map<UUID, OrderableDto> products, UUID submitter, boolean skipAuthorize) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -468,7 +467,7 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void authorize(Collection<OrderableDto> products, UUID authorizer) {
+  public void authorize(Map<UUID, OrderableDto> products, UUID authorizer) {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
@@ -510,7 +509,7 @@ public class Requisition extends BaseTimestampedEntity {
    *                    a supply line for the requisition's program.
    * @param approver    user who approves this requisition.
    */
-  public void approve(UUID nodeId, Collection<OrderableDto> products,
+  public void approve(UUID nodeId, Map<UUID, OrderableDto> products,
                       Collection<SupplyLineDto> supplyLines, UUID approver) {
     if (CollectionUtils.isEmpty(supplyLines) && nodeId != null) {
       status = RequisitionStatus.IN_APPROVAL;
@@ -528,7 +527,7 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Rejects given requisition.
    */
-  public void reject(Collection<OrderableDto> products, UUID rejector) {
+  public void reject(Map<UUID, OrderableDto> products, UUID rejector) {
     status = RequisitionStatus.REJECTED;
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
@@ -747,13 +746,12 @@ public class Requisition extends BaseTimestampedEntity {
     }
   }
 
-  private void updateTotalCostAndPacksToShip(Collection<OrderableDto> products) {
-    getNonSkippedRequisitionLineItems().forEach(line -> line.updatePacksToShip(products));
-
-    getNonSkippedRequisitionLineItems().forEach(line -> line.setTotalCost(
-        LineItemFieldsCalculator.calculateTotalCost(line,
-            CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE))
-    ));
+  private void updateTotalCostAndPacksToShip(Map<UUID, OrderableDto> products) {
+    getNonSkippedRequisitionLineItems().forEach(line -> {
+      line.updatePacksToShip(products.get(line.getOrderableId()));
+      line.setTotalCost(LineItemFieldsCalculator
+          .calculateTotalCost(line, CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE)));
+    });
   }
 
   private void populateApprovedQuantity() {

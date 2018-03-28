@@ -134,7 +134,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.reject(Collections.emptyList(), UUID.randomUUID());
+    requisition.reject(Collections.emptyMap(), UUID.randomUUID());
 
     // then
     assertEquals(requisition.getStatus(), RequisitionStatus.REJECTED);
@@ -144,7 +144,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionIfItsStatusIsInitiated() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -153,7 +153,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionIfItsStatusIsRejected() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.REJECTED);
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -162,7 +162,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionAndMarkAsAuthorizedWhenAuthorizeIsSkipped() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), true);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -170,12 +170,12 @@ public class RequisitionTest {
   @Test
   public void shouldNotSubmitRegularRequisitionIfRegularFieldsNotFilled() {
     prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
-    assertThatThrownBy(() -> requisition.submit(Collections.emptyList(), UUID.randomUUID(), false))
+    assertThatThrownBy(() -> requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getRequiredFieldErrorMessage(STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY));
 
     prepareRequisitionToHaveRequiredFieldTotalConsumedQuantityNotFilled();
-    assertThatThrownBy(() -> requisition.submit(Collections.emptyList(), UUID.randomUUID(), false))
+    assertThatThrownBy(() -> requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getRequiredFieldErrorMessage(TOTAL_CONSUMED_QUANTITY, STOCK_ON_HAND));
 
@@ -187,7 +187,7 @@ public class RequisitionTest {
     prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
     requisition.setEmergency(true);
 
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -196,7 +196,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItsStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
+    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -207,7 +207,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -219,7 +219,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -232,7 +232,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyMap(),
         Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
@@ -245,7 +245,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
-    requisition.approve(parentNode.getId(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), Collections.emptyMap(),
         Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
@@ -254,7 +254,7 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
+    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
   }
 
   @Test
@@ -274,8 +274,8 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -291,7 +291,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
         requisitionLineItem.getApprovedQuantity());
@@ -312,7 +312,7 @@ public class RequisitionTest {
     requisitionLineItem.setRequestedQuantity(null);
     requisitionLineItem.setCalculatedOrderQuantityIsa(100);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(100), requisitionLineItem.getApprovedQuantity());
   }
@@ -327,7 +327,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.submit(Collections.emptyList(), null, true);
+    requisition.submit(Collections.emptyMap(), null, true);
 
     assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
         requisitionLineItem.getApprovedQuantity());
@@ -341,7 +341,7 @@ public class RequisitionTest {
     when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
         .thenReturn(true);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -356,7 +356,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -375,7 +375,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -392,7 +392,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -408,7 +408,7 @@ public class RequisitionTest {
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
     requisitionLineItem.setNonFullSupply(true);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -423,7 +423,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.authorize(Collections.emptyList(), null);
+    requisition.authorize(Collections.emptyMap(), null);
 
     assertNull(requisitionLineItem.getApprovedQuantity());
   }
@@ -442,7 +442,7 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
     verifyStatic(times(1));
   }
 
@@ -459,7 +459,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(2));
     assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(false));
@@ -481,7 +481,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
     assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(true));
@@ -525,7 +525,7 @@ public class RequisitionTest {
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
 
     // then
     requisition
@@ -544,7 +544,7 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyList(), true);
+    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -820,12 +820,15 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnSubmit() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(productId)
+        .withNetContent(1)
+        .build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
 
     // when
-    requisition.submit(Collections.singletonList(product), UUID.randomUUID(), false);
+    requisition.submit(ImmutableMap.of(productId, product), UUID.randomUUID(), false);
 
     // then
     assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
@@ -835,13 +838,16 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnAuthorize() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(productId)
+        .withNetContent(1)
+        .build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     // when
-    requisition.authorize(Collections.singletonList(product), UUID.randomUUID());
+    requisition.authorize(ImmutableMap.of(productId, product), UUID.randomUUID());
 
     // then
     assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
@@ -851,13 +857,16 @@ public class RequisitionTest {
   public void shouldUpdatePacksToShipOnApprove() {
     // given
     long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder().withNetContent(1).build();
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(productId)
+        .withNetContent(1)
+        .build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.approve(null, Collections.singletonList(product), Collections.emptyList(),
+    requisition.approve(null, ImmutableMap.of(productId, product), Collections.emptyList(),
         UUID.randomUUID());
 
     // then
@@ -870,7 +879,7 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -885,7 +894,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     //when
-    requisition.reject(Collections.emptyList(), UUID.randomUUID());
+    requisition.reject(Collections.emptyMap(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -905,7 +914,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -925,7 +934,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyList(), UUID.randomUUID(), false);
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -939,7 +948,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyList(), UUID.randomUUID());
+    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -954,7 +963,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(null, Collections.emptyList(), Collections.emptyList(),
+    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(),
         UUID.randomUUID());
 
     //then
@@ -1066,7 +1075,7 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, Collections.emptyList(), true);
+    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
 
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
@@ -1089,7 +1098,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     requisition.setTemplate(template);
 
-    requisition.submit(Collections.emptyList(), submitterId, false);
+    requisition.submit(Collections.emptyMap(), submitterId, false);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED,
         submitterId);
@@ -1102,7 +1111,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.authorize(Collections.emptyList(), authorizerId);
+    requisition.authorize(Collections.emptyMap(), authorizerId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED,
         authorizerId);
@@ -1115,7 +1124,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.approve(null, Collections.emptyList(), Collections.emptyList(), approverId);
+    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(), approverId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.APPROVED,
         approverId);
@@ -1127,7 +1136,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.AUTHORIZED);
     requisition.setTemplate(template);
 
-    requisition.reject(Collections.emptyList(), rejectorId);
+    requisition.reject(Collections.emptyMap(), rejectorId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.REJECTED,
         rejectorId);
@@ -1279,7 +1288,7 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(
         new DatePhysicalStockCountCompleted(LocalDate.now()));
-    this.requisition.updateFrom(requisition, Collections.emptyList(), updateStockDate);
+    this.requisition.updateFrom(requisition, Collections.emptyMap(), updateStockDate);
 
     return requisition;
   }

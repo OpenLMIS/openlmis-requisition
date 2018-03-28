@@ -27,26 +27,6 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
 import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
 
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
-import org.openlmis.requisition.domain.BaseEntity;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.requisition.StockAdjustment.Exporter;
-import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.utils.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -65,6 +44,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -497,14 +493,10 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Recalculates packs to ship.
    *
-   * @param products list of orderable products.
+   * @param product Orderable product.
    */
-  void updatePacksToShip(Collection<OrderableDto> products) {
-    this.packsToShip = products.stream()
-        .filter(product -> product.getId().equals(getOrderableId()))
-        .map(product -> product.packsToOrder(getOrderQuantity()))
-        .findFirst()
-        .orElse(null);
+  void updatePacksToShip(OrderableDto product) {
+    this.packsToShip = null == product ? null : product.packsToOrder(getOrderQuantity());
   }
 
   /**
