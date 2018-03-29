@@ -224,8 +224,8 @@ public abstract class BaseCommunicationServiceTest<T> {
 
   protected abstract BaseCommunicationService<T> getService();
 
-  protected BaseCommunicationService prepareService() {
-    BaseCommunicationService service = getService();
+  protected BaseCommunicationService<T> prepareService() {
+    BaseCommunicationService<T> service = getService();
     service.setRestTemplate(restTemplate);
     service.setAuthService(authService);
 
