@@ -47,6 +47,7 @@ import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
@@ -202,6 +203,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @JoinColumn(name = "requisitionLineItemId")
+  @BatchSize(size = 25)
   private List<StockAdjustment> stockAdjustments;
 
   @Setter

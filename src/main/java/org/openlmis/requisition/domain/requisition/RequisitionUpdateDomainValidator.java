@@ -40,7 +40,7 @@ interface RequisitionUpdateDomainValidator {
    * Returns validator name.
    */
   default String getName() {
-    return getClass().getName();
+    return getClass().getSimpleName();
   }
 
   /**

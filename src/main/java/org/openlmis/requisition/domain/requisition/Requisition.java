@@ -64,6 +64,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -101,26 +102,27 @@ import org.springframework.util.CollectionUtils;
 @AllArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
-
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(Requisition.class);
 
-  public static final String FACILITY_ID = "facilityId";
-  public static final String PROGRAM_ID = "programId";
-  public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
+  static final String FACILITY_ID = "facilityId";
+  static final String PROGRAM_ID = "programId";
+  static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
-  public static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+  static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   public static final String EMERGENCY_FIELD = "emergency";
-  public static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
-      "datePhysicalStockCountCompleted";
+  static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED = "datePhysicalStockCountCompleted";
   public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
+  private static final int STANDARD_BATCH_SIZE = 25;
+  private static final int LINE_ITEMS_BATCH_SIZE = 100;
 
   @OneToMany(
       mappedBy = "requisition",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
+  @BatchSize(size = LINE_ITEMS_BATCH_SIZE)
   @DiffIgnore
   @Getter
   @Setter
@@ -168,6 +170,7 @@ public class Requisition extends BaseTimestampedEntity {
   @OneToMany(
       mappedBy = "requisition",
       cascade = CascadeType.ALL)
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   @DiffIgnore
   @Getter
   @Setter
@@ -220,6 +223,7 @@ public class Requisition extends BaseTimestampedEntity {
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   @JoinColumn(name = "requisitionId")
   @DiffIgnore
   @Getter
@@ -229,6 +233,7 @@ public class Requisition extends BaseTimestampedEntity {
   @OneToMany(
       mappedBy = "requisition",
       cascade = CascadeType.ALL)
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   @DiffIgnore
   @Getter
   private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
