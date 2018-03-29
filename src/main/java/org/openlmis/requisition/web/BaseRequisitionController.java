@@ -58,6 +58,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -133,6 +134,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
   RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
 
@@ -165,7 +169,7 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   BasicRequisitionDto doApprove(Requisition requisition, UserDto user,
-        SupervisoryNodeDto supervisoryNode) {
+      SupervisoryNodeDto supervisoryNode) {
     Profiler profiler = getProfiler("DO_APPROVE", requisition, user);
     checkIfPeriodIsValid(requisition, profiler);
 
@@ -211,8 +215,7 @@ public abstract class BaseRequisitionController extends BaseController {
       }
     }
 
-    profiler.start("PROCESS_STATUS_CHANGE");
-    requisitionStatusProcessor.statusChange(requisition);
+    callStatusChangeProcessor(profiler, requisition);
 
     logger.debug("Requisition with id {} approved", requisition.getId());
     BasicRequisitionDto basicRequisitionDto = buildBasicDto(profiler, requisition);
@@ -342,7 +345,17 @@ public abstract class BaseRequisitionController extends BaseController {
 
   void callStatusChangeProcessor(Profiler profiler, Requisition requisition) {
     profiler.start("CALL_STATUS_CHANGE_PROCESSOR");
+    assignInitialSupervisoryNode(requisition);
     requisitionStatusProcessor.statusChange(requisition);
+  }
+
+  private void assignInitialSupervisoryNode(Requisition requisition) {
+    if (requisition.isApprovable()
+        && requisition.getSupervisoryNodeId() == null) {
+      UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
+          requisition.getProgramId(), requisition.getFacilityId()).getId();
+      requisition.setSupervisoryNodeId(supervisoryNode);
+    }
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,

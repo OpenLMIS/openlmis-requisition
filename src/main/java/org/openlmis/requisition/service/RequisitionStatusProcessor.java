@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service;
 
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.springframework.scheduling.annotation.Async;
 
 public interface RequisitionStatusProcessor {
 
@@ -24,5 +25,6 @@ public interface RequisitionStatusProcessor {
    *
    * @param requisition a requisition that has just changed its status
    */
+  @Async
   void statusChange(Requisition requisition);
 }

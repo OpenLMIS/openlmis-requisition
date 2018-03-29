@@ -15,13 +15,12 @@
 
 package org.openlmis.requisition.service;
 
+import java.util.UUID;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")

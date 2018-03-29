@@ -69,12 +69,14 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
@@ -122,6 +124,9 @@ public abstract class BaseWebIntegrationTest {
   protected ProgramReferenceDataService programReferenceDataService;
 
   protected RestAssuredClient restAssured;
+
+  @MockBean
+  protected SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Autowired
   protected ObjectMapper objectMapper;
@@ -294,6 +299,13 @@ public abstract class BaseWebIntegrationTest {
     doReturn(ValidationResult.success())
         .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
     return requisitionSpy;
+  }
+
+  protected void mockSearchSupervisoryNodeByProgramAndFacility() {
+    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
+    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
+    given(supervisoryNodeReferenceDataService.findSupervisoryNode(anyUuid(), anyUuid()))
+        .willReturn(supervisoryNode);
   }
 
   protected static class SaveAnswer<T extends BaseEntity> implements Answer<T> {

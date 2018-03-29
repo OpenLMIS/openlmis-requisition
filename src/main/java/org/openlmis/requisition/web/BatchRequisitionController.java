@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
@@ -29,9 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -54,7 +50,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.security.SpringSecurityRunnableWrapper;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
@@ -62,10 +57,8 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,9 +80,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
-
-  @Value("${batchRequisition.poolSize}")
-  private int poolSize;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -173,25 +163,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
         .stream()
         .collect(toMap(SupervisoryNodeDto::getId, supervisoryNode -> supervisoryNode));
 
-    ExecutorService executor = Executors.newFixedThreadPool(poolSize);
-    List<CompletableFuture<Void>> futures = Lists.newArrayList();
-
     profiler.start("VALIDATE_AND_APPROVE");
-    try {
-      for (Requisition requisition : requisitions) {
-        SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
-            .get(requisition.getSupervisoryNodeId());
-        Runnable runnable =
-            () -> validateAndApprove(requisition, processingStatus, user, supervisoryNode);
-        Runnable runnableWrapper = new SpringSecurityRunnableWrapper(
-            SecurityContextHolder.getContext(), runnable);
-        CompletableFuture<Void> future = runAsync(runnableWrapper, executor);
-        futures.add(future);
-      }
-    } finally {
-      profiler.start("JOIN_RESULTS");
-
-      futures.forEach(CompletableFuture::join);
+    for (Requisition requisition : requisitions) {
+      SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
+          .get(requisition.getSupervisoryNodeId());
+      validateAndApprove(requisition, processingStatus, user, supervisoryNode);
     }
 
     profiler.start("BUILD_RESPONSE");

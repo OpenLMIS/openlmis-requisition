@@ -111,7 +111,6 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
@@ -195,9 +194,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private RequisitionService requisitionService;
 
   @MockBean
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
-  @MockBean
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @MockBean
@@ -242,6 +238,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockStockEventServiceResponses();
 
     mockReasons();
+
+    mockSearchSupervisoryNodeByProgramAndFacility();
   }
 
   @Test
@@ -833,13 +831,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldAuthorizeRequisition() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
-    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
-
-    given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
-        .willReturn(supervisoryNode);
+    when(requisition.isApprovable()).thenReturn(true);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
         .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
@@ -859,6 +851,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisition, atLeastOnce())
         .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    verify(supervisoryNodeReferenceDataService)
+        .findSupervisoryNode(requisition.getProgramId(), requisition.getFacilityId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -866,13 +860,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   public void shouldNotAuthorizeRequisitionWhenPeriodEndDateIsInFuture() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
-    UUID facilityId = requisition.getFacilityId();
-    UUID programId = requisition.getProgramId();
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
-    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
-
-    given(supervisoryNodeReferenceDataService.findSupervisoryNode(programId, facilityId))
-        .willReturn(supervisoryNode);
     given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
         .willReturn(Collections.emptyList());
     doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());

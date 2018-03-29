@@ -204,6 +204,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     doReturn(facilityList)
         .when(facilityReferenceDataService)
         .search(requisitions.stream().map(Requisition::getFacilityId).collect(Collectors.toSet()));
+
+    mockSearchSupervisoryNodeByProgramAndFacility();
   }
 
   @Test

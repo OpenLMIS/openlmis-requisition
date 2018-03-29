@@ -236,6 +236,7 @@ public class RequisitionControllerTest {
         approvedRequsition);
     when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now());
     when(predicate.exec(programUuid)).thenReturn(true);
+    mockFindSupervisoryNodeByProgramAndFacility();
   }
 
   private void stubValidations(Requisition... requisitions) {
@@ -421,7 +422,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithParentNode() {
-    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
     SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
@@ -447,7 +448,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithParentNodeAndWithoutSupplyLineForProgram() {
-    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
     SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
@@ -476,7 +477,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldApproveAuthorizedRequisitionWithParentNodeAndSupplyLineForProgram() {
-    SupervisoryNodeDto supervisoryNode = mockSupervisoryNode();
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
     SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
@@ -580,7 +581,7 @@ public class RequisitionControllerTest {
 
   @Test(expected = PermissionMessageException.class)
   public void shouldNotApproveIfHasNoPermission() {
-    mockSupervisoryNode();
+    mockSupervisoryNodeForApprove();
 
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
@@ -596,6 +597,8 @@ public class RequisitionControllerTest {
   public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+        .thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId());
 
@@ -645,8 +648,6 @@ public class RequisitionControllerTest {
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() {
     setUpAuthorizer();
 
-    mockSupervisoryNodeForAuthorize();
-
     requisitionController.authorizeRequisition(submittedRequsition.getId());
 
     verify(requisitionStatusProcessor).statusChange(submittedRequsition);
@@ -655,8 +656,6 @@ public class RequisitionControllerTest {
   @Test
   public void shouldCallValidationsWhenAuthorizingRequisition() {
     setUpAuthorizer();
-
-    mockSupervisoryNodeForAuthorize();
 
     requisitionController.authorizeRequisition(submittedRequsition.getId());
 
@@ -690,7 +689,7 @@ public class RequisitionControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
-  private void mockSupervisoryNodeForAuthorize() {
+  private void mockFindSupervisoryNodeByProgramAndFacility() {
     SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
     when(supervisoryNode.getId()).thenReturn(UUID.randomUUID());
 
@@ -698,7 +697,7 @@ public class RequisitionControllerTest {
         .thenReturn(supervisoryNode);
   }
 
-  private SupervisoryNodeDto mockSupervisoryNode() {
+  private SupervisoryNodeDto mockSupervisoryNodeForApprove() {
     UUID supervisoryNodeId = UUID.randomUUID();
     SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
     when(supervisoryNodeDto.getId()).thenReturn(supervisoryNodeId);
