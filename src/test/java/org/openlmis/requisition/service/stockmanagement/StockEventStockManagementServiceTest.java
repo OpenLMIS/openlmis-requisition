@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class StockEventStockManagementServiceTest
     extends BaseStockmanagementServiceTest<StockEventDto> {
 

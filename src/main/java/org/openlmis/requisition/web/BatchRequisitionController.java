@@ -159,12 +159,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("GET_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
-    profiler.start("FIND_VALIDATE_AND_APPROVE_REQUISITIONS");
-
+    profiler.start("FIND_REQUISITIONS");
     List<Requisition> requisitions = uuids.stream()
         .map(id -> requisitionRepository.findOne(id))
         .collect(toList());
 
+    profiler.start("FIND_SUPERVISORY_NODES");
     List<UUID> supervisoryNodeIds = requisitions.stream()
         .map(Requisition::getSupervisoryNodeId)
         .collect(toList());
@@ -177,7 +177,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     ExecutorService executor = Executors.newFixedThreadPool(poolSize);
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
 
-    profiler.start("DO_READ");
+    profiler.start("VALIDATE_AND_APPROVE");
     try {
       for (Requisition requisition : requisitions) {
         SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
@@ -196,7 +196,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
 
     profiler.start("BUILD_RESPONSE");
-    ResponseEntity response = buildResponse(processingStatus, profiler);
+    ResponseEntity<RequisitionsProcessingStatusDto> response =
+        buildResponse(processingStatus, profiler);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
