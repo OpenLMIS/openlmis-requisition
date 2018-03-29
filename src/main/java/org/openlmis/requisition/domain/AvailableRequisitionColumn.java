@@ -55,8 +55,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
   @Column(name = "value")
   @CollectionTable(
       name = "available_requisition_column_sources",
-      joinColumns = @JoinColumn(name = "columnId")
-  )
+      joinColumns = @JoinColumn(name = "columnId"))
   @BatchSize(size = STANDARD_BATCH_SIZE)
   private Set<SourceType> sources;
 
