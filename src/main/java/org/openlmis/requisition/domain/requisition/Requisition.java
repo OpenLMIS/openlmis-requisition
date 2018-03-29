@@ -299,21 +299,36 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void updateFrom(Requisition requisition, Map<UUID, OrderableDto> products,
       boolean isDatePhysicalStockCountCompletedEnabled) {
+    LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
+    Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
+    profiler.setLogger(LOGGER);
 
+    profiler.start("SET_NUMBER_OF_MONTHS_IN_PERIOD");
     this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
+    profiler.start("SET_DRAFT_STATUS_MESSAGE");
     this.draftStatusMessage = requisition.draftStatusMessage;
 
+    profiler.start("UPDATE_LINE_ITEMS");
     updateReqLines(requisition.getRequisitionLineItems());
+
+    profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
     calculateAndValidateTemplateFields(this.template);
+
+    profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
 
     if (isDatePhysicalStockCountCompletedEnabled) {
+      profiler.start("SET_DATE_PHYSICAL_STOCK_COUNT_COMPLETED");
       setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
     }
 
     // do this manually here, since JPA won't catch updates to collections (line items)
+    profiler.start("SET_MODIFIED_DATE");
     setModifiedDate(ZonedDateTime.now());
+
+    profiler.stop().log();
+    LOGGER.exit();
   }
 
   /**
