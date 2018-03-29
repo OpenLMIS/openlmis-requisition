@@ -185,7 +185,7 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
-  protected Page<T> getPage(RequestParameters parameters) {
+  public Page<T> getPage(RequestParameters parameters) {
     return getPage("", parameters);
   }
 
