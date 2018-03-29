@@ -19,11 +19,12 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
 
-import org.openlmis.requisition.utils.Message;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.utils.Message;
 
 class StockAdjustmentsValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
@@ -38,7 +39,7 @@ class StockAdjustmentsValidator
         .getStockAdjustmentReasons()
         .stream().map(StockAdjustmentReason::getReasonId).collect(Collectors.toList());
 
-    for (StockAdjustment adjustment : item.getStockAdjustments()) {
+    for (StockAdjustment adjustment : new ArrayList<>(item.getStockAdjustments())) {
       if (!reasons.contains(adjustment.getReasonId())) {
         errors.put(REQUISITION_LINE_ITEMS,
             new Message(ERROR_STOCK_ADJUSTMENT_NOT_FOUND, adjustment.getReasonId()));
