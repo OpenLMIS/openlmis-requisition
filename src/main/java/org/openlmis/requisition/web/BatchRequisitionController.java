@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
@@ -28,6 +29,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -169,6 +173,18 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .get(requisition.getSupervisoryNodeId());
       validateAndApprove(requisition, processingStatus, user, supervisoryNode);
     }
+
+    profiler.start("SEND_STOCK_EVENT");
+    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
+    List<CompletableFuture<Void>> futures = Lists.newArrayList();
+    for (Requisition requisition : requisitions) {
+      CompletableFuture<Void> future = runAsync(
+          () -> submitStockEvent(requisition, profiler), executor);
+      futures.add(future);
+    }
+
+    profiler.start("JOIN_RESULTS");
+    futures.forEach(CompletableFuture::join);
 
     profiler.start("BUILD_RESPONSE");
     ResponseEntity<RequisitionsProcessingStatusDto> response =

@@ -195,23 +195,19 @@ public abstract class BaseRequisitionController extends BaseController {
 
     requisitionService.doApprove(parentNodeId, user.getId(), orderables, requisition, supplyLines);
 
-    if (requisition.getStatus().isApproved()) {
-      submitStockEvent(requisition, profiler);
+    if (requisition.getStatus().isApproved() && !isEmpty(supplyLines)) {
+      profiler.start("RETRIEVE_SUPPLYING_FACILITY");
+      FacilityDto facility = facilityReferenceDataService
+          .findOne(supplyLines.get(0).getSupplyingFacility());
 
-      if (!isEmpty(supplyLines)) {
-        profiler.start("RETRIEVE_SUPPLYING_FACILITY");
-        FacilityDto facility = facilityReferenceDataService
-            .findOne(supplyLines.get(0).getSupplyingFacility());
+      profiler.start("FIND_SUPPORTED_PROGRAM_ENTRY");
+      SupportedProgramDto supportedProgram = facilitySupportsProgramHelper
+          .getSupportedProgram(facility, requisition.getProgramId());
 
-        profiler.start("FIND_SUPPORTED_PROGRAM_ENTRY");
-        SupportedProgramDto supportedProgram = facilitySupportsProgramHelper
-            .getSupportedProgram(facility, requisition.getProgramId());
-
-        if (supportedProgram != null && supportedProgram.isSupportLocallyFulfilled()) {
-          profiler.start("CONVERT_TO_ORDER");
-          ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
-          requisitionService.convertToOrder(ImmutableList.of(entry), user);
-        }
+      if (supportedProgram != null && supportedProgram.isSupportLocallyFulfilled()) {
+        profiler.start("CONVERT_TO_ORDER");
+        ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
+        requisitionService.convertToOrder(ImmutableList.of(entry), user);
       }
     }
 
@@ -224,8 +220,9 @@ public abstract class BaseRequisitionController extends BaseController {
     return basicRequisitionDto;
   }
 
-  private void submitStockEvent(Requisition requisition, Profiler profiler) {
-    if (isNotTrue(requisition.getEmergency())) {
+  void submitStockEvent(Requisition requisition, Profiler profiler) {
+    if (requisition.getStatus().isApproved()
+        && isNotTrue(requisition.getEmergency())) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
       StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition);
 
