@@ -41,6 +41,8 @@ import org.springframework.web.client.HttpServerErrorException;
 public class StockEventStockManagementServiceTest
     extends BaseStockmanagementServiceTest<StockEventDto> {
 
+  private static final ResponseEntity<UUID> RESPONSE_ENTITY_OK =
+      ResponseEntity.ok(UUID.randomUUID());
   private StockEventStockManagementService service;
   private StockEventDto stockEventDto;
 
@@ -73,6 +75,28 @@ public class StockEventStockManagementServiceTest
     andEntityIsCorrect();
   }
 
+  @Test
+  public void shouldResubmitEventWhenTokenExpired() {
+    givenMockedUnauthorizedResponse();
+
+    whenEventIsSubmitted();
+
+    thenPostRequestIsSentTwice();
+    andUriIsCorrect();
+    andEntityIsCorrect();
+  }
+
+  @Test
+  public void shouldResubmitEventTwoTimesWhenTokenExpiredAndThenConflict() {
+    givenMockedUnauthorizedAndConflictResponses();
+
+    whenEventIsSubmitted();
+
+    thenPostRequestIsSentThrice();
+    andUriIsCorrect();
+    andEntityIsCorrect();
+  }
+
   private void givenMockedOkResponse() {
     given(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class),
         any(Class.class))).willReturn(ResponseEntity.ok(UUID.randomUUID()));
@@ -82,7 +106,22 @@ public class StockEventStockManagementServiceTest
     given(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class),
         any(Class.class)))
         .willThrow(new HttpServerErrorException(HttpStatus.valueOf(409)))
-        .willReturn(ResponseEntity.ok(UUID.randomUUID()));
+        .willReturn(RESPONSE_ENTITY_OK);
+  }
+
+  private void givenMockedUnauthorizedResponse() {
+    given(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class),
+        any(Class.class)))
+        .willThrow(new HttpServerErrorException(HttpStatus.UNAUTHORIZED))
+        .willReturn(RESPONSE_ENTITY_OK);
+  }
+
+  private void givenMockedUnauthorizedAndConflictResponses() {
+    given(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class),
+        any(Class.class)))
+        .willThrow(new HttpServerErrorException(HttpStatus.UNAUTHORIZED))
+        .willThrow(new HttpServerErrorException(HttpStatus.valueOf(409)))
+        .willReturn(RESPONSE_ENTITY_OK);
   }
 
   private void whenEventIsSubmitted() {
@@ -95,6 +134,10 @@ public class StockEventStockManagementServiceTest
 
   private void thenPostRequestIsSentTwice() {
     verifyRequest(2);
+  }
+
+  private void thenPostRequestIsSentThrice() {
+    verifyRequest(3);
   }
 
   private void andUriIsCorrect() {
