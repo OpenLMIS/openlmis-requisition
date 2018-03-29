@@ -18,6 +18,7 @@ package org.openlmis.requisition.dto;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.Set;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,15 +65,15 @@ public class RequisitionsProcessingStatusDtoTest {
   public void shouldRemoveLineItemsIfProductIsSkippedInAllRequisitions() {
     processingStatus.removeSkippedProducts();
 
-    List<ApproveRequisitionDto> requisitions = processingStatus.getRequisitionDtos();
+    Set<ApproveRequisitionDto> requisitions = processingStatus.getRequisitionDtos();
 
     assertFalse(requisitions.isEmpty());
-    assertEquals(requisitions.size(), 3);
+    assertEquals(3, requisitions.size());
 
     for (ApproveRequisitionDto requisition : requisitions) {
       List<ApproveRequisitionLineItemDto> lineItems = requisition.getRequisitionLineItems();
 
-      assertEquals(lineItems.size(), 2);
+      assertEquals(2, lineItems.size());
       assertEquals(lineItems.get(0).getOrderable().getId(), orderable1.getId());
       assertEquals(lineItems.get(1).getOrderable().getId(), orderable2.getId());
     }

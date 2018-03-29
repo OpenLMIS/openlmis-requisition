@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
@@ -31,12 +31,12 @@ import org.apache.commons.lang3.BooleanUtils;
 @Getter
 public class RequisitionsProcessingStatusDto {
 
-  private List<ApproveRequisitionDto> requisitionDtos;
-  private List<RequisitionErrorMessage> requisitionErrors;
+  private Set<ApproveRequisitionDto> requisitionDtos;
+  private Set<RequisitionErrorMessage> requisitionErrors;
 
   public RequisitionsProcessingStatusDto() {
-    this.requisitionDtos = new CopyOnWriteArrayList<>();
-    this.requisitionErrors = new CopyOnWriteArrayList<>();
+    this.requisitionDtos = ConcurrentHashMap.newKeySet();
+    this.requisitionErrors = ConcurrentHashMap.newKeySet();
   }
 
   public void addProcessedRequisition(ApproveRequisitionDto requisitionDto) {
