@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -25,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +34,6 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -122,39 +119,4 @@ public class RequisitionStatusProcessorTest {
     verify(approvedRequisitionNotifier).notifyClerks(requisition);
   }
 
-  @Test
-  public void shouldAssignInitialSupervisoryNodeToRequisition() {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-
-    requisitionStatusProcessor.statusChange(requisition);
-
-    assertEquals(supervisoryNodeId, requisition.getSupervisoryNodeId());
-  }
-
-  @Test
-  public void shouldNotOverwriteSupervisoryNodeWhenOneIsAssigned() {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    UUID assignedSupervisoryNode = UUID.randomUUID();
-    requisition.setSupervisoryNodeId(assignedSupervisoryNode);
-
-    requisitionStatusProcessor.statusChange(requisition);
-
-    verify(supervisoryNodeReferenceDataService, never())
-        .findSupervisoryNode(any(UUID.class), any(UUID.class));
-    assertEquals(assignedSupervisoryNode, requisition.getSupervisoryNodeId());
-  }
-
-  @Test
-  public void shouldNotAssignSupervisoryNodeWhenRequisitionIsNotReadyForApproval() {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-
-    requisitionStatusProcessor.statusChange(requisition);
-
-    verify(supervisoryNodeReferenceDataService, never())
-        .findSupervisoryNode(any(UUID.class), any(UUID.class));
-    assertNull(requisition.getSupervisoryNodeId());
-  }
 }

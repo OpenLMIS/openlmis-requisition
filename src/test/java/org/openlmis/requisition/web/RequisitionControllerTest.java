@@ -98,6 +98,7 @@ import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPred
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
+import org.slf4j.profiler.Profiler;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
@@ -205,6 +206,7 @@ public class RequisitionControllerTest {
   private ValidationResult fieldErrors = ValidationResult
       .fieldErrors(newHashMap("someField", new Message("some-key", "someParam")));
   private String bindingResultMessage = "{someField=some-key: someParam}";
+  private SupervisoryNodeDto supervisoryNode;
 
   @Before
   public void setUp() {
@@ -678,6 +680,42 @@ public class RequisitionControllerTest {
     verifyNoAuthorizeOrUpdate(submittedRequsition);
   }
 
+  @Test
+  public void shouldAssignInitialSupervisoryNodeToRequisition() {
+    Requisition requisition = new Requisition();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+
+    requisitionController.callStatusChangeProcessor(mock(Profiler.class), requisition);
+
+    assertEquals(supervisoryNode.getId(), requisition.getSupervisoryNodeId());
+  }
+
+  @Test
+  public void shouldNotOverwriteSupervisoryNodeWhenOneIsAssigned() {
+    Requisition requisition = new Requisition();
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    UUID assignedSupervisoryNode = UUID.randomUUID();
+    requisition.setSupervisoryNodeId(assignedSupervisoryNode);
+
+    requisitionController.callStatusChangeProcessor(mock(Profiler.class), requisition);
+
+    verify(supervisoryNodeReferenceDataService, never())
+        .findSupervisoryNode(any(UUID.class), any(UUID.class));
+    assertEquals(assignedSupervisoryNode, requisition.getSupervisoryNodeId());
+  }
+
+  @Test
+  public void shouldNotAssignSupervisoryNodeWhenRequisitionIsNotReadyForApproval() {
+    Requisition requisition = new Requisition();
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    requisitionController.callStatusChangeProcessor(mock(Profiler.class), requisition);
+
+    verify(supervisoryNodeReferenceDataService, never())
+        .findSupervisoryNode(any(UUID.class), any(UUID.class));
+    assertNull(requisition.getSupervisoryNodeId());
+  }
+
   private void mockDependenciesForSubmit() {
     when(permissionService.canSubmitRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
@@ -690,7 +728,7 @@ public class RequisitionControllerTest {
   }
 
   private void mockFindSupervisoryNodeByProgramAndFacility() {
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
+    supervisoryNode = mock(SupervisoryNodeDto.class);
     when(supervisoryNode.getId()).thenReturn(UUID.randomUUID());
 
     when(supervisoryNodeReferenceDataService.findSupervisoryNode(any(), any()))

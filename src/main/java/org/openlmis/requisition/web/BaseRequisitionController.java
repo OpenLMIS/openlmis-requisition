@@ -346,7 +346,7 @@ public abstract class BaseRequisitionController extends BaseController {
     requisitionStatusProcessor.statusChange(requisition);
   }
 
-  private void assignInitialSupervisoryNode(Requisition requisition) {
+  void assignInitialSupervisoryNode(Requisition requisition) {
     if (requisition.isApprovable()
         && requisition.getSupervisoryNodeId() == null) {
       UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(
