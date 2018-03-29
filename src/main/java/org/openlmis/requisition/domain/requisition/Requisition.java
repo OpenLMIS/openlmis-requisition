@@ -114,7 +114,6 @@ public class Requisition extends BaseTimestampedEntity {
   static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED = "datePhysicalStockCountCompleted";
   public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
 
-  private static final int STANDARD_BATCH_SIZE = 25;
   private static final int LINE_ITEMS_BATCH_SIZE = 100;
 
   @OneToMany(

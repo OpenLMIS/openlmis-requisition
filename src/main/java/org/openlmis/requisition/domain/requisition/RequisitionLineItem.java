@@ -203,7 +203,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   @Setter
   @JoinColumn(name = "requisitionLineItemId")
-  @BatchSize(size = 25)
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   private List<StockAdjustment> stockAdjustments;
 
   @Setter
@@ -412,7 +412,7 @@ public class RequisitionLineItem extends BaseEntity {
     Optional<StockAdjustment.Exporter> stockAdjustmentExporter =
         exporter.provideStockAdjustmentExporter();
     if (stockAdjustmentExporter.isPresent()) {
-      for (StockAdjustment stockAdjustment : stockAdjustments) {
+      for (StockAdjustment stockAdjustment : getStockAdjustments()) {
         StockAdjustment.Exporter providedExporter = stockAdjustmentExporter.get();
         stockAdjustment.export(providedExporter);
         exporter.addStockAdjustment(providedExporter);

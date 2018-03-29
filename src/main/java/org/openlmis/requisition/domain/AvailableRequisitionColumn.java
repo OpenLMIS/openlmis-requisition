@@ -17,20 +17,11 @@ package org.openlmis.requisition.domain;
 
 import static java.util.Objects.isNull;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -42,6 +33,13 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.BatchSize;
+import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
 
 @Entity
 @Table(name = "available_requisition_columns", schema = "requisition")
@@ -59,12 +57,14 @@ public class AvailableRequisitionColumn extends BaseEntity {
       name = "available_requisition_column_sources",
       joinColumns = @JoinColumn(name = "columnId")
   )
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   private Set<SourceType> sources;
 
   @OneToMany(
       mappedBy = "requisitionColumn",
       cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY)
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   private Set<AvailableRequisitionColumnOption> options;
 
   private String label;

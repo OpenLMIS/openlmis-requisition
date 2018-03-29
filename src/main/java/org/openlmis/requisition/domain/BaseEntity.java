@@ -31,6 +31,8 @@ public abstract class BaseEntity {
   protected static final String TEXT_COLUMN_DEFINITION = "text";
   protected static final String UUID_TYPE = "pg-uuid";
 
+  protected static final int STANDARD_BATCH_SIZE = 25;
+
   @Id
   @GeneratedValue(generator = "uuid-gen")
   @GenericGenerator(name = "uuid-gen", strategy = "uuid2")

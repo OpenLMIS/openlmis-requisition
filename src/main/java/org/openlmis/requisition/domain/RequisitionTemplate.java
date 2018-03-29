@@ -23,12 +23,16 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
 
 import com.google.common.collect.Sets;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.utils.Message;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -41,16 +45,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
@@ -79,6 +80,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @CollectionTable(
       name = "columns_maps",
       joinColumns = @JoinColumn(name = "requisitionTemplateId"))
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   private Map<String, RequisitionTemplateColumn> columnsMap = new HashMap<>();
 
   @OneToMany(
@@ -86,6 +88,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       orphanRemoval = true,
       mappedBy = "template")
   @DiffIgnore
+  @BatchSize(size = STANDARD_BATCH_SIZE)
   private Set<RequisitionTemplateAssignment> templateAssignments = new HashSet<>();
 
   @Transient
