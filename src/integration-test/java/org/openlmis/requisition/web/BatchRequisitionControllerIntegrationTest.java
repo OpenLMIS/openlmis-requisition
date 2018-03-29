@@ -32,6 +32,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
@@ -46,6 +47,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -253,7 +255,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
             .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
-    requisitions.forEach(this::spyRequisitionAndStubRepository);
+    mockRequisitionValidatonsAndStubRepository();
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkResponseBody(response);
@@ -273,7 +275,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when(requisitionService)
         .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(userId));
 
-    requisitions.forEach(this::spyRequisitionAndStubRepository);
+    mockRequisitionValidatonsAndStubRepository();
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkPermissionErrorResponseBody(response, 400);
@@ -289,9 +291,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
             .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
-    requisitions = requisitions.stream()
-        .map(this::spyRequisitionAndStubRepository)
-        .collect(Collectors.toList());
+    requisitions = mockRequisitionValidatonsAndStubRepository();
+
     doReturn(ValidationResult.fieldErrors(Maps.newHashMap("someField", new Message("some-key"))))
         .when(requisitions.get(0)).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
 
@@ -465,6 +466,20 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private void mockStockEventServiceResponses() {
     when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
+  }
+
+  private List<Requisition> mockRequisitionValidatonsAndStubRepository() {
+    List<Requisition> requisitionSpies = new ArrayList<>();
+    requisitions.forEach(requisition -> {
+      Requisition spy = spy(requisition);
+      requisitionSpies.add(spy);
+      when(spy.validateCanChangeStatus(any(LocalDate.class), anyBoolean()))
+          .thenReturn(ValidationResult.success());
+    });
+
+    given(requisitionRepository.findAll(requisitionIds)).willReturn(requisitionSpies);
+
+    return requisitionSpies;
   }
 
   protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {

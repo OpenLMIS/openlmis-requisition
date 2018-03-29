@@ -55,10 +55,10 @@ public class SupervisoryNodeReferenceDataService
   }
 
   /**
-   * Finds orderables by their ids.
+   * Finds supervisory nodes by their ids.
    *
    * @param ids ids to look for.
-   * @return a page of orderables
+   * @return a page of supervisory nodes.
    */
   public List<SupervisoryNodeDto> findByIds(Collection<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {

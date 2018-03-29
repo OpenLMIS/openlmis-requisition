@@ -160,9 +160,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_REQUISITIONS");
-    List<Requisition> requisitions = uuids.stream()
-        .map(id -> requisitionRepository.findOne(id))
-        .collect(toList());
+
+    List<Requisition> requisitions = requisitionRepository.findAll(uuids);
 
     profiler.start("FIND_SUPERVISORY_NODES");
     List<UUID> supervisoryNodeIds = requisitions.stream()
