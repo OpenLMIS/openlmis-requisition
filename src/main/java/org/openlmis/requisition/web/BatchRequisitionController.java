@@ -252,7 +252,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
       UserDto user,
       SupervisoryNodeDto supervisoryNode) {
     ValidationResult validationResult = requisitionService
-        .validateCanApproveRequisition(requisition, user.getId());
+        .validateCanApproveRequisition(requisition);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {

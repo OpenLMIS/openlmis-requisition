@@ -437,8 +437,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(emptyList()));
@@ -466,8 +465,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(null));
@@ -491,8 +489,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
@@ -511,8 +508,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition);
     verify(stockEventService).submit(stockEventDto);
@@ -530,8 +526,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
@@ -589,8 +584,7 @@ public class RequisitionControllerTest {
 
     PermissionMessageException exception = mock(PermissionMessageException.class);
     doThrow(exception).when(requisitionService).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
   }
@@ -632,16 +626,14 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldProcessStatusChangeWhenApprovingRequisition() throws Exception {
-    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class)))
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
+        any(Requisition.class));
 
     verify(requisitionStatusProcessor).statusChange(authorizedRequsition);
   }
@@ -819,8 +811,7 @@ public class RequisitionControllerTest {
 
   private void setUpApprover() {
     when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
-    when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
-        any(UUID.class)))
+    when(requisitionService.validateCanApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
   }
 

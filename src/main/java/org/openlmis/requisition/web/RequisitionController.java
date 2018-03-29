@@ -427,10 +427,9 @@ public class RequisitionController extends BaseRequisitionController {
   public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("APPROVE_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
-    UserDto user = getCurrentUser(profiler);
     checkPermission(
         profiler,
-        () -> requisitionService.validateCanApproveRequisition(requisition, user.getId())
+        () -> requisitionService.validateCanApproveRequisition(requisition)
     );
 
     validateForStatusChange(requisition, profiler);
@@ -440,6 +439,7 @@ public class RequisitionController extends BaseRequisitionController {
         .findOne(requisition.getSupervisoryNodeId());
 
     profiler.start("DO_APPROVE");
+    UserDto user = getCurrentUser(profiler);
     BasicRequisitionDto requisitionDto = doApprove(requisition, user, supervisoryNodeDto);
     submitStockEvent(requisition, profiler);
 

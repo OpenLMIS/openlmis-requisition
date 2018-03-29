@@ -428,8 +428,9 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
+        .thenReturn(true);
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
@@ -441,8 +442,9 @@ public class RequisitionServiceTest {
   @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsInApproval() {
     requisition.setStatus(IN_APPROVAL);
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
+        .thenReturn(true);
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
@@ -455,8 +457,9 @@ public class RequisitionServiceTest {
   public void shouldSaveStatusMessageWhileRejectingRequisition() {
     requisition.setStatus(AUTHORIZED);
     requisition.setDraftStatusMessage("some_message");
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
+        .thenReturn(true);
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
@@ -646,25 +649,22 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPassValidationIfUserCanApproveRequisition() {
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
         .thenReturn(true);
 
-    ValidationResult result = requisitionService.validateCanApproveRequisition(
-        requisition, user.getId());
+    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition);
 
     assertTrue(result.isSuccess());
   }
 
   @Test
   public void shouldFailValidationIfUserHasNoApproveRightAssigned() {
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.noPermission("no.permission"));
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
+        .thenReturn(false);
 
-    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
-        user.getId());
+    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition);
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
@@ -672,12 +672,12 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFailValidationIfRequisitionIsInIncorrectState() {
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
+    when(permissionService
+        .hasPermissionString(any(Requisition.class), eq(RightName.REQUISITION_APPROVE)))
+        .thenReturn(true);
     requisition.setStatus(INITIATED);
 
-    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition,
-        user.getId());
+    ValidationResult result = requisitionService.validateCanApproveRequisition(requisition);
 
     assertTrue(result.hasErrors());
     assertEquals(FailureType.VALIDATION, result.getError().getType());

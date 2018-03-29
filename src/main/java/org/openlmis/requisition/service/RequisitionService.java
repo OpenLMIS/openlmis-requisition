@@ -428,7 +428,7 @@ public class RequisitionService {
   public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
     if (requisition.isApprovable()) {
       UUID userId = authenticationHelper.getCurrentUser().getId();
-      validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
+      validateCanApproveRequisition(requisition).throwExceptionIfHasErrors();
 
       LOGGER.debug("Requisition rejected: {}", requisition.getId());
       requisition.reject(orderables, userId);
@@ -566,26 +566,17 @@ public class RequisitionService {
    * exists and that it has got correct status to be eligible for approval.
    *
    * @param requisition the requisition to verify
-   * @param userId the UUID of the user approving the requisition
    * @return ValidationResult instance containing the outcome of this validation
    */
-  public ValidationResult validateCanApproveRequisition(Requisition requisition, UUID userId) {
-
-    ValidationResult permissionCheck = permissionService.canApproveRequisition(requisition);
-    if (permissionCheck.hasErrors()) {
-      return permissionCheck;
+  public ValidationResult validateCanApproveRequisition(Requisition requisition) {
+    if (!permissionService.hasPermissionString(requisition, RightName.REQUISITION_APPROVE)) {
+      return ValidationResult.noPermission(
+          MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION, requisition.getId());
     }
 
     if (!requisition.isApprovable()) {
       return ValidationResult.failedValidation(MessageKeys
           .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
-    }
-
-    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
-    if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
-        requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
-      return ValidationResult.noPermission(
-          MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
     }
 
     return ValidationResult.success();
