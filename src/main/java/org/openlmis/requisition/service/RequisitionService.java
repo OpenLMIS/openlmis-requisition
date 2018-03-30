@@ -426,12 +426,13 @@ public class RequisitionService {
    */
   public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
     if (requisition.isApprovable()) {
-      UUID userId = authenticationHelper.getCurrentUser().getId();
+      UserDto currentUser = authenticationHelper.getCurrentUser();
+      UUID userId = currentUser.getId();
       validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
       LOGGER.debug("Requisition rejected: {}", requisition.getId());
       requisition.reject(orderables, userId);
-      saveStatusMessage(requisition);
+      saveStatusMessage(requisition, currentUser);
       return requisitionRepository.save(requisition);
     } else {
       throw new ValidationMessageException(new Message(
@@ -773,19 +774,19 @@ public class RequisitionService {
   /**
    * Saves status message of a requisition if its draft is not empty.
    */
-  public void saveStatusMessage(Requisition requisition) {
+  public void saveStatusMessage(Requisition requisition, UserDto currentUser) {
     if (isNotBlank(requisition.getDraftStatusMessage())) {
       // find the status change we are about to add. If it's already persisted,
       // get the latest one by date created
-      StatusChange statusChange = requisition.getStatusChanges().stream().filter(
-          sc -> sc.getId() == null)
+      StatusChange statusChange = requisition.getStatusChanges().stream()
+          .filter(sc -> sc.getId() == null)
           .findFirst()
           .orElse(requisition.getLatestStatusChange());
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
           statusChange,
-          authenticationHelper.getCurrentUser().getId(),
-          authenticationHelper.getCurrentUser().getFirstName(),
-          authenticationHelper.getCurrentUser().getLastName(),
+          currentUser.getId(),
+          currentUser.getFirstName(),
+          currentUser.getLastName(),
           requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
@@ -796,17 +797,17 @@ public class RequisitionService {
    * Approves requisition.
    *
    * @param parentNodeId supervisoryNode that has a supply line for the requisition's program.
-   * @param userId user who approves this requisition.
+   * @param currentUser user who approves this requisition.
    * @param orderables orderable products that will be used by line items to update packs to ship.
    * @param requisition requisition to be approved
    * @param supplyLines supplyLineDtos of the supervisoryNode that has a supply line for the
    *                    requisition's program.
    */
-  public void doApprove(UUID parentNodeId, UUID userId, Map<UUID, OrderableDto> orderables,
-                        Requisition requisition, List<SupplyLineDto> supplyLines) {
-    requisition.approve(parentNodeId, orderables, supplyLines, userId);
+  public void doApprove(UUID parentNodeId, UserDto currentUser, Map<UUID, OrderableDto> orderables,
+      Requisition requisition, List<SupplyLineDto> supplyLines) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
 
-    saveStatusMessage(requisition);
+    saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);
   }
 

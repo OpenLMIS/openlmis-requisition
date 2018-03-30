@@ -188,7 +188,7 @@ public abstract class BaseRequisitionController extends BaseController {
     }
 
     profiler.start("DO_APPROVE");
-    requisitionService.doApprove(parentNodeId, user.getId(), orderables, requisition, supplyLines);
+    requisitionService.doApprove(parentNodeId, user, orderables, requisition, supplyLines);
 
     if (requisition.getStatus().isApproved() && !isEmpty(supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");
@@ -350,7 +350,7 @@ public abstract class BaseRequisitionController extends BaseController {
     requisitionStatusProcessor.statusChange(requisition);
   }
 
-  void assignInitialSupervisoryNode(Requisition requisition) {
+  private void assignInitialSupervisoryNode(Requisition requisition) {
     if (requisition.isApprovable()
         && requisition.getSupervisoryNodeId() == null) {
       UUID supervisoryNode = supervisoryNodeReferenceDataService.findSupervisoryNode(

@@ -212,7 +212,7 @@ public class RequisitionServiceTest {
   private OrderDtoBuilder orderDtoBuilder;
 
   @Mock
-  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
+  private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Mock
   private PermissionService permissionService;
@@ -250,7 +250,7 @@ public class RequisitionServiceTest {
   private List<String> permissionStrings = singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
   private List<StockAdjustmentReason> stockAdjustmentReasons;
-  Requisition previousRequisition;
+  private Requisition previousRequisition;
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -1054,16 +1054,15 @@ public class RequisitionServiceTest {
         singletonList(fullSupplyOrderable));
 
     UUID parentId = UUID.randomUUID();
-    UUID userId = UUID.randomUUID();
 
     requisitionService.doApprove(
-        parentId, userId, ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable),
+        parentId, user, ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable),
         requisitionMock, singletonList(supplyLineDto)
     );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
         eq(ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable)),
-        eq(singletonList(supplyLineDto)), eq(userId));
+        eq(singletonList(supplyLineDto)), eq(user.getId()));
   }
 
   @Test
@@ -1466,7 +1465,7 @@ public class RequisitionServiceTest {
     requisition.setDraftStatusMessage("some_message");
 
     // when
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, user);
 
     // then
     ArgumentCaptor<StatusMessage> captor = ArgumentCaptor.forClass(StatusMessage.class);
@@ -1494,7 +1493,7 @@ public class RequisitionServiceTest {
     requisition.setDraftStatusMessage("some_message");
 
     // when
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, user);
 
     // then
     ArgumentCaptor<StatusMessage> captor = ArgumentCaptor.forClass(StatusMessage.class);
@@ -1511,10 +1510,10 @@ public class RequisitionServiceTest {
     requisition.setDraftStatusMessage(null);
 
     // when
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, user);
 
     requisition.setDraftStatusMessage("");
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, user);
 
     // then
     verify(statusMessageRepository, never()).save(any(StatusMessage.class));

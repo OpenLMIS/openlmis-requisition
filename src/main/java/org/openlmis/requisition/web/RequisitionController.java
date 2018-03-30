@@ -218,7 +218,7 @@ public class RequisitionController extends BaseRequisitionController {
         program.getSkipAuthorization());
 
     profiler.start("SAVE");
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, authenticationHelper.getCurrentUser());
     requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, requisition);
@@ -537,7 +537,7 @@ public class RequisitionController extends BaseRequisitionController {
     requisition.authorize(orderables, user.getId());
 
     profiler.start("SAVE");
-    requisitionService.saveStatusMessage(requisition);
+    requisitionService.saveStatusMessage(requisition, user);
     requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, requisition);

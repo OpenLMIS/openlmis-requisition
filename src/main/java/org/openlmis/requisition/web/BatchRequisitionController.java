@@ -154,7 +154,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
   @ResponseBody
   public ResponseEntity<RequisitionsProcessingStatusDto> approve(
       @RequestParam(value = "id") List<UUID> uuids) {
-
     XLOGGER.entry(uuids);
     Profiler profiler = new Profiler("BATCH_APPROVE_ALL_REQUISITIONS");
     profiler.setLogger(XLOGGER);
@@ -170,16 +169,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("GET_USER_PERMISSION_STRINGS");
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
 
-    profiler.start("FIND_SUPERVISORY_NODES");
-    Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions);
-
-    profiler.start("FIND_ORDERABLES");
+    Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions, profiler);
     Map<UUID, OrderableDto> orderables = findOrderables(
         profiler, () -> getLineItemOrderableIds(requisitions)
     );
-
-    profiler.start("GET_SUPPLY_LINES");
-    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = findSupplyLines(requisitions);
+    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap =
+        findSupplyLines(requisitions, profiler);
 
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
@@ -191,10 +186,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
           orderables, supplyLines);
     }
 
-    profiler.start("SEND_STOCK_EVENT");
     submitStockEvent(profiler, user, requisitions);
 
-    profiler.start("BUILD_RESPONSE");
     ResponseEntity<RequisitionsProcessingStatusDto> response =
         buildResponse(processingStatus, profiler);
 
@@ -255,7 +248,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return response;
   }
 
-  private Map<UUID, SupervisoryNodeDto> findSupervisoryNodes(List<Requisition> requisitions) {
+  private Map<UUID, SupervisoryNodeDto> findSupervisoryNodes(List<Requisition> requisitions,
+      Profiler profiler) {
+    profiler.start("FIND_SUPERVISORY_NODES");
     List<UUID> supervisoryNodeIds = requisitions.stream()
         .map(Requisition::getSupervisoryNodeId)
         .collect(toList());
@@ -267,13 +262,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private Map<Pair<UUID, UUID>, List<SupplyLineDto>> findSupplyLines(
-      List<Requisition> requisitions) {
+      List<Requisition> requisitions, Profiler profiler) {
+    profiler.start("GET_SUPPLY_LINES");
     Set<Pair<UUID, UUID>> programsFacilities = new HashSet<>();
     requisitions
         .forEach(r -> programsFacilities.add(Pair.of(r.getProgramId(), r.getSupervisoryNodeId())));
 
     Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = new HashMap<>();
-    for (Pair<UUID, UUID> pair: programsFacilities) {
+    for (Pair<UUID, UUID> pair : programsFacilities) {
       supplyLinesMap.put(pair,
           supplyLineReferenceDataService.search(pair.getLeft(), pair.getRight()));
     }
@@ -321,6 +317,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions) {
+    profiler.start("SEND_STOCK_EVENT");
     ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
@@ -365,7 +362,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private boolean addValidationErrors(RequisitionsProcessingStatusDto processingStatus,
-                                      ValidationResult validationResult, UUID id) {
+      ValidationResult validationResult, UUID id) {
     if (validationResult.hasErrors()) {
       for (ValidationFailure failure : validationResult.gerErrors()) {
         Map<String, Message.LocalizedMessage> localizedErrors = new HashMap<>();
