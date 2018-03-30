@@ -249,10 +249,12 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldApproveAll() throws IOException {
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     mockRequisitionValidatonsAndStubRepository();
@@ -263,15 +265,17 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldHaveErrorIfUserHasNoRightToApprove() throws IOException {
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_APPROVE))
         .when(requisitionService)
-        .validateCanApproveRequisition(refEq(requisitions.get(0)));
+        .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(userId));
 
     mockRequisitionValidatonsAndStubRepository();
 
@@ -281,10 +285,12 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldHaveErrorIfValidationFails() throws IOException {
+    UUID userId = authenticationHelper.getCurrentUser().getId();
+
     requisitions.forEach(requisition ->
         doReturn(ValidationResult.success())
             .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition))
+            .validateCanApproveRequisition(refEq(requisition), eq(userId))
     );
 
     requisitions = mockRequisitionValidatonsAndStubRepository();

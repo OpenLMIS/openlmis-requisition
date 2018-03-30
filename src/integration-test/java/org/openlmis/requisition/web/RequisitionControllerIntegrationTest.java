@@ -1089,7 +1089,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
 
     doReturn(ValidationResult.success())
-        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class));
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
+        anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
@@ -1130,7 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     String missingPermission = REQUISITION_APPROVE;
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
-        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class));
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class), anyUuid());
 
     // when
     restAssured.given()
@@ -1157,7 +1158,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION,
         requisitionId))
         .when(requisitionService)
-        .validateCanApproveRequisition(any(Requisition.class));
+        .validateCanApproveRequisition(any(Requisition.class), anyUuid());
 
     // when
     restAssured.given()

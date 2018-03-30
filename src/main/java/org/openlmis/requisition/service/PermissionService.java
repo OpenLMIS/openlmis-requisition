@@ -253,31 +253,6 @@ public class PermissionService {
     return checkPermission(REPORTS_VIEW, null, null, null);
   }
 
-  /**
-   * Get current user's permission strings.
-   * @return user's permission strings
-   */
-  public List<String> getPermissionStrings() {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
-        .getAuthentication();
-    if (authentication.isClientOnly()) {
-      return Collections.emptyList();
-    }
-    UserDto user = authenticationHelper.getCurrentUser();
-    return userReferenceDataService.getPermissionStrings(user.getId());
-  }
-
-  /**
-   * Get current user's permission strings.
-   * @return user's permission strings
-   */
-  public boolean hasPermissionString(Requisition requisition, String rightName) {
-    List<String> userPermissionStrings = getPermissionStrings();
-    return userPermissionStrings.stream()
-        .filter(permission -> permission.contains(rightName))
-        .noneMatch(permission -> requisition.getPermissionStrings().contains(permission));
-  }
-
   private ValidationResult checkPermissionOnUpdate(String rightName, Requisition requisition) {
     if (!hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null)) {
       RequisitionStatus status = requisition.getStatus();
@@ -365,5 +340,19 @@ public class PermissionService {
     }
 
     return false;
+  }
+
+  /**
+   * Get current user's permission strings.
+   * @return user's permission strings
+   */
+  public List<String> getPermissionStrings() {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+        .getAuthentication();
+    if (authentication.isClientOnly()) {
+      return Collections.emptyList();
+    }
+    UserDto user = authenticationHelper.getCurrentUser();
+    return userReferenceDataService.getPermissionStrings(user.getId());
   }
 }

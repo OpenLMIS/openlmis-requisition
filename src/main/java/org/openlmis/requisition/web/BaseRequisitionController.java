@@ -171,8 +171,6 @@ public abstract class BaseRequisitionController extends BaseController {
   BasicRequisitionDto doApprove(Requisition requisition, UserDto user,
       SupervisoryNodeDto supervisoryNode) {
     Profiler profiler = getProfiler("DO_APPROVE", requisition, user);
-
-    profiler.start("CHECK_IF_PERIOD_IS_VALID");
     checkIfPeriodIsValid(requisition, profiler);
 
     SupervisoryNodeDto parentNode = null;
