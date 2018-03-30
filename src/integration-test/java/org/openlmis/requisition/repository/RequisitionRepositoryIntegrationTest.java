@@ -18,6 +18,7 @@ package org.openlmis.requisition.repository;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -95,7 +96,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(Collections.singletonList(
+    requisition.setStatusChanges(singletonList(
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     requisition.setEmergency(true);
     repository.save(requisition);
@@ -148,7 +149,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(Collections.singletonList(
+    requisition.setStatusChanges(singletonList(
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     repository.save(requisition);
 
@@ -218,7 +219,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void searchShouldExcludeRequisitionsWithNoMatchingPermissionStrings() {
     // given
-    List<String> userPermissionStringSubset = Collections.singletonList(
+    List<String> userPermissionStringSubset = singletonList(
         userPermissionStrings.get(0));
 
     // when
@@ -437,7 +438,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(Collections.singletonList(
+    requisition.setStatusChanges(singletonList(
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     requisition.setEmergency(true);
     repository.save(requisition);
@@ -526,8 +527,8 @@ public class RequisitionRepositoryIntegrationTest
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
     List<Requisition> requisitions = repository.searchApprovedRequisitions("all",
-        Collections.singletonList(requisition1.getFacilityId()),
-        Collections.singletonList(requisition1.getProgramId()));
+        singletonList(requisition1.getFacilityId()),
+        singletonList(requisition1.getProgramId()));
 
     assertEquals(1, requisitions.size());
     assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
@@ -591,10 +592,29 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldReadById() {
-    List<Requisition> requisitions = repository.readByIdIn(
+    List<Requisition> requisitions = repository.readDistinctByIdIn(
         Arrays.asList(this.requisitions.get(0).getId(), this.requisitions.get(3).getId()));
 
     assertEquals(2, requisitions.size());
+  }
+
+  @Test
+  public void shouldReadDistinctById() {
+    Requisition requisition = generateInstance();
+    RequisitionLineItem item = generateLineItem(requisition);
+    RequisitionLineItem item2 = generateLineItem(requisition);
+    requisition.setRequisitionLineItems(asList(item, item2));
+    requisition = repository.save(requisition);
+
+    List<Requisition> found = repository.readDistinctByIdIn(singletonList(requisition.getId()));
+
+    assertEquals(1, found.size());
+  }
+
+  private RequisitionLineItem generateLineItem(Requisition requisition) {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    return item;
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
@@ -616,7 +636,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setFacilityId(facility);
     requisition.setProgramId(program);
 
-    requisition.setStatusChanges(Collections.singletonList(
+    requisition.setStatusChanges(singletonList(
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
 
     repository.save(requisition);

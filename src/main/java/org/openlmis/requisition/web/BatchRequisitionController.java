@@ -164,7 +164,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_REQUISITIONS");
-    List<Requisition> requisitions = requisitionRepository.readByIdIn(uuids);
+    List<Requisition> requisitions = requisitionRepository.readDistinctByIdIn(uuids);
 
     profiler.start("GET_USER_PERMISSION_STRINGS");
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
@@ -290,7 +290,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
         profiler.start("DO_APPROVE");
         doApprove(requisition, user, supervisoryNode, orderables, supplyLines);
-        profiler.start("BUILD_DTO_AND_TO_PROCESSING_STATUS");
+        profiler.start("BUILD_DTO_AND_ADD_TO_PROCESSING_STATUS");
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
       }
