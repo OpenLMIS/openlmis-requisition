@@ -189,7 +189,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     try {
       for (Requisition requisition : requisitions) {
         CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, profiler, user.getId()), executor);
+            () -> submitStockEvent(requisition, user.getId()), executor);
         futures.add(future);
       }
     } finally {

@@ -220,7 +220,8 @@ public abstract class BaseRequisitionController extends BaseController {
     return basicRequisitionDto;
   }
 
-  void submitStockEvent(Requisition requisition, Profiler profiler, UUID currentUserId) {
+  void submitStockEvent(Requisition requisition, UUID currentUserId) {
+    Profiler profiler = getProfiler("SUBMIT_STOCK_EVENT", requisition, currentUserId);
     if (requisition.getStatus().isApproved()
         && isNotTrue(requisition.getEmergency())) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
@@ -228,6 +229,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
       profiler.start("SUBMIT_STOCK_EVENT");
       stockEventStockManagementService.submit(stockEventDto);
+      stopProfiler(profiler, stockEventDto);
     }
   }
 
