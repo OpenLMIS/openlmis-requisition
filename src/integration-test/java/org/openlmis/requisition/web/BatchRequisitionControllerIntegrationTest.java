@@ -469,7 +469,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
           .thenReturn(ValidationResult.success());
     });
 
-    given(requisitionRepository.readAllById(requisitionIds)).willReturn(requisitionSpies);
+    given(requisitionRepository.readByIdIn(requisitionIds)).willReturn(requisitionSpies);
 
     return requisitionSpies;
   }

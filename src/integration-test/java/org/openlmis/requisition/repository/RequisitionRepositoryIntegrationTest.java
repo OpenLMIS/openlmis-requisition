@@ -29,7 +29,15 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIP
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.persistence.PersistenceException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
@@ -56,16 +64,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.PersistenceException;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionRepositoryIntegrationTest
@@ -589,6 +587,14 @@ public class RequisitionRepositoryIntegrationTest
 
     assertNotNull(requisitions);
     assertTrue(requisitions.isEmpty());
+  }
+
+  @Test
+  public void shouldReadById() {
+    List<Requisition> requisitions = repository.readByIdIn(
+        Arrays.asList(this.requisitions.get(0).getId(), this.requisitions.get(3).getId()));
+
+    assertEquals(2, requisitions.size());
   }
 
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {

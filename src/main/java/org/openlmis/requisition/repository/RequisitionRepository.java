@@ -32,6 +32,6 @@ public interface RequisitionRepository extends
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 
   @EntityGraph(attributePaths = { "requisitionLineItems" }, type = EntityGraphType.LOAD)
-  List<Requisition> readAllById(Iterable<UUID> ids);
+  List<Requisition> readByIdIn(Iterable<UUID> ids);
 
 }
