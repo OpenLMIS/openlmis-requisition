@@ -29,7 +29,6 @@ import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -75,14 +74,16 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -111,9 +112,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
 
   @MockBean
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
-  @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
   @MockBean
@@ -137,16 +135,21 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
+  @MockBean(name = "userReferenceDataService")
+  private UserReferenceDataService userReferenceDataService;
+
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
 
   private List<Requisition> requisitions;
   private List<ApproveRequisitionDto> approveRequisitions;
   private List<UUID> requisitionIds;
   private Map<UUID, OrderableDto> orderablesMap;
+  private List<String> permissionStrings;
+  private UserDto user;
 
   @Before
   public void setUp() {
-    mockUserAuthenticated();
+    user = mockUserAuthenticated();
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
@@ -161,6 +164,15 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         generateRequisition(RequisitionStatus.AUTHORIZED),
         generateRequisition(RequisitionStatus.AUTHORIZED)
     );
+
+    permissionStrings = requisitions
+        .stream()
+        .map(req -> String.format("%s|%s|%s", REQUISITION_APPROVE,
+            req.getFacilityId(), req.getProgramId()))
+        .collect(Collectors.toList());
+
+    doReturn(permissionStrings)
+        .when(userReferenceDataService).getPermissionStrings(user.getId());
 
     requisitionIds = requisitions
         .stream()
@@ -249,14 +261,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldApproveAll() throws IOException {
-    UUID userId = authenticationHelper.getCurrentUser().getId();
-
-    requisitions.forEach(requisition ->
-        doReturn(ValidationResult.success())
-            .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(userId))
-    );
-
     mockRequisitionValidatonsAndStubRepository();
 
     Response response = post(APPROVE_ALL, requisitionIds);
@@ -265,17 +269,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldHaveErrorIfUserHasNoRightToApprove() throws IOException {
-    UUID userId = authenticationHelper.getCurrentUser().getId();
-
-    requisitions.forEach(requisition ->
-        doReturn(ValidationResult.success())
-            .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(userId))
-    );
-
-    doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_APPROVE))
-        .when(requisitionService)
-        .validateCanApproveRequisition(refEq(requisitions.get(0)), eq(userId));
+    permissionStrings = permissionStrings.stream().skip(1).collect(Collectors.toList());
+    doReturn(permissionStrings)
+        .when(userReferenceDataService)
+        .getPermissionStrings(user.getId());
 
     mockRequisitionValidatonsAndStubRepository();
 
@@ -285,14 +282,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @Test
   public void shouldHaveErrorIfValidationFails() throws IOException {
-    UUID userId = authenticationHelper.getCurrentUser().getId();
-
-    requisitions.forEach(requisition ->
-        doReturn(ValidationResult.success())
-            .when(requisitionService)
-            .validateCanApproveRequisition(refEq(requisition), eq(userId))
-    );
-
     requisitions = mockRequisitionValidatonsAndStubRepository();
 
     doReturn(ValidationResult.fieldErrors(Maps.newHashMap("someField", new Message("some-key"))))
@@ -330,7 +319,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
             .validateCanSaveRequisition(requisition.getId())
     );
 
-    doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_APPROVE))
+    doReturn(ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION,
+        PermissionService.REQUISITION_APPROVE))
         .when(requisitionService).validateCanSaveRequisition(requisitions.get(0).getId());
 
     Response response = put(SAVE_ALL, approveRequisitions);

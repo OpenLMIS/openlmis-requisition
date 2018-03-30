@@ -120,7 +120,6 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
@@ -1572,7 +1571,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private RightDto mockViewOrdersRight() {
     RightDto right = new RightDto();
     right.setId(UUID.randomUUID());
-    given(authenticationHelper.getRight(RightName.ORDERS_EDIT)).willReturn(right);
+    given(authenticationHelper.getRight(PermissionService.ORDERS_EDIT)).willReturn(right);
     return right;
   }
 

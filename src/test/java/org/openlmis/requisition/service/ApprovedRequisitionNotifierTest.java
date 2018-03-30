@@ -50,7 +50,6 @@ import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 
 import java.time.ZonedDateTime;
@@ -215,7 +214,7 @@ public class ApprovedRequisitionNotifierTest {
     when(periodReferenceDataService.findOne(processingPeriod.getId())).thenReturn(processingPeriod);
     when(requisitionForConvertBuilder.getAvailableSupplyingDepots(eq(requisitionId)))
         .thenReturn(Arrays.asList(warehouseOne, warehouseTwo));
-    when(authenticationHelper.getRight(RightName.ORDERS_EDIT)).thenReturn(right);
+    when(authenticationHelper.getRight(PermissionService.ORDERS_EDIT)).thenReturn(right);
     when(userReferenceDataService.findUsers(
         right.getId(),
         null,

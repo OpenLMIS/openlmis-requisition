@@ -132,7 +132,6 @@ import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
@@ -1779,10 +1778,10 @@ public class RequisitionServiceTest {
         .findOne(any()))
         .thenReturn(program);
     when(authenticationHelper
-        .getRight(RightName.ORDERS_EDIT))
+        .getRight(PermissionService.ORDERS_EDIT))
         .thenReturn(convertToOrderRight);
     when(rightReferenceDataService
-        .findRight(RightName.REQUISITION_APPROVE))
+        .findRight(PermissionService.REQUISITION_APPROVE))
         .thenReturn(approveRequisitionRight);
 
     when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(true);

@@ -101,7 +101,6 @@ import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.RequisitionForConvertComparator;
-import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.slf4j.Logger;
@@ -512,7 +511,7 @@ public class RequisitionService {
         Collections.emptyList(), pageable);
 
     profiler.start("FIND_RIGHT_FROM_NAME");
-    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
 
     profiler.start("GET_USER_DETAILED_ROLE_ASSIGNMENTS");
     List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
@@ -581,7 +580,7 @@ public class RequisitionService {
           .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
     }
 
-    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
         requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
       return ValidationResult.noPermission(
@@ -644,7 +643,7 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
 
     profiler.start("GET_ORDERS_EDIT_RIGHT_DTO");
-    RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
+    RightDto right = authenticationHelper.getRight(PermissionService.ORDERS_EDIT);
     List<Requisition> releasedRequisitions = new ArrayList<>();
 
     profiler.start("GET_USER_FULFILLMENT_FACILITIES");

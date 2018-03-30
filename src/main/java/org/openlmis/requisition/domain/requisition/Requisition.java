@@ -86,9 +86,9 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionHelper;
-import org.openlmis.requisition.utils.RightName;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -254,7 +254,7 @@ public class Requisition extends BaseTimestampedEntity {
     this.status = status;
     this.emergency = emergency;
     permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        RightName.REQUISITION_VIEW, facilityId, programId));
+        PermissionService.REQUISITION_VIEW, facilityId, programId));
   }
 
   /**

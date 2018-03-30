@@ -26,7 +26,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 
+import java.lang.reflect.Field;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,13 +58,6 @@ import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceD
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RightName;
-import java.lang.reflect.Field;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApprovalNotifierTest {
@@ -210,7 +210,7 @@ public class ApprovalNotifierTest {
   }
 
   private void mockServices() {
-    when(rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE)).thenReturn(right);
+    when(rightReferenceDataService.findRight(REQUISITION_APPROVE)).thenReturn(right);
     when(periodReferenceDataService.findOne(any())).thenReturn(new ProcessingPeriodDto());
     when(programReferenceDataService.findOne(any())).thenReturn(new ProgramDto());
     when(facilityReferenceDataService.findOne(any())).thenReturn(new FacilityDto());

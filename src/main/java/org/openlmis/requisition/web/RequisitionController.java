@@ -48,13 +48,13 @@ import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.utils.RightName;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -563,7 +563,7 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("GET_RIGHT");
-    RightDto right = authenticationHelper.getRight(RightName.ORDERS_EDIT);
+    RightDto right = authenticationHelper.getRight(PermissionService.ORDERS_EDIT);
 
     profiler.start("GET_USER_MANAGED_FACILITIES");
     Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService

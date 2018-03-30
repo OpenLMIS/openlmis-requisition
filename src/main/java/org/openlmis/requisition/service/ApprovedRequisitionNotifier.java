@@ -32,7 +32,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RightName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
@@ -122,7 +121,7 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
   }
 
   private Set<UserDto> getClerks(Requisition requisition) {
-    UUID rightId = authenticationHelper.getRight(RightName.ORDERS_EDIT).getId();
+    UUID rightId = authenticationHelper.getRight(PermissionService.ORDERS_EDIT).getId();
     Set<UserDto> users = new HashSet<>();
 
     requisitionForConvertBuilder.getAvailableSupplyingDepots(requisition.getId())

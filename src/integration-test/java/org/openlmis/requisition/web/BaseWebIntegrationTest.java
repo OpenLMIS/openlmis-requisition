@@ -153,7 +153,7 @@ public abstract class BaseWebIntegrationTest {
     restAssured = ramlDefinition.createRestAssured();
   }
 
-  protected void mockUserAuthenticated() {
+  protected UserDto mockUserAuthenticated() {
     UserDto user = new UserDto();
     user.setId(UUID.randomUUID());
     user.setFirstName("admin");
@@ -161,6 +161,8 @@ public abstract class BaseWebIntegrationTest {
     user.setEmail("admin@openlmis.org");
 
     given(authenticationHelper.getCurrentUser()).willReturn(user);
+
+    return user;
   }
 
   protected PermissionMessageException mockPermissionException(String... deniedPermissions) {

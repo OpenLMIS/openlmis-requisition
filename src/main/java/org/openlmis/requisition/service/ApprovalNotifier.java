@@ -32,7 +32,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.requisition.utils.RightName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +136,7 @@ public class ApprovalNotifier extends BaseNotifier {
   }
 
   private Collection<UserDto> getApprovers(Requisition requisition) {
-    RightDto right = rightReferenceDataService.findRight(RightName.REQUISITION_APPROVE);
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     return supervisingUsersReferenceDataService
         .findAll(requisition.getSupervisoryNodeId(), right.getId(), requisition.getProgramId());
   }

@@ -19,6 +19,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
@@ -53,9 +54,12 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -84,6 +88,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -154,8 +161,10 @@ public class BatchRequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_REQUISITIONS");
-
     List<Requisition> requisitions = requisitionRepository.findAll(uuids);
+
+    profiler.start("GET_USER_PERMISSION_STRINGS");
+    List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
 
     profiler.start("FIND_SUPERVISORY_NODES");
     List<UUID> supervisoryNodeIds = requisitions.stream()
@@ -171,7 +180,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
           .get(requisition.getSupervisoryNodeId());
-      validateAndApprove(requisition, processingStatus, user, supervisoryNode);
+      validateAndApprove(requisition, processingStatus, user, supervisoryNode, permissionStrings);
     }
 
     profiler.start("SEND_STOCK_EVENT");
@@ -251,10 +260,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private void validateAndApprove(Requisition requisition,
       RequisitionsProcessingStatusDto processingStatus,
-      UserDto user,
-      SupervisoryNodeDto supervisoryNode) {
-    ValidationResult validationResult = requisitionService
-        .validateCanApproveRequisition(requisition, user.getId());
+      UserDto user, SupervisoryNodeDto supervisoryNode, List<String> permissionStrings) {
+    ValidationResult validationResult = validateCanApproveRequisition(
+        requisition, permissionStrings);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
@@ -263,6 +271,24 @@ public class BatchRequisitionController extends BaseRequisitionController {
             new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
       }
     }
+  }
+
+  private ValidationResult validateCanApproveRequisition(Requisition requisition,
+      List<String> permissionStrings) {
+    String permission = String.format("%s|%s|%s", PermissionService.REQUISITION_APPROVE,
+        requisition.getFacilityId(), requisition.getProgramId());
+
+    if (!permissionStrings.contains(permission)) {
+      return ValidationResult
+          .noPermission(ERROR_NO_FOLLOWING_PERMISSION, PermissionService.REQUISITION_APPROVE);
+    }
+
+    if (!requisition.isApprovable()) {
+      return ValidationResult.failedValidation(MessageKeys
+          .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
+    }
+
+    return ValidationResult.success();
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
