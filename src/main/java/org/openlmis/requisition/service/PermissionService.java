@@ -29,7 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.ResultDto;
@@ -273,10 +272,10 @@ public class PermissionService {
    * @return user's permission strings
    */
   public boolean hasPermissionString(Requisition requisition, String rightName) {
-    return requisition.getPermissionStrings().stream()
-        .map(RequisitionPermissionString::getPermissionString)
+    List<String> userPermissionStrings = getPermissionStrings();
+    return userPermissionStrings.stream()
         .filter(permission -> permission.contains(rightName))
-        .anyMatch(getPermissionStrings()::contains);
+        .noneMatch(permission -> requisition.getPermissionStrings().contains(permission));
   }
 
   private ValidationResult checkPermissionOnUpdate(String rightName, Requisition requisition) {
