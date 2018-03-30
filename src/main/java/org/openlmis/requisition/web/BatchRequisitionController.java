@@ -78,6 +78,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
+@SuppressWarnings("PMD.TooManyMethods")
 public class BatchRequisitionController extends BaseRequisitionController {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
@@ -170,30 +171,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
 
     profiler.start("FIND_SUPERVISORY_NODES");
-    List<UUID> supervisoryNodeIds = requisitions.stream()
-        .map(Requisition::getSupervisoryNodeId)
-        .collect(toList());
-
-    Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = supervisoryNodeService
-        .findByIds(supervisoryNodeIds)
-        .stream()
-        .collect(toMap(SupervisoryNodeDto::getId, supervisoryNode -> supervisoryNode));
+    Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions);
 
     profiler.start("FIND_ORDERABLES");
     Map<UUID, OrderableDto> orderables = findOrderables(
         profiler, () -> getLineItemOrderableIds(requisitions)
     );
 
-    Set<Pair<UUID, UUID>> programsFacilities = new HashSet<>();
-    requisitions
-        .forEach(r -> programsFacilities.add(Pair.of(r.getProgramId(), r.getSupervisoryNodeId())));
-
     profiler.start("GET_SUPPLY_LINES");
-    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = new HashMap<>();
-    for (Pair<UUID, UUID> pair: programsFacilities) {
-      supplyLinesMap.put(pair,
-          supplyLineReferenceDataService.search(pair.getLeft(), pair.getRight()));
-    }
+    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = findSupplyLines(requisitions);
 
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
@@ -206,18 +192,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
 
     profiler.start("SEND_STOCK_EVENT");
-    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
-    List<CompletableFuture<Void>> futures = Lists.newArrayList();
-    try {
-      for (Requisition requisition : requisitions) {
-        CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, user.getId()), executor);
-        futures.add(future);
-      }
-    } finally {
-      profiler.start("JOIN_RESULTS");
-      futures.forEach(CompletableFuture::join);
-    }
+    submitStockEvent(profiler, user, requisitions);
 
     profiler.start("BUILD_RESPONSE");
     ResponseEntity<RequisitionsProcessingStatusDto> response =
@@ -280,6 +255,31 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return response;
   }
 
+  private Map<UUID, SupervisoryNodeDto> findSupervisoryNodes(List<Requisition> requisitions) {
+    List<UUID> supervisoryNodeIds = requisitions.stream()
+        .map(Requisition::getSupervisoryNodeId)
+        .collect(toList());
+
+    return supervisoryNodeService
+        .findByIds(supervisoryNodeIds)
+        .stream()
+        .collect(toMap(SupervisoryNodeDto::getId, supervisoryNode -> supervisoryNode));
+  }
+
+  private Map<Pair<UUID, UUID>, List<SupplyLineDto>> findSupplyLines(
+      List<Requisition> requisitions) {
+    Set<Pair<UUID, UUID>> programsFacilities = new HashSet<>();
+    requisitions
+        .forEach(r -> programsFacilities.add(Pair.of(r.getProgramId(), r.getSupervisoryNodeId())));
+
+    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = new HashMap<>();
+    for (Pair<UUID, UUID> pair: programsFacilities) {
+      supplyLinesMap.put(pair,
+          supplyLineReferenceDataService.search(pair.getLeft(), pair.getRight()));
+    }
+    return supplyLinesMap;
+  }
+
   private void validateAndApprove(Requisition requisition,
       RequisitionsProcessingStatusDto processingStatus, UserDto user,
       SupervisoryNodeDto supervisoryNode, List<String> permissionStrings,
@@ -318,6 +318,21 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
 
     return ValidationResult.success();
+  }
+
+  private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions) {
+    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
+    List<CompletableFuture<Void>> futures = Lists.newArrayList();
+    try {
+      for (Requisition requisition : requisitions) {
+        CompletableFuture<Void> future = runAsync(
+            () -> submitStockEvent(requisition, user.getId()), executor);
+        futures.add(future);
+      }
+    } finally {
+      profiler.start("JOIN_RESULTS");
+      futures.forEach(CompletableFuture::join);
+    }
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
