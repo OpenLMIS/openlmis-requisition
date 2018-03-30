@@ -179,16 +179,18 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("SEND_STOCK_EVENT");
     ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
-    for (Requisition requisition : requisitions) {
-      Runnable runnable = () -> submitStockEvent(requisition, profiler);
-      CompletableFuture<Void> future = runAsync(
-          new SpringSecurityRunnableWrapper(SecurityContextHolder.getContext(), runnable),
-          executor);
-      futures.add(future);
+    try {
+      for (Requisition requisition : requisitions) {
+        Runnable runnable = () -> submitStockEvent(requisition, profiler);
+        CompletableFuture<Void> future = runAsync(
+            new SpringSecurityRunnableWrapper(SecurityContextHolder.getContext(), runnable),
+            executor);
+        futures.add(future);
+      }
+    } finally {
+      profiler.start("JOIN_RESULTS");
+      futures.forEach(CompletableFuture::join);
     }
-
-    profiler.start("JOIN_RESULTS");
-    futures.forEach(CompletableFuture::join);
 
     profiler.start("BUILD_RESPONSE");
     ResponseEntity<RequisitionsProcessingStatusDto> response =
