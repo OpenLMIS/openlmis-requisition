@@ -50,7 +50,14 @@ class StockAdjustmentsValidator
             new Message(ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE, adjustment.getReasonId()));
       }
     }
-
   }
 
+  /**
+   * There is not point for checking if adjustments are valid when changing status to approve
+   * or in approval because after requisition is authorized, stock adjustments can't be changed.
+   */
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

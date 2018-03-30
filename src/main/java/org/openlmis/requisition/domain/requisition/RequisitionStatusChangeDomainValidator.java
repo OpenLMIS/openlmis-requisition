@@ -39,6 +39,10 @@ interface RequisitionStatusChangeDomainValidator {
 
   boolean isForRegularOnly();
 
+  default boolean isForApprove() {
+    return true;
+  }
+
   default void rejectIfNullOrNegative(Map<String, Message> errors, RequisitionTemplate template,
                                       Integer value, String field) {
     rejectIfLessThanZero(errors, template, value, field);

@@ -66,11 +66,14 @@ public class StatusChangeValidationService {
     Map<String, Message> errors = new HashMap<>();
 
     for (RequisitionStatusChangeDomainValidator validator : validators) {
-      if (!validator.isForRegularOnly()) {
-        validator.validateCanChangeStatus(errors);
-      }
-      if (isNotTrue(requisition.getEmergency()) && validator.isForRegularOnly()) {
-        validator.validateCanChangeStatus(errors);
+      if (isNotDuringApprovalOrValidatorIsForApproval(validator)) {
+        if (!validator.isForRegularOnly()) {
+          validator.validateCanChangeStatus(errors);
+        }
+        if (isNotTrue(requisition.getEmergency())
+            && validator.isForRegularOnly()) {
+          validator.validateCanChangeStatus(errors);
+        }
       }
 
     }
@@ -80,6 +83,10 @@ public class StatusChangeValidationService {
 
     logger.warn("Validation for requisition status change failed: {}", errors);
     return ValidationResult.fieldErrors(errors);
+  }
 
+  private boolean isNotDuringApprovalOrValidatorIsForApproval(
+      RequisitionStatusChangeDomainValidator validator) {
+    return !requisition.getStatus().duringApproval() || validator.isForApprove();
   }
 }

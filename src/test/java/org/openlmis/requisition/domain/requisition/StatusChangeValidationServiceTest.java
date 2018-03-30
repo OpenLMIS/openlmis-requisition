@@ -18,12 +18,14 @@ package org.openlmis.requisition.domain.requisition;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
-import org.junit.Test;
-import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.Test;
+import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.utils.Message;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class StatusChangeValidationServiceTest {
 
@@ -57,6 +59,20 @@ public class StatusChangeValidationServiceTest {
     assertFalse(validationResult.hasErrors());
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void shouldCallValidatorsNotForApprovalIfRequisitionIsNotDuringApproval() {
+    addValidatorForApprovalAndCallValidationService();
+  }
+
+  @Test
+  public void shouldNotCallValidatorsNotForApprovalDuringApprove() {
+    requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
+        .setStatus(RequisitionStatus.AUTHORIZED)
+        .build();
+    addValidatorForApprovalAndCallValidationService();
+  }
+
   @Test
   public void shouldUseAllRequiredValidators() {
     StatusChangeValidationService statusChangeValidationService =
@@ -73,4 +89,35 @@ public class StatusChangeValidationServiceTest {
 
   }
 
+  private void addValidatorForApprovalAndCallValidationService() {
+    StatusChangeValidationService statusChangeValidationService =
+        new StatusChangeValidationService(requisition, LocalDate.now(), true);
+
+    List<RequisitionStatusChangeDomainValidator> validators =
+        (List<RequisitionStatusChangeDomainValidator>)
+            ReflectionTestUtils.getField(statusChangeValidationService, "validators");
+
+    validators.add(new DummyRequisitionStatusChangeDomainValidator());
+
+    statusChangeValidationService.validateRequisitionCanChangeStatus();
+  }
+
+  private static class DummyRequisitionStatusChangeDomainValidator implements
+      RequisitionStatusChangeDomainValidator {
+
+    @Override
+    public void validateCanChangeStatus(Map<String, Message> errors) {
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean isForRegularOnly() {
+      return false;
+    }
+
+    @Override
+    public boolean isForApprove() {
+      return false;
+    }
+  }
 }
