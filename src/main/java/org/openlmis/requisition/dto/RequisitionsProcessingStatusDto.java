@@ -16,11 +16,11 @@
 package org.openlmis.requisition.dto;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
@@ -35,8 +35,8 @@ public class RequisitionsProcessingStatusDto {
   private Set<RequisitionErrorMessage> requisitionErrors;
 
   public RequisitionsProcessingStatusDto() {
-    this.requisitionDtos = ConcurrentHashMap.newKeySet();
-    this.requisitionErrors = ConcurrentHashMap.newKeySet();
+    this.requisitionDtos = new HashSet<>();
+    this.requisitionErrors = new HashSet<>();
   }
 
   public void addProcessedRequisition(ApproveRequisitionDto requisitionDto) {

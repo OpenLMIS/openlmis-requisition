@@ -436,22 +436,15 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateForStatusChange(requisition, profiler);
 
-    profiler.start("GET_SUPERVISORY_NODE");
-    SupervisoryNodeDto supervisoryNodeDto = supervisoryNodeService
-        .findOne(requisition.getSupervisoryNodeId());
-
-    profiler.start("FIND_ORDERABLES");
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
-    );
-
-    profiler.start("GET_SUPPLY_LINE");
-    List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
-        requisition.getProgramId(), requisition.getSupervisoryNodeId());
+    SupervisoryNodeDto supervisoryNodeDto = getSupervisoryNodeDto(profiler, requisition);
+    Map<UUID, OrderableDto> orderables = findOrderables(profiler, requisition);
+    List<SupplyLineDto> supplyLines = getSupplyLineDtos(profiler, requisition);
 
     profiler.start("DO_APPROVE");
-    BasicRequisitionDto requisitionDto =
-        doApprove(requisition, user, supervisoryNodeDto, orderables, supplyLines);
+    doApprove(requisition, user, supervisoryNodeDto, orderables, supplyLines);
+
+    BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
+
     submitStockEvent(requisition, user.getId());
 
     stopProfiler(profiler, requisitionDto);
@@ -608,6 +601,25 @@ public class RequisitionController extends BaseRequisitionController {
     requisitionService.convertToOrder(list, getCurrentUser(profiler));
 
     stopProfiler(profiler);
+  }
+
+  private SupervisoryNodeDto getSupervisoryNodeDto(Profiler profiler, Requisition requisition) {
+    profiler.start("GET_SUPERVISORY_NODE");
+    return supervisoryNodeService
+        .findOne(requisition.getSupervisoryNodeId());
+  }
+
+  private Map<UUID, OrderableDto> findOrderables(Profiler profiler, Requisition requisition) {
+    profiler.start("FIND_ORDERABLES");
+    return findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
+  }
+
+  private List<SupplyLineDto> getSupplyLineDtos(Profiler profiler, Requisition requisition) {
+    profiler.start("GET_SUPPLY_LINE");
+    return supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId());
   }
 
   private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,

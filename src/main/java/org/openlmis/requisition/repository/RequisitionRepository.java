@@ -15,19 +15,23 @@
 
 package org.openlmis.requisition.repository;
 
+import java.util.List;
+import java.util.UUID;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-import java.util.UUID;
 
 @JaversSpringDataAuditable
 public interface RequisitionRepository extends
     JpaRepository<Requisition, UUID>,
     RequisitionRepositoryCustom {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
+
+  @EntityGraph(attributePaths = { "requisitionLineItems" }, type = EntityGraphType.LOAD)
+  List<Requisition> readAllById(Iterable<UUID> ids);
 
 }

@@ -164,7 +164,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("FIND_REQUISITIONS");
-    List<Requisition> requisitions = requisitionRepository.findAll(uuids);
+    List<Requisition> requisitions = requisitionRepository.readAllById(uuids);
 
     profiler.start("GET_USER_PERMISSION_STRINGS");
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());

@@ -169,7 +169,7 @@ public abstract class BaseRequisitionController extends BaseController {
     return buildDto(profiler, toUpdate, orderables, facility, program);
   }
 
-  BasicRequisitionDto doApprove(Requisition requisition, UserDto user,
+  void doApprove(Requisition requisition, UserDto user,
       SupervisoryNodeDto supervisoryNode, Map<UUID, OrderableDto> orderables,
       List<SupplyLineDto> supplyLines) {
     Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition, user);
@@ -209,10 +209,7 @@ public abstract class BaseRequisitionController extends BaseController {
     callStatusChangeProcessor(profiler, requisition);
 
     logger.debug("Requisition with id {} approved", requisition.getId());
-    BasicRequisitionDto basicRequisitionDto = buildBasicDto(profiler, requisition);
-
-    stopProfiler(profiler, basicRequisitionDto);
-    return basicRequisitionDto;
+    stopProfiler(profiler);
   }
 
   void submitStockEvent(Requisition requisition, UUID currentUserId) {
