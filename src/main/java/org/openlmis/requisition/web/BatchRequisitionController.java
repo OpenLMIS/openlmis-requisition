@@ -54,7 +54,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.security.SpringSecurityRunnableWrapper;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
@@ -64,7 +63,6 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -181,10 +179,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
       for (Requisition requisition : requisitions) {
-        Runnable runnable = () -> submitStockEvent(requisition, profiler);
         CompletableFuture<Void> future = runAsync(
-            new SpringSecurityRunnableWrapper(SecurityContextHolder.getContext(), runnable),
-            executor);
+            () -> submitStockEvent(requisition, profiler, user.getId()), executor);
         futures.add(future);
       }
     } finally {

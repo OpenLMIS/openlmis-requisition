@@ -17,10 +17,16 @@ package org.openlmis.requisition.utils;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -39,13 +45,6 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @Component
 public class StockEventBuilder {
 
@@ -60,9 +59,6 @@ public class StockEventBuilder {
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Autowired
-  private AuthenticationHelper authenticationHelper;
-
-  @Autowired
   private StockCardStockManagementService stockCardService;
 
   @Autowired
@@ -74,7 +70,7 @@ public class StockEventBuilder {
    * @param requisition  the requisition to be used a source for the physical inventory draft
    * @return  the create physical inventory draft
    */
-  public StockEventDto fromRequisition(Requisition requisition) {
+  public StockEventDto fromRequisition(Requisition requisition, UUID currentUserId) {
     XLOGGER.entry(requisition);
     Profiler profiler = new Profiler("BUILD_STOCK_EVENT_FROM_REQUISITION");
     profiler.setLogger(XLOGGER);
@@ -91,7 +87,7 @@ public class StockEventBuilder {
         .builder()
         .facilityId(requisition.getFacilityId())
         .programId(requisition.getProgramId())
-        .userId(authenticationHelper.getCurrentUser().getId())
+        .userId(currentUserId)
         .lineItems(fromLineItems(
             requisition.getRequisitionLineItems(),
             requisition.getStockAdjustmentReasons(),

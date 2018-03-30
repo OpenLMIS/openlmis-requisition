@@ -22,34 +22,6 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
-import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
-import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
-import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
-import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -59,6 +31,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventLineItemDto;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -106,9 +104,6 @@ public class StockEventBuilderTest {
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Mock
-  private AuthenticationHelper authenticationHelper;
-
-  @Mock
   private StockCardStockManagementService stockCardStockManagementService;
 
   @Mock
@@ -133,9 +128,6 @@ public class StockEventBuilderTest {
 
     when(dateHelper.getZone()).thenReturn(ZONE_ID);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
-    UserDto user = new UserDto();
-    user.setId(userId);
-    when(authenticationHelper.getCurrentUser()).thenReturn(user);
     when(stockCardStockManagementService.getStockCards(
         requisition.getFacilityId(),
         requisition.getProgramId())
@@ -144,7 +136,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldIncludeReceiptsIfTotalReceivedQuantityIsDisplayed() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -160,7 +152,7 @@ public class StockEventBuilderTest {
 
     requisition.setTemplate(new RequisitionTemplate(columns));
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -171,7 +163,7 @@ public class StockEventBuilderTest {
   public void itShouldNotIncludeReceiptsIfTotalReceivedQuantityIsNotDisplayed() throws Exception {
     totalReceivedQuantityColumn.setIsDisplayed(false);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -182,7 +174,7 @@ public class StockEventBuilderTest {
   public void itShouldNotIncludeReceiptsIfTheReasonDoesNotExist() throws Exception {
     reasons.remove(receiptsReason);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -191,7 +183,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldIncludeConsumedIfTotalConsumedQuantityIsDisplayed() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -202,7 +194,7 @@ public class StockEventBuilderTest {
   public void itShouldNotIncludeConsumedIfTotalConsumedQuantityIsNotDisplayed() throws Exception {
     totalConsumedQuantityColumn.setIsDisplayed(false);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -218,7 +210,7 @@ public class StockEventBuilderTest {
 
     requisition.setTemplate(new RequisitionTemplate(columns));
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -229,7 +221,7 @@ public class StockEventBuilderTest {
   public void itShouldNotIncludeConsumedIfTheReasonDoesNotExist() throws Exception {
     reasons.remove(consumedReason);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isGreaterThan(0);
     result.getLineItems()
@@ -239,7 +231,7 @@ public class StockEventBuilderTest {
   @Test
   public void itShouldNotIncludeAdditionalAdjustmentsIfTotalLossesAndAdjustmentsAreNotDisplayed()
       throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
@@ -263,7 +255,7 @@ public class StockEventBuilderTest {
       throws Exception {
     totalLossesAndAdjustmentsColumn.setIsDisplayed(false);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(0))
@@ -284,7 +276,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldMapStockOnHandIfItIsDisplayed() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(0).getQuantity())
@@ -297,7 +289,7 @@ public class StockEventBuilderTest {
   public void itShouldMapStockOnHandEvenIfItIsNotDisplayed() throws Exception {
     stockOnHandColumn.setIsDisplayed(false);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     assertThat(result.getLineItems().get(0).getQuantity())
@@ -308,7 +300,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldUseDatePhysicalStockCountCompletedIfItIsGiven() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
@@ -326,7 +318,7 @@ public class StockEventBuilderTest {
     statusChange.setCreatedDate(dateTime);
     requisition.setStatusChanges(Arrays.asList(statusChange));
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
@@ -337,7 +329,7 @@ public class StockEventBuilderTest {
   public void itShouldUsePeriodEndDateIfDatePhysicalStockCountCompletedIsNull() throws Exception {
     requisition.setDatePhysicalStockCountCompleted(null);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(2);
     result.getLineItems().forEach(lineItem -> assertThat(lineItem.getOccurredDate())
@@ -347,7 +339,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldIncludeOrderableIds() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getOrderableId())
         .isEqualTo(lineItemOneDto.getOrderableId());
@@ -359,7 +351,7 @@ public class StockEventBuilderTest {
   public void itShouldIgnoreSkippedLineItems() throws Exception {
     lineItemOneDto.setSkipped(true);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(1);
     assertThat(result.getLineItems().get(0).getQuantity())
@@ -370,7 +362,7 @@ public class StockEventBuilderTest {
   public void itShouldIgnoreNonFullSupplyLineItems() throws Exception {
     lineItemOneDto.setNonFullSupply(true);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().size()).isEqualTo(1);
     assertThat(result.getLineItems().get(0).getQuantity())
@@ -379,7 +371,7 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldIncludeUserId() throws Exception {
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getUserId())
         .isEqualTo(userId);
@@ -389,7 +381,7 @@ public class StockEventBuilderTest {
   public void itShouldIncludeBeginningBalanceExcessIfBeginningBalanceIsBiggerThanStockOnHand() {
     lineItemOneDto.setBeginningBalance(20);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(0).getStockAdjustments().get(4))
@@ -402,7 +394,7 @@ public class StockEventBuilderTest {
     lineItemOneDto.setBeginningBalance(20);
     stockCards.clear();
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
   }
@@ -412,7 +404,7 @@ public class StockEventBuilderTest {
       itShouldIncludeBeginningBalanceInsufficiencyIfBeginningBalanceIsLowerThanStockOnHand() {
     lineItemTwoDto.setBeginningBalance(33);
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(1).getStockAdjustments().size()).isEqualTo(5);
     assertThat(result.getLineItems().get(1).getStockAdjustments().get(4))
@@ -425,7 +417,7 @@ public class StockEventBuilderTest {
     lineItemOneDto.setBeginningBalance(20);
     stockCards.clear();
 
-    StockEventDto result = stockEventBuilder.fromRequisition(requisition);
+    StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getStockAdjustments().size()).isEqualTo(4);
   }
@@ -565,4 +557,7 @@ public class StockEventBuilderTest {
     return stockAdjustment;
   }
 
+  private StockEventDto getStockEventDto() {
+    return stockEventBuilder.fromRequisition(requisition, userId);
+  }
 }

@@ -207,6 +207,7 @@ public class RequisitionControllerTest {
       .fieldErrors(newHashMap("someField", new Message("some-key", "someParam")));
   private String bindingResultMessage = "{someField=some-key: someParam}";
   private SupervisoryNodeDto supervisoryNode;
+  private UserDto currentUser;
 
   @Before
   public void setUp() {
@@ -239,6 +240,9 @@ public class RequisitionControllerTest {
     when(dateHelper.getCurrentDateWithSystemZone()).thenReturn(LocalDate.now());
     when(predicate.exec(programUuid)).thenReturn(true);
     mockFindSupervisoryNodeByProgramAndFacility();
+
+    currentUser = DtoGenerator.of(UserDto.class);
+    when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
   }
 
   private void stubValidations(Requisition... requisitions) {
@@ -505,7 +509,7 @@ public class RequisitionControllerTest {
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(false);
     StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
-    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class)))
+    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any()))
         .thenReturn(stockEventDto);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
@@ -514,7 +518,7 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition);
+    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition, currentUser.getId());
     verify(stockEventService).submit(stockEventDto);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
@@ -585,8 +589,6 @@ public class RequisitionControllerTest {
   public void shouldNotApproveIfHasNoPermission() {
     mockSupervisoryNodeForApprove();
 
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
-
     PermissionMessageException exception = mock(PermissionMessageException.class);
     doThrow(exception).when(requisitionService).validateCanApproveRequisition(
         any(Requisition.class),
@@ -635,7 +637,6 @@ public class RequisitionControllerTest {
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 
@@ -724,7 +725,6 @@ public class RequisitionControllerTest {
     when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep());
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
   private void mockFindSupervisoryNodeByProgramAndFacility() {
@@ -818,7 +818,6 @@ public class RequisitionControllerTest {
   }
 
   private void setUpApprover() {
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
     when(requisitionService.validateCanApproveRequisition(any(Requisition.class),
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
@@ -827,7 +826,6 @@ public class RequisitionControllerTest {
   private void setUpAuthorizer() {
     when(permissionService.canAuthorizeRequisition(submittedRequsition))
         .thenReturn(ValidationResult.success());
-    when(authenticationHelper.getCurrentUser()).thenReturn(DtoGenerator.of(UserDto.class));
   }
 
   private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills,

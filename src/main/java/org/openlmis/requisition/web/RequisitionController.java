@@ -441,7 +441,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("DO_APPROVE");
     BasicRequisitionDto requisitionDto = doApprove(requisition, user, supervisoryNodeDto);
-    submitStockEvent(requisition, profiler);
+    submitStockEvent(requisition, profiler, user.getId());
 
     stopProfiler(profiler, requisitionDto);
     return requisitionDto;

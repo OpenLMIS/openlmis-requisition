@@ -1714,7 +1714,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private void mockStockEventServiceResponses() {
-    when(stockEventBuilder.fromRequisition(any())).thenReturn(new StockEventDto());
+    when(stockEventBuilder.fromRequisition(any(), any())).thenReturn(new StockEventDto());
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
