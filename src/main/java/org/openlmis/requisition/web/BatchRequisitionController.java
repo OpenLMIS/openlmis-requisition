@@ -268,16 +268,22 @@ public class BatchRequisitionController extends BaseRequisitionController {
       RequisitionsProcessingStatusDto processingStatus, UserDto user,
       SupervisoryNodeDto supervisoryNode, List<String> permissionStrings,
       Map<UUID, OrderableDto> orderables) {
+    Profiler profiler = getProfiler("VALIDATE_AND_APPROVE_REQUISITION");
+    profiler.start("VALIDATE_CAN_APPROVE");
     ValidationResult validationResult = validateCanApproveRequisition(
         requisition, permissionStrings);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
+      profiler.start("VALIDATE_FOR_STATUS_CHANGE");
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
+        profiler.start("DO_APPROVE");
         doApprove(requisition, user, supervisoryNode, orderables);
+        profiler.start("BUILD_DTO_AND_TO_PROCESSING_STATUS");
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
       }
     }
+    stopProfiler(profiler);
   }
 
   private ValidationResult validateCanApproveRequisition(Requisition requisition,
