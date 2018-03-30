@@ -77,6 +77,7 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
@@ -127,6 +128,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @MockBean
+  protected SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
   protected ObjectMapper objectMapper;

@@ -43,6 +43,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -444,9 +445,13 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIds(requisition)
     );
 
+    profiler.start("GET_SUPPLY_LINE");
+    List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
+        requisition.getProgramId(), requisition.getSupervisoryNodeId());
+
     profiler.start("DO_APPROVE");
     BasicRequisitionDto requisitionDto =
-        doApprove(requisition, user, supervisoryNodeDto, orderables);
+        doApprove(requisition, user, supervisoryNodeDto, orderables, supplyLines);
     submitStockEvent(requisition, user.getId());
 
     stopProfiler(profiler, requisitionDto);

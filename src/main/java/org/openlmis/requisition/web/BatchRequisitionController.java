@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -51,6 +53,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -181,12 +184,25 @@ public class BatchRequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIds(requisitions)
     );
 
+    Set<Pair<UUID, UUID>> programsFacilities = new HashSet<>();
+    requisitions
+        .forEach(r -> programsFacilities.add(Pair.of(r.getProgramId(), r.getSupervisoryNodeId())));
+
+    profiler.start("GET_SUPPLY_LINES");
+    Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap = new HashMap<>();
+    for (Pair<UUID, UUID> pair: programsFacilities) {
+      supplyLinesMap.put(pair,
+          supplyLineReferenceDataService.search(pair.getLeft(), pair.getRight()));
+    }
+
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
           .get(requisition.getSupervisoryNodeId());
+      List<SupplyLineDto> supplyLines = supplyLinesMap
+          .get(Pair.of(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
       validateAndApprove(requisition, processingStatus, user, supervisoryNode, permissionStrings,
-          orderables);
+          orderables, supplyLines);
     }
 
     profiler.start("SEND_STOCK_EVENT");
@@ -267,7 +283,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private void validateAndApprove(Requisition requisition,
       RequisitionsProcessingStatusDto processingStatus, UserDto user,
       SupervisoryNodeDto supervisoryNode, List<String> permissionStrings,
-      Map<UUID, OrderableDto> orderables) {
+      Map<UUID, OrderableDto> orderables, List<SupplyLineDto> supplyLines) {
     Profiler profiler = getProfiler("VALIDATE_AND_APPROVE_REQUISITION");
     profiler.start("VALIDATE_CAN_APPROVE");
     ValidationResult validationResult = validateCanApproveRequisition(
@@ -277,7 +293,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
         profiler.start("DO_APPROVE");
-        doApprove(requisition, user, supervisoryNode, orderables);
+        doApprove(requisition, user, supervisoryNode, orderables, supplyLines);
         profiler.start("BUILD_DTO_AND_TO_PROCESSING_STATUS");
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
