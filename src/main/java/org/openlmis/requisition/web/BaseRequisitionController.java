@@ -25,6 +25,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -169,7 +170,7 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   BasicRequisitionDto doApprove(Requisition requisition, UserDto user,
-      SupervisoryNodeDto supervisoryNode) {
+      SupervisoryNodeDto supervisoryNode, Map<UUID, OrderableDto> orderables) {
     Profiler profiler = getProfiler("DO_APPROVE", requisition, user);
     checkIfPeriodIsValid(requisition, profiler);
 
@@ -188,10 +189,6 @@ public abstract class BaseRequisitionController extends BaseController {
     profiler.start("GET_SUPPLY_LINE");
     List<SupplyLineDto> supplyLines = supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
-
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
-    );
 
     requisitionService.doApprove(parentNodeId, user.getId(), orderables, requisition, supplyLines);
 
@@ -236,6 +233,13 @@ public abstract class BaseRequisitionController extends BaseController {
   Set<UUID> getLineItemOrderableIds(Requisition requisition) {
     return requisition.getRequisitionLineItems().stream().map(
         RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+  }
+
+  Set<UUID> getLineItemOrderableIds(Collection<Requisition> requisitions) {
+    return requisitions.stream()
+        .flatMap(r -> r.getRequisitionLineItems().stream())
+        .map(RequisitionLineItem::getOrderableId)
+        .collect(Collectors.toSet());
   }
 
   void checkIfPeriodIsValid(Requisition requisition, Profiler profiler) {

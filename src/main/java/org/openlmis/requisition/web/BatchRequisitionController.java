@@ -176,11 +176,17 @@ public class BatchRequisitionController extends BaseRequisitionController {
         .stream()
         .collect(toMap(SupervisoryNodeDto::getId, supervisoryNode -> supervisoryNode));
 
+    profiler.start("FIND_ORDERABLES");
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisitions)
+    );
+
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
           .get(requisition.getSupervisoryNodeId());
-      validateAndApprove(requisition, processingStatus, user, supervisoryNode, permissionStrings);
+      validateAndApprove(requisition, processingStatus, user, supervisoryNode, permissionStrings,
+          orderables);
     }
 
     profiler.start("SEND_STOCK_EVENT");
@@ -259,14 +265,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private void validateAndApprove(Requisition requisition,
-      RequisitionsProcessingStatusDto processingStatus,
-      UserDto user, SupervisoryNodeDto supervisoryNode, List<String> permissionStrings) {
+      RequisitionsProcessingStatusDto processingStatus, UserDto user,
+      SupervisoryNodeDto supervisoryNode, List<String> permissionStrings,
+      Map<UUID, OrderableDto> orderables) {
     ValidationResult validationResult = validateCanApproveRequisition(
         requisition, permissionStrings);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
-        doApprove(requisition, user, supervisoryNode);
+        doApprove(requisition, user, supervisoryNode, orderables);
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder.build(requisition)));
       }

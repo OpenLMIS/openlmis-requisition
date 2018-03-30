@@ -439,8 +439,14 @@ public class RequisitionController extends BaseRequisitionController {
     SupervisoryNodeDto supervisoryNodeDto = supervisoryNodeService
         .findOne(requisition.getSupervisoryNodeId());
 
+    profiler.start("FIND_ORDERABLES");
+    Map<UUID, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIds(requisition)
+    );
+
     profiler.start("DO_APPROVE");
-    BasicRequisitionDto requisitionDto = doApprove(requisition, user, supervisoryNodeDto);
+    BasicRequisitionDto requisitionDto =
+        doApprove(requisition, user, supervisoryNodeDto, orderables);
     submitStockEvent(requisition, user.getId());
 
     stopProfiler(profiler, requisitionDto);
