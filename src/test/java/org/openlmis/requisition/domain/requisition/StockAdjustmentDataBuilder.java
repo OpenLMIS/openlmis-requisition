@@ -13,19 +13,24 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.domain.requisition;
 
 import java.util.UUID;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.apache.commons.lang.math.RandomUtils;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-public final class StockAdjustmentDto extends BaseDto
-    implements StockAdjustment.Importer, StockAdjustment.Exporter {
-  private UUID reasonId;
-  private Integer quantity;
+public class StockAdjustmentDataBuilder {
+  private UUID id = UUID.randomUUID();
+  private UUID reasonId = UUID.randomUUID();
+  private Integer quantity = RandomUtils.nextInt();
+
+  /**
+   * Creates new instance of {@link StockAdjustment} with provided data.
+   */
+  public StockAdjustment build() {
+    StockAdjustment adjustment = new StockAdjustment(reasonId, quantity);
+    adjustment.setId(id);
+
+    return adjustment;
+  }
+
 }

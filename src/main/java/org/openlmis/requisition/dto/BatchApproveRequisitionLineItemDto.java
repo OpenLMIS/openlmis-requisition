@@ -16,11 +16,14 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+import lombok.EqualsAndHashCode;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 
-public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
+@EqualsAndHashCode(callSuper = true)
+public final class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
 
   @JsonIgnore
   @Override
@@ -36,7 +39,7 @@ public class BatchApproveRequisitionLineItemDto extends RequisitionLineItemDto {
   }
 
   @Override
-  public Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter() {
+  public Optional<Supplier<StockAdjustment.Exporter>> provideStockAdjustmentExporter() {
     return Optional.empty();
   }
 

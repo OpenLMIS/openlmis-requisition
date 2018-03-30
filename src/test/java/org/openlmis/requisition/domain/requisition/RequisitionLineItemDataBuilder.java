@@ -17,13 +17,17 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 
-import org.assertj.core.util.Lists;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.assertj.core.util.Lists;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemDataBuilder {
@@ -185,5 +189,74 @@ public class RequisitionLineItemDataBuilder {
 
   private Money asMoney(Number value) {
     return Money.of(CurrencyUnit.of(CURRENCY_CODE), value.doubleValue());
+  }
+
+  public RequisitionLineItemDataBuilder setRequisition(Requisition requisition) {
+    this.requisition = requisition;
+    return this;
+  }
+
+  /**
+   * Sets approved product.
+   */
+  public RequisitionLineItemDataBuilder setApprovedProduct(ApprovedProductDto approvedProduct) {
+    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
+
+    OrderableDto orderable = approvedProduct.getOrderable();
+    ProgramOrderableDto programOrderable = orderable
+        .findProgramOrderableDto(requisition.getProgramId());
+
+    this.orderableId = orderable.getId();
+
+    if (null != programOrderable) {
+      this.pricePerPack = Optional
+          .ofNullable(programOrderable.getPricePerPack())
+          .orElseGet(() -> Money.of(CurrencyUnit.of(CURRENCY_CODE), BigDecimal.ZERO));
+    }
+
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setIdealStockAmount(int idealStockAmount) {
+    this.idealStockAmount = idealStockAmount;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setTotalLossesAndAdjustments(
+      int totalLossesAndAdjustments) {
+    this.totalLossesAndAdjustments = totalLossesAndAdjustments;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setStockAdjustments(
+      List<StockAdjustment> stockAdjustments) {
+    this.stockAdjustments = stockAdjustments;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setRequestedQuantity(int requestedQuantity) {
+    this.requestedQuantity = requestedQuantity;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setRemarks(String remarks) {
+    this.remarks = remarks;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setRequestedQuantityExplanation(
+      String requestedQuantityExplanation) {
+    this.requestedQuantityExplanation = requestedQuantityExplanation;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setTotalCost(Money totalCost) {
+    this.totalCost = totalCost;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder setNumberOfNewPatientsAdded(int numberOfNewPatientsAdded) {
+    this.numberOfNewPatientsAdded = numberOfNewPatientsAdded;
+    return this;
   }
 }

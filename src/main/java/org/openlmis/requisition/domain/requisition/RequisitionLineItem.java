@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -409,16 +410,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalConsumedQuantity(totalConsumedQuantity);
     exporter.setRequestedQuantityExplanation(requestedQuantityExplanation);
     exporter.setRemarks(remarks);
-    Optional<StockAdjustment.Exporter> stockAdjustmentExporter =
-        exporter.provideStockAdjustmentExporter();
-    if (stockAdjustmentExporter.isPresent()) {
-      for (StockAdjustment stockAdjustment : getStockAdjustments()) {
-        StockAdjustment.Exporter providedExporter = stockAdjustmentExporter.get();
-        stockAdjustment.export(providedExporter);
-        exporter.addStockAdjustment(providedExporter);
-      }
-
-    }
+    exportStockAdjustments(exporter);
     exporter.setTotalStockoutDays(totalStockoutDays);
     exporter.setTotal(total);
     exporter.setPacksToShip(packsToShip);
@@ -433,6 +425,22 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
     exporter.setIdealStockAmount(idealStockAmount);
     exporter.setCalculatedOrderQuantityIsa(calculatedOrderQuantityIsa);
+  }
+
+  private void exportStockAdjustments(Exporter exporter) {
+    Optional<Supplier<StockAdjustment.Exporter>> factory =
+        exporter.provideStockAdjustmentExporter();
+
+    if (factory.isPresent()) {
+      Supplier<StockAdjustment.Exporter> generator = factory.get();
+
+      for (StockAdjustment stockAdjustment : getStockAdjustments()) {
+        StockAdjustment.Exporter container = generator.get();
+        stockAdjustment.export(container);
+
+        exporter.addStockAdjustment(container);
+      }
+    }
   }
 
   /**
@@ -703,7 +711,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setCalculatedOrderQuantity(Integer calculatedOrderQuantity);
 
-    Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter();
+    Optional<Supplier<StockAdjustment.Exporter>> provideStockAdjustmentExporter();
 
     boolean supportsPreviousAdjustedConsumptions();
 

@@ -19,24 +19,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.utils.MoneyDeserializer;
 import org.openlmis.requisition.utils.MoneySerializer;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class RequisitionLineItemDto extends BaseDto
     implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer {
 
@@ -90,8 +90,8 @@ public class RequisitionLineItemDto extends BaseDto
     stockAdjustments.add((StockAdjustmentDto) stockAdjustmentExporter);
   }
 
-  public Optional<StockAdjustment.Exporter> provideStockAdjustmentExporter() {
-    return Optional.of(new StockAdjustmentDto());
+  public Optional<Supplier<StockAdjustment.Exporter>> provideStockAdjustmentExporter() {
+    return Optional.of(StockAdjustmentDto::new);
   }
 
   @Override

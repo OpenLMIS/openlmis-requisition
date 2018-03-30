@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +28,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -36,12 +44,9 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.StockAdjustmentDto;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
@@ -81,7 +86,10 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldResetData() {
-    RequisitionLineItem item = createDefaultRequisitionLineItem(createDefaultApprovedProduct(null));
+    RequisitionLineItem item = createDefaultRequisitionLineItem(
+        createDefaultApprovedProduct(null), Collections.emptyList()
+    );
+
     item.resetData();
 
     assertNull(item.getTotalReceivedQuantity());
@@ -388,27 +396,27 @@ public class RequisitionLineItemTest {
     assertNull(updatedItem.getStockOnHand());
   }
 
-  private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap) {
-    RequisitionLineItem item =
-        new RequisitionLineItem(initiatedRequisition, ftap, 30, 50);
-
-    item.setId(UUID.randomUUID());
-    item.setBeginningBalance(3);
-    item.setTotalReceivedQuantity(4);
-    item.setTotalLossesAndAdjustments(0);
-    item.setStockOnHand(1);
-    item.setRequestedQuantity(5);
-    item.setTotalConsumedQuantity(2);
-    item.setTotal(7);
-    item.setApprovedQuantity(5);
-    item.setTotalStockoutDays(6);
-    item.setRemarks("remarks");
-    item.setRequestedQuantityExplanation("explanation");
-    item.setTotalCost(Money.of(CurrencyUnit.USD, 30));
-    item.setNumberOfNewPatientsAdded(10);
-    item.setOrderableId(orderableId);
-
-    return item;
+  private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap,
+      List<StockAdjustment> stockAdjustments) {
+    return new RequisitionLineItemDataBuilder()
+        .setRequisition(initiatedRequisition)
+        .setApprovedProduct(ftap)
+        .setIdealStockAmount(30)
+        .setBeginningBalance(3)
+        .setTotalReceivedQuantity(4)
+        .setTotalLossesAndAdjustments(0)
+        .setStockAdjustments(stockAdjustments)
+        .setStockOnHand(1)
+        .setRequestedQuantity(5)
+        .setTotalConsumedQuantity(2)
+        .setTotal(7)
+        .setApprovedQuantity(5)
+        .setTotalStockoutDays(6)
+        .setRemarks("remarks")
+        .setRequestedQuantityExplanation("explanation")
+        .setTotalCost(Money.of(CurrencyUnit.USD, 30))
+        .setNumberOfNewPatientsAdded(10)
+        .build();
   }
 
   private ApprovedProductDto createDefaultApprovedProduct(Money pricePerPack) {
@@ -423,15 +431,23 @@ public class RequisitionLineItemTest {
   }
 
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
-    ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
-
-    ProgramOrderableDto programOrderable = ftap.getOrderable().findProgramOrderableDto(programId);
     ProgramDto program = new ProgramDto();
     program.setId(programId);
 
     when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
 
-    RequisitionLineItem requisitionLineItem = createDefaultRequisitionLineItem(ftap);
+    List<StockAdjustment> stockAdjustments = new ArrayList<>();
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+
+    ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
+    RequisitionLineItem requisitionLineItem = createDefaultRequisitionLineItem(
+        ftap, stockAdjustments
+    );
+    ProgramOrderableDto programOrderable = ftap.getOrderable().findProgramOrderableDto(programId);
+    assert programOrderable != null;
     OrderableDto orderableDto = generateOrderableDto(program, programOrderable);
 
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
@@ -458,6 +474,18 @@ public class RequisitionLineItemTest {
         is(requisitionLineItem.getNumberOfNewPatientsAdded()));
     assertThat(dto.getCalculatedOrderQuantityIsa(),
         is(requisitionLineItem.getCalculatedOrderQuantityIsa()));
+
+    StockAdjustment.Importer[] items = stockAdjustments
+        .stream()
+        .map(item -> {
+          StockAdjustmentDto container = new StockAdjustmentDto();
+          item.export(container);
+
+          return (StockAdjustment.Importer) container;
+        }).toArray(StockAdjustment.Importer[]::new);
+
+    assertThat(dto.getStockAdjustments(), hasSize(items.length));
+    assertThat(dto.getStockAdjustments(), hasItems(items));
 
     return dto;
   }
