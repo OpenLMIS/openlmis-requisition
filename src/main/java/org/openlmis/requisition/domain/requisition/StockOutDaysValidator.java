@@ -62,4 +62,8 @@ class StockOutDaysValidator extends AbstractRegularRequisitionFullSupplyLineItem
   }
 
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

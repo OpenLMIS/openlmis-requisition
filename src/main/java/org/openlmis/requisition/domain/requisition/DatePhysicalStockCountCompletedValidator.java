@@ -68,6 +68,11 @@ class DatePhysicalStockCountCompletedValidator
     return true;
   }
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
+
   private boolean dateDifferAfterAuthorize() {
     return requisitionToUpdate.getStatus().isAuthorized()
         && !Objects.equals(requisitionToUpdate.getDatePhysicalStockCountCompleted(),

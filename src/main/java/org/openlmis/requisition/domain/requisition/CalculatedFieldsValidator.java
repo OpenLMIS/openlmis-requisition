@@ -104,4 +104,8 @@ class CalculatedFieldsValidator
         new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE, field));
   }
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

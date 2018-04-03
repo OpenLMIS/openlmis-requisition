@@ -35,4 +35,8 @@ class NumberOfNewPatientsAddedValidator
 
   }
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

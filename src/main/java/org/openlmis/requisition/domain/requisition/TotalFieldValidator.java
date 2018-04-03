@@ -37,4 +37,9 @@ class TotalFieldValidator
   protected void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
     rejectIfNullOrNegative(errors, requisitionTemplate, item.getTotal(), TOTAL_COLUMN);
   }
+
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

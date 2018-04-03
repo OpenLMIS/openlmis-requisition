@@ -45,6 +45,11 @@ class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidat
     return false;
   }
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
+
   private void validateNonFullSupplyLineItem(Map<String, Message> errors,
                                              RequisitionLineItem item) {
     RequisitionTemplate template = requisitionToValidate.getTemplate();

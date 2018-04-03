@@ -44,4 +44,9 @@ class TotalConsumedQuantityValidator
     rejectIfNullOrNegative(errors, requisitionTemplate,
         item.getTotalConsumedQuantity(), TOTAL_CONSUMED_QUANTITY);
   }
+
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

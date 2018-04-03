@@ -37,4 +37,9 @@ class BeginningBalanceValidator
     rejectIfNullOrNegative(errors, requisitionTemplate,
         item.getBeginningBalance(), BEGINNING_BALANCE);
   }
+
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

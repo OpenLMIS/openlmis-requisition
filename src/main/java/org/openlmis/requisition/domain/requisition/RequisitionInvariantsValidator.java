@@ -54,6 +54,11 @@ class RequisitionInvariantsValidator
   }
 
   @Override
+  public boolean isForApprove() {
+    return true;
+  }
+
+  @Override
   public void validateCanUpdate(Map<String, Message> errors) {
     rejectIfValueChanged(errors, requisitionUpdater.getFacilityId(),
         requisitionToUpdate.getFacilityId(), FACILITY_ID);

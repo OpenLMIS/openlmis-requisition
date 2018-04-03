@@ -36,6 +36,11 @@ class ApprovalFieldsValidator
   }
 
   @Override
+  public boolean isForApprove() {
+    return true;
+  }
+
+  @Override
   public void validateCanUpdate(Map<String, Message> errors) {
     requisitionUpdater.getNonSkippedRequisitionLineItems()
         .forEach(i -> validateLineItemForUpdate(errors, i));

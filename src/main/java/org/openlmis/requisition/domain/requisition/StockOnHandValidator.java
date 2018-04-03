@@ -59,4 +59,8 @@ class StockOnHandValidator extends AbstractRegularRequisitionFullSupplyLineItemV
     }
   }
 
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }

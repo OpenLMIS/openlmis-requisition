@@ -38,4 +38,9 @@ class TotalReceivedQuantityValidator
     rejectIfNullOrNegative(errors, requisitionTemplate,
         item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
   }
+
+  @Override
+  public boolean isForApprove() {
+    return false;
+  }
 }
