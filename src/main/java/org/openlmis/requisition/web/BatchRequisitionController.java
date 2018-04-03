@@ -184,8 +184,10 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .get(requisition.getSupervisoryNodeId());
       List<SupplyLineDto> supplyLines = supplyLinesMap
           .get(Pair.of(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
-      validateAndApprove(requisition, processingStatus, user, supervisoryNode, permissionStrings,
-          orderables, supplyLines, facilities, periods);
+      ApproveParams approveParams =
+          new ApproveParams(user, supervisoryNode, orderables, supplyLines);
+      validateAndApprove(requisition, processingStatus, permissionStrings,
+          facilities, periods, approveParams);
     }
 
     submitStockEvent(profiler, user, requisitions);
@@ -279,10 +281,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private void validateAndApprove(Requisition requisition,
-      RequisitionsProcessingStatusDto processingStatus, UserDto user,
-      SupervisoryNodeDto supervisoryNode, List<String> permissionStrings,
-      Map<UUID, OrderableDto> orderables, List<SupplyLineDto> supplyLines,
-      Map<UUID, FacilityDto> facilities, Map<UUID, ProcessingPeriodDto> periods) {
+      RequisitionsProcessingStatusDto processingStatus, List<String> permissionStrings,
+      Map<UUID, FacilityDto> facilities, Map<UUID, ProcessingPeriodDto> periods,
+      ApproveParams approveParams) {
     Profiler profiler = getProfiler("VALIDATE_AND_APPROVE_REQUISITION");
     profiler.start("VALIDATE_CAN_APPROVE");
     ValidationResult validationResult = validateCanApproveRequisition(
@@ -292,12 +293,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
       validationResult = getValidationResultForStatusChange(requisition);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
         profiler.start("DO_APPROVE");
-        doApprove(requisition, user, supervisoryNode, orderables, supplyLines);
+        doApprove(requisition, approveParams);
         profiler.start("BUILD_DTO_AND_ADD_TO_PROCESSING_STATUS");
+        ProcessingPeriodDto period = periods.get(requisition.getProcessingPeriodId());
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder
-                .buildBatch(requisition, facilities.get(requisition.getFacilityId()), orderables,
-                    periods.get(requisition.getProcessingPeriodId()))));
+                .buildBatch(requisition, facilities.get(requisition.getFacilityId()),
+                    approveParams.getOrderables(), period)));
       }
     }
     stopProfiler(profiler);

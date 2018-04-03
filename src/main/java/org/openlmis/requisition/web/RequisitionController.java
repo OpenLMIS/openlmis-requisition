@@ -441,7 +441,9 @@ public class RequisitionController extends BaseRequisitionController {
     List<SupplyLineDto> supplyLines = getSupplyLineDtos(profiler, requisition);
 
     profiler.start("DO_APPROVE");
-    doApprove(requisition, user, supervisoryNodeDto, orderables, supplyLines);
+    ApproveParams approveParams = new ApproveParams(user, supervisoryNodeDto, orderables,
+        supplyLines);
+    doApprove(requisition, approveParams);
 
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
 

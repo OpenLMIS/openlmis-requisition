@@ -34,6 +34,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -169,18 +171,17 @@ public abstract class BaseRequisitionController extends BaseController {
     return buildDto(profiler, toUpdate, orderables, facility, program);
   }
 
-  void doApprove(Requisition requisition, UserDto user,
-      SupervisoryNodeDto supervisoryNode, Map<UUID, OrderableDto> orderables,
-      List<SupplyLineDto> supplyLines) {
-    Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition, user);
+  void doApprove(Requisition requisition, ApproveParams approveParams) {
+    Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition,
+        approveParams.user);
     checkIfPeriodIsValid(requisition, profiler);
 
     SupervisoryNodeDto parentNode = null;
     UUID parentNodeId = null;
 
     profiler.start("SET_PARENT_NODE_ID");
-    if (supervisoryNode != null) {
-      parentNode = supervisoryNode.getParentNode();
+    if (approveParams.supervisoryNode != null) {
+      parentNode = approveParams.supervisoryNode.getParentNode();
     }
 
     if (parentNode != null) {
@@ -188,12 +189,13 @@ public abstract class BaseRequisitionController extends BaseController {
     }
 
     profiler.start("DO_APPROVE");
-    requisitionService.doApprove(parentNodeId, user, orderables, requisition, supplyLines);
+    requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
+        requisition, approveParams.supplyLines);
 
-    if (requisition.getStatus().isApproved() && !isEmpty(supplyLines)) {
+    if (requisition.getStatus().isApproved() && !isEmpty(approveParams.supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");
       FacilityDto facility = facilityReferenceDataService
-          .findOne(supplyLines.get(0).getSupplyingFacility());
+          .findOne(approveParams.supplyLines.get(0).getSupplyingFacility());
 
       profiler.start("FIND_SUPPORTED_PROGRAM_ENTRY");
       SupportedProgramDto supportedProgram = facilitySupportsProgramHelper
@@ -202,7 +204,7 @@ public abstract class BaseRequisitionController extends BaseController {
       if (supportedProgram != null && supportedProgram.isSupportLocallyFulfilled()) {
         profiler.start("CONVERT_TO_ORDER");
         ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
-        requisitionService.convertToOrder(ImmutableList.of(entry), user);
+        requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user);
       }
     }
 
@@ -366,4 +368,14 @@ public abstract class BaseRequisitionController extends BaseController {
     profiler.start("BUILD_BASIC_REQUISITION_DTO");
     return basicRequisitionDtoBuilder.build(requisition);
   }
+
+  @AllArgsConstructor
+  @Getter
+  class ApproveParams {
+    private UserDto user;
+    private SupervisoryNodeDto supervisoryNode;
+    private Map<UUID, OrderableDto> orderables;
+    private List<SupplyLineDto> supplyLines;
+  }
+
 }
