@@ -111,12 +111,10 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
     List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
 
-    profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
-    Map<UUID, FacilityDto> facilities = getUuidFacilityDtoMap(requisitions);
+    Map<UUID, FacilityDto> facilities = findFacilities(requisitions, profiler);
     profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");
     Map<UUID, OrderableDto> orderables = getUuidOrderableDtoMap(requisitions);
-    profiler.start("FIND_ALL_PERIODS_FOR_REQUISITIONS");
-    Map<UUID, ProcessingPeriodDto> periods = getUuidPeriodDtoMap(requisitions);
+    Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions, profiler);
 
     profiler.start("CHECK_PERM_AND_BUILD_DTO");
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
@@ -176,11 +174,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
     Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap =
         findSupplyLines(requisitions, profiler);
 
-    profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
-    Map<UUID, FacilityDto> facilities = getUuidFacilityDtoMap(requisitions);
+    Map<UUID, FacilityDto> facilities = findFacilities(requisitions, profiler);
 
-    profiler.start("FIND_ALL_PERIODS_FOR_REQUISITIONS");
-    Map<UUID, ProcessingPeriodDto> periods = getUuidPeriodDtoMap(requisitions);
+    Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions, profiler);
 
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
@@ -422,7 +418,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return message == null ? null : messageService.localize(message);
   }
 
-  private Map<UUID, FacilityDto> getUuidFacilityDtoMap(List<Requisition> requisitions) {
+  private Map<UUID, FacilityDto> findFacilities(List<Requisition> requisitions, Profiler profiler) {
+    profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
     Set<UUID> facilityIds = requisitions.stream()
         .map(Requisition::getFacilityId)
         .collect(Collectors.toSet());
@@ -437,7 +434,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return facilities;
   }
 
-  private Map<UUID, ProcessingPeriodDto> getUuidPeriodDtoMap(List<Requisition> requisitions) {
+  private Map<UUID, ProcessingPeriodDto> findPeriods(List<Requisition> requisitions,
+      Profiler profiler) {
+    profiler.start("FIND_ALL_PERIODS_FOR_REQUISITIONS");
     Set<UUID> periodIds = requisitions.stream()
         .map(Requisition::getProcessingPeriodId)
         .collect(Collectors.toSet());
