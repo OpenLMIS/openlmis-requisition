@@ -42,6 +42,7 @@ Improvements:
   * use both program and facility type IDs
 * [OLMIS-4165](https://openlmis.atlassian.net/browse/OLMIS-4165): Changed Order search endpoint and renamed its parameters.
 * [OLMIS-4160](https://openlmis.atlassian.net/browse/OLMIS-4160): Added Calculated Order Quantity ISA column to requisition template.
+* [OLMIS-4420](https://openlmis.atlassian.net/browse/OLMIS-4420): All requisition endpoint responses now contain created (initiated) date.
 
 5.1.0 / 2017-11-09
 ==================

@@ -12,6 +12,14 @@
       "type": "boolean",
       "title": "emergency"
     },
+    "createdDate": {
+      "type": "string",
+      "title": "createdDate"
+    },
+    "modifiedDate": {
+      "type": "string",
+      "title": "modifiedDate"
+    },
     "status": {
       "enum": [
         "INITIATED",

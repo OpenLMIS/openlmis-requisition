@@ -42,6 +42,7 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   private Boolean emergency;
   private RequisitionStatus status;
   private ZonedDateTime modifiedDate;
+  private ZonedDateTime createdDate;
 
   private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
 
@@ -58,11 +59,6 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
     StatusChangeDto statusChangeDto = (StatusChangeDto) statusChangeExporter;
     StatusChangeHelper.addOrUpdate(this.statusChanges, statusChangeDto);
-  }
-
-  @Override
-  public void setCreatedDate(ZonedDateTime createdDate) {
-    // unsupported operation
   }
 
   @Override
