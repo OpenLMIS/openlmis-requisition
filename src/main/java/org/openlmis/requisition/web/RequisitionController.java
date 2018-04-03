@@ -610,7 +610,6 @@ public class RequisitionController extends BaseRequisitionController {
   }
 
   private Map<UUID, OrderableDto> findOrderables(Profiler profiler, Requisition requisition) {
-    profiler.start("FIND_ORDERABLES");
     return findOrderables(
         profiler, () -> getLineItemOrderableIds(requisition)
     );
