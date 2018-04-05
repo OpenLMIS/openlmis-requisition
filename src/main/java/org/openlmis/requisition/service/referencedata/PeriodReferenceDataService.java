@@ -45,14 +45,14 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    * Retrieves periods from the reference data service by schedule ID and start date.
    *
    * @param processingScheduleId UUID of the schedule
-   * @param startDate            the start date (only include periods past this date)
+   * @param endDate            the end date (only include periods past this date)
    * @return A list of periods matching search criteria
    */
-  public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate startDate) {
+  public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate endDate) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("processingScheduleId", processingScheduleId)
-        .set("startDate", startDate)
+        .set("endDate", endDate)
         .set("size", 2000);
 
     return getPage(parameters).getContent();

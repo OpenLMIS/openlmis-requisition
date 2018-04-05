@@ -56,7 +56,7 @@ public class PeriodReferenceDataServiceTest
   }
 
   @Test
-  public void shouldSearchProcessingPeriodsByScheduleIdAndStartDate() {
+  public void shouldSearchProcessingPeriodsByScheduleIdAndEndDate() {
     UUID scheduleId = UUID.randomUUID();
     LocalDate date = LocalDate.now();
 
@@ -79,7 +79,7 @@ public class PeriodReferenceDataServiceTest
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
 
     assertQueryParameter(parse, "processingScheduleId", scheduleId);
-    assertQueryParameter(parse, "startDate", date);
+    assertQueryParameter(parse, "endDate", date);
     assertQueryParameter(parse, "size", 2000);
 
     assertAuthHeader(entityCaptor.getValue());

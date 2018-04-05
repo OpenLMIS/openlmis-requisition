@@ -56,8 +56,8 @@ public class PeriodService {
   @Autowired
   private ScheduleReferenceDataService scheduleReferenceDataService;
 
-  public Collection<ProcessingPeriodDto> search(UUID scheduleId, LocalDate startDate) {
-    return periodReferenceDataService.search(scheduleId, startDate);
+  public Collection<ProcessingPeriodDto> search(UUID scheduleId, LocalDate endDate) {
+    return periodReferenceDataService.search(scheduleId, endDate);
   }
 
   public Collection<ProcessingPeriodDto> searchByProgramAndFacility(UUID programId,
