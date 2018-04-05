@@ -52,7 +52,7 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.springframework:spring-context-support'
     compile 'commons-jxpath:commons-jxpath:1.3'
-    compile 'org.webjars:swagger-ui:2.2.6'
+    compile 'org.webjars.npm:api-console:3.0.17'
     compile 'org.openlmis:openlmis-service-util:3.0.0'
     compile 'org.joda:joda-money:0.12'
     compile 'org.jadira.usertype:usertype.core:5.0.0.GA'
