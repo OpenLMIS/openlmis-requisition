@@ -20,6 +20,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
 
@@ -68,7 +69,12 @@ class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidat
     rejectIfNonNullValueForHiddenColumn(errors, item.getRequestedQuantityExplanation(),
         REQUESTED_QUANTITY_EXPLANATION, template.isColumnDisplayed(REQUESTED_QUANTITY_EXPLANATION));
 
-    validateRequestedQuantityAndExplanation(errors, item, template);
+    if (BooleanUtils.isTrue(requisitionToValidate.getEmergency())) {
+      rejectIfNullOrNegative(errors, template, item.getRequestedQuantity(),
+          REQUESTED_QUANTITY);
+    } else {
+      validateRequestedQuantityAndExplanation(errors, item, template);
+    }
   }
 
   private void validateRequestedQuantityAndExplanation(Map<String, Message> errors,

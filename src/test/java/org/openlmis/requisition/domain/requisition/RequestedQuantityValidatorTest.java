@@ -30,13 +30,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.utils.Message;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequestedQuantityValidatorTest {
@@ -205,6 +204,26 @@ public class RequestedQuantityValidatorTest {
     validator.validateCanChangeStatus(errors);
 
     assertErrors(ERROR_VALUE_MUST_BE_ENTERED, REQUESTED_QUANTITY);
+  }
+
+  @Test
+  public void shouldRejectIfRequestedQuantityIsNullForEmergencyRequisition() {
+    requisitionToValidate.setEmergency(true);
+    fullSupply.setRequestedQuantity(null);
+
+    validator.validateCanChangeStatus(errors);
+
+    assertErrors(ERROR_VALUE_MUST_BE_ENTERED, REQUESTED_QUANTITY);
+  }
+
+  @Test
+  public void shouldRejectIfRequestedQuantityIsNegativeForEmergencyRequisition() {
+    requisitionToValidate.setEmergency(true);
+    fullSupply.setRequestedQuantity(-100);
+
+    validator.validateCanChangeStatus(errors);
+
+    assertErrors(ERROR_MUST_BE_NON_NEGATIVE, REQUESTED_QUANTITY);
   }
 
   private void assertErrors(String messageKey, String field) {
