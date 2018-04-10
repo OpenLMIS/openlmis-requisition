@@ -32,6 +32,7 @@ Bug fixes added in a backwards-compatible manner:
     * If facilities/programs were found returns page of matching approved requisitions.
 * [OLMIS-4368](https://openlmis.atlassian.net/browse/OLMIS-4368): Split huge requests to other services into smaller chunks
 * [OLMIS-4396](https://openlmis.atlassian.net/browse/OLMIS-4396): Requisition line items pricePerPack will be retrieved from Referencedata from now on, user input is ignored
+* [OLMIS-4530](https://openlmis.atlassian.net/browse/OLMIS-4530): Requested quantity is required for emergency requisitions.
 
 Improvements:
 * [OLMIS-3955](https://openlmis.atlassian.net/browse/OLMIS-3955): Renamed PICKING order status to FULFILLING. Removed PICKED and IN_TRANSIT.
