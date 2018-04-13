@@ -25,13 +25,8 @@ import static org.springframework.util.NumberUtils.parseNumber;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.assertj.core.util.Lists;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
-import org.openlmis.requisition.dto.UserObjectReferenceDto;
-
 import java.beans.PropertyDescriptor;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -40,6 +35,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.assertj.core.util.Lists;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.openlmis.requisition.dto.UserObjectReferenceDto;
 
 /**
  * The <strong>DtoGenerator</strong> will create a random DTO object for the given type.
@@ -74,7 +75,7 @@ public final class DtoGenerator {
     }
 
     while (REFERENCES.get(clazz).size() < count) {
-      generate(clazz);
+      generate(clazz, refresh);
     }
 
     @SuppressWarnings("unchecked")
@@ -84,7 +85,7 @@ public final class DtoGenerator {
     return Lists.newArrayList(collection);
   }
 
-  private static <T> void generate(Class<T> clazz) {
+  private static <T> void generate(Class<T> clazz, boolean refresh) {
     Object instance;
 
     try {
@@ -104,7 +105,7 @@ public final class DtoGenerator {
       }
 
       try {
-        Object value = generateValue(clazz, descriptor.getPropertyType());
+        Object value = generateValue(clazz, descriptor.getPropertyType(), refresh);
         PropertyUtils.setProperty(instance, descriptor.getName(), value);
       } catch (Exception exp) {
         throw new IllegalStateException(
@@ -116,7 +117,7 @@ public final class DtoGenerator {
     REFERENCES.put(clazz, instance);
   }
 
-  private static Object generateValue(Class<?> type, Class<?> propertyType) {
+  private static Object generateValue(Class<?> type, Class<?> propertyType, boolean refresh) {
     Object value = generateBaseValue(Primitives.wrap(propertyType));
     value = null == value ? generateCollectionValue(propertyType) : value;
     value = null == value ? generateCustomValue(propertyType) : value;
@@ -131,7 +132,7 @@ public final class DtoGenerator {
       return null;
     }
 
-    return of(propertyType);
+    return of(propertyType, refresh);
   }
 
   private static Object generateCustomValue(Class<?> propertyType) {
@@ -186,6 +187,11 @@ public final class DtoGenerator {
 
     if (ZonedDateTime.class.isAssignableFrom(propertyType)) {
       return ZonedDateTime.now();
+    }
+
+    if (Money.class.isAssignableFrom(propertyType)) {
+      return Money.of(CurrencyUnit.USD,
+          new BigDecimal(String.format("%.2f", new Random().nextDouble() * 100)));
     }
 
     if (Enum.class.isAssignableFrom(propertyType)) {

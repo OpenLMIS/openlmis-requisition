@@ -15,12 +15,19 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Comparator.comparing;
+import static java.util.Objects.requireNonNull;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -60,8 +67,8 @@ public class RequisitionReportDtoBuilder {
 
     RequisitionReportDto reportDto = new RequisitionReportDto();
     reportDto.setRequisition(requisitionDtoBuilder.build(requisition));
-    reportDto.setFullSupply(requisitionExportHelper.exportToDtos(fullSupply));
-    reportDto.setNonFullSupply(requisitionExportHelper.exportToDtos(nonFullSupply));
+    reportDto.setFullSupply(exportLinesToDtos(fullSupply, requisition.getProgramId()));
+    reportDto.setNonFullSupply(exportLinesToDtos(nonFullSupply, requisition.getProgramId()));
     reportDto.setFullSupplyTotalCost(requisition.getFullSupplyTotalCost());
     reportDto.setNonFullSupplyTotalCost(requisition.getNonFullSupplyTotalCost());
     reportDto.setTotalCost(requisition.getTotalCost());
@@ -94,6 +101,20 @@ public class RequisitionReportDtoBuilder {
     }
 
     return reportDto;
+  }
+
+  List<RequisitionLineItemDto> exportLinesToDtos(List<RequisitionLineItem> lineItems,
+      UUID programId) {
+    return requisitionExportHelper.exportToDtos(lineItems)
+        .stream()
+        .sorted(byDisplayOrder(programId))
+        .collect(Collectors.toList());
+  }
+
+  private Comparator<RequisitionLineItemDto> byDisplayOrder(UUID programId) {
+    return comparing(r -> requireNonNull(r.getOrderable()
+            .findProgramOrderableDto(programId))
+            .getOrderableCategoryDisplayOrder());
   }
 
   private UserDto getUser(StatusChange statusChange) {

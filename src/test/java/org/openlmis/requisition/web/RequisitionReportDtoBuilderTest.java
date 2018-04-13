@@ -15,12 +15,20 @@
 
 package org.openlmis.requisition.web;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -33,6 +41,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
@@ -43,11 +52,6 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionReportDtoBuilderTest {
@@ -79,12 +83,6 @@ public class RequisitionReportDtoBuilderTest {
   private UserDto user2 = DtoGenerator.of(UserDto.class, 2).get(1);
 
   @Mock
-  private List<RequisitionLineItemDto> fullSupplyDtos;
-
-  @Mock
-  private List<RequisitionLineItemDto> nonFullSupplyLineDtos;
-
-  @Mock
   private List<RequisitionLineItem> fullSupply;
 
   @Mock
@@ -93,6 +91,10 @@ public class RequisitionReportDtoBuilderTest {
   @InjectMocks
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder =
       new RequisitionReportDtoBuilder();
+
+  private List<RequisitionLineItemDto> fullSupplyDtos = new ArrayList<>();
+  private List<RequisitionLineItemDto> nonFullSupplyLineDtos = new ArrayList<>();
+  private UUID programId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -188,6 +190,37 @@ public class RequisitionReportDtoBuilderTest {
     assertEquals(SYSTEM, fakeUser.getFirstName());
     assertNull(fakeUser.getLastName());
     assertEquals(SYSTEM, fakeUser.getUsername());
+  }
+
+  @Test
+  public void shouldExportLineItemsToDtoAndSortByDisplayOrder() {
+    when(exportHelper.exportToDtos(fullSupply))
+        .thenReturn(prepareLineItemDtos());
+
+    List<RequisitionLineItemDto> lineItemDtos = requisitionReportDtoBuilder
+        .exportLinesToDtos(fullSupply, programId);
+
+    assertTrue(getOrderableCategoryDisplayOrder(lineItemDtos.get(0))
+        <= getOrderableCategoryDisplayOrder(lineItemDtos.get(1)));
+    assertTrue(getOrderableCategoryDisplayOrder(lineItemDtos.get(1))
+        <= getOrderableCategoryDisplayOrder(lineItemDtos.get(2)));
+  }
+
+  private List<RequisitionLineItemDto> prepareLineItemDtos() {
+    List<RequisitionLineItemDto> dtos = DtoGenerator.of(RequisitionLineItemDto.class, 3, true);
+    dtos.forEach(dto -> {
+      HashSet<ProgramOrderableDto> programs = newHashSet(
+          DtoGenerator.of(ProgramOrderableDto.class, 2, true));
+      programs.iterator().next().setProgramId(programId);
+      dto.getOrderable().setPrograms(programs);
+    });
+    return dtos;
+  }
+
+  private Integer getOrderableCategoryDisplayOrder(RequisitionLineItemDto lineItemDto) {
+    return lineItemDto.getOrderable()
+        .findProgramOrderableDto(programId)
+        .getOrderableCategoryDisplayOrder();
   }
 
   private void commonReportDtoAsserts(RequisitionReportDto dto) {
