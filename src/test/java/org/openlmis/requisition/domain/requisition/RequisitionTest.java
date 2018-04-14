@@ -1105,6 +1105,21 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldRecordStatusChangeOnSubmitWithSkippedAuthorization() {
+    UUID submitterId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    requisition.setTemplate(template);
+    requisition.setRequisitionLineItems(Collections.emptyList());
+
+    requisition.submit(Collections.emptyMap(), submitterId, true);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED,
+        submitterId);
+    assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED,
+        submitterId);
+  }
+
+  @Test
   public void shouldRecordStatusChangeOnAuthorize() {
     UUID authorizerId = UUID.randomUUID();
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);

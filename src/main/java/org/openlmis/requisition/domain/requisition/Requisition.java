@@ -473,11 +473,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     if (skipAuthorize) {
       LOGGER.debug("Skipping authorize step.");
-      populateApprovedQuantity();
-      status = RequisitionStatus.AUTHORIZED;
-
-      RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(),
-          RequisitionLineItem::resetData);
+      prepareRequisitionForApproval(submitter);
     }
   }
 
@@ -494,12 +490,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
-    populateApprovedQuantity();
-
-    status = RequisitionStatus.AUTHORIZED;
-    RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(), RequisitionLineItem::resetData);
-
-    statusChanges.add(StatusChange.newStatusChange(this, authorizer));
+    prepareRequisitionForApproval(authorizer);
   }
 
   /**
@@ -729,6 +720,14 @@ public class Requisition extends BaseTimestampedEntity {
 
           line.setPreviousAdjustedConsumptions(adjustedConsumptions);
         });
+  }
+
+  private void prepareRequisitionForApproval(UUID user) {
+    populateApprovedQuantity();
+    RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(),
+        RequisitionLineItem::resetData);
+    status = RequisitionStatus.AUTHORIZED;
+    statusChanges.add(StatusChange.newStatusChange(this, user));
   }
 
   private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
