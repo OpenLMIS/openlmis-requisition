@@ -1,5 +1,5 @@
-6.0.0 / WIP
-===========
+6.0.0 / 2018-04-24
+==================
 
 Contract breaking changes:
 * [OLMIS-4086](https://openlmis.atlassian.net/browse/OLMIS-4086): Support multiple requisition templates per program
