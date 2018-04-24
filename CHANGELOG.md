@@ -4,8 +4,6 @@
 Contract breaking changes:
 * [OLMIS-4086](https://openlmis.atlassian.net/browse/OLMIS-4086): Support multiple requisition templates per program
   * The requisition template search endpoint has been removed
-* [OLMIS-4054](https://openlmis.atlassian.net/browse/OLMIS-4054): Stock based requisition: Stock on Hand from stock management
-  * Stock on hand requisition column is populated with the stock on hand from Stock.
 * [OLMIS-4112](https://openlmis.atlassian.net/browse/OLMIS-4112): Allow adding/removing line items for emergency requisitions
   * if requisition line item will be added/removed from regular requisition, error message will be shown
   * if orderableId field in requisition line item will be changed (for both regular and emergency requisitions), error message will be shown
@@ -15,6 +13,8 @@ New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
 * [OLMIS-4113](https://openlmis.atlassian.net/browse/OLMIS-4113): Populate available products on initiate for emergency requisitions
 * [OLMIS-4114](https://openlmis.atlassian.net/browse/OLMIS-4114): Adjust validations for emergency requisitions
+* [OLMIS-4054](https://openlmis.atlassian.net/browse/OLMIS-4054): Stock based requisition: Stock on Hand from stock management
+  * Stock on hand requisition column is populated with the stock on hand from Stock.
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
