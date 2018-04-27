@@ -40,7 +40,7 @@ pipeline {
                     sh 'docker-compose -f docker-compose.builder.yml run -e BUILD_NUMBER=$BUILD_NUMBER -e GIT_BRANCH=$GIT_BRANCH builder'
                     sh 'docker-compose -f docker-compose.builder.yml build image'
                     sh 'docker-compose -f docker-compose.builder.yml down --volumes'
-                    sh "docker tag openlmis/referencedata:latest openlmis/referencedata:${VERSION_WITH_BUILD_NUMBER}"
+                    sh "docker tag openlmis/requisition:latest openlmis/requisition:${VERSION_WITH_BUILD_NUMBER}"
                 }
             }
             post {
@@ -88,7 +88,7 @@ pipeline {
                 }
                 stage('Contract tests') {
                     steps {
-                        build job: 'OpenLMIS-referencedata-contract-test', propagate: true, wait: true
+                        build job: 'OpenLMIS-requisition-contract-test', propagate: true, wait: true
                         build job: 'OpenLMIS-fulfillment-contract-test', propagate: true, wait: true
                     }
                 }
@@ -101,8 +101,8 @@ pipeline {
                 }
             }
             steps {
-                sh "docker tag openlmis/referencedata:${VERSION_WITH_BUILD_NUMBER} openlmis/referencedata:${VERSION}"
-                sh "docker push openlmis/referencedata:${VERSION}"
+                sh "docker tag openlmis/requisition:${VERSION_WITH_BUILD_NUMBER} openlmis/requisition:${VERSION}"
+                sh "docker push openlmis/requisition:${VERSION}"
             }
         }
     }
