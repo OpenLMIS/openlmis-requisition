@@ -101,8 +101,7 @@ public final class LineItemFieldsCalculator {
    * Values, whose StockAdjustmentReasons are additive, count as positive, and negative otherwise.
    */
   public static int calculateTotalLossesAndAdjustments(RequisitionLineItem lineItem,
-                                                       Collection<StockAdjustmentReason>
-                                                           reasons) {
+      Collection<StockAdjustmentReason> reasons) {
     int totalLossesAndAdjustments = 0;
     if (null != lineItem.getStockAdjustments()) {
       for (StockAdjustment adjustment : lineItem.getStockAdjustments()) {

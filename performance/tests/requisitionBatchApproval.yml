@@ -28,21 +28,25 @@ scenarios:
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
-        extract-jsonpath:
-          requisitions_id:
-            jsonpath: $.content.[:${number_of_req}].id
         jsr223:
           script-text: |
+            import groovy.json.JsonSlurper;
+            def response = prev.getResponseDataAsString();
             log.info(prev.getUrlAsString())
-            log.info(prev.getResponseDataAsString())
+            log.info(response)
+            log.info(vars.get("number_of_req"))
+            def requisitions_id = [];
 
+            def data = new JsonSlurper().parseText(response);
             def builder = new StringBuilder();
-            vars.get("requisitions_id").split(",").eachWithIndex { id, idx ->
+            for (def i=0; i<10; i++) {
               builder.append("&id=")
-              def clean_id = id.replaceAll(/"|\[|\]/, "")
-              builder.append(clean_id)
-              vars.put("reqid_" + (idx + 1), clean_id)
+              log.info(data.content[i].toString())
+              def id = data.content[i].id
+              builder.append(id)
+              vars.put("reqid_" + (i + 1), id)
             }
+
             vars.put("requisitions_id", builder.toString())
             log.info(vars.get("requisitions_id"))
   prepare-requisitions:
@@ -185,7 +189,7 @@ scenarios:
           script-text: |
             import groovy.json.JsonSlurper
             import groovy.json.JsonOutput
-            // log.info(${__P(base-uri)} + "/api/requisitions?saveAll" + ${requisitions_id})
+            log.info('/api/requisitions?saveAll')
 
             def response = prev.getResponseDataAsString();
 
