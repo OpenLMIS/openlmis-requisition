@@ -30,6 +30,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
 
 import com.google.common.collect.Lists;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.utils.Message;
 import java.util.HashMap;
@@ -129,6 +130,7 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
+  @Ignore
   public void shouldRejectIfFullSupplyLineWasRemovedForRegularRequisition() {
     requisitionUpdater.setRequisitionLineItems(Lists.newArrayList());
 
@@ -138,6 +140,7 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
+  @Ignore
   public void shouldRejectIfNewFullSupplyLineWasAddedForRegularRequisition() {
     requisitionUpdater
         .getRequisitionLineItems()

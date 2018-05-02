@@ -6,18 +6,20 @@ execution:
 scenarios:
   get-user-token:
     requests:
-      - url: ${__P(base-uri)}/api/oauth/token
-        method: POST
-        label: GetUserToken
-        headers:
-          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
-        body:
-          grant_type: password
-          username: ${__P(username)}
-          password: ${__P(password)}
-        extract-jsonpath:
-          access_token:
-            jsonpath: $.access_token
+    - if: '${__javaScript(vars.get("access_token") == null)}'
+      then:
+        - url: ${__P(base-uri)}/api/oauth/token
+          method: POST
+          label: GetUserToken
+          headers:
+            Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+          body:
+            grant_type: password
+            username: ${__P(username)}
+            password: ${__P(password)}
+          extract-jsonpath:
+            access_token:
+              jsonpath: $.access_token
   search-requisitions:
     requests:
       - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}&program=${program_id}
@@ -72,7 +74,7 @@ scenarios:
               def response = prev.getResponseDataAsString();
 
               log.info(prev.getUrlAsString())
-              log.info(prev.getResponseDataAsString())
+              log.info(response)
 
               def jsonSlurper = new JsonSlurper();
               def requisition = jsonSlurper.parseText(response);
@@ -99,7 +101,7 @@ scenarios:
               def response = prev.getResponseDataAsString();
 
               log.info(prev.getUrlAsString())
-              log.info(prev.getResponseDataAsString())
+              log.info(response)
 
               def jsonSlurper = new JsonSlurper();
               def requisition = jsonSlurper.parseText(response);
@@ -178,14 +180,12 @@ scenarios:
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
-        headers:
-          Authorization: Bearer ${access_token}
-          Content-Type: application/json
         jsr223:
           execute: before
           script-text: |
             import groovy.json.JsonSlurper
             import groovy.json.JsonOutput
+            // log.info(${__P(base-uri)} + "/api/requisitions?saveAll" + ${requisitions_id})
 
             def response = prev.getResponseDataAsString();
 
