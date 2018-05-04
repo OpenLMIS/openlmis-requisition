@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
@@ -22,9 +24,12 @@ import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -64,10 +69,9 @@ class RequisitionInvariantsValidator
     rejectIfValueChanged(errors, requisitionUpdater.getSupervisoryNodeId(),
         requisitionToUpdate.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
 
-    // TODO: enable after orderable versioning is implemented OLMIS-3886
-    //    if (isNotTrue(requisitionToUpdate.getEmergency())) {
-    //      validateRegularLineItemSize(errors);
-    //    }
+    if (isNotTrue(requisitionToUpdate.getEmergency())) {
+      validateRegularLineItemSize(errors);
+    }
 
     validateIfOrderableIdChanged(errors);
   }
@@ -105,27 +109,27 @@ class RequisitionInvariantsValidator
     }
   }
 
-  //  private void validateRegularLineItemSize(Map<String, Message> errors) {
-  //    List<UUID> currentIds = requisitionUpdater
-  //        .getRequisitionLineItems()
-  //        .stream()
-  //        .filter(line -> !line.isNonFullSupply())
-  //        .map(BaseEntity::getId)
-  //        .collect(toList());
-  //
-  //    List<UUID> existingIds = requisitionToUpdate
-  //        .getRequisitionLineItems()
-  //        .stream()
-  //        .filter(line -> !line.isNonFullSupply())
-  //        .map(BaseEntity::getId)
-  //        .collect(toList());
-  //
-  //    if (currentIds.stream().anyMatch(id -> !existingIds.contains(id))) {
-  //      errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_ADDED));
-  //    } else if (existingIds.stream().anyMatch(id -> !currentIds.contains(id))) {
-  //      errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_REMOVED));
-  //    }
-  //  }
+  private void validateRegularLineItemSize(Map<String, Message> errors) {
+    List<UUID> currentIds = requisitionUpdater
+        .getRequisitionLineItems()
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .map(BaseEntity::getId)
+        .collect(toList());
+
+    List<UUID> existingIds = requisitionToUpdate
+        .getRequisitionLineItems()
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .map(BaseEntity::getId)
+        .collect(toList());
+
+    if (currentIds.stream().anyMatch(id -> !existingIds.contains(id))) {
+      errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_ADDED));
+    } else if (existingIds.stream().anyMatch(id -> !currentIds.contains(id))) {
+      errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_REMOVED));
+    }
+  }
 
   private void rejectIfValueChanged(Map<String, Message> errors, Object value,
       Object savedValue, String field) {
