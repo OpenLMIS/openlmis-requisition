@@ -96,6 +96,8 @@ schemas:
            "items": { "type": "object", "$ref": "schemas/requisitionTemplate.json" }
        }
 
+  - availableRequisitionColumnPage: !include schemas/availableRequisitionColumnPage.json
+
   - convertedRequisitionMap: |
       {
           "type": "array",
@@ -902,3 +904,14 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+
+  /availableRequisitionColumns:
+      displayName: Available Requisition Column
+      get:
+          is: [ secured, paginated ]
+          description: Get page of Available Requisition Columns.
+          responses:
+              "200":
+                  body:
+                    application/json:
+                        schema: availableRequisitionColumnPage
