@@ -1,0 +1,39 @@
+{
+  "id": 76861,
+  "num_rows": 100000,
+  "file_format": "csv",
+  "name": "requisition line items",
+  "include_header": true,
+  "columns": [
+    {
+      "name": "id",
+      "null_percentage": 0,
+      "type": "GUID",
+      "formula": ""
+    },
+    {
+      "name": "orderableId",
+      "null_percentage": 0,
+      "type": "Dataset Column",
+      "dataset": "full supply products",
+      "column": "orderableid",
+      "selectionStyle": "cartesian",
+      "formula": ""
+    },
+    {
+      "name": "requisitionId",
+      "null_percentage": 0,
+      "type": "Dataset Column",
+      "dataset": "Requisitions5k",
+      "column": "id",
+      "selectionStyle": "cartesian",
+      "formula": ""
+    },
+    {
+      "name": "nonFullSupply",
+      "null_percentage": 0,
+      "type": "Boolean",
+      "formula": "false"
+    }
+  ]
+}
