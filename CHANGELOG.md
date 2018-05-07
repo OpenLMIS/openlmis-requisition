@@ -1,3 +1,9 @@
+6.1.0 / WIP
+===========
+
+New functionality:
+* [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint.
+
 6.0.0 / 2018-04-24
 ==================
 
