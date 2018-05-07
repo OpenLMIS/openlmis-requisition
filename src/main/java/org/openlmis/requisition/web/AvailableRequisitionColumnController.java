@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/availableRequisitionColumns")
-public class AvailableRequsitionColumnController {
+public class AvailableRequisitionColumnController {
 
   private final XLogger logger = XLoggerFactory.getXLogger(getClass());
 
@@ -51,7 +51,7 @@ public class AvailableRequsitionColumnController {
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Page<AvailableRequisitionColumnDto> getProcessingPeriodIds(Pageable pageable) {
+  public Page<AvailableRequisitionColumnDto> getAllColumns(Pageable pageable) {
     Profiler profiler = new Profiler("GET_ALL_AVAILABLE_REQUISITION_COLUMNS");
     profiler.setLogger(logger);
 
