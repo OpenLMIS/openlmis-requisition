@@ -138,9 +138,13 @@ public class RequisitionController extends BaseRequisitionController {
 
     ProgramDto program = findProgram(programId, profiler);
 
+    profiler.start("FIND_PROCESSING_PERIOD");
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
-        program, facility, suggestedPeriod, emergency, stockAdjustmentReasons);
+        program, facility, period, emergency, stockAdjustmentReasons);
 
     profiler.start("VALIDATE_REASONS");
     reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());

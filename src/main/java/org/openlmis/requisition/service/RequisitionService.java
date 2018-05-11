@@ -172,15 +172,15 @@ public class RequisitionService {
   /**
    * Initiated given requisition if possible.
    *
-   * @param program                Program.
-   * @param facility               Facility.
-   * @param suggestedPeriodId      Period for requisition.
-   * @param emergency              Emergency status.
+   * @param program Program.
+   * @param facility Facility.
+   * @param period Period for requisition.
+   * @param emergency Emergency status.
    * @param stockAdjustmentReasons list of stockAdjustmentReasons
    * @return Initiated requisition.
    */
   public Requisition initiate(ProgramDto program, FacilityDto facility,
-                              UUID suggestedPeriodId, boolean emergency,
+                              ProcessingPeriodDto period, boolean emergency,
                               List<StockAdjustmentReason> stockAdjustmentReasons) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
@@ -189,10 +189,6 @@ public class RequisitionService {
     Requisition requisition = RequisitionBuilder.newRequisition(
         facility.getId(), program.getId(), emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
-
-    profiler.start("FIND_PROCESSING_PERIOD");
-    ProcessingPeriodDto period = periodService
-        .findPeriod(program.getId(), facility.getId(), suggestedPeriodId, emergency);
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
