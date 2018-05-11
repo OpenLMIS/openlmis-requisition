@@ -30,8 +30,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CAR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -75,11 +73,9 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -117,9 +113,6 @@ public class RequisitionService {
 
   @Autowired
   private StatusMessageRepository statusMessageRepository;
-
-  @Autowired
-  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -180,8 +173,9 @@ public class RequisitionService {
    * @return Initiated requisition.
    */
   public Requisition initiate(ProgramDto program, FacilityDto facility,
-                              ProcessingPeriodDto period, boolean emergency,
-                              List<StockAdjustmentReason> stockAdjustmentReasons) {
+      ProcessingPeriodDto period, boolean emergency,
+      List<StockAdjustmentReason> stockAdjustmentReasons,
+      RequisitionTemplate requisitionTemplate) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
 
@@ -192,11 +186,6 @@ public class RequisitionService {
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
-
-    profiler.start("FIND_REQUISITION_TEMPLATE");
-    RequisitionTemplate requisitionTemplate = findRequisitionTemplate(
-        program.getId(), facility.getType().getId()
-    );
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     int numberOfPreviousPeriodsToAverage;
@@ -344,21 +333,6 @@ public class RequisitionService {
     }
 
     return pod;
-  }
-
-  private RequisitionTemplate findRequisitionTemplate(UUID programId, UUID facilityTypeId) {
-    RequisitionTemplate template =
-        requisitionTemplateRepository.findTemplate(programId, facilityTypeId);
-
-    if (null == template) {
-      throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));
-    }
-
-    if (!template.hasColumnsDefined()) {
-      throw new ValidationMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_DEFINED));
-    }
-
-    return template;
   }
 
   /**

@@ -79,6 +79,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -1039,7 +1040,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(requisition)
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class));
+            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()));
     mockValidationSuccess();
 
     // when
@@ -1062,7 +1063,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
-        .initiate(program, facility, period, false, stockAdjustmentReasons);
+        .initiate(program, facility, period, false,
+            stockAdjustmentReasons, requisition.getTemplate());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1092,7 +1094,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisitionService, never()).initiate(
         any(ProgramDto.class), any(FacilityDto.class),
-        any(ProcessingPeriodDto.class), anyBoolean(), any()
+        any(ProcessingPeriodDto.class), anyBoolean(), any(), any()
     );
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.requestChecks());
   }
@@ -1108,7 +1110,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
     given(requisitionService
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class)))
+            anyListOf(StockAdjustmentReason.class), any(RequisitionTemplate.class)))
         .willThrow(err);
 
     doReturn(ValidationResult.success())
@@ -1157,7 +1159,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
-            any(ProcessingPeriodDto.class), anyBoolean(), anyList());
+            any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
+            any(RequisitionTemplate.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1187,7 +1190,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     // then
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
-            any(ProcessingPeriodDto.class), anyBoolean(), anyList());
+            any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
+            any(RequisitionTemplate.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

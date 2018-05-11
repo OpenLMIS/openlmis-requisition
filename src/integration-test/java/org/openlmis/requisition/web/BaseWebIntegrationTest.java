@@ -74,6 +74,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -131,6 +132,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @MockBean
+  protected RequisitionTemplateService requisitionTemplateService;
 
   @Autowired
   protected ObjectMapper objectMapper;
@@ -216,9 +220,14 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected final RequisitionTemplate generateRequisitionTemplate() {
-    return new RequisitionTemplateDataBuilder()
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withColumns(RequisitionValidationTestUtils.initiateColumns())
         .build();
+
+    given(requisitionTemplateService.findTemplate(anyUuid(), anyUuid()))
+        .willReturn(template);
+
+    return template;
   }
 
   protected OrderableDto generateOrderable(UUID id, List<Requisition> requisitions) {

@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -54,6 +55,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
+import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
@@ -100,6 +102,9 @@ public class RequisitionController extends BaseRequisitionController {
   @Autowired
   private ReasonsValidator reasonsValidator;
 
+  @Autowired
+  private RequisitionTemplateService requisitionTemplateService;
+
   /**
    * Allows creating new requisitions.
    *
@@ -142,9 +147,15 @@ public class RequisitionController extends BaseRequisitionController {
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriod, emergency);
 
+    profiler.start("FIND_REQUISITION_TEMPLATE");
+    RequisitionTemplate requisitionTemplate = requisitionTemplateService.findTemplate(
+        program.getId(), facility.getType().getId()
+    );
+
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
-        program, facility, period, emergency, stockAdjustmentReasons);
+        program, facility, period, emergency, stockAdjustmentReasons, requisitionTemplate
+    );
 
     profiler.start("VALIDATE_REASONS");
     reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());

@@ -110,7 +110,6 @@ import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -180,9 +179,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Mock
-  private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Mock
   private PeriodService periodService;
@@ -655,9 +651,6 @@ public class RequisitionServiceTest {
         .findOne(requisition.getId()))
         .thenReturn(null);
 
-    doReturn(requisitionTemplate).when(requisitionTemplateRepository)
-        .findTemplate(program.getId(), facility.getType().getId());
-
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setStartDate(LocalDate.of(2016, 11, 1));
     periodDto.setEndDate(LocalDate.of(2016, 11, 30));
@@ -668,7 +661,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
@@ -676,7 +669,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldInitiatePreviousAdjustedConsumptions() {
-    prepareForTestInitiate(SETTING);
+    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
@@ -684,7 +677,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
@@ -693,14 +686,14 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldInitiatePreviousAdjustedConsumptionsBasedOnRegularRequisitions() {
-    prepareForTestInitiate(SETTING);
+    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
@@ -711,14 +704,14 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldAssignPreviousRegularRequisition() {
-    prepareForTestInitiate(SETTING);
+    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     UUID previousRequisitionId = initiatedRequisition.getPreviousRequisitions().get(0).getId();
     assertEquals(previousRequisition.getId(), previousRequisitionId);
@@ -728,7 +721,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldAssignIdealStockAmount() {
-    prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
@@ -738,7 +731,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     List<RequisitionLineItem> lineItems = initiatedRequisition.getRequisitionLineItems();
     assertThat(lineItems, hasSize(1));
@@ -747,13 +740,13 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
-    prepareForTestInitiate(null);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(null);
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     verify(periodService, times(2)).findPreviousPeriods(any(), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -762,7 +755,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition() {
-    prepareForTestInitiate(SETTING);
+    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
@@ -770,7 +763,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -778,12 +771,12 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
-    prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -791,23 +784,23 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSetStockAdjustmenReasonsDuringInitiate() {
-    prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     assertEquals(stockAdjustmentReasons, initiatedRequisition.getStockAdjustmentReasons());
   }
 
   @Test
   public void shouldPopulateOnlyNonFullProductsDuringInitiateForRegularRequisition() {
-    prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
     assertThat(availableProducts, hasSize(1));
@@ -816,12 +809,12 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPopulateFullAndNonFullProductsDuringInitiateForEmergencyRequisition() {
-    prepareForTestInitiate(SETTING);
+    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, true,
-        stockAdjustmentReasons);
+        stockAdjustmentReasons, requisitionTemplate);
 
     Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
     assertThat(availableProducts, hasSize(2));
@@ -836,7 +829,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons);
+        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
 
     assertEquals(stockCardSummaryDto.getStockOnHand(),
         initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
@@ -850,7 +843,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     assertThatThrownBy(() -> requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons))
+        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(new Message(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
             productNamePrefix + "0", 1).toString());
@@ -865,7 +858,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons);
+        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
 
     assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
   }
@@ -879,7 +872,7 @@ public class RequisitionServiceTest {
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons);
+        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
 
     assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
   }
@@ -1591,9 +1584,11 @@ public class RequisitionServiceTest {
         .thenReturn(approvedProducts);
   }
 
-  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
+  private RequisitionTemplate prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     prepareForTestInitiate(numberOfPeriodsToAverage, requisitionTemplate);
+
+    return requisitionTemplate;
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage,
@@ -1607,8 +1602,6 @@ public class RequisitionServiceTest {
         .thenReturn(new FacilityDto());
     when(programReferenceDataService.findOne(program.getId()))
         .thenReturn(new ProgramDto());
-    when(requisitionTemplateRepository.findTemplate(program.getId(), facility.getType().getId()))
-        .thenReturn(requisitionTemplate);
 
     when(periodService.findPeriod(
         eq(program.getId()), eq(facility.getId()), eq(processingPeriod.getId()), anyBoolean()))
