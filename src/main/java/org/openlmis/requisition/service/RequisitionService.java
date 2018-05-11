@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -91,7 +90,6 @@ import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
@@ -108,7 +106,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -143,9 +140,6 @@ public class RequisitionService {
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
-
-  @Autowired
-  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -473,31 +467,10 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(UUID facility,
-                                              UUID program,
-                                              UUID processingPeriod,
-                                              Pageable pageable) {
-    return requisitionRepository.searchRequisitions(facility, program, null, null,
-        processingPeriod, null, null, null, permissionService.getPermissionStrings(), pageable);
-  }
-
-  /**
-   * Finds requisitions matching all of the provided parameters.
-   */
   public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
                                               Pageable pageable) {
     return requisitionRepository.searchRequisitions(null, null, null, null, null,
         null, requisitionStatuses, null, permissionService.getPermissionStrings(), pageable);
-  }
-
-  /**
-   * Finds requisitions matching supervisory node and program.
-   */
-  public Page<Requisition> searchRequisitions(UUID program,
-                                              UUID supervisoryNode,
-                                              Pageable pageable) {
-    return requisitionRepository.searchRequisitions(null, program, null, null, null,
-        supervisoryNode, null, null, permissionService.getPermissionStrings(), pageable);
   }
 
   /**
@@ -539,25 +512,6 @@ public class RequisitionService {
 
     profiler.stop().log();
     return requisitionsForApproval;
-  }
-
-  /**
-   * Get approvable requisitions for specified program and supervisoryNode.
-   */
-  public List<Requisition> getApprovableRequisitions(UUID programId,
-                                                     UUID supervisoryNodeId) {
-    Page<Requisition> requisitions = searchRequisitions(programId, supervisoryNodeId,
-        new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION));
-
-    List<Requisition> filteredRequisitions = new ArrayList<>();
-    if (requisitions != null) {
-      for (Requisition requisition : requisitions) {
-        if (requisition.isApprovable()) {
-          filteredRequisitions.add(requisition);
-        }
-      }
-    }
-    return filteredRequisitions;
   }
 
   /**
@@ -677,26 +631,6 @@ public class RequisitionService {
 
     profiler.stop().log();
     return releasedRequisitions;
-  }
-
-  /**
-   * Retrieves full supply requisition line items for requisition with given id.
-   *
-   * @param requisitionId id of requisition to find items for.
-   * @return list of full supply requisition line items.
-   */
-  public List<RequisitionLineItem> getFullSupplyItems(UUID requisitionId) {
-    return getSupplyItemsBase(requisitionId, true);
-  }
-
-  /**
-   * Retrieves non-full supply requisition line items for requisition with given id.
-   *
-   * @param requisitionId id of requisition to find items for.
-   * @return list of non-full supply requisition line items.
-   */
-  public List<RequisitionLineItem> getNonFullSupplyItems(UUID requisitionId) {
-    return getSupplyItemsBase(requisitionId, false);
   }
 
   /**
@@ -860,27 +794,6 @@ public class RequisitionService {
 
   private boolean approvedQtyColumnEnabled(Requisition requisition) {
     return requisition.getTemplate().isColumnInTemplateAndDisplayed(APPROVED_QUANTITY);
-  }
-
-  private List<RequisitionLineItem> getSupplyItemsBase(UUID requisitionId, boolean fullSupply) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
-    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
-
-    for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
-      OrderableDto orderable = orderableReferenceDataService
-          .findOne(lineItem.getOrderableId());
-
-      Optional<ProgramOrderableDto> product = orderable.getPrograms().stream()
-          .filter(e -> requisition.getProgramId().equals(e.getProgramId())).findFirst();
-
-      product.ifPresent(p -> {
-        if (p.getFullSupply() == fullSupply) {
-          requisitionLineItems.add(lineItem);
-        }
-      });
-    }
-
-    return requisitionLineItems;
   }
 
   private Map<UUID, ProgramDto> findProgramsWithFilter(String filterBy,

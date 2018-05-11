@@ -480,38 +480,6 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldGetApprovableRequisitionsWhenStatusIsAuthorized() {
-    requisition.setStatus(AUTHORIZED);
-
-    when(requisitionRepository.searchRequisitions(
-        null, program.getId(), null, null, null, supervisoryNode.getId(),
-        null, null, permissionStrings, pageRequest))
-        .thenReturn(getPage(singletonList(requisition), pageRequest));
-
-    List<Requisition> authorizedRequisitions =
-        requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
-    List<Requisition> expected = singletonList(requisition);
-
-    assertEquals(expected, authorizedRequisitions);
-  }
-
-  @Test
-  public void shouldGetApprovableRequisitionsWhenStatusIsInApproval() {
-    requisition.setStatus(IN_APPROVAL);
-
-    when(requisitionRepository.searchRequisitions(
-        null, program.getId(), null, null, null, supervisoryNode.getId(),
-        null, null, permissionStrings, pageRequest))
-        .thenReturn(getPage(singletonList(requisition), pageRequest));
-
-    List<Requisition> inApprovalRequisitions =
-        requisitionService.getApprovableRequisitions(program.getId(), supervisoryNode.getId());
-    List<Requisition> expected = singletonList(requisition);
-
-    assertEquals(expected, inApprovalRequisitions);
-  }
-
-  @Test
   public void shouldGetRequisitionsForApproval() {
     // given
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
@@ -1405,49 +1373,6 @@ public class RequisitionServiceTest {
     requisitionService.convertToOrder(list, user);
 
     verify(requisitionStatusProcessor).statusChange(any(Requisition.class));
-  }
-
-  @Test
-  public void shouldReturnFullSupplyRequisitionLineItems() {
-    // given
-    Requisition requisition = generateRequisition();
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
-
-    List<RequisitionLineItem> fullSupply = singletonList(lineItem1);
-    List<RequisitionLineItem> nonFullSupply = singletonList(lineItem2);
-
-    setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
-
-    // when
-    List<RequisitionLineItem> result = requisitionService.getFullSupplyItems(requisition.getId());
-
-    Set<RequisitionLineItem> resultSet = new HashSet<>(result);
-    Set<RequisitionLineItem> fullSupplySet = new HashSet<>(fullSupply);
-
-    // then
-    assertTrue(resultSet.equals(fullSupplySet));
-  }
-
-  @Test
-  public void shouldReturnNonFullSupplyRequisitionLineItems() {
-    // given
-    Requisition requisition = generateRequisition();
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
-
-    List<RequisitionLineItem> fullSupply = singletonList(lineItem1);
-    List<RequisitionLineItem> nonFullSupply = singletonList(lineItem2);
-
-    setupStubsForTestFindSupplyItems(requisition, fullSupply, nonFullSupply);
-
-    // when
-    List<RequisitionLineItem> result = requisitionService
-        .getNonFullSupplyItems(requisition.getId());
-
-    Set<RequisitionLineItem> resultSet = new HashSet<>(result);
-    Set<RequisitionLineItem> nonFullSupplySet = new HashSet<>(nonFullSupply);
-
-    // then
-    assertTrue(resultSet.equals(nonFullSupplySet));
   }
 
   @Test
