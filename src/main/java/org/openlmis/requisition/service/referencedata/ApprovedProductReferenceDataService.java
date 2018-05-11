@@ -17,6 +17,7 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,12 +50,15 @@ public class ApprovedProductReferenceDataService extends
    * @param programId  id of the program
    * @return a collection of approved products matching the search criteria
    */
-  public List<ApprovedProductDto> getApprovedProducts(UUID facilityId, UUID programId) {
+  public ApproveProducts getApprovedProducts(UUID facilityId, UUID programId) {
     RequestParameters params = RequestParameters.init();
 
     params.set("programId", programId);
     params.set("size", Integer.MAX_VALUE);
 
-    return getPage(facilityId + "/approvedProducts", params).getContent();
+    Page<ApprovedProductDto> page = getPage(facilityId + "/approvedProducts", params);
+    List<ApprovedProductDto> content = page.getContent();
+
+    return new ApproveProducts(content, programId);
   }
 }

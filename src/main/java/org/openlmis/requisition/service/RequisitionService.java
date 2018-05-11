@@ -37,11 +37,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -55,7 +53,6 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
-import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -65,7 +62,6 @@ import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -78,6 +74,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.referencedata.ApproveProducts;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
@@ -208,12 +205,8 @@ public class RequisitionService {
     final ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
 
     profiler.start("FIND_APPROVED_PRODUCTS");
-    List<ApprovedProductDto> approvedProducts = approvedProductReferenceDataService
+    ApproveProducts approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId());
-
-    List<ApprovedProductDto> fullSupplyProducts = filterProducts(
-        approvedProducts, program.getId(), true
-    );
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
     Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
@@ -223,30 +216,20 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_ON_HANDS");
     Map<UUID, Integer> orderableSoh = getStockOnHands(
-        requisitionTemplate, fullSupplyProducts,
+        requisitionTemplate, approvedProducts,
         program.getId(), facility.getId(), period.getEndDate()
     );
 
     profiler.start("INITIATE");
-    requisition.initiate(requisitionTemplate, fullSupplyProducts, previousRequisitions,
-        numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
+    requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
+        previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
         authenticationHelper.getCurrentUser().getId(), orderableSoh);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
     if (emergency) {
-      requisition.setAvailableProducts(approvedProducts
-          .stream()
-          .map(ap -> ap.getOrderable().getId())
-          .collect(toSet()));
+      requisition.setAvailableProducts(approvedProducts.getOrderableIds());
     } else {
-      List<ApprovedProductDto> nonFullSupplyProducts = filterProducts(
-          approvedProducts, program.getId(), false
-      );
-
-      requisition.setAvailableProducts(nonFullSupplyProducts
-          .stream()
-          .map(ap -> ap.getOrderable().getId())
-          .collect(toSet()));
+      requisition.setAvailableProducts(approvedProducts.getNonFullSupplyOrderableIds());
     }
 
     profiler.start("SET_STOCK_ADJ_REASONS");
@@ -259,46 +242,30 @@ public class RequisitionService {
     return requisition;
   }
 
-  private List<ApprovedProductDto> filterProducts(List<ApprovedProductDto> approvedProducts,
-                                                  UUID programId, boolean fullSupply) {
-    List<ApprovedProductDto> list = new ArrayList<>();
-
-    for (ApprovedProductDto approvedProduct : approvedProducts) {
-      OrderableDto orderable = approvedProduct.getOrderable();
-      ProgramOrderableDto po = orderable.findProgramOrderableDto(programId);
-
-      if (null != po && Objects.equals(fullSupply, po.getFullSupply())) {
-        list.add(approvedProduct);
-      }
-    }
-
-    return list;
-  }
-
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
-                                             Collection<ApprovedProductDto> fullSupplyProducts,
+                                             ApproveProducts approveProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      Map<UUID, Integer> orderableSoh = new HashMap<>();
       List<StockCardSummaryDto> cards = stockCardSummariesStockManagementService.search(
           programId,
           facilityId,
-          fullSupplyProducts.stream()
-              .map(ap -> ap.getOrderable().getId())
-              .collect(toSet()),
+          approveProducts.getFullSupplyOrderableIds(),
           endDate);
 
-      validateNoSohIsMissing(fullSupplyProducts, cards);
+      validateNoSohIsMissing(approveProducts, cards);
 
-      cards.forEach(card -> orderableSoh.put(card.getOrderable().getId(), card.getStockOnHand()));
-
-      return orderableSoh;
+      return cards
+          .stream()
+          .collect(Collectors.toMap(
+              card -> card.getOrderable().getId(),
+              StockCardSummaryDto::getStockOnHand
+          ));
     } else {
       return Collections.emptyMap();
     }
   }
 
-  private void validateNoSohIsMissing(Collection<ApprovedProductDto> fullSupplyProducts,
+  private void validateNoSohIsMissing(ApproveProducts approveProducts,
                                       List<StockCardSummaryDto> cards) {
     List<StockCardSummaryDto> cardsWithNullSoh = cards.stream()
         .filter(c -> c.getStockOnHand() == null)
@@ -306,7 +273,7 @@ public class RequisitionService {
 
     if (!cardsWithNullSoh.isEmpty()) {
       OrderableDto orderableWithNoSoh =
-          getFirstOrderableWithNullSoh(fullSupplyProducts, cardsWithNullSoh);
+          getFirstOrderableWithNullSoh(approveProducts, cardsWithNullSoh);
 
       throw new ValidationMessageException(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
           orderableWithNoSoh.getFullProductName(), cardsWithNullSoh.size());
@@ -314,13 +281,10 @@ public class RequisitionService {
   }
 
   private OrderableDto getFirstOrderableWithNullSoh(
-      Collection<ApprovedProductDto> fullSupplyProducts,
+      ApproveProducts approveProducts,
       List<StockCardSummaryDto> cardsWithNullSoh) {
-    UUID orderableIdWithNoSoh = cardsWithNullSoh.get(0).getOrderable().getId();
-    return fullSupplyProducts.stream()
-        .filter(p -> p.getOrderable().getId().equals(orderableIdWithNoSoh))
-        .findAny()
-        .orElseThrow(IllegalStateException::new)
+    return approveProducts
+        .getFullSupplyProduct(cardsWithNullSoh.get(0).getOrderable().getId())
         .getOrderable();
   }
 

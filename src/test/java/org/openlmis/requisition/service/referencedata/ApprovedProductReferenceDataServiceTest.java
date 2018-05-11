@@ -26,20 +26,23 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DynamicPageTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.net.URI;
-import java.util.List;
-import java.util.UUID;
 
 public class ApprovedProductReferenceDataServiceTest
     extends BaseCommunicationServiceTest<ApprovedProductDto> {
@@ -67,15 +70,22 @@ public class ApprovedProductReferenceDataServiceTest
 
   @Test
   public void shouldReturnApprovedProducts() {
-    UUID programId = randomUUID();
+    ProgramDto program = new ProgramDtoDataBuilder().build();
     UUID facilityId = randomUUID();
 
-    ApprovedProductDto product = mockPageResponseEntityAndGetDto();
+    ApprovedProductDto product = new ApprovedProductDtoDataBuilder()
+        .withOrderable(new OrderableDtoDataBuilder()
+            .withProgramOrderable(program.getId(), true)
+            .build())
+        .withProgram(program)
+        .build();
 
-    List<ApprovedProductDto> response = service.getApprovedProducts(facilityId, programId);
+    mockPageResponseEntity(product);
 
-    assertThat(response, hasSize(1));
-    assertThat(response, hasItem(product));
+    ApproveProducts response = service.getApprovedProducts(facilityId, program.getId());
+
+    assertThat(response.getOrderableIds(), hasSize(1));
+    assertThat(response.getOrderableIds(), hasItem(product.getOrderable().getId()));
 
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
@@ -90,7 +100,7 @@ public class ApprovedProductReferenceDataServiceTest
 
     List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
 
-    assertQueryParameter(parse, "programId", programId);
+    assertQueryParameter(parse, "programId", program.getId());
 
     assertAuthHeader(entityCaptor.getValue());
     assertThat(entityCaptor.getValue().getBody(), is(nullValue()));

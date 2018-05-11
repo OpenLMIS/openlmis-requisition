@@ -112,6 +112,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.referencedata.ApproveProducts;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
@@ -643,6 +644,8 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist() {
     prepareForTestInitiate(SETTING);
+    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
@@ -785,6 +788,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetStockAdjustmenReasonsDuringInitiate() {
     RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
@@ -1581,7 +1585,7 @@ public class RequisitionServiceTest {
     }
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any()))
-        .thenReturn(approvedProducts);
+        .thenReturn(new ApproveProducts(approvedProducts, program.getId()));
   }
 
   private RequisitionTemplate prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
