@@ -554,6 +554,18 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Skip the requisition.
+   */
+  public void skip(UUID user) {
+    for (RequisitionLineItem item : requisitionLineItems) {
+      item.skipLineItem(template);
+    }
+
+    status = RequisitionStatus.SKIPPED;
+    statusChanges.add(StatusChange.newStatusChange(this, user));
+  }
+
+  /**
    * Finds first RequisitionLineItem that have productId property equals to the given productId
    * argument.
    *

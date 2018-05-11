@@ -22,20 +22,16 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -57,7 +53,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
@@ -385,31 +380,6 @@ public class RequisitionService {
           .delete(statusMessageRepository.findByRequisitionId(requisition.getId()));
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
-    }
-  }
-
-  /**
-   * Skip given requisition if possible.
-   *
-   * @param requisition Requisition to be skipped.
-   * @return Skipped Requisition.
-   */
-  public Requisition skip(Requisition requisition) {
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-    if (!requisition.getStatus().isSubmittable()) {
-      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
-    } else if (!program.getPeriodsSkippable()) {
-      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
-    } else if (requisition.getEmergency()) {
-      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
-    } else {
-      LOGGER.debug("Requisition skipped");
-
-      for (RequisitionLineItem item : requisition.getRequisitionLineItems()) {
-        item.skipLineItem(requisition.getTemplate());
-      }
-      requisition.setStatus(SKIPPED);
-      return requisitionRepository.save(requisition);
     }
   }
 

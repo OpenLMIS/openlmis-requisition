@@ -78,8 +78,8 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
-import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -169,15 +169,6 @@ public abstract class BaseWebIntegrationTest {
     return user;
   }
 
-  protected PermissionMessageException mockPermissionException(String... deniedPermissions) {
-    PermissionMessageException exception = mock(PermissionMessageException.class);
-
-    Message errorMessage = new Message(PERMISSION_ERROR_MESSAGE, (Object[])deniedPermissions);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
-  }
-
   protected UUID anyUuid() {
     return any(UUID.class);
   }
@@ -192,7 +183,9 @@ public abstract class BaseWebIntegrationTest {
 
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
     Requisition requisition = new Requisition(
-        UUID.randomUUID(), generateProgram(), generateProcessingPeriod(), requisitionStatus, true);
+        UUID.randomUUID(), generateProgram().getId(),
+        generateProcessingPeriod(), requisitionStatus, true
+    );
 
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
@@ -269,14 +262,13 @@ public abstract class BaseWebIntegrationTest {
     return period.getId();
   }
 
-  private UUID generateProgram() {
-    ProgramDto program = new ProgramDto();
-
-    program.setId(UUID.randomUUID());
+  ProgramDto generateProgram() {
+    ProgramDto program = new ProgramDtoDataBuilder()
+        .build();
 
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
 
-    return program.getId();
+    return program;
   }
 
   protected void mockExternalAuthorization() {

@@ -49,8 +49,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_C
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
@@ -667,7 +671,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockValidationSuccess();
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-    given(requisitionService.skip(requisition)).willReturn(requisition);
 
     // when
     restAssured.given()
@@ -680,7 +683,28 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .statusCode(200);
 
     // then
-    verify(requisitionService, atLeastOnce()).skip(requisition);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionNotExist() {
+    // given
+    UUID requisitionId = UUID.randomUUID();
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionId)
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(404)
+        .body(MESSAGE, equalTo(getMessage(ERROR_REQUISITION_NOT_FOUND, requisitionId)));
+
+    // then
+    verify(requisitionRepository, never()).save(any(Requisition.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -707,36 +731,118 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).skip(requisition);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotSkipRequisitionIfItIsNotInitiated() {
-    testSkipRequisitionValidationFailure(MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS);
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfItIsEmergency() {
-    testSkipRequisitionValidationFailure(MessageKeys.ERROR_SKIP_FAILED_EMERGENCY);
-  }
-
-  @Test
-  public void shouldReturnNotFoundWhenSkippingNonExistentRequisition() {
+  public void shouldNotSkipRequisitionIfProgramNotExist() {
     // given
-    UUID requisitionId = UUID.randomUUID();
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
+    Requisition requisition = generateRequisition();
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(programReferenceDataService.findOne(requisition.getProgramId())).willReturn(null);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .put(SKIP_URL)
         .then()
         .statusCode(404)
-        .body(MESSAGE, equalTo(getMessage(ERROR_REQUISITION_NOT_FOUND, requisitionId)));
+        .body(MESSAGE, equalTo(getMessage(ERROR_PROGRAM_NOT_FOUND, requisition.getProgramId())));
+
+    // then
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionHasIncorrectStatus() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.SUBMITTED);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE, equalTo(getMessage(ERROR_SKIP_FAILED_WRONG_STATUS)));
+
+    // then
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfProgramNotSupportSkip() {
+    // given
+    Requisition requisition = generateRequisition();
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    ProgramDto program = generateProgram();
+
+    requisition.setProgramId(program.getId());
+    program.setPeriodsSkippable(false);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE, equalTo(getMessage(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP)));
+
+    // then
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionIsEmergency() {
+    // given
+    Requisition requisition = generateRequisition();
+    requisition.setEmergency(true);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE, equalTo(getMessage(ERROR_SKIP_FAILED_EMERGENCY)));
 
     // then
     verify(requisitionRepository, never()).save(any(Requisition.class));
@@ -1591,31 +1697,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     when(validReasonStockmanagementService.search(anyUuid(), anyUuid()))
         .thenReturn(singletonList(validReasonDto));
     stockAdjustmentReasons = singletonList(StockAdjustmentReason.newInstance(reasonDto));
-  }
-
-  private void testSkipRequisitionValidationFailure(String messageKey, Object... messageParams) {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
-    doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisition);
-
-    ValidationMessageException exception = mockValidationException(messageKey, messageParams);
-    doThrow(exception).when(requisitionService).skip(requisition);
-
-    // when
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(messageKey, messageParams)));
-
-    // then
-    verify(requisitionService, atLeastOnce()).skip(requisition);
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private void mockValidationSuccess() {

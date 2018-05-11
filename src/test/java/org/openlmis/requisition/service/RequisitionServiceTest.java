@@ -372,59 +372,6 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldSkipRequisitionIfItIsValid() {
-    requisition.setStatus(INITIATED);
-    Requisition skippedRequisition = requisitionService.skip(requisition);
-    verify(lineItem1).skipLineItem(requisition.getTemplate());
-    verify(lineItem2).skipLineItem(requisition.getTemplate());
-
-    assertEquals(skippedRequisition.getStatus(), SKIPPED);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingNotSkippableProgram() {
-    program.setPeriodsSkippable(false);
-    requisitionService.skip(requisition);
-  }
-
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingSubmittedRequisition() {
-    requisition.setStatus(SUBMITTED);
-    requisitionService.skip(requisition);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingAuthorizedRequisition() {
-    requisition.setStatus(AUTHORIZED);
-    requisitionService.skip(requisition);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingInApprovalRequisition() {
-    requisition.setStatus(IN_APPROVAL);
-    requisitionService.skip(requisition);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingApprovedRequisition() {
-    requisition.setStatus(APPROVED);
-    requisitionService.skip(requisition);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingReleasedRequisition() {
-    requisition.setStatus(RELEASED);
-    requisitionService.skip(requisition);
-  }
-
-  @Test(expected = ValidationMessageException.class)
-  public void shouldThrowExceptionWhenSkippingEmergencyRequisition() {
-    requisition.setEmergency(true);
-    requisitionService.skip(requisition);
-  }
-
-  @Test
   public void shouldRejectRequisitionIfRequisitionStatusIsAuthorized() {
     requisition.setStatus(AUTHORIZED);
     when(permissionService.canApproveRequisition(any(Requisition.class)))

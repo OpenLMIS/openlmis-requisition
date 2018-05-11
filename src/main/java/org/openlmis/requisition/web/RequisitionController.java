@@ -16,6 +16,9 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -379,9 +382,24 @@ public class RequisitionController extends BaseRequisitionController {
     Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
+    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
 
-    profiler.start("SKIP");
-    Requisition skippedRequisition = requisitionService.skip(requisition);
+    if (!requisition.getStatus().isSubmittable()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
+    }
+
+    if (!program.getPeriodsSkippable()) {
+      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
+    }
+
+    if (requisition.getEmergency()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
+    }
+
+    UserDto user = getCurrentUser(profiler);
+
+    requisition.skip(user.getId());
+    Requisition skippedRequisition = requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, skippedRequisition);
 
