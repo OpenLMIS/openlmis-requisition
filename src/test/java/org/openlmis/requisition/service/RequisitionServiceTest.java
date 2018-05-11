@@ -229,6 +229,9 @@ public class RequisitionServiceTest {
   @Mock
   private StockCardSummariesStockManagementService stockCardSummariesStockManagementService;
 
+  @Mock
+  private ProofOfDeliveryService proofOfDeliveryService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -751,7 +754,7 @@ public class RequisitionServiceTest {
         this.program, facility, processingPeriod, false,
         stockAdjustmentReasons, requisitionTemplate);
 
-    verify(periodService, times(2)).findPreviousPeriods(any(), eq(1));
+    verify(periodService).findPreviousPeriods(any(), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }

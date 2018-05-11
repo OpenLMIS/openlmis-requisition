@@ -202,7 +202,11 @@ public class RequisitionService {
     }
 
     profiler.start("GET_POD");
-    final ProofOfDeliveryDto pod = getProofOfDeliveryDto(emergency, requisition);
+    ProofOfDeliveryDto pod = null;
+
+    if (!emergency && !isEmpty(previousRequisitions)) {
+      pod = proofOfDeliveryService.get(previousRequisitions.get(0));
+    }
 
     profiler.start("FIND_APPROVED_PRODUCTS");
     ApproveProducts approvedProducts = approvedProductReferenceDataService
@@ -286,17 +290,6 @@ public class RequisitionService {
     return approveProducts
         .getFullSupplyProduct(cardsWithNullSoh.get(0).getOrderable().getId())
         .getOrderable();
-  }
-
-  private ProofOfDeliveryDto getProofOfDeliveryDto(boolean emergency, Requisition requisition) {
-    List<Requisition> previous = getRecentRegularRequisitions(requisition, 1);
-    ProofOfDeliveryDto pod = null;
-
-    if (!emergency && !isEmpty(previous)) {
-      pod = proofOfDeliveryService.get(previous.get(0));
-    }
-
-    return pod;
   }
 
   /**
