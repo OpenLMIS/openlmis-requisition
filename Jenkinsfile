@@ -2,12 +2,10 @@ pipeline {
     agent any
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
+        throttle(['pipeline']) 
     }
     environment {
       PATH = "/usr/local/bin/:$PATH"
-    }
-    parameters {
-        text(defaultValue: "", description: 'Custom environment variables to be used in contract tests', name: 'customEnv')
     }
     stages {
         stage('Preparation') {
