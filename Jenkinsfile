@@ -1,11 +1,18 @@
+properties([
+  [
+    $class: 'ThrottleJobProperty',
+    categories: ['pipeline'],
+    throttleEnabled: true,
+    throttleOption: 'category'
+  ]
+])
 pipeline {
     agent any
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
-        throttle(['pipeline']) 
     }
     environment {
-      PATH = "/usr/local/bin/:$PATH"
+        PATH = "/usr/local/bin/:$PATH"
     }
     stages {
         stage('Preparation') {
