@@ -605,7 +605,7 @@
     "label": "Beginning balance",
     "indicator": "A",
     "displayOrder": 4,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 0,
     "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
@@ -910,7 +910,7 @@
     "label": "Beginning balance",
     "indicator": "A",
     "displayOrder": 4,
-    "isDisplayed": false,
+    "isDisplayed": true,
     "source": 0,
     "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
