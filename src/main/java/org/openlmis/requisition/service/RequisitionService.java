@@ -26,7 +26,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
@@ -43,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -67,7 +65,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -82,7 +79,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
+import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -157,7 +154,7 @@ public class RequisitionService {
   private IdealStockAmountReferenceDataService idealStockAmountReferenceDataService;
 
   @Autowired
-  private StockCardSummariesStockManagementService stockCardSummariesStockManagementService;
+  private StockOnHandRetrieverBuilderFactory stockOnHandRetrieverBuilderFactory;
 
   /**
    * Initiated given requisition if possible.
@@ -219,10 +216,14 @@ public class RequisitionService {
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
     profiler.start("FIND_STOCK_ON_HANDS");
-    Map<UUID, Integer> orderableSoh = getStockOnHands(
-        requisitionTemplate, approvedProducts,
-        program.getId(), facility.getId(), period.getEndDate()
-    );
+    Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
+        .getInstance(requisitionTemplate)
+        .forProgram(program.getId())
+        .forFacility(facility.getId())
+        .forProducts(approvedProducts)
+        .asOfDate(period.getEndDate())
+        .build()
+        .get();
 
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
@@ -244,52 +245,6 @@ public class RequisitionService {
 
     profiler.stop().log();
     return requisition;
-  }
-
-  private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
-                                             ApproveProductsAggregator approveProducts,
-                                             UUID programId, UUID facilityId, LocalDate endDate) {
-    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-      List<StockCardSummaryDto> cards = stockCardSummariesStockManagementService.search(
-          programId,
-          facilityId,
-          approveProducts.getFullSupplyOrderableIds(),
-          endDate);
-
-      validateNoSohIsMissing(approveProducts, cards);
-
-      return cards
-          .stream()
-          .collect(Collectors.toMap(
-              card -> card.getOrderable().getId(),
-              StockCardSummaryDto::getStockOnHand
-          ));
-    } else {
-      return Collections.emptyMap();
-    }
-  }
-
-  private void validateNoSohIsMissing(ApproveProductsAggregator approveProducts,
-                                      List<StockCardSummaryDto> cards) {
-    List<StockCardSummaryDto> cardsWithNullSoh = cards.stream()
-        .filter(c -> c.getStockOnHand() == null)
-        .collect(Collectors.toList());
-
-    if (!cardsWithNullSoh.isEmpty()) {
-      OrderableDto orderableWithNoSoh =
-          getFirstOrderableWithNullSoh(approveProducts, cardsWithNullSoh);
-
-      throw new ValidationMessageException(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
-          orderableWithNoSoh.getFullProductName(), cardsWithNullSoh.size());
-    }
-  }
-
-  private OrderableDto getFirstOrderableWithNullSoh(
-      ApproveProductsAggregator approveProducts,
-      List<StockCardSummaryDto> cardsWithNullSoh) {
-    return approveProducts
-        .getFullSupplyProduct(cardsWithNullSoh.get(0).getOrderable().getId())
-        .getOrderable();
   }
 
   /**

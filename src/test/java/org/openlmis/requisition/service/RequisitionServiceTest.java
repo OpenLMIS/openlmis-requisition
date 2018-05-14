@@ -19,7 +19,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -49,7 +48,6 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.REJE
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 import static org.openlmis.requisition.utils.Pagination.NO_PAGINATION;
 import static org.openlmis.requisition.utils.Pagination.getPage;
@@ -75,6 +73,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -124,6 +123,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
+import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
@@ -131,7 +131,6 @@ import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
-import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
@@ -229,6 +228,9 @@ public class RequisitionServiceTest {
   @Mock
   private StockCardSummariesStockManagementService stockCardSummariesStockManagementService;
 
+  @Spy
+  private StockOnHandRetrieverBuilderFactory stockOnHandRetrieverBuilderFactory;
+
   @Mock
   private ProofOfDeliveryService proofOfDeliveryService;
 
@@ -265,6 +267,11 @@ public class RequisitionServiceTest {
     generateReasons();
     mockRepositories();
     when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
+    ReflectionTestUtils.setField(
+        stockOnHandRetrieverBuilderFactory,
+        "stockCardSummariesStockManagementService",
+        stockCardSummariesStockManagementService
+    );
   }
 
   @Test
@@ -840,20 +847,6 @@ public class RequisitionServiceTest {
 
     assertEquals(stockCardSummaryDto.getStockOnHand(),
         initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
-  }
-
-  @Test
-  public void shouldThrowExceptionWhenAnyNullStockOnHandFromStockIfFlagIsEnabled() {
-    prepareForGetStockOnHandTest();
-    stockCardSummaryDto.setStockOnHand(null);
-
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
-
-    assertThatThrownBy(() -> requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate))
-        .isInstanceOf(ValidationMessageException.class)
-        .hasMessage(new Message(ERROR_PRODUCTS_STOCK_CARDS_MISSING,
-            productNamePrefix + "0", 1).toString());
   }
 
   @Test
