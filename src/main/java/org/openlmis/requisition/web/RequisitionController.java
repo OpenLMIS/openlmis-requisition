@@ -161,7 +161,7 @@ public class RequisitionController extends BaseRequisitionController {
     RequisitionDto requisitionDto = buildDto(
         profiler, newRequisition,
         findOrderables(profiler, newRequisition::getAllOrderableIds),
-        facility, program
+        facility, program, period
     );
     stopProfiler(profiler, requisitionDto);
 
@@ -336,7 +336,8 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, requisition,
         findOrderables(profiler, requisition::getAllOrderableIds),
         findFacility(requisition.getFacilityId(), profiler),
-        findProgram(requisition.getProgramId(), profiler)
+        findProgram(requisition.getProgramId(), profiler),
+        null
     );
 
     stopProfiler(profiler, requisitionDto);

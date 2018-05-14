@@ -445,7 +445,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
-        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class)))
+        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class),
+            any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .buildBatch(any(Requisition.class), any(FacilityDto.class),

@@ -126,7 +126,7 @@ public class RequisitionDtoBuilder {
         .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
 
     profiler.start("CALL_REQUISITION_DTO_BUILD");
-    RequisitionDto requisitionDto = build(requisition, orderables, facility, program);
+    RequisitionDto requisitionDto = build(requisition, orderables, facility, program, null);
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
@@ -141,7 +141,7 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto build(Requisition requisition, Map<UUID, OrderableDto> orderables,
-      FacilityDto facility, ProgramDto program) {
+      FacilityDto facility, ProgramDto program, ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
       XLOGGER.exit();
@@ -157,7 +157,7 @@ public class RequisitionDtoBuilder {
     requisition.export(requisitionDto);
 
     profiler.start("SET_SUB_RESOURCES");
-    setSubResources(requisition, facility, null, requisitionDto, program);
+    setSubResources(requisition, facility, period, requisitionDto, program);
 
     profiler.start("GET_LINE_ITEMS");
     List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();

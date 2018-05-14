@@ -43,6 +43,7 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -168,7 +169,7 @@ public abstract class BaseRequisitionController extends BaseController {
     toUpdate = requisitionRepository.save(toUpdate);
     logger.debug("Requisition with id {} saved", toUpdate.getId());
 
-    return buildDto(profiler, toUpdate, orderables, facility, program);
+    return buildDto(profiler, toUpdate, orderables, facility, program, null);
   }
 
   void doApprove(Requisition requisition, ApproveParams approveParams) {
@@ -359,9 +360,10 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,
-      Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program) {
+      Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
+      ProcessingPeriodDto period) {
     profiler.start("BUILD_REQUISITION_DTO");
-    return requisitionDtoBuilder.build(requisition, orderables, facility, program);
+    return requisitionDtoBuilder.build(requisition, orderables, facility, program, period);
   }
 
   BasicRequisitionDto buildBasicDto(Profiler profiler, Requisition requisition) {
