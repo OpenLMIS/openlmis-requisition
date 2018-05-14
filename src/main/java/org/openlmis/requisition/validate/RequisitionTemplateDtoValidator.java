@@ -84,9 +84,11 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String TOTAL_LOSSES_AND_ADJUSTMNETS = "totalLossesAndAdjustments";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
   static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(
-      BEGINNING_BALANCE, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_STOCKOUT_DAYS,
+      TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_STOCKOUT_DAYS,
       TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION, MAXIMUM_STOCK_QUANTITY,
       CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION, TOTAL_LOSSES_AND_ADJUSTMNETS);
+  static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
+      BEGINNING_BALANCE, STOCK_ON_HAND);
 
   private Errors errors;
 
@@ -278,12 +280,15 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   }
 
   private void validateStockManagementFields(RequisitionTemplateDto template) {
-    if (template.isColumnInTemplate(STOCK_ON_HAND)) {
-      RequisitionTemplateColumnDto soh = template.getColumnsMap().get(STOCK_ON_HAND);
-      if (!SourceType.STOCK_CARDS.equals(soh.getSource())) {
-        rejectValue(errors, COLUMNS_MAP,
-            new Message(ERROR_COLUMN_SOURCE_INVALID, soh.getLabel(), SourceType.STOCK_CARDS,
-                soh.getSource()));
+    for (String columnName : STOCK_BASED_COLUMNS) {
+      if (template.isColumnInTemplate(columnName)) {
+        RequisitionTemplateColumnDto column = template.getColumnsMap().get(columnName);
+
+        if (!SourceType.STOCK_CARDS.equals(column.getSource())) {
+          rejectValue(errors, COLUMNS_MAP,
+              new Message(ERROR_COLUMN_SOURCE_INVALID, column.getLabel(), SourceType.STOCK_CARDS,
+                  column.getSource()));
+        }
       }
     }
 

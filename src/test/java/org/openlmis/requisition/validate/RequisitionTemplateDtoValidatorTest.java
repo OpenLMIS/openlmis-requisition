@@ -51,6 +51,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_M
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.AVERAGE_CONSUMPTION;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.BEGINNING_BALANCE;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.COLUMNS_MAP;
@@ -62,6 +63,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.PROGRAM_ID;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_BASED_COLUMNS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_DISABLED_COLUMNS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
@@ -721,6 +723,8 @@ public class RequisitionTemplateDtoValidatorTest {
             Sets.asSet(USER_INPUT, CALCULATED))
         .withColumn(STOCK_ON_HAND, "E", USER_INPUT,
             Sets.asSet(USER_INPUT, CALCULATED))
+        .withColumn(BEGINNING_BALANCE, "A", USER_INPUT,
+            Sets.asSet(USER_INPUT))
         .withColumn(COLUMN_NAME, "T", USER_INPUT,
             Sets.asSet(USER_INPUT))
         .withAssignment(UUID.randomUUID(), UUID.randomUUID());
@@ -740,15 +744,20 @@ public class RequisitionTemplateDtoValidatorTest {
 
     RequisitionTemplateDto dto = buildDto(template);
 
-    dto.findColumn(STOCK_ON_HAND).getColumnDefinition()
-        .getSources().add(STOCK_CARDS);
-    dto.findColumn(STOCK_ON_HAND).setSource(STOCK_CARDS);
     dto.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
 
     STOCK_DISABLED_COLUMNS
         .stream()
         .filter(dto::isColumnInTemplate)
         .forEach(c -> dto.getColumnsMap().get(c).setIsDisplayed(false));
+
+    STOCK_BASED_COLUMNS
+        .stream()
+        .filter(dto::isColumnInTemplate)
+        .forEach(c -> {
+          dto.findColumn(c).setSource(STOCK_CARDS);
+          dto.findColumn(c).getColumnDefinition().getSources().add(STOCK_CARDS);
+        });
 
     mockResponses(dto);
 
