@@ -112,7 +112,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
-import org.openlmis.requisition.service.referencedata.ApproveProducts;
+import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
@@ -1588,7 +1588,7 @@ public class RequisitionServiceTest {
     }
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any()))
-        .thenReturn(new ApproveProducts(approvedProducts, program.getId()));
+        .thenReturn(new ApproveProductsAggregator(approvedProducts, program.getId()));
   }
 
   private RequisitionTemplate prepareForTestInitiate(Integer numberOfPeriodsToAverage) {

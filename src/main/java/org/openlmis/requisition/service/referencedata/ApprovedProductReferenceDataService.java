@@ -50,7 +50,7 @@ public class ApprovedProductReferenceDataService extends
    * @param programId  id of the program
    * @return a collection of approved products matching the search criteria
    */
-  public ApproveProducts getApprovedProducts(UUID facilityId, UUID programId) {
+  public ApproveProductsAggregator getApprovedProducts(UUID facilityId, UUID programId) {
     RequestParameters params = RequestParameters.init();
 
     params.set("programId", programId);
@@ -59,6 +59,6 @@ public class ApprovedProductReferenceDataService extends
     Page<ApprovedProductDto> page = getPage(facilityId + "/approvedProducts", params);
     List<ApprovedProductDto> content = page.getContent();
 
-    return new ApproveProducts(content, programId);
+    return new ApproveProductsAggregator(content, programId);
   }
 }

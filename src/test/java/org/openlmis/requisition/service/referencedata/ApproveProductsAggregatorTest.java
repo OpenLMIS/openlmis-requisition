@@ -37,7 +37,7 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 
-public class ApproveProductsTest {
+public class ApproveProductsAggregatorTest {
   private static final int PRODUCT_COUNT = 25;
 
   private ProgramDto program;
@@ -76,7 +76,9 @@ public class ApproveProductsTest {
 
   @Test
   public void shouldCreateNewInstance() {
-    ApproveProducts products = new ApproveProducts(approvedProducts, program.getId());
+    ApproveProductsAggregator products = new ApproveProductsAggregator(
+        approvedProducts, program.getId()
+    );
 
     compareCollections(products.getOrderableIds(), orderableIds);
     compareCollections(products.getFullSupplyOrderableIds(), fullSupplyOrderableIds);
@@ -93,7 +95,9 @@ public class ApproveProductsTest {
 
   @Test
   public void shouldFindFullSupplyProductByOrderableId() {
-    ApproveProducts products = new ApproveProducts(approvedProducts, program.getId());
+    ApproveProductsAggregator products = new ApproveProductsAggregator(
+        approvedProducts, program.getId()
+    );
 
     for (UUID orderableId : fullSupplyOrderableIds) {
       assertThat(products.getFullSupplyProduct(orderableId), isIn(approvedProducts));

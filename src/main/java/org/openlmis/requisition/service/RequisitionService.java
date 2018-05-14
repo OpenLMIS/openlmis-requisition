@@ -74,7 +74,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
-import org.openlmis.requisition.service.referencedata.ApproveProducts;
+import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
@@ -209,7 +209,7 @@ public class RequisitionService {
     }
 
     profiler.start("FIND_APPROVED_PRODUCTS");
-    ApproveProducts approvedProducts = approvedProductReferenceDataService
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId());
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
@@ -247,7 +247,7 @@ public class RequisitionService {
   }
 
   private Map<UUID, Integer> getStockOnHands(RequisitionTemplate requisitionTemplate,
-                                             ApproveProducts approveProducts,
+                                             ApproveProductsAggregator approveProducts,
                                              UUID programId, UUID facilityId, LocalDate endDate) {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       List<StockCardSummaryDto> cards = stockCardSummariesStockManagementService.search(
@@ -269,7 +269,7 @@ public class RequisitionService {
     }
   }
 
-  private void validateNoSohIsMissing(ApproveProducts approveProducts,
+  private void validateNoSohIsMissing(ApproveProductsAggregator approveProducts,
                                       List<StockCardSummaryDto> cards) {
     List<StockCardSummaryDto> cardsWithNullSoh = cards.stream()
         .filter(c -> c.getStockOnHand() == null)
@@ -285,7 +285,7 @@ public class RequisitionService {
   }
 
   private OrderableDto getFirstOrderableWithNullSoh(
-      ApproveProducts approveProducts,
+      ApproveProductsAggregator approveProducts,
       List<StockCardSummaryDto> cardsWithNullSoh) {
     return approveProducts
         .getFullSupplyProduct(cardsWithNullSoh.get(0).getOrderable().getId())

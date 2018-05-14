@@ -82,7 +82,7 @@ public class ApprovedProductReferenceDataServiceTest
 
     mockPageResponseEntity(product);
 
-    ApproveProducts response = service.getApprovedProducts(facilityId, program.getId());
+    ApproveProductsAggregator response = service.getApprovedProducts(facilityId, program.getId());
 
     assertThat(response.getOrderableIds(), hasSize(1));
     assertThat(response.getOrderableIds(), hasItem(product.getOrderable().getId()));

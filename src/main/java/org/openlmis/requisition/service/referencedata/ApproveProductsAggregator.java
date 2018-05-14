@@ -26,15 +26,15 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 
-public final class ApproveProducts {
+public final class ApproveProductsAggregator {
   private Map<UUID, ApprovedProductDto> allProducts;
   private Map<UUID, ApprovedProductDto> fullSupplyProducts;
   private Map<UUID, ApprovedProductDto> nonFullSupplyProducts;
 
   /**
-   * Create a new instance of the {@link ApproveProducts}.
+   * Create a new instance of the {@link ApproveProductsAggregator}.
    */
-  public ApproveProducts(List<ApprovedProductDto> products, UUID programId) {
+  public ApproveProductsAggregator(List<ApprovedProductDto> products, UUID programId) {
     allProducts = Maps.newHashMap();
     fullSupplyProducts = Maps.newHashMap();
     nonFullSupplyProducts = Maps.newHashMap();
