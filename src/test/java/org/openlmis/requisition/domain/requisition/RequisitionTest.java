@@ -19,6 +19,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
@@ -38,15 +41,32 @@ import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIE
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.hamcrest.Matcher;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.CurrencyConfig;
@@ -67,17 +87,6 @@ import org.openlmis.requisition.utils.Message;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @PrepareForTest({LineItemFieldsCalculator.class})
 @RunWith(PowerMockRunner.class)
@@ -102,6 +111,11 @@ public class RequisitionTest {
   private UUID productId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID requisitionId = UUID.randomUUID();
+
+  private SkipParams skipParams = new SkipParams(true, UUID.randomUUID());
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Mock
   private RequisitionTemplate template;
@@ -1294,6 +1308,55 @@ public class RequisitionTest {
     assertThat(lineItems, hasSize(0));
     assertThat(req.findLineByProductId(productId1), is(nullValue()));
     assertThat(req.findLineByProductId(productId2), is(nullValue()));
+  }
+
+  @Test
+  public void shouldSkipRequisition() {
+    // given
+    RequisitionLineItem lineItem = mock(RequisitionLineItem.class);
+
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    requisition.setTemplate(template);
+    requisition.setRequisitionLineItems(Collections.singletonList(lineItem));
+
+    //when
+    requisition.skip(skipParams);
+
+    // then
+    Matcher<RequisitionStatus> statusMatcher = is(RequisitionStatus.SKIPPED);
+    assertThat(requisition.getStatus(), statusMatcher);
+    assertThat(requisition.getLatestStatusChange(), hasProperty("status", statusMatcher));
+
+    verify(lineItem).skipLineItem(template);
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionHasIncorrectStatus() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(containsString(ERROR_SKIP_FAILED_WRONG_STATUS));
+
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);
+    requisition.skip(skipParams);
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfProgramNotSupportSkip() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(containsString(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
+
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);
+    requisition.skip(new SkipParams(false, UUID.randomUUID()));
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionIsEmergency() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(containsString(ERROR_SKIP_FAILED_EMERGENCY));
+
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    requisition.setEmergency(true);
+
+    requisition.skip(skipParams);
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {

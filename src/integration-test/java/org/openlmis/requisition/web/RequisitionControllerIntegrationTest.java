@@ -49,12 +49,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_C
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
@@ -757,93 +754,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(404)
         .body(MESSAGE, equalTo(getMessage(ERROR_PROGRAM_NOT_FOUND, requisition.getProgramId())));
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfRequisitionHasIncorrectStatus() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.SUBMITTED);
-
-    doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisition);
-    mockValidationSuccess();
-
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-
-    // when
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(ERROR_SKIP_FAILED_WRONG_STATUS)));
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfProgramNotSupportSkip() {
-    // given
-    Requisition requisition = generateRequisition();
-
-    doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisition);
-    mockValidationSuccess();
-
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-
-    ProgramDto program = generateProgram();
-
-    requisition.setProgramId(program.getId());
-    program.setPeriodsSkippable(false);
-
-    // when
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP)));
-
-    // then
-    verify(requisitionRepository, never()).save(any(Requisition.class));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotSkipRequisitionIfRequisitionIsEmergency() {
-    // given
-    Requisition requisition = generateRequisition();
-    requisition.setEmergency(true);
-
-    doReturn(ValidationResult.success())
-        .when(permissionService).canUpdateRequisition(requisition);
-    mockValidationSuccess();
-
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
-
-    // when
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", requisition.getId())
-        .when()
-        .put(SKIP_URL)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE, equalTo(getMessage(ERROR_SKIP_FAILED_EMERGENCY)));
 
     // then
     verify(requisitionRepository, never()).save(any(Requisition.class));

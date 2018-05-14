@@ -19,6 +19,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -26,6 +27,9 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.utils.RequisitionHelper.validateAreRequiredRegularRequisitionFieldsNotFilled;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -556,13 +560,25 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Skip the requisition.
    */
-  public void skip(UUID user) {
+  public void skip(SkipParams params) {
+    if (!params.isPeriodsSkippable()) {
+      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
+    }
+
+    if (!status.isSubmittable()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
+    }
+
+    if (isTrue(emergency)) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
+    }
+
     for (RequisitionLineItem item : requisitionLineItems) {
       item.skipLineItem(template);
     }
 
     status = RequisitionStatus.SKIPPED;
-    statusChanges.add(StatusChange.newStatusChange(this, user));
+    statusChanges.add(StatusChange.newStatusChange(this, params.getUserId()));
   }
 
   /**

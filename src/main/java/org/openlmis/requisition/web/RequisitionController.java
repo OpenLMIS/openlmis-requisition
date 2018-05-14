@@ -16,9 +16,6 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -35,6 +32,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.SkipParams;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -398,22 +396,9 @@ public class RequisitionController extends BaseRequisitionController {
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
-
-    if (!requisition.getStatus().isSubmittable()) {
-      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
-    }
-
-    if (!program.getPeriodsSkippable()) {
-      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
-    }
-
-    if (requisition.getEmergency()) {
-      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
-    }
-
     UserDto user = getCurrentUser(profiler);
 
-    requisition.skip(user.getId());
+    requisition.skip(new SkipParams(program, user));
     Requisition skippedRequisition = requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, skippedRequisition);
