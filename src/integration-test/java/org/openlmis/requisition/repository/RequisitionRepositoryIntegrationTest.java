@@ -56,6 +56,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockData;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -289,7 +290,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), programId,
         UUID.randomUUID(), INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), emptyMap());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData());
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

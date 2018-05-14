@@ -51,6 +51,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.StockData;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -79,6 +80,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilder;
 import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
@@ -209,26 +211,37 @@ public class RequisitionService {
     ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(facility.getId(), program.getId());
 
+    profiler.start("BUILD_STOCK_ON_HAND_RETRIEVER_BUILDER");
+    StockOnHandRetrieverBuilder stockOnHandRetrieverBuilder = stockOnHandRetrieverBuilderFactory
+        .getInstance(requisitionTemplate)
+        .forProgram(program.getId())
+        .forFacility(facility.getId())
+        .forProducts(approvedProducts);
+
+    profiler.start("FIND_STOCK_ON_HANDS");
+    Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilder
+        .asOfDate(period.getEndDate())
+        .build()
+        .get();
+
+    profiler.start("FIND_BEGINNING_BALANCES");
+    Map<UUID, Integer> orderableBeginning = stockOnHandRetrieverBuilder
+        .asOfDate(period.getStartDate().minusDays(1))
+        .build()
+        .get();
+
+    StockData stockData = new StockData(orderableSoh, orderableBeginning);
+
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
     Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
         .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
-    profiler.start("FIND_STOCK_ON_HANDS");
-    Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
-        .getInstance(requisitionTemplate)
-        .forProgram(program.getId())
-        .forFacility(facility.getId())
-        .forProducts(approvedProducts)
-        .asOfDate(period.getEndDate())
-        .build()
-        .get();
-
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
         previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
-        authenticationHelper.getCurrentUser().getId(), orderableSoh);
+        authenticationHelper.getCurrentUser().getId(), stockData);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
     if (emergency) {

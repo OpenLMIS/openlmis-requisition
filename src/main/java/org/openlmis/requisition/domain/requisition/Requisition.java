@@ -353,7 +353,7 @@ public class Requisition extends BaseTimestampedEntity {
                        ProofOfDeliveryDto proofOfDelivery,
                        Map<UUID, Integer> idealStockAmounts,
                        UUID initiator,
-                       Map<UUID, Integer> orderableSoh) {
+                       StockData stockData) {
 
     Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
     profiler.setLogger(LOGGER);
@@ -361,7 +361,54 @@ public class Requisition extends BaseTimestampedEntity {
     this.previousRequisitions = previousRequisitions;
 
     profiler.start("SET_LINE_ITEMS");
-    initiateLineItems(fullSupplyProducts, idealStockAmounts, orderableSoh);
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      initiateLineItems(fullSupplyProducts, idealStockAmounts, stockData);
+    } else {
+      initiateLineItems(fullSupplyProducts, idealStockAmounts, proofOfDelivery, profiler);
+    }
+
+    profiler.start("SET_PREV_ADJ_CONSUMPTION");
+    setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
+
+    status = RequisitionStatus.INITIATED;
+
+    profiler.start("SET_STATUS_CHANGES");
+    statusChanges.add(StatusChange.newStatusChange(this, initiator));
+
+    profiler.stop().log();
+  }
+
+  private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
+      Map<UUID, Integer> idealStockAmounts, StockData stockData) {
+    this.requisitionLineItems = new ArrayList<>();
+
+    if (isNotTrue(emergency)) {
+      for (ApprovedProductDto product : fullSupplyProducts) {
+        UUID orderableId = product.getOrderable().getId();
+
+        RequisitionLineItem lineItem = new RequisitionLineItem(this, product);
+        lineItem.setIdealStockAmount(extractIdealStockAmount(idealStockAmounts, product));
+        lineItem.setStockOnHand(stockData.getStockOnHand(orderableId));
+        lineItem.setBeginningBalance(stockData.getBeginningBalance(orderableId));
+
+        this.requisitionLineItems.add(lineItem);
+      }
+    }
+  }
+
+  private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
+      Map<UUID, Integer> idealStockAmounts, ProofOfDeliveryDto proofOfDelivery,
+      Profiler profiler) {
+    this.requisitionLineItems = new ArrayList<>();
+
+    if (isNotTrue(emergency)) {
+      for (ApprovedProductDto product : fullSupplyProducts) {
+        RequisitionLineItem lineItem = new RequisitionLineItem(this, product);
+        lineItem.setIdealStockAmount(extractIdealStockAmount(idealStockAmounts, product));
+
+        this.requisitionLineItems.add(lineItem);
+      }
+    }
 
     profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
@@ -415,33 +462,6 @@ public class Requisition extends BaseTimestampedEntity {
           );
         }
       });
-    }
-
-    profiler.start("SET_PREV_ADJ_CONSUMPTION");
-    setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
-
-    status = RequisitionStatus.INITIATED;
-
-    profiler.start("SET_STATUS_CHANGES");
-    statusChanges.add(StatusChange.newStatusChange(this, initiator));
-
-    profiler.stop().log();
-  }
-
-  private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
-                                 Map<UUID, Integer> idealStockAmounts,
-                                 Map<UUID, Integer> orderableSoh) {
-    this.requisitionLineItems = new ArrayList<>();
-
-    if (isNotTrue(emergency)) {
-      for (ApprovedProductDto product : fullSupplyProducts) {
-        Integer isa = extractIdealStockAmount(idealStockAmounts, product);
-        Integer soh = orderableSoh.get(product.getOrderable().getId());
-
-        RequisitionLineItem lineItem = new RequisitionLineItem(this, product, isa, soh);
-
-        this.requisitionLineItems.add(lineItem);
-      }
     }
   }
 

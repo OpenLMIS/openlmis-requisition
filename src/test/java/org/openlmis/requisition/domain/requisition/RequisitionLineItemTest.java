@@ -67,7 +67,7 @@ public class RequisitionLineItemTest {
   public void shouldCreateNewRequisitionLineItem() {
     RequisitionLineItem item =
         new RequisitionLineItem(initiatedRequisition,
-            createDefaultApprovedProduct(pricePerPack), 30, 50);
+            createDefaultApprovedProduct(pricePerPack));
 
     checkResultsOfConstruction(item);
     assertEquals(pricePerPack, item.getPricePerPack());
@@ -77,7 +77,7 @@ public class RequisitionLineItemTest {
   public void shouldCreateNewRequisitionLineItemWithDefaultPricePerPack() {
     RequisitionLineItem item =
         new RequisitionLineItem(initiatedRequisition,
-            createDefaultApprovedProduct(null), 30, 50);
+            createDefaultApprovedProduct(null));
 
     checkResultsOfConstruction(item);
     assertEquals(Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL),
@@ -373,9 +373,6 @@ public class RequisitionLineItemTest {
     assertEquals(initiatedRequisition, item.getRequisition());
     assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
     assertEquals(orderableId, item.getOrderableId());
-    assertEquals(30, item.getIdealStockAmount().intValue());
-    assertEquals(30, item.getIdealStockAmount().intValue());
-    assertEquals(50, item.getStockOnHand().intValue());
   }
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {

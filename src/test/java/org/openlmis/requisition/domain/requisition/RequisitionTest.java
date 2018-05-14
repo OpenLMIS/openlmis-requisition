@@ -55,7 +55,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -654,7 +653,7 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID(),
-        emptyMap());
+        new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -677,7 +676,7 @@ public class RequisitionTest {
     Requisition req = new Requisition();
     req.setProgramId(programId);
     req.initiate(template, Collections.singleton(product1),
-        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), emptyMap());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -714,7 +713,7 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
-        emptyMap());
+        new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -756,7 +755,7 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
-        emptyMap());
+        new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1100,7 +1099,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
 
     requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null,
-        emptyMap(), initiatorId, emptyMap());
+        emptyMap(), initiatorId, new StockData());
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
         initiatorId);
@@ -1252,7 +1251,7 @@ public class RequisitionTest {
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.initiate(template, asList(product1, product2), emptyList(), 0, null,
-        idealStockAmounts, UUID.randomUUID(), emptyMap());
+        idealStockAmounts, UUID.randomUUID(), new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1276,8 +1275,9 @@ public class RequisitionTest {
 
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     req.initiate(template, asList(product1, product2), emptyList(), 0, null,
-        emptyMap(), UUID.randomUUID(), orderableSoh);
+        emptyMap(), UUID.randomUUID(), new StockData(orderableSoh, emptyMap()));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1285,6 +1285,32 @@ public class RequisitionTest {
     assertEquals(2, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getStockOnHand(), is(1000));
     assertThat(req.findLineByProductId(productId2).getStockOnHand(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldSetBeginningBalanceForLineItems() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    final UUID productId2 = UUID.randomUUID();
+
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    ApprovedProductDto product2 = mockApprovedProduct(productId2);
+
+    Map<UUID, Integer> beginningBalances = Maps.newHashMap();
+    beginningBalances.put(productId1, 1000);
+
+    // when
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    req.initiate(template, asList(product1, product2), emptyList(), 0, null,
+        emptyMap(), UUID.randomUUID(), new StockData(emptyMap(), beginningBalances));
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(2, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(1000));
+    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(nullValue()));
   }
 
   @Test
@@ -1301,7 +1327,7 @@ public class RequisitionTest {
     req.setEmergency(true);
 
     req.initiate(template, asList(product1, product2), emptyList(), 0, null,
-        emptyMap(), UUID.randomUUID(), new HashMap<>());
+        emptyMap(), UUID.randomUUID(), new StockData());
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();

@@ -238,8 +238,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param requisition     requisition to apply
    * @param approvedProduct facilityTypeApprovedProduct to apply
    */
-  RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct,
-      Integer idealStockAmount, Integer stockOnHand) {
+  RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
     this();
     this.requisition = requisition;
     this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
@@ -257,8 +256,6 @@ public class RequisitionLineItem extends BaseEntity {
     this.pricePerPack = Optional
         .ofNullable(priceFromProduct)
         .orElseGet(() -> Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
-    this.idealStockAmount = idealStockAmount;
-    this.stockOnHand = stockOnHand;
     this.nonFullSupply = false;
   }
 
