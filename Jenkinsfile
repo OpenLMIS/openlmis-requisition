@@ -73,12 +73,18 @@ pipeline {
                                     sudo rm -f .env
 
                                     curl -o .env -L https://raw.githubusercontent.com/OpenLMIS/openlmis-ref-distro/master/settings-sample.env
+
                                     sed -i '' -e "s#spring_profiles_active=.*#spring_profiles_active=#" .env  2>/dev/null || true
                                     sed -i '' -e "s#^BASE_URL=.*#BASE_URL=http://localhost#" .env  2>/dev/null || true
                                     sed -i '' -e "s#^VIRTUAL_HOST=.*#VIRTUAL_HOST=localhost#" .env  2>/dev/null || true
 
+                                    echo 'SONAR_LOGIN=${SONAR_LOGIN}' >> .env
+                                    echo 'SONAR_PASSWORD=${SONAR_PASSWORD}' >> .env
+
                                     docker-compose -f docker-compose.builder.yml run sonar
                                     docker-compose -f docker-compose.builder.yml down --volumes
+
+                                    sudo rm -vrf .env
                                 '''
                                 // workaround: Sonar plugin retrieves the path directly from the output
                                 sh 'echo "Working dir: ${WORKSPACE}/build/sonar"'
