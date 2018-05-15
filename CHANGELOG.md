@@ -3,6 +3,7 @@
 
 New functionality:
 * [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint.
+* [OLMIS-4707](https://openlmis.atlassian.net/browse/OLMIS-4707): Requisition templates now support tags.
 
 6.0.0 / 2018-04-24
 ==================
