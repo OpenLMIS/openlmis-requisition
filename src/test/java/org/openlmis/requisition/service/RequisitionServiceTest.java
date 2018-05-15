@@ -79,6 +79,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -163,9 +164,6 @@ public class RequisitionServiceTest {
   private RequisitionLineItem lineItem2;
 
   @Mock
-  private RequisitionTemplate requisitionTemplate;
-
-  @Mock
   private ConfigurationSettingService configurationSettingService;
 
   @Mock
@@ -239,6 +237,10 @@ public class RequisitionServiceTest {
 
   @Mock
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+
+  @Spy
+  private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
+      .buildWithAllColumns();
 
   private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(0);
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);
@@ -656,8 +658,6 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
-    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
 
     when(requisitionRepository
@@ -682,7 +682,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldInitiatePreviousAdjustedConsumptions() {
-    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
@@ -699,7 +699,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldInitiatePreviousAdjustedConsumptionsBasedOnRegularRequisitions() {
-    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -717,7 +717,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldAssignPreviousRegularRequisition() {
-    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -734,7 +734,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldAssignIdealStockAmount() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
@@ -753,7 +753,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(null);
+    prepareForTestInitiate(null);
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
@@ -768,7 +768,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition() {
-    final RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
@@ -784,7 +784,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -797,7 +797,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldSetStockAdjustmenReasonsDuringInitiate() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -809,7 +809,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPopulateOnlyNonFullProductsDuringInitiateForRegularRequisition() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -823,7 +823,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldPopulateFullAndNonFullProductsDuringInitiateForEmergencyRequisition() {
-    RequisitionTemplate requisitionTemplate = prepareForTestInitiate(SETTING);
+    prepareForTestInitiate(SETTING);
     mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -851,7 +851,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetStockOnHandIfFlagIsDisabled() {
-    prepareForTestInitiate(SETTING, requisitionTemplate);
+    prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
     whenGetStockCardSummaries().thenThrow(IllegalStateException.class);
 
@@ -865,7 +865,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotSetStockOnHandIfNoStockCardSummariesFound() {
-    prepareForTestInitiate(SETTING, requisitionTemplate);
+    prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
 
@@ -1584,16 +1584,7 @@ public class RequisitionServiceTest {
         .thenReturn(new ApproveProductsAggregator(approvedProducts, program.getId()));
   }
 
-  private RequisitionTemplate prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
-    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    prepareForTestInitiate(numberOfPeriodsToAverage, requisitionTemplate);
-
-    return requisitionTemplate;
-  }
-
-  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage,
-                                      RequisitionTemplate requisitionTemplate) {
-    when(requisitionTemplate.hasColumnsDefined()).thenReturn(true);
+  private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
 
     when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
@@ -1641,8 +1632,6 @@ public class RequisitionServiceTest {
     when(rightReferenceDataService
         .findRight(PermissionService.REQUISITION_APPROVE))
         .thenReturn(approveRequisitionRight);
-
-    when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(true);
 
     processingPeriod.setDurationInMonths(1);
     when(periodService
@@ -1732,7 +1721,7 @@ public class RequisitionServiceTest {
   }
 
   private void prepareForGetStockOnHandTest() {
-    prepareForTestInitiate(SETTING, requisitionTemplate);
+    prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     when(stockCardSummariesStockManagementService
         .search(program.getId(), facility.getId(), singleton(PRODUCT_ID),

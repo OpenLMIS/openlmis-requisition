@@ -29,10 +29,20 @@ public class StockOnHandRetrieverBuilderFactory {
    * Creates new instance of {@link StockOnHandRetrieverBuilder} based on settings from the
    * {@link RequisitionTemplate}.
    */
-  public final StockOnHandRetrieverBuilder getInstance(RequisitionTemplate template) {
-    StockOnHandRetrieverBuilder builder = template.isPopulateStockOnHandFromStockCards()
-            ? new StandardStockOnHandRetrieverBuilder()
-            : new EmptyStockOnHandRetrieverBuilder();
+  public final StockOnHandRetrieverBuilder getInstance(RequisitionTemplate template,
+      String columnName) {
+    StockOnHandRetrieverBuilder builder;
+
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      if (template.isColumnInTemplate(columnName) && template.isColumnDisplayed(columnName)) {
+        builder = new StandardStockOnHandRetrieverBuilder();
+      } else {
+        builder = new EmptyStockOnHandRetrieverBuilder();
+      }
+
+    } else {
+      builder = new EmptyStockOnHandRetrieverBuilder();
+    }
 
     builder.setStockCardSummariesService(stockCardSummariesStockManagementService);
 

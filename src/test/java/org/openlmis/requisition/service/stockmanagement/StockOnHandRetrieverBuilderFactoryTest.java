@@ -18,15 +18,15 @@ package org.openlmis.requisition.service.stockmanagement;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StockOnHandRetrieverBuilderFactoryTest {
@@ -37,21 +37,12 @@ public class StockOnHandRetrieverBuilderFactoryTest {
   @InjectMocks
   private StockOnHandRetrieverBuilderFactory factory;
 
-  @Mock
-  private RequisitionTemplate regularTemplate;
-
-  @Mock
-  private RequisitionTemplate stockBasedTemplate;
-
-  @Before
-  public void setUp() {
-    when(regularTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
-    when(stockBasedTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-  }
-
   @Test
   public void shouldCreateBuilderForRegularTemplate() {
-    StockOnHandRetrieverBuilder instance = factory.getInstance(regularTemplate);
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().buildWithAllColumns();
+
+    StockOnHandRetrieverBuilder instance = factory
+        .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
     assertThat(instance, instanceOf(EmptyStockOnHandRetrieverBuilder.class));
     assertThat(
         instance.getStockCardSummariesService(),
@@ -61,8 +52,43 @@ public class StockOnHandRetrieverBuilderFactoryTest {
 
   @Test
   public void shouldCreateBuilderForStockBasedTemplate() {
-    StockOnHandRetrieverBuilder instance = factory.getInstance(stockBasedTemplate);
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .buildWithAllColumns();
+
+    StockOnHandRetrieverBuilder instance = factory
+        .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
     assertThat(instance, instanceOf(StandardStockOnHandRetrieverBuilder.class));
+    assertThat(
+        instance.getStockCardSummariesService(),
+        is(stockCardSummariesStockManagementService)
+    );
+  }
+
+  @Test
+  public void shouldCreateBuilderForStockBasedTemplateIfColumnNotExist() {
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .buildWithAllColumnsExceptStockOnHand();
+
+    StockOnHandRetrieverBuilder instance = factory
+        .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
+    assertThat(instance, instanceOf(EmptyStockOnHandRetrieverBuilder.class));
+    assertThat(
+        instance.getStockCardSummariesService(),
+        is(stockCardSummariesStockManagementService)
+    );
+  }
+
+  @Test
+  public void shouldCreateBuilderForStockBasedTemplateIfColumnIsNotDisplayed() {
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .buildWithStockOnHandColumnHiden();
+
+    StockOnHandRetrieverBuilder instance = factory
+        .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
+    assertThat(instance, instanceOf(EmptyStockOnHandRetrieverBuilder.class));
     assertThat(
         instance.getStockCardSummariesService(),
         is(stockCardSummariesStockManagementService)
