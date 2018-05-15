@@ -39,7 +39,7 @@ public class StockOnHandRetrieverBuilderFactoryTest {
 
   @Test
   public void shouldCreateBuilderForRegularTemplate() {
-    RequisitionTemplate template = new RequisitionTemplateDataBuilder().buildWithAllColumns();
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withAllColumns().build();
 
     StockOnHandRetrieverBuilder instance = factory
         .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
@@ -53,8 +53,7 @@ public class StockOnHandRetrieverBuilderFactoryTest {
   @Test
   public void shouldCreateBuilderForStockBasedTemplate() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
-        .withPopulateStockOnHandFromStockCards()
-        .buildWithAllColumns();
+        .withPopulateStockOnHandFromStockCards().withAllColumns().build();
 
     StockOnHandRetrieverBuilder instance = factory
         .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
@@ -68,8 +67,7 @@ public class StockOnHandRetrieverBuilderFactoryTest {
   @Test
   public void shouldCreateBuilderForStockBasedTemplateIfColumnNotExist() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
-        .withPopulateStockOnHandFromStockCards()
-        .buildWithAllColumnsExceptStockOnHand();
+        .withPopulateStockOnHandFromStockCards().withAllColumnsExceptStockOnHand().build();
 
     StockOnHandRetrieverBuilder instance = factory
         .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);
@@ -83,8 +81,7 @@ public class StockOnHandRetrieverBuilderFactoryTest {
   @Test
   public void shouldCreateBuilderForStockBasedTemplateIfColumnIsNotDisplayed() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
-        .withPopulateStockOnHandFromStockCards()
-        .buildWithStockOnHandColumnHiden();
+        .withPopulateStockOnHandFromStockCards().withStockOnHandColumnHiden().build();
 
     StockOnHandRetrieverBuilder instance = factory
         .getInstance(template, RequisitionLineItem.STOCK_ON_HAND);

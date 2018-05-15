@@ -63,7 +63,7 @@ public class StockOnHandValidatorTest {
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithAllColumnsExceptStockOnHand())
+        .setTemplate(new RequisitionTemplateDataBuilder().withAllColumnsExceptStockOnHand().build())
         .build();
 
     StockOnHandValidator validator =
@@ -76,7 +76,7 @@ public class StockOnHandValidatorTest {
   public void shouldNotThrowExceptionWhenColumnDoesExist() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithAllColumns())
+        .setTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
     StockOnHandValidator validator =
@@ -89,7 +89,7 @@ public class StockOnHandValidatorTest {
   public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithStockOnHandColumnHiden())
+        .setTemplate(new RequisitionTemplateDataBuilder().withStockOnHandColumnHiden().build())
         .build();
 
     StockOnHandValidator validator =
@@ -107,7 +107,7 @@ public class StockOnHandValidatorTest {
   public void shouldRejectIfStockOnHandIsIncorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().buildWithIncorrectStockOnHand())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithAllColumns())
+        .setTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
     StockOnHandValidator validator =
@@ -126,7 +126,7 @@ public class StockOnHandValidatorTest {
   public void shouldNotRejectIfStockOnHandIsCorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithAllColumns())
+        .setTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
     StockOnHandValidator validator =
@@ -143,7 +143,7 @@ public class StockOnHandValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithStockOnHandColumnCalculated())
+        .setTemplate(new RequisitionTemplateDataBuilder().withStockOnHandColumnCalculated().build())
         .build();
 
     Map<String, Message> errors = new HashMap<>();

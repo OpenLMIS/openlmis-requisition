@@ -157,8 +157,9 @@ public class RequisitionInvariantsValidatorTest {
   @Test
   public void shouldRejectIfValueWasChangedForStockColumn() throws Exception {
     requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
+        .withAllColumns()
         .withPopulateStockOnHandFromStockCards()
-        .buildWithAllColumns()
+        .build()
     );
 
     for (RequisitionLineItem lineItem : requisitionToUpdate.getRequisitionLineItems()) {

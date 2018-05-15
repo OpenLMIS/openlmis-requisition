@@ -240,7 +240,7 @@ public class RequisitionServiceTest {
 
   @Spy
   private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
-      .buildWithAllColumns();
+      .withAllColumns().build();
 
   private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(0);
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);

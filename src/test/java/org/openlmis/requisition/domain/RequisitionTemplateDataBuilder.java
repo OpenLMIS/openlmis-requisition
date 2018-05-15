@@ -21,19 +21,19 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.RE
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateDataBuilder {
@@ -74,14 +74,6 @@ public class RequisitionTemplateDataBuilder {
    * Builds {@link RequisitionTemplate} instance with test data.
    */
   public RequisitionTemplate build() {
-    if (populateStockOnHandFromStockCards) {
-      for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND)) {
-        if (columnsMap.containsKey(stockColumn)) {
-          columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
-        }
-      }
-    }
-
     RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
         populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
     template.setCreatedDate(createdDate);
@@ -95,60 +87,70 @@ public class RequisitionTemplateDataBuilder {
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns.
    */
-  public RequisitionTemplate buildWithAllColumns() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
-    return build();
+  public RequisitionTemplateDataBuilder withAllColumns() {
+    return withColumns(RequisitionValidationTestUtils.initiateColumns());
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns but without stock on hand column.
    */
-  public RequisitionTemplate buildWithAllColumnsExceptStockOnHand() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
+  public RequisitionTemplateDataBuilder withAllColumnsExceptStockOnHand() {
+    withAllColumns();
     columnsMap.remove(RequisitionLineItem.STOCK_ON_HAND);
-    return build();
+    return this;
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns but without total consumed quantity column.
    */
-  public RequisitionTemplate buildWithAllColumnsExceptTotalConsumedQuantity() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
+  public RequisitionTemplateDataBuilder withAllColumnsExceptTotalConsumedQuantity() {
+    withAllColumns();
     columnsMap.remove(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY);
-    return build();
+    return this;
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns and hide stock on hand column.
    */
-  public RequisitionTemplate buildWithStockOnHandColumnHiden() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
+  public RequisitionTemplateDataBuilder withStockOnHandColumnHiden() {
+    withAllColumns();
     columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setIsDisplayed(false);
-    return build();
+    return this;
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns and set calculated source for stock on hand column.
    */
-  public RequisitionTemplate buildWithStockOnHandColumnCalculated() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
+  public RequisitionTemplateDataBuilder withStockOnHandColumnCalculated() {
+    withAllColumns();
     columnsMap.get(RequisitionLineItem.STOCK_ON_HAND).setSource(SourceType.CALCULATED);
-    return build();
+    return this;
   }
 
   /**
-   * Builds {@link RequisitionTemplate} instance with test data.
+   * Sets all initiate columns and hide total consumed quantity column.
    */
-  public RequisitionTemplate buildWithTotalConsumedQuantityColumnHidden() {
-    withColumns(RequisitionValidationTestUtils.initiateColumns());
+  public RequisitionTemplateDataBuilder withTotalConsumedQuantityColumnHidden() {
+    withAllColumns();
     columnsMap.get(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY).setIsDisplayed(false);
-    return build();
+    return this;
   }
 
+  /**
+   * Set populateStockOnHandFromStockCards flag. If builder contains stock based columns,
+   * the method will modify the source to {@link SourceType#STOCK_CARDS}.
+   */
   public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards() {
     populateStockOnHandFromStockCards = true;
+
+    for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND)) {
+      if (columnsMap.containsKey(stockColumn)) {
+        columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
+      }
+    }
+
     return this;
   }
 

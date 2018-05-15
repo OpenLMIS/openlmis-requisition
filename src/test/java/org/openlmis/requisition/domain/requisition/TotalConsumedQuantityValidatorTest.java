@@ -74,8 +74,10 @@ public class TotalConsumedQuantityValidatorTest {
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder()
-            .buildWithAllColumnsExceptTotalConsumedQuantity())
+        .setTemplate(
+            new RequisitionTemplateDataBuilder()
+                .withAllColumnsExceptTotalConsumedQuantity()
+                .build())
         .build();
 
     TotalConsumedQuantityValidator validator =
@@ -88,7 +90,7 @@ public class TotalConsumedQuantityValidatorTest {
   public void shouldNotThrowExceptionWhenColumnDoesExist() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder().buildWithAllColumns())
+        .setTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
     TotalConsumedQuantityValidator validator =
@@ -101,8 +103,8 @@ public class TotalConsumedQuantityValidatorTest {
   public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .setTemplate(new RequisitionTemplateDataBuilder()
-            .buildWithTotalConsumedQuantityColumnHidden())
+        .setTemplate(
+            new RequisitionTemplateDataBuilder().withTotalConsumedQuantityColumnHidden().build())
         .build();
 
     TotalConsumedQuantityValidator validator =

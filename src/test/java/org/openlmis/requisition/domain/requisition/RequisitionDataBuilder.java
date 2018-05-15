@@ -29,7 +29,9 @@ public class RequisitionDataBuilder {
   private UUID id = UUID.randomUUID();
   private List<RequisitionLineItem> requisitionLineItems = Lists.newArrayList();
   private String draftStatusMessage = "";
-  private RequisitionTemplate template = new RequisitionTemplateDataBuilder().buildWithAllColumns();
+  private RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+      .withAllColumns()
+      .build();
   private UUID facilityId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
