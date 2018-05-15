@@ -37,6 +37,7 @@ public class AvailableRequisitionColumnDataBuilder {
   private Boolean isDisplayRequired;
   private Boolean canChangeOrder;
   private Boolean canBeChangedByUser;
+  private Boolean supportsTags;
   private String definition;
   private ColumnType columnType;
 
@@ -54,6 +55,7 @@ public class AvailableRequisitionColumnDataBuilder {
     isDisplayRequired = false;
     canChangeOrder = true;
     canBeChangedByUser = true;
+    supportsTags = false;
     definition = "Some column";
     columnType = ColumnType.TEXT;
   }
@@ -64,7 +66,7 @@ public class AvailableRequisitionColumnDataBuilder {
   public AvailableRequisitionColumn build() {
     AvailableRequisitionColumn column = new AvailableRequisitionColumn(name, sources, options,
         label, indicator, mandatory, isDisplayRequired, canChangeOrder, canBeChangedByUser,
-        definition, columnType);
+        supportsTags, definition, columnType);
     column.setId(id);
     column.getOptions()
         .forEach(option -> option.setRequisitionColumn(column));

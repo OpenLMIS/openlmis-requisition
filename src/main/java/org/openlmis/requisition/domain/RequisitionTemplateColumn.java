@@ -79,14 +79,18 @@ public class RequisitionTemplateColumn {
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String definition;
 
+  @Getter
+  @Setter(AccessLevel.PACKAGE)
+  private String tag;
+
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
-    this(null, null, null, 0, null, null, columnDefinition, null, null);
+    this(null, null, null, 0, null, null, columnDefinition, null, null, null);
   }
 
   RequisitionTemplateColumn copy() {
     return new RequisitionTemplateColumn(
         name, label, indicator, displayOrder, isDisplayed, source,
-        columnDefinition, option, definition
+        columnDefinition, option, definition, tag
     );
   }
 
@@ -116,7 +120,7 @@ public class RequisitionTemplateColumn {
         importer.getDisplayOrder(), importer.getIsDisplayed(), importer.getSource(),
         AvailableRequisitionColumn.newInstance(importer.getColumnDefinition()),
         AvailableRequisitionColumnOption.newInstance(importer.getOption()),
-        importer.getDefinition()
+        importer.getDefinition(), importer.getTag()
     );
   }
 
@@ -134,6 +138,7 @@ public class RequisitionTemplateColumn {
     exporter.setSource(source);
     exporter.setOption(AvailableRequisitionColumnOptionDto.newInstance(option));
     exporter.setDefinition(definition);
+    exporter.setTag(tag);
   }
 
   public interface Importer {
@@ -154,6 +159,8 @@ public class RequisitionTemplateColumn {
     AvailableRequisitionColumnOptionDto getOption();
 
     String getDefinition();
+
+    String getTag();
   }
 
   public interface Exporter {
@@ -172,6 +179,8 @@ public class RequisitionTemplateColumn {
     void setOption(AvailableRequisitionColumnOptionDto option);
 
     void setDefinition(String definition);
+
+    void setTag(String tag);
   }
 
 }

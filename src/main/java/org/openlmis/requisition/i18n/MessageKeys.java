@@ -120,6 +120,8 @@ public abstract class MessageKeys {
       + ".columnNotInTemplate";
   public static final String ERROR_COLUMNS_MAP_IS_NULL = ERROR_PREFIX
       + ".columnsMapIsNull";
+  public static final String ERROR_COLUMNS_MAP_TAGS_DUPLICATED = ERROR_PREFIX
+      + ".columnsMapTagsDuplicated";
   public static final String ERROR_COLUMN_IS_NOT_VALID_FOR_SORTING = ERROR_PREFIX
       + ".columnIsNotValidForSorting";
   public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX

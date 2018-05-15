@@ -45,6 +45,8 @@ public class AvailableRequisitionColumnDto extends BaseAvailableRequisitionColum
 
   private Boolean canBeChangedByUser;
 
+  private Boolean supportsTag;
+
   private String definition;
 
   /**

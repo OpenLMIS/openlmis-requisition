@@ -90,4 +90,9 @@ public class BasicAvailableRequisitionColumnDto extends BaseAvailableRequisition
   public void setDefinition(String definition) {
     // not supported operation
   }
+
+  @Override
+  public void setSupportsTag(Boolean supportsTag) {
+    // not supported operation
+  }
 }

@@ -78,6 +78,8 @@ public class AvailableRequisitionColumn extends BaseEntity {
 
   private Boolean canBeChangedByUser;
 
+  private Boolean supportsTag;
+
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String definition;
 
@@ -111,6 +113,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
         .append(isDisplayRequired, that.isDisplayRequired)
         .append(canChangeOrder, that.canChangeOrder)
         .append(canBeChangedByUser, that.canBeChangedByUser)
+        .append(supportsTag, that.supportsTag)
         .append(definition, that.definition)
         .append(columnType, that.columnType)
         .isEquals();
@@ -128,6 +131,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
         .append(isDisplayRequired)
         .append(canChangeOrder)
         .append(canBeChangedByUser)
+        .append(supportsTag)
         .append(definition)
         .append(columnType)
         .toHashCode();
@@ -161,6 +165,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
     availableRequisitionColumn.setIsDisplayRequired(importer.getIsDisplayRequired());
     availableRequisitionColumn.setCanChangeOrder(importer.getCanChangeOrder());
     availableRequisitionColumn.setCanBeChangedByUser(importer.getCanBeChangedByUser());
+    availableRequisitionColumn.setSupportsTag(importer.getSupportsTag());
     availableRequisitionColumn.setDefinition(importer.getDefinition());
     availableRequisitionColumn.setColumnType(importer.getColumnType());
     return availableRequisitionColumn;
@@ -182,6 +187,7 @@ public class AvailableRequisitionColumn extends BaseEntity {
     exporter.setIsDisplayRequired(isDisplayRequired);
     exporter.setCanChangeOrder(canChangeOrder);
     exporter.setCanBeChangedByUser(canBeChangedByUser);
+    exporter.setSupportsTag(supportsTag);
     exporter.setDefinition(definition);
     exporter.setColumnType(columnType);
   }
@@ -206,6 +212,8 @@ public class AvailableRequisitionColumn extends BaseEntity {
     Boolean getCanChangeOrder();
 
     Boolean getCanBeChangedByUser();
+
+    Boolean getSupportsTag();
 
     String getDefinition();
 
@@ -232,6 +240,8 @@ public class AvailableRequisitionColumn extends BaseEntity {
     void setCanChangeOrder(Boolean canChangeOrder);
 
     void setCanBeChangedByUser(Boolean canBeChangedByUser);
+
+    void setSupportsTag(Boolean supportsTag);
 
     void setDefinition(String definition);
 

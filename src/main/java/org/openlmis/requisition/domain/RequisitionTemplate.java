@@ -18,6 +18,7 @@ package org.openlmis.requisition.domain;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_TAGS_DUPLICATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
@@ -27,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,6 +50,7 @@ import javax.persistence.Transient;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -353,6 +356,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
         .getColumns()
         .forEach((key, column) -> columns.put(key, RequisitionTemplateColumn.newInstance(column)));
 
+    validateAllTagsDistinct(columns.values().stream().map(RequisitionTemplateColumn::getTag)
+        .collect(Collectors.toList()));
+
     RequisitionTemplate template = new RequisitionTemplate(
         importer.getId(), importer.getNumberOfPeriodsToAverage(),
         importer.isPopulateStockOnHandFromStockCards(), importer.getName(),
@@ -460,6 +466,15 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
       throw new ValidationMessageException(new Message(ERROR_COLUMNS_MAP_IS_NULL));
     }
     return columnsMap.get(name);
+  }
+
+  private static void validateAllTagsDistinct(List<String> tags) {
+    Set<String> distinctTags = new HashSet<>();
+    for (String tag : tags) {
+      if (StringUtils.isNotBlank(tag) && !distinctTags.add(tag)) {
+        throw new ValidationMessageException(ERROR_COLUMNS_MAP_TAGS_DUPLICATED);
+      }
+    }
   }
 
   public interface Importer {

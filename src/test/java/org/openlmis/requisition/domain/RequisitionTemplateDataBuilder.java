@@ -159,10 +159,28 @@ public class RequisitionTemplateDataBuilder {
             Sets.asSet(SourceType.USER_INPUT));
   }
 
+  /**
+   * Adds columns to the {@link RequisitionTemplate} with a duplicated tag.
+   */
+  public RequisitionTemplateDataBuilder withDuplicatedTag() {
+    return this
+        .withColumn(CALCULATED_ORDER_QUANTITY, "I", SourceType.CALCULATED, null,
+            Sets.asSet(SourceType.CALCULATED), "tag1")
+        .withColumn(REQUESTED_QUANTITY, "J", SourceType.USER_INPUT, null,
+            Sets.asSet(SourceType.USER_INPUT))
+        .withColumn(REQUESTED_QUANTITY_EXPLANATION, "W", SourceType.USER_INPUT, null,
+            Sets.asSet(SourceType.USER_INPUT), "tag1");
+  }
+
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
                                                    SourceType source,
                                                    Set<SourceType> sources) {
-    return withColumn(name, indicator, source, null, sources);
+    return withColumn(name, indicator, source, null, sources, null);
+  }
+
+  public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
+      SourceType source, AvailableRequisitionColumnOption option, Set<SourceType> sources) {
+    return withColumn(name, indicator, source, option, sources, null);
   }
 
   /**
@@ -171,7 +189,8 @@ public class RequisitionTemplateDataBuilder {
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
                                                    SourceType source,
                                                    AvailableRequisitionColumnOption option,
-                                                   Set<SourceType> sources) {
+                                                   Set<SourceType> sources,
+                                                   String tag) {
     columnsMap.put(name, new RequisitionTemplateColumnDataBuilder()
         .withName(name)
         .withIndicator(indicator)
@@ -182,6 +201,7 @@ public class RequisitionTemplateDataBuilder {
             .withSources(sources)
             .build())
         .withSource(source)
+        .withTag(tag)
         .build());
     return this;
   }

@@ -28,6 +28,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_TAGS_DUPLICATED;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -258,5 +259,28 @@ public class RequisitionTemplateTest {
     assertThat(template.getProgramId(), is(programId));
     assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds2.length));
     assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds2));
+  }
+
+  @Test
+  public void shouldNotAllowDuplicateTags() {
+    expected.expect(ValidationMessageException.class);
+
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withDuplicatedTag()
+        .build();
+
+    template.export(templateDto);
+
+    templateDto.setColumnsMap(template.viewColumns().entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+          RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDto();
+          entry.getValue().export(dto);
+          return dto;
+        })));
+
+    RequisitionTemplate.newInstance(templateDto);
+
+    expected.expectMessage(ERROR_COLUMNS_MAP_TAGS_DUPLICATED);
   }
 }

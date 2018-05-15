@@ -38,4 +38,6 @@ public class BaseRequisitionTemplateColumnDto {
   private AvailableRequisitionColumnOptionDto option;
 
   private String definition;
+
+  private String tag;
 }

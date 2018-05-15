@@ -35,6 +35,7 @@ public class RequisitionTemplateColumnDataBuilder {
   private AvailableRequisitionColumn columnDefinition;
   private AvailableRequisitionColumnOption option;
   private String definition;
+  private String tag;
 
   /**
    * Builder for {@link RequisitionTemplateColumn}.
@@ -51,6 +52,7 @@ public class RequisitionTemplateColumnDataBuilder {
         .withOptions(Sets.asSet(option))
         .build();
     definition = "Some column";
+    tag = "";
   }
 
   /**
@@ -64,7 +66,7 @@ public class RequisitionTemplateColumnDataBuilder {
           .forEach(option -> option.setRequisitionColumn(columnDefinition));
     }
     return new RequisitionTemplateColumn(name, label, indicator, displayOrder, isDisplayed, source,
-        columnDefinition, option, definition);
+        columnDefinition, option, definition, tag);
   }
 
   public RequisitionTemplateColumnDataBuilder withNotDisplayed() {
@@ -123,6 +125,11 @@ public class RequisitionTemplateColumnDataBuilder {
 
   public RequisitionTemplateColumnDataBuilder withLabel(String label) {
     this.label = label;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withTag(String tag) {
+    this.tag = tag;
     return this;
   }
 }
