@@ -32,7 +32,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.requisition.SkipParams;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
@@ -399,7 +398,7 @@ public class RequisitionController extends BaseRequisitionController {
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
     UserDto user = getCurrentUser(profiler);
 
-    requisition.skip(new SkipParams(program, user));
+    requisition.skip(program.getPeriodsSkippable(), user.getId());
     Requisition skippedRequisition = requisitionRepository.save(requisition);
 
     callStatusChangeProcessor(profiler, skippedRequisition);

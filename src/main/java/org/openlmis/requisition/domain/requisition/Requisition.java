@@ -580,8 +580,8 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Skip the requisition.
    */
-  public void skip(SkipParams params) {
-    if (!params.isPeriodsSkippable()) {
+  public void skip(boolean periodsSkippable, UUID userId) {
+    if (!periodsSkippable) {
       throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
     }
 
@@ -598,7 +598,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     status = RequisitionStatus.SKIPPED;
-    statusChanges.add(StatusChange.newStatusChange(this, params.getUserId()));
+    statusChanges.add(StatusChange.newStatusChange(this, userId));
   }
 
   /**

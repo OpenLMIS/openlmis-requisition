@@ -111,8 +111,6 @@ public class RequisitionTest {
   private UUID programId = UUID.randomUUID();
   private UUID requisitionId = UUID.randomUUID();
 
-  private SkipParams skipParams = new SkipParams(true, UUID.randomUUID());
-
   @Rule
   public ExpectedException exception = ExpectedException.none();
 
@@ -1346,7 +1344,7 @@ public class RequisitionTest {
     requisition.setRequisitionLineItems(Collections.singletonList(lineItem));
 
     //when
-    requisition.skip(skipParams);
+    requisition.skip(true, UUID.randomUUID());
 
     // then
     Matcher<RequisitionStatus> statusMatcher = is(RequisitionStatus.SKIPPED);
@@ -1362,7 +1360,7 @@ public class RequisitionTest {
     exception.expectMessage(containsString(ERROR_SKIP_FAILED_WRONG_STATUS));
 
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);
-    requisition.skip(skipParams);
+    requisition.skip(true, UUID.randomUUID());
   }
 
   @Test
@@ -1371,7 +1369,7 @@ public class RequisitionTest {
     exception.expectMessage(containsString(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
 
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.SUBMITTED);
-    requisition.skip(new SkipParams(false, UUID.randomUUID()));
+    requisition.skip(false, UUID.randomUUID());
   }
 
   @Test
@@ -1382,7 +1380,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     requisition.setEmergency(true);
 
-    requisition.skip(skipParams);
+    requisition.skip(true, UUID.randomUUID());
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
