@@ -52,7 +52,6 @@ public class RequisitionTemplateColumnDataBuilder {
         .withOptions(Sets.asSet(option))
         .build();
     definition = "Some column";
-    tag = "";
   }
 
   /**
