@@ -106,9 +106,6 @@ pipeline {
             steps {
                 dir('erd') {
                     sh '''#!/bin/bash -xe
-                        docker pull openlmis/requisition
-                        #the image might be built on the jenkins slave, so we need to pull here to make sure it's using the latest
-
                         # prepare ERD folder on CI server
                         sudo mkdir -p /var/www/html/erd-requisition
                         sudo chown -R $USER:$USER /var/www/html/erd-requisition
