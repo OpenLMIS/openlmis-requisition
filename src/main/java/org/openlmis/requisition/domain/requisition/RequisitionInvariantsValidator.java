@@ -26,17 +26,23 @@ import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISOR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_BASED_VALUE_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.utils.Message;
 
 @AllArgsConstructor
@@ -71,6 +77,10 @@ class RequisitionInvariantsValidator
 
     if (isNotTrue(requisitionToUpdate.getEmergency())) {
       validateRegularLineItemSize(errors);
+    }
+
+    if (requisitionToUpdate.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      validateRegularLineItemStockFields(errors);
     }
 
     validateIfOrderableIdChanged(errors);
@@ -128,6 +138,52 @@ class RequisitionInvariantsValidator
       errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_ADDED));
     } else if (existingIds.stream().anyMatch(id -> !currentIds.contains(id))) {
       errors.put(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_REMOVED));
+    }
+  }
+
+  private void validateRegularLineItemStockFields(Map<String, Message> errors) {
+    RequisitionTemplate template = requisitionToUpdate.getTemplate();
+    Map<String, RequisitionTemplateColumn> columns = template.viewColumns();
+
+    for (Entry<String, RequisitionTemplateColumn> column : columns.entrySet()) {
+      if (column.getValue().getSource().isStockSource()) {
+        validateRegularLineItemStockField(errors, column.getKey());
+      }
+    }
+  }
+
+  private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
+    Map<UUID, Object> columnValues = requisitionToUpdate
+        .getRequisitionLineItems()
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .collect(Collectors.toMap(
+            RequisitionLineItem::getOrderableId,
+            lineItem -> getColumnValue(lineItem, columnName)
+        ));
+
+    requisitionUpdater
+        .getRequisitionLineItems()
+        .stream()
+        .filter(line -> !line.isNonFullSupply())
+        .forEach(line -> {
+          Object currentValue = columnValues.get(line.getOrderableId());
+          Object newValue = getColumnValue(line, columnName);
+
+          if (!Objects.equals(currentValue, newValue)) {
+            errors.put(
+                REQUISITION_LINE_ITEMS,
+                new Message(ERROR_STOCK_BASED_VALUE_MODIFIED, columnName)
+            );
+          }
+        });
+  }
+
+  private Object getColumnValue(RequisitionLineItem lineItem, String columnName) {
+    try {
+      return PropertyUtils.getProperty(lineItem, columnName);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
+      throw new IllegalStateException(exp);
     }
   }
 

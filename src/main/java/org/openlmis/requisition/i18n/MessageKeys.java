@@ -139,6 +139,8 @@ public abstract class MessageKeys {
       + ".validation.onlyAvailableForApproval";
   public static final String ERROR_IS_INVARIANT = ERROR_PREFIX
       + ".validation.isInvariant";
+  public static final String ERROR_STOCK_BASED_VALUE_MODIFIED = ERROR_PREFIX
+      + ".validation.stockBased.valueModified";
   public static final String ERROR_DATE_MODIFIED_MISMATCH =
       "requisition.error.validation.dateModifiedMismatch";
   public static final String ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST =

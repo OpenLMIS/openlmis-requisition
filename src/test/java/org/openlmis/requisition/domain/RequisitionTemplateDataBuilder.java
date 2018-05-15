@@ -15,10 +15,13 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
 
+import java.util.Arrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
@@ -71,6 +74,14 @@ public class RequisitionTemplateDataBuilder {
    * Builds {@link RequisitionTemplate} instance with test data.
    */
   public RequisitionTemplate build() {
+    if (populateStockOnHandFromStockCards) {
+      for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND)) {
+        if (columnsMap.containsKey(stockColumn)) {
+          columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
+        }
+      }
+    }
+
     RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
         populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
     template.setCreatedDate(createdDate);

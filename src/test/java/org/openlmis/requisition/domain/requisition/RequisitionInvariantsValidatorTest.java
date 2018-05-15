@@ -27,16 +27,21 @@ import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISOR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_BASED_VALUE_MODIFIED;
 
 import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class RequisitionInvariantsValidatorTest {
+  private static final String COLUMN_NAME = RequisitionLineItem.STOCK_ON_HAND;
+
   private Requisition requisitionToUpdate;
   private Requisition requisitionUpdater;
   private RequisitionInvariantsValidator validator;
@@ -55,6 +60,7 @@ public class RequisitionInvariantsValidatorTest {
         .withProcessingPeriodId(requisitionToUpdate.getProcessingPeriodId())
         .withSupervisoryNodeId(requisitionToUpdate.getSupervisoryNodeId())
         .withLineItems(requisitionToUpdate.getRequisitionLineItems())
+        .withTemplate(requisitionToUpdate.getTemplate())
         .build();
 
     validator = new RequisitionInvariantsValidator(
@@ -148,4 +154,32 @@ public class RequisitionInvariantsValidatorTest {
     assertThat(errors, hasEntry(REQUISITION_LINE_ITEMS, new Message(ERROR_LINE_ITEM_ADDED)));
   }
 
+  @Test
+  public void shouldRejectIfValueWasChangedForStockColumn() throws Exception {
+    requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .buildWithAllColumns()
+    );
+
+    for (RequisitionLineItem lineItem : requisitionToUpdate.getRequisitionLineItems()) {
+      lineItem.setStockOnHand(1000);
+    }
+
+    requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
+    requisitionUpdater
+        .getRequisitionLineItems()
+        .set(0, (RequisitionLineItem) BeanUtils
+            .cloneBean(requisitionToUpdate.getRequisitionLineItems().get(0)));
+
+    for (RequisitionLineItem lineItem : requisitionUpdater.getRequisitionLineItems()) {
+      lineItem.setStockOnHand(5000);
+    }
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(
+        REQUISITION_LINE_ITEMS,
+        new Message(ERROR_STOCK_BASED_VALUE_MODIFIED, COLUMN_NAME)
+    ));
+  }
 }

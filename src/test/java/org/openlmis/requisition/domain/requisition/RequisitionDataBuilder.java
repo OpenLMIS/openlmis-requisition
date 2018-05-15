@@ -146,4 +146,9 @@ public class RequisitionDataBuilder {
     this.supervisoryNodeId = supervisoryNodeId;
     return this;
   }
+
+  public RequisitionDataBuilder withTemplate(RequisitionTemplate template) {
+    this.template = template;
+    return this;
+  }
 }

@@ -24,4 +24,8 @@ public enum SourceType {
   public boolean isReferenceSource() {
     return REFERENCE_DATA.equals(this) || STOCK_CARDS.equals(this);
   }
+
+  public boolean isStockSource() {
+    return STOCK_CARDS.equals(this);
+  }
 }
