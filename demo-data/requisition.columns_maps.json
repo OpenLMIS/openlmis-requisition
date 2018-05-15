@@ -606,7 +606,7 @@
     "indicator": "A",
     "displayOrder": 4,
     "isDisplayed": true,
-    "source": 0,
+    "source": 3,
     "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
@@ -913,7 +913,7 @@
     "indicator": "A",
     "displayOrder": 4,
     "isDisplayed": true,
-    "source": 0,
+    "source": 3,
     "definition": "Based on the Stock On Hand from the previous period. This is quantified in dispensing units.",
     "requisitionColumnId": "33b2d2e9-3167-46b0-95d4-1295be9afc22"
   },
