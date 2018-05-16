@@ -10,6 +10,7 @@ pipeline {
     agent any
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
+        disableConcurrentBuilds()
     }
     environment {
         PATH = "/usr/local/bin/:$PATH"
@@ -37,6 +38,11 @@ pipeline {
                     currentBuild.displayName += " - " + VERSION
                 }
             }
+            post {
+                failure {
+                    slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                }
+            }
         }
         stage('Build') {
             steps {
@@ -54,6 +60,9 @@ pipeline {
             post {
                 success {
                     archive 'build/libs/*.jar,build/resources/main/api-definition.html, build/resources/main/  version.properties'
+                }
+                failure {
+                    slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
                 }
                 always {
                     checkstyle pattern: '**/build/reports/checkstyle/*.xml'
@@ -101,11 +110,21 @@ pipeline {
                             }
                         }
                     }
+                    post {
+                        failure {
+                            slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                        }
+                    }
                 }
                 stage('Contract tests') {
                     steps {
                         build job: 'OpenLMIS-requisition-contract-test', propagate: true, wait: true
                         build job: 'OpenLMIS-fulfillment-contract-test', propagate: true, wait: true
+                    }
+                    post {
+                        failure {
+                            slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                        }
                     }
                 }
             }
@@ -154,6 +173,11 @@ pipeline {
                     archiveArtifacts artifacts: 'erd-requisition.zip'
                 }
             }
+            post {
+                failure {
+                    slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                }
+            }
         }
         stage('Push image') {
             when {
@@ -165,11 +189,19 @@ pipeline {
                 sh "docker tag openlmis/requisition:${VERSION_WITH_BUILD_NUMBER} openlmis/requisition:${VERSION}"
                 sh "docker push openlmis/requisition:${VERSION}"
             }
+            post {
+                failure {
+                    slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                }
+            }
         }
     }
     post {
-        failure {
-            slackSend color: 'danger', message: "${env.JOB_NAME} - ${env.BUILD_NUMBER} FAILED (<${env.BUILD_URL}|Open>)"
+        fixed {
+            slackSend color: 'good', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Back to normal"
+        }
+        success {
+            build job: 'OpenLMIS-requisition-deploy-to-test', wait: false
         }
     }
 }
