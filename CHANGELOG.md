@@ -8,6 +8,9 @@ New functionality:
   * data would be populated with the stock on hand at the end of the previous requisition period
   * after initialization values cannot be changed
 
+Improvements:
+* [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
+
 6.0.0 / 2018-04-24
 ==================
 
