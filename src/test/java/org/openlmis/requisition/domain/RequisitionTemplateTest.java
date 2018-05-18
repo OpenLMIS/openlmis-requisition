@@ -27,11 +27,23 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_TAGS_DUPLICATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_TAG_NOT_SET;
 
+import com.google.common.collect.Lists;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,14 +53,6 @@ import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateTest {
@@ -61,6 +65,9 @@ public class RequisitionTemplateTest {
   private static final String[] COLUMN_NAMES = {
       CALCULATED_ORDER_QUANTITY, REQUESTED_QUANTITY, REQUESTED_QUANTITY_EXPLANATION
   };
+
+  private static final List<String> columnsWithTags = Lists.newArrayList(
+      TOTAL_CONSUMED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_RECEIVED_QUANTITY);
 
   @Before
   public void setUp() {
@@ -157,14 +164,9 @@ public class RequisitionTemplateTest {
         .withRequiredColumns()
         .build();
     template.export(templateDto);
-    templateDto.setColumnsMap(template.viewColumns().entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
-          RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDto();
-          entry.getValue().export(dto);
-          return dto;
-        })));
+    setColumns(templateDto, template);
 
-    RequisitionTemplate newTemplate = RequisitionTemplate.newInstance(templateDto);
+    RequisitionTemplate newTemplate = RequisitionTemplate.newInstance(templateDto, columnsWithTags);
 
     assertEquals(templateDto.getId(), newTemplate.getId());
     assertEquals(templateDto.getCreatedDate(), newTemplate.getCreatedDate());
@@ -267,20 +269,56 @@ public class RequisitionTemplateTest {
 
     RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
         .withDuplicatedTag()
         .build();
 
     template.export(templateDto);
+    setColumns(templateDto, template);
 
+    RequisitionTemplate.newInstance(templateDto, columnsWithTags);
+
+    expected.expectMessage(ERROR_COLUMNS_MAP_TAGS_DUPLICATED);
+  }
+
+  @Test
+  public void shouldEnforceTagsSetForColumnsThatRequireThem() {
+    expected.expect(ValidationMessageException.class);
+
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .withAllColumns()
+        .build();
+
+    template.export(templateDto);
+    setColumns(templateDto, template);
+
+    RequisitionTemplate.newInstance(templateDto, columnsWithTags);
+
+    expected.expectMessage(containsString(ERROR_COLUMNS_TAG_NOT_SET));
+  }
+
+  @Test
+  public void shouldNotEnforceTagsWhenTemplateIsNotStockBased() {
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .build();
+
+    template.export(templateDto);
+    setColumns(templateDto, template);
+
+    // This shouldn't throw exception, even though we don't have tags
+    RequisitionTemplate.newInstance(templateDto, columnsWithTags);
+  }
+
+  private void setColumns(RequisitionTemplateDto templateDto, RequisitionTemplate template) {
     templateDto.setColumnsMap(template.viewColumns().entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
           RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDto();
           entry.getValue().export(dto);
           return dto;
         })));
-
-    RequisitionTemplate.newInstance(templateDto);
-
-    expected.expectMessage(ERROR_COLUMNS_MAP_TAGS_DUPLICATED);
   }
 }

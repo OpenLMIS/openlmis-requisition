@@ -93,4 +93,9 @@ public class AvailableRequisitionColumnDataBuilder {
     this.name = name;
     return this;
   }
+
+  public AvailableRequisitionColumnDataBuilder withoutId() {
+    this.id = null;
+    return this;
+  }
 }

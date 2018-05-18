@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_TAGS_DUPLICATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_TAG_NOT_SET;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_NOT_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN;
@@ -350,14 +351,19 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param importer instance of {@link RequisitionTemplate.Importer}
    * @return new instance od template.
    */
-  public static RequisitionTemplate newInstance(RequisitionTemplate.Importer importer) {
+  public static RequisitionTemplate newInstance(RequisitionTemplate.Importer importer,
+      List<String> tagRequiredColumns) {
+
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
     importer
         .getColumns()
         .forEach((key, column) -> columns.put(key, RequisitionTemplateColumn.newInstance(column)));
 
-    validateAllTagsDistinct(columns.values().stream().map(RequisitionTemplateColumn::getTag)
-        .collect(Collectors.toList()));
+    if (importer.isPopulateStockOnHandFromStockCards()) {
+      validateAllTagsDistinct(columns.values().stream().map(RequisitionTemplateColumn::getTag)
+          .collect(Collectors.toList()));
+      validateRequiredTagsSet(columns, tagRequiredColumns);
+    }
 
     RequisitionTemplate template = new RequisitionTemplate(
         importer.getId(), importer.getNumberOfPeriodsToAverage(),
@@ -473,6 +479,17 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     for (String tag : tags) {
       if (StringUtils.isNotBlank(tag) && !distinctTags.add(tag)) {
         throw new ValidationMessageException(ERROR_COLUMNS_MAP_TAGS_DUPLICATED);
+      }
+    }
+  }
+
+  private static void validateRequiredTagsSet(Map<String, RequisitionTemplateColumn> columns,
+      List<String> tagRequiredColumns) {
+
+    for (String columnName : tagRequiredColumns) {
+      RequisitionTemplateColumn column = columns.get(columnName);
+      if (column.getIsDisplayed() && StringUtils.isBlank(column.getTag())) {
+        throw new ValidationMessageException(ERROR_COLUMNS_TAG_NOT_SET, columnName);
       }
     }
   }

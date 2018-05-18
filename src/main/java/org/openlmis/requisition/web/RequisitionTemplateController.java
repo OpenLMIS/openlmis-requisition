@@ -15,12 +15,17 @@
 
 package org.openlmis.requisition.web;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.exception.BindingResultException;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
@@ -39,8 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import java.util.UUID;
 
 @Controller
 @Transactional
@@ -63,6 +66,9 @@ public class RequisitionTemplateController extends BaseController {
   @Autowired
   private RequisitionTemplateDtoBuilder dtoBuilder;
 
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
   /**
    * Allows creating a new Requisition Template.
    * If the id is specified, it will be ignored.
@@ -81,7 +87,7 @@ public class RequisitionTemplateController extends BaseController {
     validator.validate(requisitionTemplateDto, bindingResult);
 
     RequisitionTemplate requisitionTemplate =
-        RequisitionTemplate.newInstance(requisitionTemplateDto);
+        RequisitionTemplate.newInstance(requisitionTemplateDto, findColumnNamesWithTagRequired());
 
     if (bindingResult.hasErrors()) {
       throw new BindingResultException(getErrors(bindingResult));
@@ -131,7 +137,8 @@ public class RequisitionTemplateController extends BaseController {
       throw new BindingResultException(getErrors(bindingResult));
     }
 
-    RequisitionTemplate template = RequisitionTemplate.newInstance(requisitionTemplateDto);
+    RequisitionTemplate template = RequisitionTemplate.newInstance(requisitionTemplateDto,
+        findColumnNamesWithTagRequired());
     RequisitionTemplate toUpdate = requisitionTemplateRepository.findOne(requisitionTemplateId);
     RequisitionTemplate toSave;
 
@@ -207,6 +214,15 @@ public class RequisitionTemplateController extends BaseController {
     }
 
     requisitionTemplateRepository.delete(template);
+  }
+
+  private List<String> findColumnNamesWithTagRequired() {
+    List<AvailableRequisitionColumn> availableRequisitionColumns =
+        availableRequisitionColumnRepository.findBySupportsTag(true);
+
+    return availableRequisitionColumns.stream()
+        .map(AvailableRequisitionColumn::getName)
+        .collect(Collectors.toList());
   }
 
 }

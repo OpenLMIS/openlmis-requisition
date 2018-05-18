@@ -15,11 +15,13 @@
 
 package org.openlmis.requisition.repository;
 
+import java.util.List;
+import java.util.UUID;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.UUID;
-
 public interface AvailableRequisitionColumnRepository
     extends PagingAndSortingRepository<AvailableRequisitionColumn, UUID> {
+
+  List<AvailableRequisitionColumn> findBySupportsTag(Boolean supportsTag);
 }

@@ -122,6 +122,8 @@ public abstract class MessageKeys {
       + ".columnsMapIsNull";
   public static final String ERROR_COLUMNS_MAP_TAGS_DUPLICATED = ERROR_PREFIX
       + ".columnsMapTagsDuplicated";
+  public static final String ERROR_COLUMNS_TAG_NOT_SET = ERROR_PREFIX
+      + ".columnsMapTagNotSet";
   public static final String ERROR_COLUMN_IS_NOT_VALID_FOR_SORTING = ERROR_PREFIX
       + ".columnIsNotValidForSorting";
   public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
