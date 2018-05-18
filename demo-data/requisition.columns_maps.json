@@ -9,7 +9,8 @@
     "isDisplayed": true,
     "source": 0,
     "definition": "Select the check box below to skip a single product. Remove all data from the row prior to selection.",
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420",
+    "requisitionColumnOptionId": "17d6e860-a746-4500-a0fa-afc84d799dca"
   },
   {
     "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
@@ -291,7 +292,8 @@
     "isDisplayed": true,
     "source": 0,
     "definition": "Select the check box below to skip a single product. Remove all data from the row prior to selection.",
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420",
+    "requisitionColumnOptionId": "17d6e860-a746-4500-a0fa-afc84d799dca"
   },
   {
     "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
@@ -572,7 +574,8 @@
     "isDisplayed": true,
     "source": 0,
     "definition": "Select the check box below to skip a single product. Remove all data from the row prior to selection.",
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420",
+    "requisitionColumnOptionId": "17d6e860-a746-4500-a0fa-afc84d799dca"
   },
   {
     "requisitionTemplateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
@@ -880,7 +883,8 @@
     "isDisplayed": true,
     "source": 0,
     "definition": "Select the check box below to skip a single product. Remove all data from the row prior to selection.",
-    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420"
+    "requisitionColumnId": "c6dffdee-3813-40d9-8737-f531d5adf420",
+    "requisitionColumnOptionId": "17d6e860-a746-4500-a0fa-afc84d799dca"
   },
   {
     "requisitionTemplateId": "37f29736-f0db-4de3-98ad-f8d85c848711",

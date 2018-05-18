@@ -2,6 +2,7 @@
 ===========
 
 New functionality:
+* [OLMIS-4681](https://openlmis.atlassian.net/browse/OLMIS-4681): Added additional option and source option for skipped column.
 * [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint.
 * [OLMIS-4707](https://openlmis.atlassian.net/browse/OLMIS-4707): Requisition templates now support tags.
 * [OLMIS-4053](https://openlmis.atlassian.net/browse/OLMIS-4053): Enabled beginning balance column for stock based requisition templates

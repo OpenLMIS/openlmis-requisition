@@ -19,7 +19,8 @@ public enum SourceType {
   USER_INPUT,
   CALCULATED,
   REFERENCE_DATA,
-  STOCK_CARDS;
+  STOCK_CARDS,
+  PREVIOUS_REQUISITION;
 
   public boolean isReferenceSource() {
     return REFERENCE_DATA.equals(this) || STOCK_CARDS.equals(this);
