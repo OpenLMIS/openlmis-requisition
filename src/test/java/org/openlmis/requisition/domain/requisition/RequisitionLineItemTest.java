@@ -204,7 +204,7 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldReturnRequestedQuantityWhenItIsNotNullAndApprovedQuantityIsNull() {
+  public void shouldReturnZeroIfRequestedQuantityIsNotNullAndApprovedQuantityIsNull() {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(new Requisition());
     item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
@@ -215,7 +215,7 @@ public class RequisitionLineItemTest {
     int quantity = item.getOrderQuantity();
 
     // then
-    assertEquals(5, quantity);
+    assertEquals(0, quantity);
   }
 
   @Test
@@ -248,7 +248,7 @@ public class RequisitionLineItemTest {
 
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(requisition);
-    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
+    item.getRequisition().setStatus(RequisitionStatus.SUBMITTED);
 
     item.setApprovedQuantity(null);
     item.setRequestedQuantity(null);
@@ -270,7 +270,7 @@ public class RequisitionLineItemTest {
 
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(requisition);
-    item.getRequisition().setStatus(RequisitionStatus.AUTHORIZED);
+    item.getRequisition().setStatus(RequisitionStatus.SUBMITTED);
 
     item.setApprovedQuantity(null);
     item.setRequestedQuantity(null);
@@ -284,7 +284,7 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldNotReturnApprovedQuantityIfRequisitionIsPreAuthorized() {
+  public void shouldNotReturnApprovedQuantityIfRequisitionIsSubmitted() {
     // given
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(new Requisition());

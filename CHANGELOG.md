@@ -11,6 +11,9 @@ New functionality:
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
 
+Bug fixes:
+* [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.
+
 6.0.0 / 2018-04-24
 ==================
 

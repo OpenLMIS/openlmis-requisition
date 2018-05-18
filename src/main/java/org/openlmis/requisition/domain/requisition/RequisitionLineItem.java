@@ -367,7 +367,10 @@ public class RequisitionLineItem extends BaseEntity {
    * Returns order quantity.
    */
   int getOrderQuantity() {
-    if (!requisition.getStatus().isPreAuthorize() && approvedQuantity != null) {
+    if (!requisition.getStatus().isPreAuthorize()) {
+      if (null == approvedQuantity) {
+        return 0;
+      }
       return approvedQuantity;
     }
 

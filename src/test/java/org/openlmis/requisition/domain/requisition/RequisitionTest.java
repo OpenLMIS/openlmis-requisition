@@ -874,6 +874,7 @@ public class RequisitionTest {
         .build();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
+    requisitionLineItem.setApprovedQuantity((int) packsToShip);
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
