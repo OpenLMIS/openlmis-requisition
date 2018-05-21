@@ -669,7 +669,7 @@ public class Requisition extends BaseTimestampedEntity {
     return filterLineItems(null, false);
   }
 
-  private List<RequisitionLineItem> filterLineItems(Boolean skipped, Boolean notFullSupply) {
+  private List<RequisitionLineItem> filterLineItems(Boolean skipped, Boolean nonFullSupply) {
     return Optional
         .ofNullable(requisitionLineItems)
         .orElse(Collections.emptyList())
@@ -677,7 +677,7 @@ public class Requisition extends BaseTimestampedEntity {
         .filter(line ->
             null == skipped || Objects.equals(skipped, line.isLineSkipped()))
         .filter(line ->
-            null == notFullSupply || Objects.equals(notFullSupply, line.isNonFullSupply()))
+            null == nonFullSupply || Objects.equals(nonFullSupply, line.isNonFullSupply()))
         .collect(toList());
   }
 
