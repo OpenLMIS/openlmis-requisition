@@ -31,6 +31,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_BASED_VALUE_
 
 import com.google.common.collect.Lists;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.beanutils.BeanUtils;
@@ -51,6 +52,10 @@ public class RequisitionInvariantsValidatorTest {
   public void setUp() {
     requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().buildSkipped())
+        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().buildSkipped())
         .withSupervisoryNodeId(UUID.randomUUID())
         .build();
 
@@ -161,19 +166,19 @@ public class RequisitionInvariantsValidatorTest {
         .withPopulateStockOnHandFromStockCards()
         .build()
     );
-
-    for (RequisitionLineItem lineItem : requisitionToUpdate.getRequisitionLineItems()) {
-      lineItem.setStockOnHand(1000);
-    }
-
     requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
-    requisitionUpdater
-        .getRequisitionLineItems()
-        .set(0, (RequisitionLineItem) BeanUtils
-            .cloneBean(requisitionToUpdate.getRequisitionLineItems().get(0)));
 
-    for (RequisitionLineItem lineItem : requisitionUpdater.getRequisitionLineItems()) {
-      lineItem.setStockOnHand(5000);
+    List<RequisitionLineItem> lineItems = requisitionToUpdate.getRequisitionLineItems();
+    for (int i = 0, size = lineItems.size(); i < size; ++i) {
+      lineItems.get(i).setStockOnHand(i % 2 == 0 ? 1000 : null);
+
+      requisitionUpdater
+          .getRequisitionLineItems()
+          .set(i, (RequisitionLineItem) BeanUtils.cloneBean(lineItems.get(i)));
+      requisitionUpdater
+          .getRequisitionLineItems()
+          .get(i)
+          .setStockOnHand(5000);
     }
 
     validator.validateCanUpdate(errors);

@@ -31,6 +31,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -154,18 +155,16 @@ class RequisitionInvariantsValidator
 
   private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
     Map<UUID, Object> columnValues = requisitionToUpdate
-        .getRequisitionLineItems()
+        .getNonSkippedFullSupplyRequisitionLineItems()
         .stream()
-        .filter(line -> !line.isNonFullSupply())
-        .collect(Collectors.toMap(
-            RequisitionLineItem::getOrderableId,
-            lineItem -> getColumnValue(lineItem, columnName)
-        ));
+        .collect(
+            HashMap::new,
+            (map, line) -> map.put(line.getOrderableId(), getColumnValue(line, columnName)),
+            HashMap::putAll
+        );
 
     requisitionUpdater
-        .getRequisitionLineItems()
-        .stream()
-        .filter(line -> !line.isNonFullSupply())
+        .getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> {
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);
