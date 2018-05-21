@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionInvariantsValidatorTest {
   private static final String COLUMN_NAME = RequisitionLineItem.STOCK_ON_HAND;
 
