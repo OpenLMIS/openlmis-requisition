@@ -106,7 +106,7 @@ $ gradle bootRun
 ```
 
 To see how to set environment variables through Docker Compose, see the
-[Reference Distribution](https://github.org/openlmis/openlmis-ref-distro)
+[Reference Distribution](https://github.com/openlmis/openlmis-ref-distro)
 
 ### Performance Testing Data
 A generated, sufficiently-large set of data is defined in 
