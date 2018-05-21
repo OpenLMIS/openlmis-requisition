@@ -155,7 +155,7 @@ class RequisitionInvariantsValidator
 
   private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
     Map<UUID, Object> columnValues = requisitionToUpdate
-        .getNonSkippedFullSupplyRequisitionLineItems()
+        .getFullSupplyRequisitionLineItems()
         .stream()
         .collect(
             HashMap::new,
@@ -164,7 +164,7 @@ class RequisitionInvariantsValidator
         );
 
     requisitionUpdater
-        .getNonSkippedFullSupplyRequisitionLineItems()
+        .getFullSupplyRequisitionLineItems()
         .forEach(line -> {
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);

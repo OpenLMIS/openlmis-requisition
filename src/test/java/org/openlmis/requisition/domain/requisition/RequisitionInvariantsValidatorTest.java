@@ -188,4 +188,28 @@ public class RequisitionInvariantsValidatorTest {
         new Message(ERROR_STOCK_BASED_VALUE_MODIFIED, COLUMN_NAME)
     ));
   }
+
+  @Test
+  public void shouldNotRejectIfValueWasChangedInNotFullSupplyForStockColumn() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withNonFullSupplyFlag()
+        .setStockOnHand(1000)
+        .build();
+
+    requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .withPopulateStockOnHandFromStockCards()
+        .build()
+    );
+    requisitionToUpdate.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
+
+    requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
+    requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(
+        (RequisitionLineItem) BeanUtils.cloneBean(requisitionLineItem)));
+    requisitionUpdater.getRequisitionLineItems().get(0).setStockOnHand(5000);
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors.entrySet(), hasSize(0));
+  }
 }

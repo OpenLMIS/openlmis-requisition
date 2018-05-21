@@ -635,12 +635,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @return requisitionLineItems that are not skipped
    */
   public List<RequisitionLineItem> getNonSkippedRequisitionLineItems() {
-    if (requisitionLineItems == null) {
-      return Collections.emptyList();
-    }
-    return this.requisitionLineItems.stream()
-        .filter(line -> !line.isLineSkipped())
-        .collect(toList());
+    return filterLineItems(false, null);
   }
 
   /**
@@ -649,13 +644,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @return non-skipped full supply requisition line items
    */
   public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
-    if (requisitionLineItems == null) {
-      return Collections.emptyList();
-    }
-    return this.requisitionLineItems.stream()
-        .filter(line -> !line.isLineSkipped())
-        .filter(line -> !line.isNonFullSupply())
-        .collect(toList());
+    return filterLineItems(false, false);
   }
 
   /**
@@ -664,13 +653,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @return non-skipped non-full supply requisition line items
    */
   public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems() {
-    if (requisitionLineItems == null) {
-      return Collections.emptyList();
-    }
-    return this.requisitionLineItems.stream()
-        .filter(line -> !line.isLineSkipped())
-        .filter(RequisitionLineItem::isNonFullSupply)
-        .collect(toList());
+    return filterLineItems(false, true);
   }
 
   /**
@@ -678,9 +661,23 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return requisitionLineItems that are skipped
    */
-  public List<RequisitionLineItem> getSkippedRequisitionLineItems() {
-    return this.requisitionLineItems.stream()
-        .filter(RequisitionLineItem::isLineSkipped)
+  List<RequisitionLineItem> getSkippedRequisitionLineItems() {
+    return filterLineItems(true, null);
+  }
+
+  List<RequisitionLineItem> getFullSupplyRequisitionLineItems() {
+    return filterLineItems(null, false);
+  }
+
+  private List<RequisitionLineItem> filterLineItems(Boolean skipped, Boolean notFullSupply) {
+    return Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList())
+        .stream()
+        .filter(line ->
+            null == skipped || Objects.equals(skipped, line.isLineSkipped()))
+        .filter(line ->
+            null == notFullSupply || Objects.equals(notFullSupply, line.isNonFullSupply()))
         .collect(toList());
   }
 
