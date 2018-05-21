@@ -172,7 +172,10 @@ class RequisitionInvariantsValidator
           if (!Objects.equals(currentValue, newValue)) {
             errors.put(
                 REQUISITION_LINE_ITEMS,
-                new Message(ERROR_STOCK_BASED_VALUE_MODIFIED, columnName)
+                new Message(
+                    ERROR_STOCK_BASED_VALUE_MODIFIED, columnName,
+                    String.valueOf(currentValue), String.valueOf(newValue)
+                )
             );
           }
         });
