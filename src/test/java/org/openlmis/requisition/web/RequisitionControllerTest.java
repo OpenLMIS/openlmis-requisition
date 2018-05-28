@@ -221,6 +221,8 @@ public class RequisitionControllerTest {
     when(submittedRequsition.getId()).thenReturn(uuid3);
     when(authorizedRequsition.getId()).thenReturn(uuid4);
     when(authorizedRequsition.isApprovable()).thenReturn(true);
+    when(authorizedRequsition.getTemplate()).thenReturn(template);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     when(periodService.getPeriods(programUuid, facilityUuid, false))
         .thenReturn(processingPeriods);
@@ -530,6 +532,24 @@ public class RequisitionControllerTest {
   public void shouldNotSendStockEventOnFinalApprovalForEmergencyRequisition() {
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(true);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId());
+
+    verify(requisitionService, times(1)).validateCanApproveRequisition(
+        any(Requisition.class),
+        any(UUID.class));
+
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
+    verify(requisitionService, times(1)).doApprove(eq(null), any(),
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+  }
+
+  @Test
+  public void shouldNotSendStockEventWhenRequisitionIsConfiguredToPullFromStockCards() {
+    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
 
     requisitionController.approveRequisition(authorizedRequsition.getId());
 

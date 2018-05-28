@@ -11,6 +11,7 @@ New functionality:
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
+* [OLMIS-3953](https://openlmis.atlassian.net/browse/OLMIS-3953): Disabled sending stock event when the requisition is configured to pull from stock cards
 
 Bug fixes:
 * [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.

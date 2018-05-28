@@ -465,7 +465,9 @@ public class RequisitionController extends BaseRequisitionController {
 
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
 
-    submitStockEvent(requisition, user.getId());
+    if (!requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      submitStockEvent(requisition, user.getId());
+    }
 
     stopProfiler(profiler, requisitionDto);
     return requisitionDto;
