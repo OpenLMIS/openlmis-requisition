@@ -16,7 +16,6 @@
 package org.openlmis.requisition.i18n;
 
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.stereotype.Component;
 
 import java.util.Enumeration;
 import java.util.HashMap;
