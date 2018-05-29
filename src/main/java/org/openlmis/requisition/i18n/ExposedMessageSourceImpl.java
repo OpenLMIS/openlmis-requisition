@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-@Component
 public class ExposedMessageSourceImpl extends ReloadableResourceBundleMessageSource implements
     ExposedMessageSource {
 

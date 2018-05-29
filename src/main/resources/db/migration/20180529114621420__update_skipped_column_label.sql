@@ -1,0 +1,1 @@
+UPDATE requisition.columns_maps SET label = 'Skip' WHERE name = 'skipped';

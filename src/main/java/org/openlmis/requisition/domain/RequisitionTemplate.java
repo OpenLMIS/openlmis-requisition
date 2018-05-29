@@ -489,7 +489,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     for (String columnName : tagRequiredColumns) {
       RequisitionTemplateColumn column = columns.get(columnName);
       if (column.getIsDisplayed() && StringUtils.isBlank(column.getTag())) {
-        throw new ValidationMessageException(ERROR_COLUMNS_TAG_NOT_SET, columnName);
+        throw new ValidationMessageException(ERROR_COLUMNS_TAG_NOT_SET, column.getLabel());
       }
     }
   }
