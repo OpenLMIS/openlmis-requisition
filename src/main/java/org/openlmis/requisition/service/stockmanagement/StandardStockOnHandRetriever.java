@@ -44,7 +44,7 @@ final class StandardStockOnHandRetriever implements StockOnHandRetriever {
 
   private Map<UUID, Integer> convert(List<StockCardSummaryDto> cards) {
     Map<UUID, Integer> stockCardsMap = new HashMap<>();
-    cards.forEach((card) -> stockCardsMap.put(card.getOrderable().getId(), card.getStockOnHand()));
+    cards.forEach(card -> stockCardsMap.put(card.getOrderable().getId(), card.getStockOnHand()));
     return stockCardsMap;
   }
 
