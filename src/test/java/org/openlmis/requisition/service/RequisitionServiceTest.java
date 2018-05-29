@@ -864,7 +864,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotSetStockOnHandIfNoStockCardSummariesFound() {
+  public void shouldNotIncludeLineItemsIfNoStockCardSummariesFound() {
     prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
@@ -874,7 +874,7 @@ public class RequisitionServiceTest {
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
 
-    assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+    assertTrue(initiatedRequisition.getRequisitionLineItems().isEmpty());
   }
 
   @Test

@@ -15,16 +15,13 @@
 
 package org.openlmis.requisition.service.stockmanagement;
 
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
-
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 
 @AllArgsConstructor
@@ -37,7 +34,6 @@ final class StandardStockOnHandRetriever implements StockOnHandRetriever {
 
   public Map<UUID, Integer> get() {
     List<StockCardSummaryDto> cards = getCards();
-    validate(cards);
     return convert(cards);
   }
 
@@ -46,42 +42,10 @@ final class StandardStockOnHandRetriever implements StockOnHandRetriever {
         .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate);
   }
 
-  private void validate(List<StockCardSummaryDto> cards) {
-    List<StockCardSummaryDto> cardsWithout = getCardsWithoutStockOnHand(cards);
-
-    if (cardsWithout.isEmpty()) {
-      return;
-    }
-
-    String firstProductName = getFirstProductName(cardsWithout);
-
-    throw new ValidationMessageException(
-        ERROR_PRODUCTS_STOCK_CARDS_MISSING,
-        firstProductName, cardsWithout.size()
-    );
-  }
-
-  private List<StockCardSummaryDto> getCardsWithoutStockOnHand(List<StockCardSummaryDto> cards) {
-    return cards
-        .stream()
-        .filter(c -> null == c.getStockOnHand())
-        .collect(Collectors.toList());
-  }
-
-  private String getFirstProductName(List<StockCardSummaryDto> cardsWithout) {
-    return products
-        .getFullSupplyProduct(cardsWithout.get(0).getOrderable().getId())
-        .getOrderable()
-        .getFullProductName();
-  }
-
   private Map<UUID, Integer> convert(List<StockCardSummaryDto> cards) {
-    return cards
-        .stream()
-        .collect(Collectors.toMap(
-            card -> card.getOrderable().getId(),
-            StockCardSummaryDto::getStockOnHand
-        ));
+    Map<UUID, Integer> stockCardsMap = new HashMap<>();
+    cards.forEach((card) -> stockCardsMap.put(card.getOrderable().getId(), card.getStockOnHand()));
+    return stockCardsMap;
   }
 
 }

@@ -30,7 +30,7 @@ public class StockCardSummariesStockManagementService
   /**
    * Retrieves the list of stock cards summaries for the given orderables.
    *
-   * @param orderableIds  set of ordeable IDs
+   * @param orderableIds  set of orderable IDs
    * @return  the list of matching stock card summaries
    */
   public List<StockCardSummaryDto> search(UUID programId, UUID facilityId,

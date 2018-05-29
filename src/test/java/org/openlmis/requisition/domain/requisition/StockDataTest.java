@@ -17,7 +17,9 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -52,5 +54,15 @@ public class StockDataTest {
   @Test
   public void shouldReturnNullIfBeginningBalanceForOrderableDoesNotExist() {
     assertThat(stockData.getStockOnHand(UUID.randomUUID()), is(nullValue()));
+  }
+
+  @Test
+  public void shouldHaveDataForOrderableIdInMaps() {
+    assertTrue(stockData.hasDataFor(orderableId));
+  }
+
+  @Test
+  public void shouldNotHaveDataForOrderableIdNotInMaps() {
+    assertFalse(stockData.hasDataFor(UUID.randomUUID()));
   }
 }

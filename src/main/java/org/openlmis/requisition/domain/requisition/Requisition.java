@@ -386,6 +386,10 @@ public class Requisition extends BaseTimestampedEntity {
       for (ApprovedProductDto product : fullSupplyProducts) {
         UUID orderableId = product.getOrderable().getId();
 
+        if (isNotTrue(stockData.hasDataFor(orderableId))) {
+          continue;
+        }
+
         RequisitionLineItem lineItem = new RequisitionLineItem(this, product);
         lineItem.setIdealStockAmount(extractIdealStockAmount(idealStockAmounts, product));
         lineItem.setStockOnHand(stockData.getStockOnHand(orderableId));

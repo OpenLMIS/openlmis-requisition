@@ -28,6 +28,11 @@ public class StockCardSummaryDtoDataBuilder {
     return this;
   }
 
+  public StockCardSummaryDtoDataBuilder withStockOnHand(Integer stockOnHand) {
+    this.stockOnHand = stockOnHand;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link StockCardSummaryDto} based on passed data.
    */

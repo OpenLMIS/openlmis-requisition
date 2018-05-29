@@ -1281,9 +1281,8 @@ public class RequisitionTest {
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
+    assertEquals(1, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getStockOnHand(), is(1000));
-    assertThat(req.findLineByProductId(productId2).getStockOnHand(), is(nullValue()));
   }
 
   @Test
@@ -1307,9 +1306,8 @@ public class RequisitionTest {
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
+    assertEquals(1, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(1000));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(nullValue()));
   }
 
   @Test

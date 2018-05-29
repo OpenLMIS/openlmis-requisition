@@ -41,4 +41,8 @@ public class StockData {
     return beginningBalances.get(orderableId);
   }
 
+  public boolean hasDataFor(UUID orderableId) {
+    return stockOnHands.get(orderableId) != null || beginningBalances.get(orderableId) != null;
+  }
+
 }

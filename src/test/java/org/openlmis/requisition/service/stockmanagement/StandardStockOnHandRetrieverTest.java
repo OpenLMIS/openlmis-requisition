@@ -15,17 +15,15 @@
 
 package org.openlmis.requisition.service.stockmanagement;
 
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PRODUCTS_STOCK_CARDS_MISSING;
 
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +33,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
@@ -52,29 +49,43 @@ public class StandardStockOnHandRetrieverTest extends StockOnHandRetrieverTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
+  private UUID orderable = UUID.randomUUID();
+  private UUID orderable2 = UUID.randomUUID();
   private LocalDate asOfDate = LocalDate.now();
 
   private ApproveProductsAggregator products;
 
   private StockCardSummaryDto stockCardSummary = new StockCardSummaryDtoDataBuilder()
-      .withOrderableId(orderableId)
+      .withOrderableId(orderable)
+      .withStockOnHand(15)
+      .build();
+  private StockCardSummaryDto stockCardSummary2 = new StockCardSummaryDtoDataBuilder()
+      .withOrderableId(orderable2)
+      .withStockOnHand(20)
       .build();
 
   @Before
   public void setUp() {
     ApprovedProductDto approvedProduct = new ApprovedProductDtoDataBuilder()
         .withOrderable(new OrderableDtoDataBuilder()
-            .withId(orderableId)
+            .withId(orderable)
             .withProgramOrderable(programId, true)
             .build())
         .build();
 
-    products = new ApproveProductsAggregator(singletonList(approvedProduct), programId);
+    ApprovedProductDto approvedProduct2 = new ApprovedProductDtoDataBuilder()
+        .withOrderable(new OrderableDtoDataBuilder()
+            .withId(orderable2)
+            .withProgramOrderable(programId, true)
+            .build())
+        .build();
+
+    products = new ApproveProductsAggregator(
+        Lists.newArrayList(approvedProduct, approvedProduct2), programId);
 
     when(stockCardSummariesStockManagementService
         .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate))
-        .thenReturn(singletonList(stockCardSummary));
+        .thenReturn(Lists.newArrayList(stockCardSummary, stockCardSummary2));
   }
 
   @Override
@@ -88,18 +99,20 @@ public class StandardStockOnHandRetrieverTest extends StockOnHandRetrieverTest {
 
   @Override
   void assertStockOnHands(Map<UUID, Integer> stockOnHands) {
-    assertThat(stockOnHands.isEmpty(), is(false));
-    assertThat(stockOnHands.size(), is(1));
-    assertThat(stockOnHands, hasEntry(orderableId, stockCardSummary.getStockOnHand()));
+    assertThat(stockOnHands.size(), is(2));
+    assertThat(stockOnHands, hasEntry(orderable, stockCardSummary.getStockOnHand()));
+    assertThat(stockOnHands, hasEntry(orderable2, stockCardSummary2.getStockOnHand()));
   }
 
   @Test
-  public void shouldThrowExceptionIfThereIsCardWithoutStockOnHand() {
-    exception.expect(ValidationMessageException.class);
-    exception.expectMessage(containsString(ERROR_PRODUCTS_STOCK_CARDS_MISSING));
+  public void shouldRetrieveAndReturnStockCardsEvenIfNotAllAreAvailable() {
+    when(stockCardSummariesStockManagementService
+        .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate))
+        .thenReturn(Lists.newArrayList(stockCardSummary));
 
-    stockCardSummary.setStockOnHand(null);
+    Map<UUID, Integer> stockOnHands = getRetriever().get();
 
-    getRetriever().get();
+    assertThat(stockOnHands.size(), is(1));
+    assertThat(stockOnHands, hasEntry(orderable, stockCardSummary.getStockOnHand()));
   }
 }
