@@ -2,6 +2,7 @@
 ===========
 
 New functionality:
+* [OLMIS-4792](https://openlmis.atlassian.net/browse/OLMIS-4792): Make additional options column of requisition template translatable.
 * [OLMIS-4681](https://openlmis.atlassian.net/browse/OLMIS-4681): Added additional option and source option for skipped column.
 * [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint.
 * [OLMIS-4707](https://openlmis.atlassian.net/browse/OLMIS-4707): Requisition templates now support tags.
