@@ -128,8 +128,6 @@ public abstract class MessageKeys {
       + ".columnIsNotValidForSorting";
   public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
       + ".configurationSettingNotFound";
-  public static final String ERROR_PRODUCTS_STOCK_CARDS_MISSING = ERROR_PREFIX
-      + ".initiate.products.stockCardsMissing";
   public static final String
       ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND =
       ERROR_PREFIX + ".initiate.requisitionGroupProgramScheduleWithProgramAndFacilityNotFound";
