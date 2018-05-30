@@ -276,4 +276,37 @@ public final class LineItemFieldsCalculator {
     return Math.max(0, line.getIdealStockAmount() - zeroIfNull(line.getStockOnHand()));
   }
 
+  /**
+   * Returns skipped column value from requisition line item
+   * This method assumes that the product was skipped if no value was found.
+   *
+   * @param  currentLineItem {@link RequisitionLineItem}
+   * @param  previousLineItem {@link RequisitionLineItem}
+   * @return {@link Boolean}
+   */
+  public static Boolean canSkipLineItem(RequisitionLineItem currentLineItem,
+                                        RequisitionLineItem previousLineItem) {
+    // check if there is any non-zero column value in current lineItem. if so,
+    // skipping is not allowed.
+    if (hasNonZeroStockValue(currentLineItem)) {
+      return false;
+    }
+    if (previousLineItem == null) {
+      return true;
+    }
+    return previousLineItem.getSkipped();
+  }
+
+  private static boolean hasNonZeroStockValue(RequisitionLineItem currentLineItem) {
+    if (currentLineItem == null) {
+      return false;
+    }
+    Integer nonZeroValues = zeroIfNull(currentLineItem.getBeginningBalance())
+        + zeroIfNull(currentLineItem.getStockOnHand())
+        + zeroIfNull(currentLineItem.getTotalConsumedQuantity())
+        + zeroIfNull(currentLineItem.getTotalReceivedQuantity())
+        + Math.abs(zeroIfNull(currentLineItem.getTotalLossesAndAdjustments()));
+
+    return (nonZeroValues > 0);
+  }
 }

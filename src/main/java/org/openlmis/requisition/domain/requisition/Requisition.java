@@ -25,6 +25,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AD
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
@@ -369,6 +370,13 @@ public class Requisition extends BaseTimestampedEntity {
       initiateLineItems(fullSupplyProducts, idealStockAmounts, proofOfDelivery, profiler);
     }
 
+    profiler.start("SET_SKIPPED_FROM_PREV_REQUISITION");
+    if (isNotTrue(emergency)
+        && template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)
+        && template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)) {
+      copySkippedValuesFromPreviousRequisition();
+    }
+
     profiler.start("SET_PREV_ADJ_CONSUMPTION");
     setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
 
@@ -378,6 +386,22 @@ public class Requisition extends BaseTimestampedEntity {
     statusChanges.add(StatusChange.newStatusChange(this, initiator));
 
     profiler.stop().log();
+  }
+
+  private void copySkippedValuesFromPreviousRequisition() {
+    if (!previousRequisitions.isEmpty() && null != previousRequisitions.get(0)) {
+      Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions.get(0)
+          .getRequisitionLineItems().stream().collect(
+              toMap(RequisitionLineItem::getOrderableId, identity(),
+                  (item1, item2) -> item1));
+
+      getFullSupplyRequisitionLineItems().forEach(currentLine -> {
+        RequisitionLineItem previousLine = productIdToPreviousLine.getOrDefault(
+            currentLine.getOrderableId(), null);
+        currentLine.setSkipped(
+            LineItemFieldsCalculator.canSkipLineItem(currentLine, previousLine));
+      });
+    }
   }
 
   private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,

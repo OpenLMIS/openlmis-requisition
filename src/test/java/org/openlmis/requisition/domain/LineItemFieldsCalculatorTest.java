@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.canSkipLineItem;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 
 import com.google.common.collect.ImmutableMap;
@@ -334,4 +335,31 @@ public class LineItemFieldsCalculatorTest {
 
     assertThat(calculateCalculatedOrderQuantityIsa(line), is(900));
   }
+
+  @Test
+  public void shouldNotAllowSkippingIfNonZeroOnStockColumns() {
+    RequisitionLineItem line = new RequisitionLineItem();
+    line.setStockOnHand(100);
+
+    assertThat(canSkipLineItem(line, line), is(false));
+  }
+
+  @Test
+  public void shouldAllowSkippingIfPreviousRequisitionWasSkipped() {
+    RequisitionLineItem preveious = new RequisitionLineItem();
+    preveious.setSkipped(true);
+    RequisitionLineItem current = new RequisitionLineItem();
+
+    assertThat(canSkipLineItem(current, preveious), is(true));
+  }
+
+  @Test
+  public void shouldNotAllowSkippingIfPreviousRequisitionWasNotSkipped() {
+    RequisitionLineItem preveious = new RequisitionLineItem();
+    preveious.setSkipped(false);
+    RequisitionLineItem current = new RequisitionLineItem();
+
+    assertThat(canSkipLineItem(current, preveious), is(false));
+  }
+
 }

@@ -154,6 +154,12 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     templateAssignments.add(new RequisitionTemplateAssignment(programId, facilityTypeId, this));
   }
 
+  public boolean isColumnFromPreviousRequisition(String name) {
+    RequisitionTemplateColumn column = findColumn(name);
+    return SourceType.PREVIOUS_REQUISITION.equals(column.getSource());
+  }
+
+
   /**
    * Checks if column with given name is displayed.
    *

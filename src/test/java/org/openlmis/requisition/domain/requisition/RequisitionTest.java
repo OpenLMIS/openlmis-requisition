@@ -37,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 import static org.openlmis.requisition.dto.OrderableDto.COMMODITY_TYPE_IDENTIFIER;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.CONFIRMED;
 import static org.openlmis.requisition.dto.ProofOfDeliveryStatus.INITIATED;
@@ -1424,6 +1425,94 @@ public class RequisitionTest {
 
     assertEquals(1, lineItems.size());
     assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(1000));
+  }
+
+  @Test
+  public void shouldCopySkippedValueFromPreviousRequisition() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
+    Requisition previousReq = mock(Requisition.class);
+    RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
+    lineItem1.setSkipped(true);
+
+    when(previousReq.getRequisitionLineItems()).thenReturn(asList(lineItem1));
+    PowerMockito.mockStatic(LineItemFieldsCalculator.class);
+    PowerMockito.spy(LineItemFieldsCalculator.class);
+
+    PowerMockito.when(LineItemFieldsCalculator
+        .canSkipLineItem(
+            org.mockito.Matchers.any(RequisitionLineItem.class)
+            ,org.mockito.Matchers.any(RequisitionLineItem.class)))
+        .thenReturn(true);
+
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setEmergency(false);
+    req.initiate(template, asList(product1), asList(previousReq), 0, null,
+        emptyMap(), UUID.randomUUID(), null);
+
+    assertThat(req.findLineByProductId(productId1).getSkipped(), is(true));
+  }
+
+  @Test
+  public void shouldNotCopySkippedValueWhenSourceIsNotFromPreviousRequisition() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(false);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
+    Requisition previousReq = mock(Requisition.class);
+    RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
+    lineItem1.setSkipped(true);
+
+    when(previousReq.getRequisitionLineItems()).thenReturn(asList(lineItem1));
+
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setEmergency(false);
+    req.initiate(template, asList(product1), asList(previousReq), 0, null,
+        emptyMap(), UUID.randomUUID(), null);
+
+    assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
+  }
+
+  @Test
+  public void shouldNotCopySkippedValueWhenSourceIsFromPreviousRequisitionButNoPreviousFound() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setEmergency(false);
+    req.initiate(template, asList(product1), emptyList(), 0, null,
+        emptyMap(), UUID.randomUUID(), null);
+
+    assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
+  }
+
+  @Test
+  public void shouldNotCopySkippedValueWhenEmergencyRequisitionSourceIsFromPreviousRequisition() {
+    // given
+    final UUID productId1 = UUID.randomUUID();
+    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setEmergency(true);
+    req.initiate(template, asList(product1), emptyList(), 0, null,
+        emptyMap(), UUID.randomUUID(), null);
+
+    assertThat(req.getRequisitionLineItems().size(), is(0));
   }
 
   @Test
