@@ -37,7 +37,6 @@ public class FacilityDto extends MinimalFacilityDto {
   private Boolean openLmisAccessible;
   private List<SupportedProgramDto> supportedPrograms;
   private FacilityOperatorDto operator;
-  private FacilityTypeDto type;
 
   /**
    * Get zone with given level number by traversing up geographicZone hierarchy if needed.
