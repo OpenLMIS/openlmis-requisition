@@ -31,6 +31,7 @@ public class MinimalFacilityDto extends BaseDto {
   protected String name;
   protected Boolean active;
   protected GeographicZoneDto geographicZone;
+  protected FacilityTypeDto type;
 
   public interface Exporter {
     void setId(UUID id);
@@ -42,6 +43,8 @@ public class MinimalFacilityDto extends BaseDto {
     void setActive(Boolean active);
 
     void setGeographicZone(GeographicZoneDto geographicZone);
+
+    void setType(FacilityTypeDto type);
   }
 
   /**
@@ -55,6 +58,7 @@ public class MinimalFacilityDto extends BaseDto {
     exporter.setName(name);
     exporter.setActive(active);
     exporter.setGeographicZone(geographicZone);
+    exporter.setType(type);
   }
 
   /**
