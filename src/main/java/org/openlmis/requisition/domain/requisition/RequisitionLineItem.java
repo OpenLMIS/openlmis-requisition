@@ -618,7 +618,7 @@ public class RequisitionLineItem extends BaseEntity {
       Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
           column, stockCardRangeSummaryDtos);
       if (summaryDto.isPresent()) {
-        setTotalConsumedQuantity(summaryDto.get().getAmount(column.getTag()));
+        setTotalLossesAndAdjustments(summaryDto.get().getTagAmount(column.getTag()));
       }
     } else {
       int calculated = calculateTotalLossesAndAdjustments(this, reasons);
