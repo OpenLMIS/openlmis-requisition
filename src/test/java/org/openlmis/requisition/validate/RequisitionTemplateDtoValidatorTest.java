@@ -67,6 +67,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_DISABLED_COLUMNS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_LOSSES_AND_ADJUSTMNETS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
@@ -726,6 +727,17 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectWhenTotalLossesAndAdjustmentIsDisplayedForStockBasedRequisition() {
+    RequisitionTemplateDto template = getTemplatePopulatedByStock();
+
+    validator.validate(template, errors);
+
+    template.findColumn(TOTAL_LOSSES_AND_ADJUSTMNETS).setIsDisplayed(true);
+
+    verify(errors, never()).rejectValue(anyString(), anyString());
+  }
+
+  @Test
   public void shouldRejectWhenCalcOrderQtyIsaIsDisplayedAndStockFlagIsDisabled() {
     when(messageService
         .localize(new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS)))
@@ -769,6 +781,8 @@ public class RequisitionTemplateDtoValidatorTest {
     RequisitionTemplate template = baseTemplateBuilder()
         .withColumn(TOTAL_RECEIVED_QUANTITY, "B", USER_INPUT,
             Sets.asSet(USER_INPUT))
+        .withColumn(TOTAL_LOSSES_AND_ADJUSTMNETS, "D", STOCK_CARDS,
+            Sets.asSet(STOCK_CARDS))
         .withPopulateStockOnHandFromStockCards()
         .build();
 
@@ -776,6 +790,7 @@ public class RequisitionTemplateDtoValidatorTest {
 
     dto.findColumn(TOTAL_CONSUMED_QUANTITY).setTag("consumed");
     dto.findColumn(TOTAL_RECEIVED_QUANTITY).setTag("received");
+    dto.findColumn(TOTAL_LOSSES_AND_ADJUSTMNETS).setTag("adjustment");
 
     STOCK_DISABLED_COLUMNS
         .stream()

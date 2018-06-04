@@ -13,6 +13,7 @@ New functionality:
   * data would be populated with the stock on hand at the end of the previous requisition period
   * after initialization values cannot be changed
 * [OLMIS-4747](https://openlmis.atlassian.net/browse/OLMIS-4747): Populated Total Received Quantity and Total Consumed Quantity columns for Stock Based Requisitions
+* [OLMIS-4748](https://openlmis.atlassian.net/browse/OLMIS-4748): Total Losses and Adjustment column is populated from stock cards for Stock Based Requisitions.
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
