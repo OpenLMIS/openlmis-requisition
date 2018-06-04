@@ -552,7 +552,8 @@ public class RequisitionLineItem extends BaseEntity {
           LOGGER.warn("Passed TotalConsumedQuantity does not match calculated one.");
         }
         setTotalConsumedQuantity(calculated);
-      } else if (template.isPopulateStockOnHandFromStockCards()) {
+      } else if (template.isPopulateStockOnHandFromStockCards()
+          && template.isColumnStockBased(TOTAL_CONSUMED_QUANTITY)) {
         calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryDtos);
       }
     } else {
@@ -565,7 +566,8 @@ public class RequisitionLineItem extends BaseEntity {
    */
   private void calculateAndSetTotalReceivedQuantity(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    if (template.isPopulateStockOnHandFromStockCards()) {
+    if (template.isPopulateStockOnHandFromStockCards()
+        && template.isColumnStockBased(TOTAL_RECEIVED_QUANTITY)) {
       calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaryDtos);
     }
   }
@@ -676,7 +678,13 @@ public class RequisitionLineItem extends BaseEntity {
     Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
         column, stockCardRangeSummaryDtos);
     if (summaryDto.isPresent()) {
-      setTotalConsumedQuantity(summaryDto.get().getAmount(column.getTag()));
+      Integer value = summaryDto.get().getTagAmount(column.getTag());
+      if (value > 0) {
+        throw new ValidationMessageException(new Message(
+            MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER, TOTAL_CONSUMED_QUANTITY,
+            orderableId.toString()));
+      }
+      setTotalConsumedQuantity(Math.abs(value));
     }
   }
 
@@ -686,7 +694,13 @@ public class RequisitionLineItem extends BaseEntity {
     Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
         column, stockCardRangeSummaryDtos);
     if (summaryDto.isPresent()) {
-      setTotalReceivedQuantity(summaryDto.get().getAmount(column.getTag()));
+      Integer value = summaryDto.get().getTagAmount(column.getTag());
+      if (value < 0) {
+        throw new ValidationMessageException(new Message(
+            MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER, TOTAL_RECEIVED_QUANTITY,
+            orderableId.toString()));
+      }
+      setTotalReceivedQuantity(value);
     }
   }
 

@@ -25,6 +25,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
   private ObjectReferenceDto orderable;
   private Long stockOutDays;
   private Map<String, Integer> tags;
+  private Integer amount;
 
   /**
    * Creates builder for creating new instance of {@link StockCardRangeSummaryDtoDataBuilder}.
@@ -33,6 +34,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
     orderable = new ObjectReferenceDtoDataBuilder().withPath("api/orderables").build();
     stockOutDays = 0L;
     tags = new HashMap<>();
+    amount = 0;
   }
 
   /**
@@ -40,7 +42,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
    * @return created stock cards range summary
    */
   public StockCardRangeSummaryDto build() {
-    return new StockCardRangeSummaryDto(orderable, stockOutDays, tags);
+    return new StockCardRangeSummaryDto(orderable, stockOutDays, tags, amount);
   }
 
   public StockCardRangeSummaryDtoDataBuilder withTags(Map<String, Integer> tags) {

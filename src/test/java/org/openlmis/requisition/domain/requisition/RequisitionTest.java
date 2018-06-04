@@ -44,6 +44,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VA
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import com.google.common.collect.ImmutableMap;
@@ -108,6 +110,10 @@ public class RequisitionTest {
   private static final int STOCK_ON_HAND_VALUE = 10;
   private static final int STOCK_ON_HAND_2 = 11;
 
+  private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
+  private static final String CONSUMED_TAG = "consumed";
+  private static final String RECEIVED_TAG = "received";
+
   private Requisition requisition;
   private RequisitionLineItem requisitionLineItem;
   private StockCardRangeSummaryDto stockCardRangeSummaryDto;
@@ -134,8 +140,8 @@ public class RequisitionTest {
     requisitionLineItem = new RequisitionLineItem();
 
     Map<String, Integer> tags = new HashMap<>();
-    tags.put("received", 100);
-    tags.put("consumed", 200);
+    tags.put(RECEIVED_TAG, 100);
+    tags.put(CONSUMED_TAG, -200);
     stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
 
     requisitionLineItem.setId(UUID.randomUUID());
@@ -573,7 +579,7 @@ public class RequisitionTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(false);
-    when(requisitionTemplate.isColumnDisplayed("totalConsumedQuantity")).thenReturn(false);
+    when(requisitionTemplate.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
     requisition.updateFrom(new Requisition(), Collections.emptyMap(), true,
@@ -590,13 +596,15 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
-    when(requisitionTemplate.isColumnInTemplateAndDisplayed("totalConsumedQuantity"))
+    when(requisitionTemplate.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY))
         .thenReturn(true);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    when(requisitionTemplate.findColumn("totalConsumedQuantity")).thenReturn(totalConsumedQuantity);
-    when(requisitionTemplate.findColumn("totalReceivedQuantity")).thenReturn(totalReceivedQuantity);
-    when(totalConsumedQuantity.getTag()).thenReturn("consumed");
-    when(totalReceivedQuantity.getTag()).thenReturn("received");
+    when(requisitionTemplate.isColumnStockBased(TOTAL_CONSUMED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.isColumnStockBased(TOTAL_RECEIVED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.findColumn(TOTAL_CONSUMED_QUANTITY)).thenReturn(totalConsumedQuantity);
+    when(requisitionTemplate.findColumn(TOTAL_RECEIVED_QUANTITY)).thenReturn(totalReceivedQuantity);
+    when(totalConsumedQuantity.getTag()).thenReturn(CONSUMED_TAG);
+    when(totalReceivedQuantity.getTag()).thenReturn(RECEIVED_TAG);
 
     requisition.setTemplate(requisitionTemplate);
     requisition.updateFrom(new Requisition(), Collections.emptyMap(), true,
@@ -604,6 +612,69 @@ public class RequisitionTest {
 
     assertThat(requisitionLineItem.getTotalReceivedQuantity(), is(100));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(200));
+  }
+
+
+  @Test
+  public void shouldRejectIfRequisitionIsStockBasedAndTotalConsumedValueIsPositive() {
+    requisitionLineItem.setTotalConsumedQuantity(15);
+    requisitionLineItem.setTotalReceivedQuantity(10);
+
+    Map<String, Integer> tags = new HashMap<>();
+    tags.put(RECEIVED_TAG, 100);
+    tags.put(CONSUMED_TAG, 200);
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
+
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
+    when(requisitionTemplate.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY))
+        .thenReturn(true);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(requisitionTemplate.isColumnStockBased(TOTAL_CONSUMED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.isColumnStockBased(TOTAL_RECEIVED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.findColumn(TOTAL_CONSUMED_QUANTITY)).thenReturn(totalConsumedQuantity);
+    when(requisitionTemplate.findColumn(TOTAL_RECEIVED_QUANTITY)).thenReturn(totalReceivedQuantity);
+    when(totalConsumedQuantity.getTag()).thenReturn(CONSUMED_TAG);
+    when(totalReceivedQuantity.getTag()).thenReturn(RECEIVED_TAG);
+
+    requisition.setTemplate(requisitionTemplate);
+
+    assertThatThrownBy(() -> requisition.updateFrom(new Requisition(), Collections.emptyMap(), true,
+        Collections.singletonList(stockCardRangeSummaryDto)))
+        .isInstanceOf(ValidationMessageException.class)
+        .hasMessage(getNonNegativeNumberErrorMessage(TOTAL_CONSUMED_QUANTITY,
+            requisitionLineItem.getOrderableId().toString()));
+  }
+
+  @Test
+  public void shouldRejectIfRequisitionIsStockBasedAndTotalReceivedValueIsNegative() {
+    requisitionLineItem.setTotalConsumedQuantity(15);
+    requisitionLineItem.setTotalReceivedQuantity(10);
+
+    Map<String, Integer> tags = new HashMap<>();
+    tags.put(RECEIVED_TAG, -100);
+    tags.put(CONSUMED_TAG, -200);
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
+
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
+
+    when(requisitionTemplate.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY))
+        .thenReturn(true);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    when(requisitionTemplate.isColumnStockBased(TOTAL_CONSUMED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.isColumnStockBased(TOTAL_RECEIVED_QUANTITY)).thenReturn(true);
+    when(requisitionTemplate.findColumn(TOTAL_CONSUMED_QUANTITY)).thenReturn(totalConsumedQuantity);
+    when(requisitionTemplate.findColumn(TOTAL_RECEIVED_QUANTITY)).thenReturn(totalReceivedQuantity);
+    when(totalConsumedQuantity.getTag()).thenReturn(CONSUMED_TAG);
+    when(totalReceivedQuantity.getTag()).thenReturn(RECEIVED_TAG);
+
+    requisition.setTemplate(requisitionTemplate);
+
+    assertThatThrownBy(() -> requisition.updateFrom(new Requisition(), Collections.emptyMap(), true,
+        Collections.singletonList(stockCardRangeSummaryDto)))
+        .isInstanceOf(ValidationMessageException.class)
+        .hasMessage(getNonPositiveNumberErrorMessage(TOTAL_RECEIVED_QUANTITY,
+            requisitionLineItem.getOrderableId().toString()));
   }
 
   @Test
@@ -1577,6 +1648,14 @@ public class RequisitionTest {
   private String getRequiredFieldErrorMessage(String requiredField, String calculatedColumn) {
     return new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId,
         requiredField, calculatedColumn).toString();
+  }
+
+  private String getNonNegativeNumberErrorMessage(String column, String orderableId) {
+    return new Message(ERROR_VALIDATION_NON_NEGATIVE_NUMBER, column, orderableId).toString();
+  }
+
+  private String getNonPositiveNumberErrorMessage(String column, String orderableId) {
+    return new Message(ERROR_VALIDATION_NON_POSITIVE_NUMBER, column, orderableId).toString();
   }
 
   private void mockTemplateWithCalculatedColumn(String column) {

@@ -19,6 +19,7 @@ package org.openlmis.requisition.dto.stockmanagement;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
@@ -39,8 +40,22 @@ public class StockCardRangeSummaryDtoTest {
   }
 
   @Test
-  public void shouldCalculateAmount() {
-    assertEquals(new Integer(10), dto.getAmount("tag1"));
+  public void shouldCalculateTagAmount() {
+    assertEquals(new Integer(10), dto.getTagAmount("tag1"));
+  }
+
+  @Test
+  public void shouldReturnZeroIfTagIsNotFound() {
+    assertEquals(new Integer(0), dto.getTagAmount("tag3"));
+  }
+
+  @Test
+  public void shouldReturnZeroIfMapIsEmpty() {
+    dto = new StockCardRangeSummaryDtoDataBuilder()
+        .withTags(Collections.EMPTY_MAP)
+        .build();
+
+    assertEquals(new Integer(0), dto.getTagAmount("tag1"));
   }
 
   @Test

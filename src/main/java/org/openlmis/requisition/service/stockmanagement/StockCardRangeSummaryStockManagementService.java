@@ -28,9 +28,16 @@ public class StockCardRangeSummaryStockManagementService
     extends BaseStockManagementService<StockCardRangeSummaryDto> {
 
   /**
-   * Retrieves the list of stock cards summaries for the given orderables.
+   * Get a map of stock cards assigned to orderable ids.
+   * Stock cards are grouped using orderable fulfills endpoint.
+   * If there is no orderable that can be fulfilled by stock card its orderable id will be used.
    *
-   * @param orderableIds  set of orderable IDs
+   * @param programId id of the program
+   * @param facilityId id of the facility
+   * @param orderableIds set of orderable IDs
+   * @param tag string value of the tag
+   * @param startDate start date
+   * @param endDate end date
    * @return  the list of matching stock card range summaries
    */
   public List<StockCardRangeSummaryDto> search(UUID programId, UUID facilityId,

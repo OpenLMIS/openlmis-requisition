@@ -41,13 +41,16 @@ public final class StockCardRangeSummaryDto {
   @Setter
   private Map<String, Integer> tags;
 
+  @Getter
+  private Integer amount;
+
   /**
    * Sums amount values from tags map.
    *
    * @param tag tag name to get it's value
    * @return sum of all amount values
    */
-  public Integer getAmount(String tag) {
+  public Integer getTagAmount(String tag) {
     return tags.entrySet().stream()
         .filter(map -> map.getKey().matches(tag))
         .map(Map.Entry::getValue)

@@ -179,6 +179,18 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
+   * Checks if column with given name is stock based.
+   *
+   * @param name name of requisition column.
+   * @return return true if column is stock based
+   */
+  public boolean isColumnStockBased(String name) {
+    RequisitionTemplateColumn column = findColumn(name);
+
+    return SourceType.STOCK_CARDS.equals(column.getSource());
+  }
+
+  /**
    * Checks if column with given name is input by user.
    *
    * @param name name of requisition column.
