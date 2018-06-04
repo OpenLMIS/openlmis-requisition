@@ -493,7 +493,8 @@ public class RequisitionLineItem extends BaseEntity {
       Collection<StockAdjustmentReason> stockAdjustmentReasons,
       Integer numberOfMonthsInPeriod,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
+    calculateAndSetTotalLossesAndAdjustments(
+        stockAdjustmentReasons, template, stockCardRangeSummaryDtos);
     calculateAndSetStockOnHand(template);
     calculateAndSetTotalConsumedQuantity(template, stockCardRangeSummaryDtos);
     calculateAndSetTotal(template);
@@ -608,13 +609,25 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
   private void calculateAndSetTotalLossesAndAdjustments(
-      Collection<StockAdjustmentReason> reasons) {
-    int calculated = calculateTotalLossesAndAdjustments(this, reasons);
-    if (getTotalLossesAndAdjustments() != null
-        && !Objects.equals(getTotalLossesAndAdjustments(), calculated)) {
-      LOGGER.warn("Passed TotalLossesAndAdjustments does not match calculated one.");
+      Collection<StockAdjustmentReason> reasons,
+      RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
+      Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
+          column, stockCardRangeSummaryDtos);
+      if (summaryDto.isPresent()) {
+        setTotalConsumedQuantity(summaryDto.get().getAmount(column.getTag()));
+      }
+    } else {
+      int calculated = calculateTotalLossesAndAdjustments(this, reasons);
+      if (getTotalLossesAndAdjustments() != null
+          && !Objects.equals(getTotalLossesAndAdjustments(), calculated)) {
+        LOGGER.warn("Passed TotalLossesAndAdjustments does not match calculated one.");
+      }
+      setTotalLossesAndAdjustments(calculated);
     }
-    setTotalLossesAndAdjustments(calculated);
   }
 
   /**
