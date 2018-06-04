@@ -82,13 +82,13 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String TOTAL = "total";
   static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
-  static final String TOTAL_LOSSES_AND_ADJUSTMNETS = "totalLossesAndAdjustments";
+  static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
   static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(TOTAL_STOCKOUT_DAYS,
       TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION, MAXIMUM_STOCK_QUANTITY,
       CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION);
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(BEGINNING_BALANCE, STOCK_ON_HAND,
-      TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMNETS);
+      TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS);
 
   private Errors errors;
 
@@ -302,7 +302,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
 
     validateStockBasedColumn(template, TOTAL_CONSUMED_QUANTITY);
     validateStockBasedColumn(template, TOTAL_RECEIVED_QUANTITY);
-    validateStockBasedColumn(template, TOTAL_LOSSES_AND_ADJUSTMNETS);
+    validateStockBasedColumn(template, TOTAL_LOSSES_AND_ADJUSTMENTS);
   }
 
   private void validateForAdjustedConsumption(RequisitionTemplateDto template) {
