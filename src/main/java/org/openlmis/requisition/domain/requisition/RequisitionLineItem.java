@@ -55,9 +55,11 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.utils.Message;
@@ -488,17 +490,19 @@ public class RequisitionLineItem extends BaseEntity {
    * Calculate and set all calculated fields in this requisition line item.
    */
   void calculateAndSetFields(RequisitionTemplate template,
-                                    Collection<StockAdjustmentReason> stockAdjustmentReasons,
-                                    Integer numberOfMonthsInPeriod) {
+      Collection<StockAdjustmentReason> stockAdjustmentReasons,
+      Integer numberOfMonthsInPeriod,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons);
     calculateAndSetStockOnHand(template);
-    calculateAndSetTotalConsumedQuantity(template);
+    calculateAndSetTotalConsumedQuantity(template, stockCardRangeSummaryDtos);
     calculateAndSetTotal(template);
     calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
     calculateAndSetAverageConsumption(template);
     calculateAndSetMaximumStockQuantity(template);
     calculateAndSetCalculatedOrderQuantity(template);
     calculateAndSetCalculatedOrderQuantityIsa(template);
+    calculateAndSetTotalReceivedQuantity(template, stockCardRangeSummaryDtos);
   }
 
   /**
@@ -538,7 +542,8 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Total Consumed Quantity field in {@link RequisitionLineItem}.
    */
-  private void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template) {
+  private void calculateAndSetTotalConsumedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     if (template.isColumnInTemplateAndDisplayed(TOTAL_CONSUMED_QUANTITY)) {
       if (template.isColumnCalculated(TOTAL_CONSUMED_QUANTITY)) {
         int calculated = calculateTotalConsumedQuantity(this);
@@ -547,9 +552,21 @@ public class RequisitionLineItem extends BaseEntity {
           LOGGER.warn("Passed TotalConsumedQuantity does not match calculated one.");
         }
         setTotalConsumedQuantity(calculated);
+      } else if (template.isPopulateStockOnHandFromStockCards()) {
+        calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryDtos);
       }
     } else {
       setTotalConsumedQuantity(null);
+    }
+  }
+
+  /**
+   * Sets appropriate value for Total Received Quantity field in {@link RequisitionLineItem}.
+   */
+  private void calculateAndSetTotalReceivedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaryDtos);
     }
   }
 
@@ -651,6 +668,33 @@ public class RequisitionLineItem extends BaseEntity {
       }
       setCalculatedOrderQuantityIsa(calculated);
     }
+  }
+
+  private void calculateAndSetStockBasedTotalConsumedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_CONSUMED_QUANTITY);
+    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
+        column, stockCardRangeSummaryDtos);
+    if (summaryDto.isPresent()) {
+      setTotalConsumedQuantity(summaryDto.get().getAmount(column.getTag()));
+    }
+  }
+
+  private void calculateAndSetStockBasedTotalReceivedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
+    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
+        column, stockCardRangeSummaryDtos);
+    if (summaryDto.isPresent()) {
+      setTotalReceivedQuantity(summaryDto.get().getAmount(column.getTag()));
+    }
+  }
+
+  private Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(
+      RequisitionTemplateColumn column, List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    return stockCardRangeSummaryDtos.stream().filter(
+        stockCardRangeSummaryDto -> stockCardRangeSummaryDto.getTags().containsKey(
+            column.getTag())).findFirst();
   }
 
   /**

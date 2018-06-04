@@ -67,6 +67,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_DISABLED_COLUMNS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
 import com.google.common.collect.ImmutableSet;
@@ -682,19 +683,46 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   @Test
-  public void shouldRejectWhenStockDisabledColumnIsDisplayed() throws Exception {
+  public void shouldRejectWhenTotalReceivedQuantitySourceIsOtherThanStockCards() {
     RequisitionTemplateDto template = getTemplatePopulatedByStock();
 
     validator.validate(template, errors);
 
-    Message message = new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS);
+    Message message = new Message(ERROR_COLUMN_SOURCE_INVALID);
     when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
         message.toString()));
 
-    template.findColumn(TOTAL_CONSUMED_QUANTITY).setIsDisplayed(true);
+    template.findColumn(TOTAL_RECEIVED_QUANTITY).setSource(CALCULATED);
 
     validator.validate(template, errors);
     verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+  }
+
+  @Test
+  public void shouldRejectWhenTotalConsumedQuantitySourceIsOtherThanStockCards() {
+    RequisitionTemplateDto template = getTemplatePopulatedByStock();
+
+    validator.validate(template, errors);
+
+    Message message = new Message(ERROR_COLUMN_SOURCE_INVALID);
+    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
+        message.toString()));
+
+    template.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
+
+    validator.validate(template, errors);
+    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+  }
+
+  @Test
+  public void shouldNotRejectWhenTotalConsumedQuantityIsDisplayedForStockBasedRequisition() {
+    RequisitionTemplateDto template = getTemplatePopulatedByStock();
+
+    validator.validate(template, errors);
+
+    template.findColumn(TOTAL_CONSUMED_QUANTITY).setIsDisplayed(true);
+
+    verify(errors, never()).rejectValue(anyString(), anyString());
   }
 
   @Test
@@ -739,12 +767,15 @@ public class RequisitionTemplateDtoValidatorTest {
 
   private RequisitionTemplateDto getTemplatePopulatedByStock() {
     RequisitionTemplate template = baseTemplateBuilder()
+        .withColumn(TOTAL_RECEIVED_QUANTITY, "B", USER_INPUT,
+            Sets.asSet(USER_INPUT))
         .withPopulateStockOnHandFromStockCards()
         .build();
 
     RequisitionTemplateDto dto = buildDto(template);
 
-    dto.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
+    dto.findColumn(TOTAL_CONSUMED_QUANTITY).setTag("consumed");
+    dto.findColumn(TOTAL_RECEIVED_QUANTITY).setTag("received");
 
     STOCK_DISABLED_COLUMNS
         .stream()

@@ -87,6 +87,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -302,7 +303,8 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products               Collection of orderables.
    */
   public void updateFrom(Requisition requisition, Map<UUID, OrderableDto> products,
-      boolean isDatePhysicalStockCountCompletedEnabled) {
+      boolean isDatePhysicalStockCountCompletedEnabled,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
@@ -317,7 +319,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-    calculateAndValidateTemplateFields(this.template);
+    calculateAndValidateTemplateFields(this.template, stockCardRangeSummaryDtos);
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
@@ -792,10 +794,11 @@ public class Requisition extends BaseTimestampedEntity {
     return money.orElse(defaultValue);
   }
 
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template) {
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     getNonSkippedFullSupplyRequisitionLineItems()
         .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
-            numberOfMonthsInPeriod));
+            numberOfMonthsInPeriod, stockCardRangeSummaryDtos));
   }
 
   private void updateConsumptions() {

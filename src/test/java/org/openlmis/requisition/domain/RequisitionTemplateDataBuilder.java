@@ -20,6 +20,8 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.STOCK_ON_HAND;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -145,7 +147,8 @@ public class RequisitionTemplateDataBuilder {
   public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards() {
     populateStockOnHandFromStockCards = true;
 
-    for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND)) {
+    for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND,
+        TOTAL_CONSUMED_QUANTITY, TOTAL_RECEIVED_QUANTITY)) {
       if (columnsMap.containsKey(stockColumn)) {
         columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
       }

@@ -17,6 +17,7 @@ package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_TAG_NOT_SET;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
@@ -83,12 +84,11 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMNETS = "totalLossesAndAdjustments";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
-  static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(
-      TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY, TOTAL_STOCKOUT_DAYS,
+  static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(TOTAL_STOCKOUT_DAYS,
       TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION, MAXIMUM_STOCK_QUANTITY,
       CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION, TOTAL_LOSSES_AND_ADJUSTMNETS);
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
-      BEGINNING_BALANCE, STOCK_ON_HAND);
+      BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY);
 
   private Errors errors;
 
@@ -299,6 +299,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
             ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS, columnName));
       }
     }
+
+    validateStockBasedColumn(template, TOTAL_CONSUMED_QUANTITY);
+    validateStockBasedColumn(template, TOTAL_RECEIVED_QUANTITY);
   }
 
   private void validateForAdjustedConsumption(RequisitionTemplateDto template) {
@@ -322,6 +325,13 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
             TOTAL_STOCKOUT_DAYS);
       }
       rejectIfNumberOfPeriodsToAverageIsNull(template);
+    }
+  }
+
+  private void validateStockBasedColumn(RequisitionTemplateDto template, String column) {
+    if (template.isPopulateStockOnHandFromStockCards()
+        && template.findColumn(column).getTag() == null) {
+      new Message(ERROR_COLUMNS_TAG_NOT_SET, template.findColumn(column).getLabel());
     }
   }
 
