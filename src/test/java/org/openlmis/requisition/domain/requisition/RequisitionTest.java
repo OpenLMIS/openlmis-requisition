@@ -1431,10 +1431,7 @@ public class RequisitionTest {
   public void shouldCopySkippedValueFromPreviousRequisition() {
     // given
     final UUID productId1 = UUID.randomUUID();
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
-    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
-    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
-    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    final ApprovedProductDto product1 = mockApprovedProduct(productId1);
 
     Requisition previousReq = mock(Requisition.class);
     RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
@@ -1446,9 +1443,12 @@ public class RequisitionTest {
 
     PowerMockito.when(LineItemFieldsCalculator
         .canSkipLineItem(
-            org.mockito.Matchers.any(RequisitionLineItem.class)
-            ,org.mockito.Matchers.any(RequisitionLineItem.class)))
+            org.mockito.Matchers.any(RequisitionLineItem.class),
+            org.mockito.Matchers.any(RequisitionLineItem.class)))
         .thenReturn(true);
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
@@ -1460,18 +1460,17 @@ public class RequisitionTest {
 
   @Test
   public void shouldNotCopySkippedValueWhenSourceIsNotFromPreviousRequisition() {
-    // given
     final UUID productId1 = UUID.randomUUID();
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
-    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
-    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(false);
-    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    final ApprovedProductDto product1 = mockApprovedProduct(productId1);
 
     Requisition previousReq = mock(Requisition.class);
     RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
     lineItem1.setSkipped(true);
 
     when(previousReq.getRequisitionLineItems()).thenReturn(asList(lineItem1));
+    when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
+    when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(false);
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
@@ -1485,13 +1484,14 @@ public class RequisitionTest {
   public void shouldNotCopySkippedValueWhenSourceIsFromPreviousRequisitionButNoPreviousFound() {
     // given
     final UUID productId1 = UUID.randomUUID();
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    final ApprovedProductDto product1 = mockApprovedProduct(productId1);
+
     when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
     when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
-
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
+
     req.initiate(template, asList(product1), emptyList(), 0, null,
         emptyMap(), UUID.randomUUID(), null);
 
@@ -1502,7 +1502,8 @@ public class RequisitionTest {
   public void shouldNotCopySkippedValueWhenEmergencyRequisitionSourceIsFromPreviousRequisition() {
     // given
     final UUID productId1 = UUID.randomUUID();
-    ApprovedProductDto product1 = mockApprovedProduct(productId1);
+    final ApprovedProductDto product1 = mockApprovedProduct(productId1);
+
     when(template.isColumnInTemplateAndDisplayed(SKIPPED_COLUMN)).thenReturn(true);
     when(template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)).thenReturn(true);
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
