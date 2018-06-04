@@ -20,6 +20,7 @@ Improvements:
 
 Bug fixes:
 * [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.
+* [OLMIS-4697](https://openlmis.atlassian.net/browse/OLMIS-4697): Fix Timeliness report: nulls in "Facility type" column
 
 6.0.0 / 2018-04-24
 ==================
@@ -275,5 +276,3 @@ Bug fixes, security and performance improvements, also backwards-compatible:
 
 * Released openlmis-requisition 3.0.0 as part of openlmis-ref-distro 3.0.0. See [3.0.0 Release Notes](https://openlmis.atlassian.net/wiki/display/OP/3.0.0+Release+Notes).
  * This was the first stable release of openlmis-requisition. It builds on the code, patterns, and lessons learned from OpenLMIS 1 and 2.
-
-* [OLMIS-4697](https://openlmis.atlassian.net/browse/OLMIS-4697): Fix Timeliness report: nulls in "Facility type" column
