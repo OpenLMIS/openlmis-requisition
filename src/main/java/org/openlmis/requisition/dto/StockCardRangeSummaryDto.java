@@ -42,6 +42,7 @@ public final class StockCardRangeSummaryDto {
   private Map<String, Integer> tags;
 
   @Getter
+  @Setter
   private Integer amount;
 
   /**
