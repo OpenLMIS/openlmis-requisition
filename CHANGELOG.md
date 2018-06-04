@@ -5,6 +5,7 @@ New functionality:
 * [OLMIS-4792](https://openlmis.atlassian.net/browse/OLMIS-4792): Make additional options column of requisition template translatable.
 * [OLMIS-4681](https://openlmis.atlassian.net/browse/OLMIS-4681): Added additional option and source option for skipped column.
 * [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint
+* [OLMIS-4683](https://openlmis.atlassian.net/browse/OLMIS-4683): Carry over skipped column value from previous requisition
   * updated label in bootstrap data for skipped column
   * updated messages
   * fixed displaying messages with params
