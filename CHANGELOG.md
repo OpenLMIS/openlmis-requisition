@@ -12,6 +12,7 @@ New functionality:
 * [OLMIS-4053](https://openlmis.atlassian.net/browse/OLMIS-4053): Enabled beginning balance column for stock based requisition templates
   * data would be populated with the stock on hand at the end of the previous requisition period
   * after initialization values cannot be changed
+* [OLMIS-4747](https://openlmis.atlassian.net/browse/OLMIS-4747): Populated Total Received Quantity and Total Consumed Quantity columns for Stock Based Requisitions
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
