@@ -50,7 +50,8 @@ public final class StockCardRangeSummaryDto {
   public Integer getAmount(String tag) {
     return tags.entrySet().stream()
         .filter(map -> map.getKey().matches(tag))
-        .map(Map.Entry::getValue).findFirst().get();
+        .map(Map.Entry::getValue)
+        .findFirst().orElse(0);
   }
 
 }
