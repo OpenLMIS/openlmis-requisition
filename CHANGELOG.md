@@ -5,7 +5,6 @@ New functionality:
 * [OLMIS-4792](https://openlmis.atlassian.net/browse/OLMIS-4792): Make additional options column of requisition template translatable.
 * [OLMIS-4681](https://openlmis.atlassian.net/browse/OLMIS-4681): Added additional option and source option for skipped column.
 * [OLMIS-4015](https://openlmis.atlassian.net/browse/OLMIS-4015): Added GET /api/availableRequisitionColumns endpoint
-* [OLMIS-4683](https://openlmis.atlassian.net/browse/OLMIS-4683): Carry over skipped column value from previous requisition
   * updated label in bootstrap data for skipped column
   * updated messages
   * fixed displaying messages with params
@@ -16,6 +15,7 @@ New functionality:
 * [OLMIS-4747](https://openlmis.atlassian.net/browse/OLMIS-4747): Populated Total Received Quantity and Total Consumed Quantity columns for Stock Based Requisitions
 * [OLMIS-4748](https://openlmis.atlassian.net/browse/OLMIS-4748): Total Losses and Adjustment column is populated from stock cards for Stock Based Requisitions.
 * [OLMIS-4760](https://openlmis.atlassian.net/browse/OLMIS-4760): Total Stockout Days column is populated from stock cards for Stock Based Requisitions.
+* [OLMIS-4683](https://openlmis.atlassian.net/browse/OLMIS-4683): Carry over skipped column value from previous requisition
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
