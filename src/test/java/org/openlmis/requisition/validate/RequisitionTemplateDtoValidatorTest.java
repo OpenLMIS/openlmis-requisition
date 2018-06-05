@@ -783,6 +783,8 @@ public class RequisitionTemplateDtoValidatorTest {
             Sets.asSet(USER_INPUT))
         .withColumn(TOTAL_LOSSES_AND_ADJUSTMENTS, "D", STOCK_CARDS,
             Sets.asSet(STOCK_CARDS))
+        .withColumn(TOTAL_STOCKOUT_DAYS, "X", STOCK_CARDS,
+            Sets.asSet(STOCK_CARDS))
         .withPopulateStockOnHandFromStockCards()
         .build();
 

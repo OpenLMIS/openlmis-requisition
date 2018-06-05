@@ -504,6 +504,7 @@ public class RequisitionLineItem extends BaseEntity {
     calculateAndSetCalculatedOrderQuantity(template);
     calculateAndSetCalculatedOrderQuantityIsa(template);
     calculateAndSetTotalReceivedQuantity(template, stockCardRangeSummaryDtos);
+    calculateAndSetTotalStockoutDays(template, stockCardRangeSummaryDtos);
   }
 
   /**
@@ -572,6 +573,18 @@ public class RequisitionLineItem extends BaseEntity {
       calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaryDtos);
     }
   }
+
+  /**
+   * Sets appropriate value for Total Received Quantity field in {@link RequisitionLineItem}.
+   */
+  private void calculateAndSetTotalStockoutDays(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    if (template.isPopulateStockOnHandFromStockCards()
+        && template.isColumnStockBased(TOTAL_STOCKOUT_DAYS)) {
+      calculateAndSetStockBasedTotalStockoutDays(template, stockCardRangeSummaryDtos);
+    }
+  }
+
 
   /**
    * Sets appropriate value for Total field in {@link RequisitionLineItem}.
@@ -715,6 +728,15 @@ public class RequisitionLineItem extends BaseEntity {
       }
       setTotalReceivedQuantity(value);
     }
+  }
+
+  private void calculateAndSetStockBasedTotalStockoutDays(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_STOCKOUT_DAYS);
+    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
+        column, stockCardRangeSummaryDtos);
+    summaryDto.ifPresent(stockCardRangeSummaryDto -> setTotalStockoutDays(
+        stockCardRangeSummaryDto.getStockOutDays()));
   }
 
   private Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(

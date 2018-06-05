@@ -659,8 +659,8 @@
     "label": "Total stockout days",
     "indicator": "X",
     "displayOrder": 8,
-    "isDisplayed": false,
-    "source": 0,
+    "isDisplayed": true,
+    "source": 3,
     "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },
@@ -968,8 +968,8 @@
     "label": "Total stockout days",
     "indicator": "X",
     "displayOrder": 8,
-    "isDisplayed": false,
-    "source": 0,
+    "isDisplayed": true,
+    "source": 3,
     "definition": "Total number of days facility was out of stock.",
     "requisitionColumnId": "750b9359-c097-4612-8328-d21671f88920"
   },

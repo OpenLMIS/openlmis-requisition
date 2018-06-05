@@ -23,6 +23,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ST
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -148,8 +149,9 @@ public class RequisitionTemplateDataBuilder {
   public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards() {
     populateStockOnHandFromStockCards = true;
 
-    for (String stockColumn : Arrays.asList(BEGINNING_BALANCE, STOCK_ON_HAND,
-        TOTAL_CONSUMED_QUANTITY, TOTAL_RECEIVED_QUANTITY, TOTAL_LOSSES_AND_ADJUSTMENTS)) {
+    for (String stockColumn : Arrays.asList(
+        BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY, TOTAL_RECEIVED_QUANTITY,
+        TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS)) {
       if (columnsMap.containsKey(stockColumn)) {
         columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
       }

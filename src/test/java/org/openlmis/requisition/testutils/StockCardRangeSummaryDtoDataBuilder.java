@@ -23,7 +23,7 @@ import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 public class StockCardRangeSummaryDtoDataBuilder {
 
   private ObjectReferenceDto orderable;
-  private Long stockOutDays;
+  private Integer stockOutDays;
   private Map<String, Integer> tags;
   private Integer amount;
 
@@ -32,7 +32,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
    */
   public StockCardRangeSummaryDtoDataBuilder() {
     orderable = new ObjectReferenceDtoDataBuilder().withPath("api/orderables").build();
-    stockOutDays = 0L;
+    stockOutDays = 0;
     tags = new HashMap<>();
     amount = 0;
   }

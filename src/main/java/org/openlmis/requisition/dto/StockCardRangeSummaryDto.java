@@ -35,7 +35,7 @@ public final class StockCardRangeSummaryDto {
 
   @Getter
   @Setter
-  private Long stockOutDays;
+  private Integer stockOutDays;
 
   @Getter
   @Setter

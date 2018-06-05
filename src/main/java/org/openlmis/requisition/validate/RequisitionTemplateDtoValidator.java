@@ -303,6 +303,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     validateStockBasedColumn(template, TOTAL_CONSUMED_QUANTITY);
     validateStockBasedColumn(template, TOTAL_RECEIVED_QUANTITY);
     validateStockBasedColumn(template, TOTAL_LOSSES_AND_ADJUSTMENTS);
+    validateStockBasedColumn(template, TOTAL_STOCKOUT_DAYS);
   }
 
   private void validateForAdjustedConsumption(RequisitionTemplateDto template) {
