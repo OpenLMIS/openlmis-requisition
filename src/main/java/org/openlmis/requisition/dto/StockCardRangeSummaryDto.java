@@ -49,13 +49,11 @@ public final class StockCardRangeSummaryDto {
    * Sums amount values from tags map.
    *
    * @param tag tag name to get it's value
-   * @return sum of all amount values
+   * @return amount value of provided tag
    */
   public Integer getTagAmount(String tag) {
-    return tags.entrySet().stream()
-        .filter(map -> map.getKey().matches(tag))
-        .map(Map.Entry::getValue)
-        .findFirst().orElse(0);
+    Integer tagAmount = tags.get(tag);
+    return null == tagAmount ? 0 : tagAmount;
   }
 
 }
