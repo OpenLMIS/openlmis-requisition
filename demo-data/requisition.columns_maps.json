@@ -620,8 +620,8 @@
     "label": "Total received quantity",
     "indicator": "B",
     "displayOrder": 5,
-    "isDisplayed": false,
-    "source": 0,
+    "isDisplayed": true,
+    "source": 3,
     "definition": "Total quantity received in the reporting period. This is quantified in dispensing units.",
     "tag": "received",
     "requisitionColumnId": "5ba8b72d-277a-4da8-b10a-23f0cda23cb4"
@@ -633,8 +633,8 @@
     "label": "Total consumed quantity",
     "indicator": "C",
     "displayOrder": 6,
-    "isDisplayed": false,
-    "source": 1,
+    "isDisplayed": true,
+    "source": 3,
     "definition": "Quantity dispensed/consumed in the reporting period. This is quantified in dispensing units.",
     "tag": "consumed",
     "requisitionColumnId": "9e825396-269d-4873-baa4-89054e2722f4"
