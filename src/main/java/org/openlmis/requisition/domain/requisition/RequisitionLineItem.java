@@ -581,7 +581,7 @@ public class RequisitionLineItem extends BaseEntity {
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     if (template.isPopulateStockOnHandFromStockCards()
         && template.isColumnStockBased(TOTAL_STOCKOUT_DAYS)) {
-      calculateAndSetStockBasedTotalStockoutDays(template, stockCardRangeSummaryDtos);
+      calculateAndSetStockBasedTotalStockoutDays(stockCardRangeSummaryDtos);
     }
   }
 
@@ -628,11 +628,13 @@ public class RequisitionLineItem extends BaseEntity {
 
     if (template.isPopulateStockOnHandFromStockCards()) {
       RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
-      Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
-          column, stockCardRangeSummaryDtos);
+      Optional<StockCardRangeSummaryDto> summaryDto =
+          findStockCardRangeSummary(stockCardRangeSummaryDtos);
+      int value = 0;
       if (summaryDto.isPresent()) {
-        setTotalLossesAndAdjustments(summaryDto.get().getTagAmount(column.getTag()));
+        value = summaryDto.get().getTagAmount(column.getTag());
       }
+      setTotalLossesAndAdjustments(value);
     } else {
       int calculated = calculateTotalLossesAndAdjustments(this, reasons);
       if (getTotalLossesAndAdjustments() != null
@@ -701,49 +703,54 @@ public class RequisitionLineItem extends BaseEntity {
   private void calculateAndSetStockBasedTotalConsumedQuantity(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     RequisitionTemplateColumn column = template.findColumn(TOTAL_CONSUMED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
-        column, stockCardRangeSummaryDtos);
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos);
+    int value = 0;
     if (summaryDto.isPresent()) {
-      Integer value = summaryDto.get().getTagAmount(column.getTag());
+      value = summaryDto.get().getTagAmount(column.getTag());
       if (value > 0) {
         throw new ValidationMessageException(new Message(
             MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER, TOTAL_CONSUMED_QUANTITY,
             orderableId.toString()));
       }
-      setTotalConsumedQuantity(Math.abs(value));
     }
+    setTotalConsumedQuantity(Math.abs(value));
   }
 
   private void calculateAndSetStockBasedTotalReceivedQuantity(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
     RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
-        column, stockCardRangeSummaryDtos);
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos);
+    int value = 0;
     if (summaryDto.isPresent()) {
-      Integer value = summaryDto.get().getTagAmount(column.getTag());
+      value = summaryDto.get().getTagAmount(column.getTag());
       if (value < 0) {
         throw new ValidationMessageException(new Message(
             MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER, TOTAL_RECEIVED_QUANTITY,
             orderableId.toString()));
       }
-      setTotalReceivedQuantity(value);
     }
+    setTotalReceivedQuantity(value);
   }
 
-  private void calculateAndSetStockBasedTotalStockoutDays(RequisitionTemplate template,
+  private void calculateAndSetStockBasedTotalStockoutDays(
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    RequisitionTemplateColumn column = template.findColumn(TOTAL_STOCKOUT_DAYS);
-    Optional<StockCardRangeSummaryDto> summaryDto = findStockCardRangeSummary(
-        column, stockCardRangeSummaryDtos);
-    summaryDto.ifPresent(stockCardRangeSummaryDto -> setTotalStockoutDays(
-        stockCardRangeSummaryDto.getStockOutDays()));
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos);
+    int value = 0;
+    if (summaryDto.isPresent()) {
+      value = summaryDto.get().getStockOutDays();
+    }
+    setTotalStockoutDays(value);
   }
 
   private Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(
-      RequisitionTemplateColumn column, List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    return stockCardRangeSummaryDtos.stream().filter(
-        stockCardRangeSummaryDto -> stockCardRangeSummaryDto.getTags().containsKey(
-            column.getTag())).findFirst();
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+    return stockCardRangeSummaryDtos.stream()
+        .filter(stockCardRangeSummaryDto ->
+            stockCardRangeSummaryDto.getOrderable().getId().equals(this.orderableId))
+        .findFirst();
   }
 
   /**

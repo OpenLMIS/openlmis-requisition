@@ -17,6 +17,7 @@ package org.openlmis.requisition.testutils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 
@@ -47,6 +48,17 @@ public class StockCardRangeSummaryDtoDataBuilder {
 
   public StockCardRangeSummaryDtoDataBuilder withTags(Map<String, Integer> tags) {
     this.tags = tags;
+    return this;
+  }
+
+  /**
+   * Sets orderable reference object with given id.
+   */
+  public StockCardRangeSummaryDtoDataBuilder withOrderableId(UUID orderableId) {
+    this.orderable = new ObjectReferenceDtoDataBuilder()
+        .withPath("api/orderables")
+        .withId(orderableId)
+        .build();
     return this;
   }
 }

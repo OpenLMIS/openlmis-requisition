@@ -140,11 +140,6 @@ public class RequisitionTest {
     requisition = new Requisition();
     requisitionLineItem = new RequisitionLineItem();
 
-    Map<String, Integer> tags = new HashMap<>();
-    tags.put(RECEIVED_TAG, 100);
-    tags.put(CONSUMED_TAG, -200);
-    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
-
     requisitionLineItem.setId(UUID.randomUUID());
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
     requisitionLineItem.setStockOnHand(20);
@@ -159,6 +154,14 @@ public class RequisitionTest {
     requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
     requisition.setStockAdjustmentReasons(Collections.emptyList());
     requisition.setEmergency(false);
+
+    Map<String, Integer> tags = new HashMap<>();
+    tags.put(RECEIVED_TAG, 100);
+    tags.put(CONSUMED_TAG, -200);
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(requisitionLineItem.getOrderableId())
+        .withTags(tags)
+        .build();
   }
 
   @Test
@@ -624,7 +627,10 @@ public class RequisitionTest {
     Map<String, Integer> tags = new HashMap<>();
     tags.put(RECEIVED_TAG, 100);
     tags.put(CONSUMED_TAG, 200);
-    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(requisitionLineItem.getOrderableId())
+        .withTags(tags)
+        .build();
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
@@ -655,7 +661,10 @@ public class RequisitionTest {
     Map<String, Integer> tags = new HashMap<>();
     tags.put(RECEIVED_TAG, -100);
     tags.put(CONSUMED_TAG, -200);
-    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().withTags(tags).build();
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(requisitionLineItem.getOrderableId())
+        .withTags(tags)
+        .build();
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
