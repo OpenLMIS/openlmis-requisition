@@ -38,6 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
@@ -102,6 +103,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -123,6 +125,7 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
@@ -130,6 +133,7 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
@@ -232,6 +236,9 @@ public class RequisitionServiceTest {
   @Mock
   private ProofOfDeliveryService proofOfDeliveryService;
 
+  @Mock
+  private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -261,6 +268,7 @@ public class RequisitionServiceTest {
   private static final UUID PRODUCT_ID = UUID.randomUUID();
   private static final UUID NON_FULL_PRODUCT_ID = UUID.randomUUID();
   private String productNamePrefix = "Product ";
+  private StockCardRangeSummaryDto stockCardRangeSummaryDto;
 
   @Before
   public void setUp() {
@@ -274,6 +282,8 @@ public class RequisitionServiceTest {
         "stockCardSummariesStockManagementService",
         stockCardSummariesStockManagementService
     );
+
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().build();
   }
 
   @Test
@@ -861,12 +871,14 @@ public class RequisitionServiceTest {
         program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
 
     assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
+    verifyZeroInteractions(stockCardRangeSummaryStockManagementService);
   }
 
   @Test
   public void shouldNotIncludeLineItemsIfNoStockCardSummariesFound() {
     prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
 
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -1720,9 +1732,16 @@ public class RequisitionServiceTest {
             any(LocalDate.class)));
   }
 
+  private OngoingStubbing<List<StockCardRangeSummaryDto>> whenGetStockCardRangeSummaries() {
+    return when(stockCardRangeSummaryStockManagementService
+        .search(any(UUID.class), any(UUID.class), anySetOf(UUID.class), any(String.class),
+            any(LocalDate.class), any(LocalDate.class)));
+  }
+
   private void prepareForGetStockOnHandTest() {
     prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     when(stockCardSummariesStockManagementService
         .search(program.getId(), facility.getId(), singleton(PRODUCT_ID),
             processingPeriod.getEndDate()))

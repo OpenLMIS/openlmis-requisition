@@ -46,7 +46,6 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
@@ -65,7 +64,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
@@ -143,9 +141,6 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  @Autowired
-  private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
-
   RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
 
@@ -168,20 +163,8 @@ public abstract class BaseRequisitionController extends BaseController {
       Profiler profiler) {
     profiler.start("UPDATE");
 
-    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
-
-    if (toUpdate.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      ProcessingPeriodDto period = periodReferenceDataService
-          .findOne(toUpdate.getProcessingPeriodId());
-
-      stockCardRangeSummaryDtos =
-          stockCardRangeSummaryStockManagementService
-              .search(toUpdate.getProgramId(), toUpdate.getFacilityId(),
-                  toUpdate.getAllOrderableIds(), null, period.getStartDate(),
-                  period.getEndDate());
-    }
     toUpdate.updateFrom(requisition, orderables,
-        datePhysicalStockCountCompletedEnabledPredicate.exec(program), stockCardRangeSummaryDtos);
+        datePhysicalStockCountCompletedEnabledPredicate.exec(program));
 
     profiler.start("SAVE");
     toUpdate = requisitionRepository.save(toUpdate);

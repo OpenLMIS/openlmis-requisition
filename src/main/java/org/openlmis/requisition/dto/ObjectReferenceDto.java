@@ -21,6 +21,7 @@ import static org.openlmis.requisition.web.ResourceNames.SEPARATOR;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.UUID;
@@ -30,10 +31,12 @@ import java.util.UUID;
 public class ObjectReferenceDto {
 
   @Getter
-  private final UUID id;
+  @Setter
+  private UUID id;
 
   @Getter
-  private final String href;
+  @Setter
+  private String href;
 
   protected ObjectReferenceDto() {
     this(null);

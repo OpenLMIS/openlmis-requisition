@@ -304,8 +304,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products               Collection of orderables.
    */
   public void updateFrom(Requisition requisition, Map<UUID, OrderableDto> products,
-      boolean isDatePhysicalStockCountCompletedEnabled,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+      boolean isDatePhysicalStockCountCompletedEnabled) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
@@ -320,7 +319,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-    calculateAndValidateTemplateFields(this.template, stockCardRangeSummaryDtos);
+    calculateAndValidateTemplateFields(this.template);
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
@@ -349,14 +348,16 @@ public class Requisition extends BaseTimestampedEntity {
    *                             calculations and set previous adjusted consumptions. Pass empty
    *                             list if there are no previous requisitions.
    */
-  public void initiate(RequisitionTemplate template,
-                       Collection<ApprovedProductDto> fullSupplyProducts,
-                       List<Requisition> previousRequisitions,
-                       int numberOfPreviousPeriodsToAverage,
-                       ProofOfDeliveryDto proofOfDelivery,
-                       Map<UUID, Integer> idealStockAmounts,
-                       UUID initiator,
-                       StockData stockData) {
+  public void initiate(
+      RequisitionTemplate template,
+      Collection<ApprovedProductDto> fullSupplyProducts,
+      List<Requisition> previousRequisitions,
+      int numberOfPreviousPeriodsToAverage,
+      ProofOfDeliveryDto proofOfDelivery,
+      Map<UUID, Integer> idealStockAmounts,
+      UUID initiator,
+      StockData stockData,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaries) {
 
     Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
     profiler.setLogger(LOGGER);
@@ -365,7 +366,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     profiler.start("SET_LINE_ITEMS");
     if (template.isPopulateStockOnHandFromStockCards()) {
-      initiateLineItems(fullSupplyProducts, idealStockAmounts, stockData);
+      initiateLineItems(fullSupplyProducts, idealStockAmounts, stockData, stockCardRangeSummaries);
     } else {
       initiateLineItems(fullSupplyProducts, idealStockAmounts, proofOfDelivery, profiler);
     }
@@ -405,7 +406,8 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
-      Map<UUID, Integer> idealStockAmounts, StockData stockData) {
+      Map<UUID, Integer> idealStockAmounts, StockData stockData,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaries) {
     this.requisitionLineItems = new ArrayList<>();
 
     if (isNotTrue(emergency)) {
@@ -420,6 +422,12 @@ public class Requisition extends BaseTimestampedEntity {
         lineItem.setIdealStockAmount(extractIdealStockAmount(idealStockAmounts, product));
         lineItem.setStockOnHand(stockData.getStockOnHand(orderableId));
         lineItem.setBeginningBalance(stockData.getBeginningBalance(orderableId));
+
+        lineItem.calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaries);
+        lineItem.calculateAndSetStockBasedTotalStockoutDays(stockCardRangeSummaries);
+        lineItem.calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaries);
+        lineItem.calculateAndSetStockBasedTotalLossesAndAdjustments(
+            template, stockCardRangeSummaries);
 
         this.requisitionLineItems.add(lineItem);
       }
@@ -818,11 +826,10 @@ public class Requisition extends BaseTimestampedEntity {
     return money.orElse(defaultValue);
   }
 
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template) {
     getNonSkippedFullSupplyRequisitionLineItems()
-        .forEach(line -> line.calculateAndSetFields(template, stockAdjustmentReasons,
-            numberOfMonthsInPeriod, stockCardRangeSummaryDtos));
+        .forEach(line ->
+            line.calculateAndSetFields(template, stockAdjustmentReasons, numberOfMonthsInPeriod));
   }
 
   private void updateConsumptions() {

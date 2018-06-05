@@ -290,7 +290,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(UUID.randomUUID(), programId,
         UUID.randomUUID(), INITIATED, false);
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData());
+        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData(), null);
 
     requisition = repository.save(requisition);
     requisition = repository.findOne(requisition.getId());

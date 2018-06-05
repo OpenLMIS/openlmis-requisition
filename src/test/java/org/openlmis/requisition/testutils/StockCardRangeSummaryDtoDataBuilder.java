@@ -51,6 +51,11 @@ public class StockCardRangeSummaryDtoDataBuilder {
     return this;
   }
 
+  public StockCardRangeSummaryDtoDataBuilder withStockOutDays(Integer stockOutDays) {
+    this.stockOutDays = stockOutDays;
+    return this;
+  }
+
   /**
    * Sets orderable reference object with given id.
    */

@@ -28,7 +28,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
@@ -293,9 +292,7 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyMap(), anyBoolean(),
-            anyListOf(StockCardRangeSummaryDto.class));
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -310,9 +307,7 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyMap(), anyBoolean(),
-            anyListOf(StockCardRangeSummaryDto.class));
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
   }
 
   @Test
@@ -327,9 +322,7 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyMap(), anyBoolean(),
-            anyListOf(StockCardRangeSummaryDto.class));
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -346,9 +339,7 @@ public class RequisitionControllerTest {
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never())
-        .updateFrom(any(Requisition.class), anyMap(), anyBoolean(),
-            anyListOf(StockCardRangeSummaryDto.class));
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
   }
 
   @Test
@@ -404,8 +395,7 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true),
-        eq(null));
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -446,8 +436,7 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid1);
 
     assertEquals(template, initiatedRequsition.getTemplate());
-    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true),
-        eq(Collections.singletonList(stockCardRangeSummaryDto)));
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
         eq(initiatedRequsition));
@@ -866,23 +855,20 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
-        anyBoolean(), anyListOf(StockCardRangeSummaryDto.class));
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never()).submit(eq(emptyMap()), any(UUID.class), anyBoolean());
   }
 
   private void verifyNoApproveOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
-        anyBoolean(), anyListOf(StockCardRangeSummaryDto.class));
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
         .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class));
   }
 
   private void verifyNoAuthorizeOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(),
-        anyBoolean(), anyListOf(StockCardRangeSummaryDto.class));
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
         .authorize(anyMap(), any(UUID.class));

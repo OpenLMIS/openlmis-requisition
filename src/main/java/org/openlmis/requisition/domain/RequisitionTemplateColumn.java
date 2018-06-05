@@ -80,7 +80,7 @@ public class RequisitionTemplateColumn {
   private String definition;
 
   @Getter
-  @Setter(AccessLevel.PACKAGE)
+  @Setter
   private String tag;
 
   public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {

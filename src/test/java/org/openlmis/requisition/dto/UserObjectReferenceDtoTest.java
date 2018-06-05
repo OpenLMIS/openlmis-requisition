@@ -16,7 +16,7 @@
 package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 public class UserObjectReferenceDtoTest {
@@ -25,6 +25,7 @@ public class UserObjectReferenceDtoTest {
   public void equalsContract() {
     EqualsVerifier
         .forClass(UserObjectReferenceDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
         .withRedefinedSuperclass()
         .verify();
   }

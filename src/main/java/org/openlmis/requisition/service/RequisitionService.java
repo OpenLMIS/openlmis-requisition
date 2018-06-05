@@ -65,6 +65,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -81,6 +82,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
@@ -158,6 +160,9 @@ public class RequisitionService {
   @Autowired
   private StockOnHandRetrieverBuilderFactory stockOnHandRetrieverBuilderFactory;
 
+  @Autowired
+  private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -231,7 +236,7 @@ public class RequisitionService {
         .build()
         .get();
 
-    StockData stockData = new StockData(orderableSoh, orderableBeginning);
+    final StockData stockData = new StockData(orderableSoh, orderableBeginning);
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
     Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
@@ -239,10 +244,20 @@ public class RequisitionService {
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
+
+      stockCardRangeSummaryDtos =
+          stockCardRangeSummaryStockManagementService
+              .search(program.getId(), facility.getId(),
+                  approvedProducts.getOrderableIds(), null,
+                  period.getStartDate(), period.getEndDate());
+    }
+
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
         previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
-        authenticationHelper.getCurrentUser().getId(), stockData);
+        authenticationHelper.getCurrentUser().getId(), stockData, stockCardRangeSummaryDtos);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
     if (emergency) {
