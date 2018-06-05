@@ -955,8 +955,8 @@
     "label": "Total losses and adjustments",
     "indicator": "D",
     "displayOrder": 7,
-    "isDisplayed": false,
-    "source": 0,
+    "isDisplayed": true,
+    "source": 3,
     "definition": "All kind of losses/adjustments made at the facility.",
     "tag": "adjustment",
     "requisitionColumnId": "cd57f329-f549-4717-882e-ecbf98122c38"
