@@ -1290,6 +1290,7 @@ public class RequisitionTest {
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setNumberOfMonthsInPeriod(1);
 
     req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
@@ -1304,6 +1305,28 @@ public class RequisitionTest {
     assertThat(req.findLineByProductId(productId1).getTotalStockoutDays(), is(3));
   }
 
+  @Test
+  public void shouldNotExceedNumberOfDaysInPeriod() {
+    Map<UUID, Integer> orderableSoh = Maps.newHashMap();
+    orderableSoh.put(productId1, 1000);
+
+    stockCardRangeSummaryDto.getOrderable().setId(productId1);
+    stockCardRangeSummaryDto.setStockOutDays(31);
+
+    RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
+
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setNumberOfMonthsInPeriod(1);
+
+    req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+        UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
+        singletonList(stockCardRangeSummaryDto));
+
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProductId(productId1).getTotalStockoutDays(), is(30));
+  }
 
   @Test
   public void shouldRejectIfRequisitionIsStockBasedAndTotalConsumedValueIsPositive() {
@@ -1316,6 +1339,7 @@ public class RequisitionTest {
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setNumberOfMonthsInPeriod(1);
 
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
         asList(product1, product2), emptyList(),
@@ -1337,6 +1361,7 @@ public class RequisitionTest {
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    req.setNumberOfMonthsInPeriod(1);
 
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
         asList(product1, product2), emptyList(),

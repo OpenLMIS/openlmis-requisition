@@ -547,14 +547,16 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets value to Total Stockout Days column based on stock range summaries.
    */
   void calculateAndSetStockBasedTotalStockoutDays(
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod) {
     Optional<StockCardRangeSummaryDto> summaryDto =
         findStockCardRangeSummary(stockCardRangeSummaryDtos);
     int value = 0;
     if (summaryDto.isPresent()) {
       value = summaryDto.get().getStockOutDays();
     }
-    setTotalStockoutDays(value);
+    setTotalStockoutDays(Math.min(
+        value,
+        30 * (null == numberOfMonthsInPeriod ? 1 : numberOfMonthsInPeriod)));
   }
 
   /**

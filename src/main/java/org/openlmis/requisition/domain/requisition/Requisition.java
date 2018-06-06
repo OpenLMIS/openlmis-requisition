@@ -424,7 +424,8 @@ public class Requisition extends BaseTimestampedEntity {
         lineItem.setBeginningBalance(stockData.getBeginningBalance(orderableId));
 
         lineItem.calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaries);
-        lineItem.calculateAndSetStockBasedTotalStockoutDays(stockCardRangeSummaries);
+        lineItem.calculateAndSetStockBasedTotalStockoutDays(
+            stockCardRangeSummaries, numberOfMonthsInPeriod);
         lineItem.calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaries);
         lineItem.calculateAndSetStockBasedTotalLossesAndAdjustments(
             template, stockCardRangeSummaries);
