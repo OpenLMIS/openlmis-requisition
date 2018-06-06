@@ -350,9 +350,9 @@ public class RequisitionTemplateDtoValidatorTest {
         .withNotDisplayed()
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(USER_INPUT))
+            .withSources(Sets.asSet(STOCK_CARDS))
             .build())
-        .withSource(USER_INPUT)
+        .withSource(STOCK_CARDS)
         .build();
     requisitionTemplate
         .getColumnsMap()
