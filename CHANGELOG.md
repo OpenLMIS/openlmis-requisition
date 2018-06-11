@@ -21,6 +21,8 @@ Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
 * [OLMIS-3953](https://openlmis.atlassian.net/browse/OLMIS-3953): Disabled sending stock event when the requisition is configured to pull data from stock cards
 * [OLMIS-4714](https://openlmis.atlassian.net/browse/OLMIS-4714): Stock based requisitions will now contain a subset of approved products if there are no stock cards for some of them (rather than throwing an error about missing stock card).
+* [OLMIS-4835](https://openlmis.atlassian.net/browse/OLMIS-4835): Added check whether user can be notified when sending ConvertToOrder notifier
+
 
 Bug fixes:
 * [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.

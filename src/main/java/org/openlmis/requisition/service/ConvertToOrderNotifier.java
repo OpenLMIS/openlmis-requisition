@@ -58,10 +58,6 @@ public class ConvertToOrderNotifier extends BaseNotifier {
    *
    */
   public void notifyConvertToOrder(Requisition requisition) {
-    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
-    ProcessingPeriodDto period = periodReferenceDataService.findOne(
-        requisition.getProcessingPeriodId());
-
     List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.warn("Could not find requisition audit data to notify for convert to order.");
@@ -77,7 +73,13 @@ public class ConvertToOrderNotifier extends BaseNotifier {
     }
 
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
+    if (!canBeNotified(initiator)) {
+      return;
+    }
 
+    ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+    ProcessingPeriodDto period = periodReferenceDataService.findOne(
+        requisition.getProcessingPeriodId());
     String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
     String content = messageService
         .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, initiator.getFirstName(),

@@ -19,6 +19,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
@@ -40,7 +41,7 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 import java.util.Collections;
@@ -67,7 +68,7 @@ public class ConvertToOrderNotifierTest {
   @InjectMocks
   private ConvertToOrderNotifier convertToOrderNotifier;
 
-  private UserDto user = DtoGenerator.of(UserDto.class);
+  private UserDto user = new UserDtoDataBuilder().build();
 
   @Before
   public void setUp() {
@@ -76,7 +77,7 @@ public class ConvertToOrderNotifierTest {
   }
 
   @Test
-  public void shouldCallNotificationService() throws Exception {
+  public void shouldCallNotificationServiceIfUserAllowsEmailNotifications() throws Exception {
     Requisition requisition = mock(Requisition.class);
     StatusChange initiateAuditEntry = mock(StatusChange.class);
 
@@ -89,6 +90,24 @@ public class ConvertToOrderNotifierTest {
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT));
+  }
+
+  @Test
+  public void shouldNotCallNotificationServiceIfUserDoesNotAllowEmailNotifications()
+      throws Exception {
+
+    Requisition requisition = mock(Requisition.class);
+    StatusChange initiateAuditEntry = mock(StatusChange.class);
+
+    when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(initiateAuditEntry));
+    when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    when(initiateAuditEntry.getAuthorId()).thenReturn(user.getId());
+
+    user.setAllowNotify(false);
+
+    convertToOrderNotifier.notifyConvertToOrder(requisition);
+
+    verify(notificationService, never()).notify(any(), any(), any());
   }
 
   private void mockServices() {
