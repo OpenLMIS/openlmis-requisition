@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -197,6 +198,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private DateHelper dateHelper;
+
+  @Mock
+  private HttpServletResponse response;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -363,7 +367,7 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
 
-    requisitionController.updateRequisition(requisitionDto, uuid2);
+    requisitionController.updateRequisition(requisitionDto, uuid2, response);
   }
 
   @Test
@@ -392,7 +396,7 @@ public class RequisitionControllerTest {
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1);
+    requisitionController.updateRequisition(requisitionDto, uuid1, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
@@ -433,7 +437,7 @@ public class RequisitionControllerTest {
         anySetOf(UUID.class), any(String.class), any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(Collections.singletonList(stockCardRangeSummaryDto));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1);
+    requisitionController.updateRequisition(requisitionDto, uuid1, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
@@ -458,7 +462,8 @@ public class RequisitionControllerTest {
     doReturn(ValidationResult.conflict("test")).when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
-    assertThatThrownBy(() -> requisitionController.updateRequisition(requisitionDto, uuid1))
+    assertThatThrownBy(() -> requisitionController
+        .updateRequisition(requisitionDto, uuid1, response))
         .isInstanceOf(VersionMismatchException.class);
 
     verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);

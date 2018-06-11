@@ -192,6 +192,7 @@ public abstract class BaseWebIntegrationTest {
     );
 
     requisition.setId(UUID.randomUUID());
+    requisition.setVersion(1L);
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));

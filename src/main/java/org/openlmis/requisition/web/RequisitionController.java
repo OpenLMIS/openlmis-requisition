@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
@@ -64,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -273,7 +275,8 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
-                                          @PathVariable("id") UUID requisitionId) {
+                                          @PathVariable("id") UUID requisitionId,
+                                          HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
     if (null != requisitionDto.getId() && !Objects.equals(requisitionDto.getId(), requisitionId)) {
@@ -310,12 +313,14 @@ public class RequisitionController extends BaseRequisitionController {
 
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
 
-    RequisitionDto dto = doUpdate(
+    ETagResource<RequisitionDto> etaggedResource = doUpdate(
         requisitionToUpdate, requisition, orderables, facility, program, profiler
     );
 
-    stopProfiler(profiler, dto);
-    return dto;
+    stopProfiler(profiler, etaggedResource.getResource());
+
+    response.setHeader(HttpHeaders.ETAG, etaggedResource.getEtag());
+    return etaggedResource.getResource();
   }
 
   /**
@@ -327,7 +332,8 @@ public class RequisitionController extends BaseRequisitionController {
   @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId) {
+  public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId,
+                                       HttpServletResponse response) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
@@ -340,6 +346,8 @@ public class RequisitionController extends BaseRequisitionController {
     );
 
     stopProfiler(profiler, requisitionDto);
+
+    response.setHeader(HttpHeaders.ETAG, ETagResource.buildWeakETag(requisition.getVersion()));
     return requisitionDto;
   }
 

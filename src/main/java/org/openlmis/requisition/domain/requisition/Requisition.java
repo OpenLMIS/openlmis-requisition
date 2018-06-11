@@ -65,6 +65,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -132,6 +133,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
+
+  @Version
+  @Getter
+  @Setter
+  private Long version;
 
   @Getter
   private String draftStatusMessage;
@@ -538,6 +544,7 @@ public class Requisition extends BaseTimestampedEntity {
       LOGGER.debug("Skipping authorize step.");
       prepareRequisitionForApproval(submitter);
     }
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
@@ -554,6 +561,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
     prepareRequisitionForApproval(authorizer);
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
@@ -593,6 +601,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
+    setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, approver));
   }
@@ -604,6 +613,7 @@ public class Requisition extends BaseTimestampedEntity {
     status = RequisitionStatus.REJECTED;
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
+    setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, rejector));
   }
@@ -613,6 +623,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void release(UUID releaser) {
     status = RequisitionStatus.RELEASED;
+    setModifiedDate(ZonedDateTime.now());
+
     statusChanges.add(StatusChange.newStatusChange(this, releaser));
   }
 
@@ -638,6 +650,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     status = RequisitionStatus.SKIPPED;
     statusChanges.add(StatusChange.newStatusChange(this, userId));
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**

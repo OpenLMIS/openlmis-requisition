@@ -19,6 +19,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_C
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMENT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
+import static org.openlmis.requisition.i18n.MessageKeys.VERSION_MISMATCH;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
@@ -32,6 +33,7 @@ import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.web.PermissionMessageException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -178,5 +180,14 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public Message.LocalizedMessage handlePermissionException(VersionMismatchException ex) {
     return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ResponseBody
+  public Message.LocalizedMessage handleOptimisticLockingFailure(
+      ObjectOptimisticLockingFailureException ex) {
+    logger.info("Optimistic locking violation occured.", ex);
+    return getLocalizedMessage(new Message(VERSION_MISMATCH));
   }
 }

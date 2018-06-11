@@ -141,7 +141,7 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  RequisitionDto doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
+  ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
 
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
@@ -150,7 +150,7 @@ public abstract class BaseRequisitionController extends BaseController {
         profiler, requisitionToUpdate::getAllOrderableIds
     );
 
-    RequisitionDto dto = doUpdate(
+    ETagResource<RequisitionDto> dto = doUpdate(
         requisitionToUpdate, requisition, orderables, facility, program, profiler
     );
 
@@ -158,7 +158,7 @@ public abstract class BaseRequisitionController extends BaseController {
     return dto;
   }
 
-  RequisitionDto doUpdate(Requisition toUpdate, Requisition requisition,
+  ETagResource<RequisitionDto> doUpdate(Requisition toUpdate, Requisition requisition,
       Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
       Profiler profiler) {
     profiler.start("UPDATE");
@@ -170,7 +170,9 @@ public abstract class BaseRequisitionController extends BaseController {
     toUpdate = requisitionRepository.save(toUpdate);
     logger.debug("Requisition with id {} saved", toUpdate.getId());
 
-    return buildDto(profiler, toUpdate, orderables, facility, program, null);
+    return new ETagResource<>(
+        buildDto(profiler, toUpdate, orderables, facility, program, null),
+        toUpdate.getVersion());
   }
 
   void doApprove(Requisition requisition, ApproveParams approveParams) {
