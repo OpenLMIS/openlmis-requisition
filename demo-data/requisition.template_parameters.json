@@ -38,7 +38,7 @@
     "name" : "period",
     "displayName" : "Period Name",
     "dataType" : "org.openlmis.requisition.dto.ProcessingPeriodDto",
-    "selectExpression" : "/api/processingPeriods",
+    "selectExpression" : "/api/processingPeriods/byProgram",
     "selectProperty" : "id",
     "displayProperty" : "name",
     "templateId": "f0f78846-8a7b-4f7b-87cf-d38e744683a3",
