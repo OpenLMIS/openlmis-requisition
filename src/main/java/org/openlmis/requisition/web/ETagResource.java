@@ -27,11 +27,23 @@ public class ETagResource<T> {
   private T resource;
   private String etag;
 
+  /**
+   * Wraps the given versioned resource and builds a weak eTag based on the resource version.
+   *
+   * @param resource the resource to wrap
+   * @param version the version of the resource
+   */
   public ETagResource(T resource, Long version) {
     this.resource = resource;
     this.etag = buildWeakETag(version);
   }
 
+  /**
+   * Builds weak eTag (with 'W/' prefix) based on the passed version.
+   *
+   * @param version version to use in the eTag
+   * @return weak eTag string representation
+   */
   public static String buildWeakETag(Long version) {
     return new StringBuilder(WEAK_E_TAG_PREFIX).append(version).toString();
   }
