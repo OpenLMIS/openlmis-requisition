@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -320,7 +321,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .validateCanSaveRequisition(requisition))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator
-        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class)))
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     doReturn(ValidationResult.fieldErrors(
         Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))

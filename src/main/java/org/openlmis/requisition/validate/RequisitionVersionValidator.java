@@ -16,18 +16,20 @@
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
-
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.springframework.stereotype.Component;
+import static org.openlmis.requisition.i18n.MessageKeys.VERSION_MISMATCH;
 
 import java.time.ZonedDateTime;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.web.ETagResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 
 /**
- * Validates the date modified of a requisition against an incoming object.
- * If the date modified in the incoming object is present and does not match
- * the current one, the validation should lead to a 409 error. If the timestamp
- * is not part of the incoming object, we can skip it.
+ * Validates the version of a requisition. If the version is present and does not match the
+ * version of the stored requisition, the validation should lead to a 409 error.
  */
 @Component
 public class RequisitionVersionValidator {
@@ -47,6 +49,31 @@ public class RequisitionVersionValidator {
         && !dateModified.isEqual(existingReq.getModifiedDate())) {
       return ValidationResult.conflict(ERROR_DATE_MODIFIED_MISMATCH,
           existingReq.getId().toString());
+    }
+    return ValidationResult.success();
+  }
+
+  /**
+   * Validates whether the incoming request to update the requisition resource is operating
+   * on the same version that is currently stored in the database (provided If-Match request
+   * header is set). If the versions differ, this means the requisition has changed in the meanwhile
+   * and the current version cannot be saved as it may overwrite the changes. In case If-Match
+   * header is not set, this validation will always pass.
+   *
+   * @param request the incoming request to update requisition
+   * @param requisition the existing version of the requisition
+   * @return ValidationResult that contains outcome of this validation
+   */
+  public ValidationResult validateEtagVersionIfPresent(HttpServletRequest request,
+                                                       Requisition requisition) {
+    String etagVersion = request.getHeader(HttpHeaders.IF_MATCH);
+
+    if (StringUtils.isNotBlank(etagVersion)) {
+      Long version = ETagResource.readVersionFromEtag(etagVersion);
+
+      if (!version.equals(requisition.getVersion())) {
+        return ValidationResult.conflict(VERSION_MISMATCH);
+      }
     }
     return ValidationResult.success();
   }

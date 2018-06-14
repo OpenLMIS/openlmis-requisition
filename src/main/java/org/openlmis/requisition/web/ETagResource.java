@@ -47,4 +47,18 @@ public class ETagResource<T> {
   public static String buildWeakETag(Long version) {
     return new StringBuilder(WEAK_E_TAG_PREFIX).append(version).toString();
   }
+
+  /**
+   * Reads version (as Long) from the etag string. Supports both weak and strong eTags.
+   *
+   * @param etag etag to read version from
+   * @return version read from etag (as Long)
+   */
+  public static Long readVersionFromEtag(String etag) {
+    if (etag.startsWith("W/")) {
+      return Long.valueOf(etag.substring(2));
+    } else {
+      return Long.valueOf(etag);
+    }
+  }
 }
