@@ -174,11 +174,9 @@ scenarios:
           Authorization: Bearer ${access_token}
   get-supplying-depot:
     requests:
-      # In demo data there is requisition with APPROVE status for
-      # Family Planning and Kankao Health Facility
-      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?filterBy=all&filterValue=${facility_code}&page=0&size=2
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?filterBy=all&filterValue=${facility_code}
         method: GET
-        label: GetSupplyingDepotForFacilityPageOfTwo
+        label: GetSupplyingDepotForFacility
         headers:
           Authorization: Bearer ${access_token}
         jsr223:
