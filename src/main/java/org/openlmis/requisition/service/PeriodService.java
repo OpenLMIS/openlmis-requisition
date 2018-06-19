@@ -117,18 +117,18 @@ public class PeriodService {
       RequisitionPeriodDto requisitionPeriod = RequisitionPeriodDto.newInstance(period);
       requisitionPeriods.add(requisitionPeriod);
 
+      List<Requisition> requisitions = null;
       if (!emergency) {
-        List<Requisition> requisitions = requisitionRepository.searchRequisitions(
+        requisitions = requisitionRepository.searchRequisitions(
             period.getId(), facility, program, false);
+      }
+      if (requisitions != null && !requisitions.isEmpty()) {
+        Requisition requisition = requisitions.get(0);
+        requisitionPeriod.setRequisitionId(requisition.getId());
+        requisitionPeriod.setRequisitionStatus(requisition.getStatus());
 
-        if (requisitions != null && !requisitions.isEmpty()) {
-          Requisition requisition = requisitions.get(0);
-          requisitionPeriod.setRequisitionId(requisition.getId());
-          requisitionPeriod.setRequisitionStatus(requisition.getStatus());
-
-          if (!requisition.getStatus().isPreAuthorize()) {
-            requisitionPeriods.remove(requisitionPeriod);
-          }
+        if (!requisition.getStatus().isPreAuthorize()) {
+          requisitionPeriods.remove(requisitionPeriod);
         }
       }
     }
