@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.NUMBER_OF_MONTHS_IN_PERIOD;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
@@ -212,5 +213,15 @@ public class RequisitionInvariantsValidatorTest {
     validator.validateCanUpdate(errors);
 
     assertThat(errors.entrySet(), hasSize(0));
+  }
+
+  @Test
+  public void shouldRejectIfNumberOfMonthsInPeriodWasChanged() {
+    requisitionUpdater
+        .setNumberOfMonthsInPeriod(requisitionToUpdate.getNumberOfMonthsInPeriod() + 10);
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(NUMBER_OF_MONTHS_IN_PERIOD, new Message(ERROR_IS_INVARIANT)));
   }
 }

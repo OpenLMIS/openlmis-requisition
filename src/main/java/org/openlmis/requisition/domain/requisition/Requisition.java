@@ -117,6 +117,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String STOCK_ON_HAND = "stockOnHand";
   static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+  static final String NUMBER_OF_MONTHS_IN_PERIOD = "numberOfMonthsInPeriod";
   public static final String EMERGENCY_FIELD = "emergency";
   static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED = "datePhysicalStockCountCompleted";
   public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
@@ -314,9 +315,6 @@ public class Requisition extends BaseTimestampedEntity {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
-
-    profiler.start("SET_NUMBER_OF_MONTHS_IN_PERIOD");
-    this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
 
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
     this.draftStatusMessage = requisition.draftStatusMessage;

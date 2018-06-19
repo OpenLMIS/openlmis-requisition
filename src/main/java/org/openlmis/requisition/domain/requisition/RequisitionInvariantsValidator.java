@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
+import static org.openlmis.requisition.domain.requisition.Requisition.NUMBER_OF_MONTHS_IN_PERIOD;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING_PERIOD_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
@@ -75,6 +76,8 @@ class RequisitionInvariantsValidator
         requisitionToUpdate.getEmergency(), EMERGENCY_FIELD);
     rejectIfValueChanged(errors, requisitionUpdater.getSupervisoryNodeId(),
         requisitionToUpdate.getSupervisoryNodeId(), SUPERVISORY_NODE_ID);
+    rejectIfValueChanged(errors, requisitionUpdater.getNumberOfMonthsInPeriod(),
+        requisitionToUpdate.getNumberOfMonthsInPeriod(), NUMBER_OF_MONTHS_IN_PERIOD);
 
     if (isNotTrue(requisitionToUpdate.getEmergency())) {
       validateRegularLineItemSize(errors);

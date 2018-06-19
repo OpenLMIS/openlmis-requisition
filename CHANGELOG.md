@@ -27,6 +27,7 @@ Bug fixes:
 * [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.
 * [OLMIS-4697](https://openlmis.atlassian.net/browse/OLMIS-4697): Fix Timeliness report: nulls in "Facility type" column
 * [OLMIS-3288](https://openlmis.atlassian.net/browse/OLMIS-3288): Fix period select issues in the Timeliness and Reporting Rate reports
+* [OLMIS-4639](https://openlmis.atlassian.net/browse/OLMIS-4639): Made Requisition's numberOfMonthsInPeriod field as invariant
 
 6.0.0 / 2018-04-24
 ==================
