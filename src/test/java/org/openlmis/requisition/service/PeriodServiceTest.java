@@ -49,7 +49,6 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -243,7 +242,7 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Collection<RequisitionPeriodDto> periods =
+    Collection<ProcessingPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
 
     verify(requisitionRepository, times(5)).searchRequisitions(
@@ -260,30 +259,6 @@ public class PeriodServiceTest {
     assertTrue(periodUuids.contains(period1.getId()));
     assertTrue(periodUuids.contains(period2.getId()));
     assertTrue(periodUuids.contains(period3.getId()));
-  }
-
-  @Test
-  public void shouldIncludeRequisitionIdAndStatus() {
-    doReturn(Collections.singletonList(currentPeriod))
-        .when(periodReferenceDataService)
-        .searchByProgramAndFacility(programId, facilityId);
-
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setStatus(INITIATED);
-
-    doReturn(Collections.singletonList(requisition))
-        .when(requisitionRepository)
-        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
-
-    Collection<RequisitionPeriodDto> periods =
-        periodService.getPeriods(programId, facilityId, false);
-
-    assertNotNull(periods);
-    assertThat(periods, hasSize(1));
-    RequisitionPeriodDto period = periods.iterator().next();
-    assertEquals(period.getRequisitionId(), requisition.getId());
-    assertEquals(period.getRequisitionStatus(), requisition.getStatus());
   }
 
   @Test

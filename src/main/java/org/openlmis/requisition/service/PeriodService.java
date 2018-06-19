@@ -26,7 +26,6 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -40,6 +39,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -101,7 +101,7 @@ public class PeriodService {
    * @param emergency decide if periods should be find for standard or emergency requisitions.
    * @return a list of periods.
    */
-  public Collection<RequisitionPeriodDto> getPeriods(
+  public Collection<ProcessingPeriodDto> getPeriods(
       UUID program, UUID facility, boolean emergency) {
     Collection<ProcessingPeriodDto> periods;
 
@@ -109,31 +109,21 @@ public class PeriodService {
       periods = getCurrentPeriods(program, facility);
     } else {
       periods = searchByProgramAndFacility(program, facility);
-    }
 
-    List<RequisitionPeriodDto> requisitionPeriods = new ArrayList<>();
+      for (Iterator<ProcessingPeriodDto> iterator = periods.iterator(); iterator.hasNext(); ) {
+        ProcessingPeriodDto periodDto = iterator.next();
+        List<Requisition> requisitions =
+            requisitionRepository.searchRequisitions(
+                periodDto.getId(), facility, program, false);
 
-    for (ProcessingPeriodDto period : periods) {
-      RequisitionPeriodDto requisitionPeriod = RequisitionPeriodDto.newInstance(period);
-      requisitionPeriods.add(requisitionPeriod);
-
-      List<Requisition> requisitions = null;
-      if (!emergency) {
-        requisitions = requisitionRepository.searchRequisitions(
-            period.getId(), facility, program, false);
-      }
-      if (requisitions != null && !requisitions.isEmpty()) {
-        Requisition requisition = requisitions.get(0);
-        requisitionPeriod.setRequisitionId(requisition.getId());
-        requisitionPeriod.setRequisitionStatus(requisition.getStatus());
-
-        if (!requisition.getStatus().isPreAuthorize()) {
-          requisitionPeriods.remove(requisitionPeriod);
+        if (requisitions != null && !requisitions.isEmpty()
+            && !requisitions.get(0).getStatus().isPreAuthorize()) {
+          iterator.remove();
         }
       }
     }
 
-    return requisitionPeriods;
+    return periods;
   }
 
   /**

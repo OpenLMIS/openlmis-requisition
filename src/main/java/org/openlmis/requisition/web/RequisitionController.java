@@ -43,7 +43,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -182,7 +181,7 @@ public class RequisitionController extends BaseRequisitionController {
   @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Collection<RequisitionPeriodDto> getProcessingPeriodIds(
+  public Collection<ProcessingPeriodDto> getProcessingPeriodIds(
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
       @RequestParam(value = "emergency") boolean emergency) {
@@ -203,7 +202,7 @@ public class RequisitionController extends BaseRequisitionController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
 
     profiler.start("GET_PERIODS");
-    Collection<RequisitionPeriodDto> periods = periodService.getPeriods(
+    Collection<ProcessingPeriodDto> periods = periodService.getPeriods(
         programId, facilityId, emergency
     );
 
