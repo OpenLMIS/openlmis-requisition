@@ -3,6 +3,6 @@
     "id": "cff68508-71a5-576d-487c-fe71c36aa4e6",
     "parameterid": "bcd7bb13-6018-4375-9467-abf52bba0533",
     "dependency": "program",
-    "placeholder": "program"
+    "placeholder": "programId"
   }
 ]
