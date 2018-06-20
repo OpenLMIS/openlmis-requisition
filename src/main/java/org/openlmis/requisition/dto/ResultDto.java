@@ -16,14 +16,18 @@
 package org.openlmis.requisition.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class ResultDto<T> {
+@EqualsAndHashCode
+@ToString
+public final class ResultDto<T> {
   T result;
 }
