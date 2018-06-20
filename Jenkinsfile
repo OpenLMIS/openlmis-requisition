@@ -38,7 +38,10 @@ pipeline {
                         error("serviceVersion property not found")
                     }
                     VERSION = properties.serviceVersion
-                    STAGING_VERSION = properties.serviceVersion + "-STAGING"
+                    STAGING_VERSION = properties.serviceVersion
+                    if (env.GIT_BRANCH != 'master') {
+                        STAGING_VERSION += "-STAGING"
+                    }
                     currentBuild.displayName += " - " + VERSION
                 }
             }
@@ -88,8 +91,6 @@ pipeline {
                 }
             }
             steps {
-                sh "docker tag openlmis/requisition:${STAGING_VERSION} openlmis/requisition:${VERSION}"
-                sh "docker push openlmis/requisition:${VERSION}"
                 build job: 'OpenLMIS-requisition-deploy-to-test', wait: false
             }
             post {
