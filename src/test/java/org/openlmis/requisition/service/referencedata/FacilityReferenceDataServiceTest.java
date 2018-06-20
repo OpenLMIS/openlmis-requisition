@@ -103,6 +103,34 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
   }
 
   @Test
+  public void shouldNOtSetZoneIdIfItIsNull() {
+    // given
+    String code = "some-code";
+    String name = "some-name";
+    boolean recurse = true;
+
+    Map<String, Object> expectedBody = new HashMap<>();
+    expectedBody.put("code", code);
+    expectedBody.put("name", name);
+    expectedBody.put("recurse", recurse);
+
+    MinimalFacilityDto dto = new MinimalFacilityDto();
+
+    // when
+    mockPageResponseEntity(dto);
+    List<MinimalFacilityDto> result = service.search(code, name, null, recurse);
+
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isPostRequest()
+        .hasAuthHeader()
+        .hasBody(expectedBody);
+  }
+
+  @Test
   public void shouldSearchForSupplyingDepots() {
     // given
     UUID program = UUID.randomUUID();
