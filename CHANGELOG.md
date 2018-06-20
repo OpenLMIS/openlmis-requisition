@@ -1,5 +1,8 @@
-6.1.0 / WIP
+7.0.0 / WIP
 ===========
+
+Contract breaking changes:
+* [OLMIS-3162](https://openlmis.atlassian.net/browse/OLMIS-3162): Make periodsForInitiate endpoint self-sufficient to determine available actions.
 
 New functionality:
 * [OLMIS-4792](https://openlmis.atlassian.net/browse/OLMIS-4792): Make additional options column of requisition template translatable.
