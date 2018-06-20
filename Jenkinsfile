@@ -81,6 +81,23 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to test') {
+            when {
+                expression {
+                    return env.GIT_BRANCH == 'master'
+                }
+            }
+            steps {
+                sh "docker tag openlmis/requisition:${STAGING_VERSION} openlmis/requisition:${VERSION}"
+                sh "docker push openlmis/requisition:${VERSION}"
+                build job: 'OpenLMIS-requisition-deploy-to-test', wait: false
+            }
+            post {
+                failure {
+                    slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
+                }
+            }
+        }
         stage('Parallel: Sonar analysis and contract tests') {
             parallel {
                 stage('Sonar analysis') {
@@ -200,7 +217,7 @@ pipeline {
         stage('Push image') {
             when {
                 expression {
-                    return env.GIT_BRANCH == 'master' || env.GIT_BRANCH =~ /rel-.+/
+                    return env.GIT_BRANCH =~ /rel-.+/
                 }
             }
             steps {
@@ -224,9 +241,6 @@ pipeline {
     post {
         fixed {
             slackSend color: 'good', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Back to normal"
-        }
-        success {
-            build job: 'OpenLMIS-requisition-deploy-to-test', wait: false
         }
     }
 }
