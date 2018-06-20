@@ -68,6 +68,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
@@ -227,7 +228,7 @@ public class RequisitionControllerTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    List<ProcessingPeriodDto> processingPeriods = generateProcessingPeriods();
+    List<RequisitionPeriodDto> processingPeriods = generateProcessingPeriods();
     when(initiatedRequsition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(submittedRequsition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
@@ -275,7 +276,7 @@ public class RequisitionControllerTest {
     when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
         .thenReturn(ValidationResult.success());
 
-    Collection<ProcessingPeriodDto> periods =
+    Collection<RequisitionPeriodDto> periods =
         requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, true);
@@ -819,19 +820,19 @@ public class RequisitionControllerTest {
     return supervisoryNodeDto;
   }
 
-  private List<ProcessingPeriodDto> generateProcessingPeriods() {
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
+  private List<RequisitionPeriodDto> generateProcessingPeriods() {
+    RequisitionPeriodDto period = new RequisitionPeriodDto();
     period.setId(uuid1);
-    ProcessingPeriodDto period2 = new ProcessingPeriodDto();
+    RequisitionPeriodDto period2 = new RequisitionPeriodDto();
     period2.setId(uuid2);
-    ProcessingPeriodDto period3 = new ProcessingPeriodDto();
+    RequisitionPeriodDto period3 = new RequisitionPeriodDto();
     period3.setId(uuid3);
-    ProcessingPeriodDto period4 = new ProcessingPeriodDto();
+    RequisitionPeriodDto period4 = new RequisitionPeriodDto();
     period4.setId(uuid4);
-    ProcessingPeriodDto period5 = new ProcessingPeriodDto();
+    RequisitionPeriodDto period5 = new RequisitionPeriodDto();
     period5.setId(uuid5);
 
-    List<ProcessingPeriodDto> periods = new ArrayList<>();
+    List<RequisitionPeriodDto> periods = new ArrayList<>();
     periods.add(period);
     periods.add(period2);
     periods.add(period3);

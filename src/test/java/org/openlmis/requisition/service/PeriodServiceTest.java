@@ -49,6 +49,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -96,19 +97,19 @@ public class PeriodServiceTest {
   private UUID facilityId = UUID.randomUUID();
   private UUID facility2Id = UUID.randomUUID();
 
+  private ProcessingPeriodDto currentPeriod;
   private ProcessingPeriodDto period1;
   private ProcessingPeriodDto period2;
   private ProcessingPeriodDto period3;
   private ProcessingPeriodDto period4;
-  private ProcessingPeriodDto currentPeriod;
 
   @Before
   public void setUp() throws Exception {
-    period1 = createPeriod(0);
-    period2 = createPeriod(1);
-    period3 = createPeriod(2);
-    period4 = createPeriod(3);
-    currentPeriod = createPeriod(4);
+    currentPeriod = createPeriod(0);
+    period1 = createPeriod(1);
+    period2 = createPeriod(2);
+    period3 = createPeriod(3);
+    period4 = createPeriod(4);
 
     doReturn(INITIATED).when(initiatedRequsition).getStatus();
     doReturn(SUBMITTED).when(submittedRequsition).getStatus();
@@ -117,19 +118,19 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(initiatedRequsition))
         .when(requisitionRepository)
-        .searchRequisitions(period2.getId(), facilityId, programId, false);
+        .searchRequisitions(period1.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(submittedRequsition))
         .when(requisitionRepository)
-        .searchRequisitions(period3.getId(), facilityId, programId, false);
+        .searchRequisitions(period2.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(authorizedRequsition))
         .when(requisitionRepository)
-        .searchRequisitions(period4.getId(), facilityId, programId, false);
+        .searchRequisitions(period3.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(approvedRequsition))
         .when(requisitionRepository)
-        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
+        .searchRequisitions(period4.getId(), facilityId, programId, false);
   }
 
   @Test
@@ -137,19 +138,19 @@ public class PeriodServiceTest {
     Requisition requisition = new Requisition();
     requisition.setStatus(SUBMITTED);
 
-    doReturn(Collections.singletonList(period1))
+    doReturn(Collections.singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
 
     assertThat(currentPeriods, hasSize(1));
-    assertThat(currentPeriods.iterator().next().getId(), is(equalTo(period1.getId())));
+    assertThat(currentPeriods.iterator().next().getId(), is(equalTo(currentPeriod.getId())));
   }
 
   @Test
@@ -159,16 +160,16 @@ public class PeriodServiceTest {
 
     ProcessingPeriodDto period6 = new ProcessingPeriodDto();
     period6.setId(UUID.randomUUID());
-    period6.setStartDate(period1.getStartDate());
-    period6.setEndDate(period1.getEndDate());
+    period6.setStartDate(currentPeriod.getStartDate());
+    period6.setEndDate(currentPeriod.getEndDate());
 
-    doReturn(Arrays.asList(period1, period6))
+    doReturn(Arrays.asList(currentPeriod, period6))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
         .searchRequisitions(period6.getId(), facilityId, programId, false);
@@ -182,18 +183,18 @@ public class PeriodServiceTest {
         .collect(Collectors.toList());
 
     assertThat(ids, hasSize(2));
-    assertThat(ids, contains(period1.getId(), period6.getId()));
+    assertThat(ids, contains(currentPeriod.getId(), period6.getId()));
   }
 
   @Test
   public void shouldReturnCurrentPeriodIfThereIsNoRequisition() throws Exception {
-    doReturn(Collections.singletonList(period1))
+    doReturn(Collections.singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -203,7 +204,7 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldNotReturnCurrentPeriodIfItDoesNotExist() throws Exception {
-    doReturn(Collections.singletonList(period2))
+    doReturn(Collections.singletonList(period1))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
@@ -218,13 +219,13 @@ public class PeriodServiceTest {
     Requisition requisition = new Requisition();
     requisition.setStatus(INITIATED);
 
-    doReturn(Collections.singletonList(period1))
+    doReturn(Collections.singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
     doReturn(Collections.singletonList(requisition))
         .when(requisitionRepository)
-        .searchRequisitions(period1.getId(), facilityId, programId, false);
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -235,14 +236,14 @@ public class PeriodServiceTest {
   @Test
   public void shouldReturnOnlyValidPeriodsForRequisitionInitiate() {
     List<ProcessingPeriodDto> list = Lists.newArrayList(
-        period1, period2, period3, period4, currentPeriod
+        currentPeriod, period1, period2, period3, period4
     );
 
     doReturn(list)
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Collection<ProcessingPeriodDto> periods =
+    Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
 
     verify(requisitionRepository, times(5)).searchRequisitions(
@@ -256,56 +257,119 @@ public class PeriodServiceTest {
         .map(ProcessingPeriodDto::getId)
         .collect(Collectors.toList());
 
+    assertTrue(periodUuids.contains(currentPeriod.getId()));
     assertTrue(periodUuids.contains(period1.getId()));
     assertTrue(periodUuids.contains(period2.getId()));
-    assertTrue(periodUuids.contains(period3.getId()));
+  }
+
+  @Test
+  public void shouldIncludeRequisitionIdAndStatus() {
+    doReturn(Collections.singletonList(currentPeriod))
+        .when(periodReferenceDataService)
+        .searchByProgramAndFacility(programId, facilityId);
+
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setStatus(INITIATED);
+
+    doReturn(Collections.singletonList(requisition))
+        .when(requisitionRepository)
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, false);
+
+    Collection<RequisitionPeriodDto> periods =
+        periodService.getPeriods(programId, facilityId, false);
+
+    assertNotNull(periods);
+    assertThat(periods, hasSize(1));
+    RequisitionPeriodDto period = periods.iterator().next();
+    assertEquals(period.getRequisitionId(), requisition.getId());
+    assertEquals(period.getRequisitionStatus(), requisition.getStatus());
+  }
+
+  @Test
+  public void shouldReturnMultipleRequisitionPeriodsForEmergency() {
+    doReturn(Collections.singletonList(currentPeriod))
+        .when(periodReferenceDataService)
+        .searchByProgramAndFacility(programId, facilityId);
+
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setStatus(INITIATED);
+    requisition.setEmergency(true);
+
+    Requisition anotherRequisition = new Requisition();
+    anotherRequisition.setId(UUID.randomUUID());
+    anotherRequisition.setStatus(SUBMITTED);
+    anotherRequisition.setEmergency(true);
+
+    doReturn(Arrays.asList(requisition, anotherRequisition))
+        .when(requisitionRepository)
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, true);
+
+    Collection<RequisitionPeriodDto> periods =
+        periodService.getPeriods(programId, facilityId, true);
+
+    assertNotNull(periods);
+    assertThat(periods, hasSize(3));
+
+    for (RequisitionPeriodDto period : periods) {
+      assertEquals(currentPeriod.getId(), period.getId());
+    }
+    List<UUID> requisitionIds = periods
+        .stream()
+        .map(RequisitionPeriodDto::getRequisitionId)
+        .collect(Collectors.toList());
+    assertTrue(requisitionIds.contains(requisition.getId()));
+    assertTrue(requisitionIds.contains(anotherRequisition.getId()));
+    // should allow to initiate another requisition for the same period
+    assertTrue(requisitionIds.contains(null));
   }
 
   @Test
   public void shouldReturnPreviousPeriods() throws Exception {
-    doReturn(currentPeriod)
+    doReturn(period4)
         .when(periodReferenceDataService)
-        .findOne(currentPeriod.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
+        .findOne(period4.getId());
+    doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(currentPeriod.getId(), 2);
+        periodService.findPreviousPeriods(period4.getId(), 2);
 
 
-    assertEquals(Arrays.asList(period4, period3), previousPeriods);
+    assertEquals(Arrays.asList(period3, period2), previousPeriods);
   }
 
   @Test
   public void shouldReturnPreviousPeriod() throws Exception {
-    doReturn(currentPeriod)
+    doReturn(period4)
         .when(periodReferenceDataService)
-        .findOne(currentPeriod.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
+        .findOne(period4.getId());
+    doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     ProcessingPeriodDto previousPeriod =
-        periodService.findPreviousPeriod(currentPeriod.getId());
+        periodService.findPreviousPeriod(period4.getId());
 
 
-    assertEquals(period4, previousPeriod);
+    assertEquals(period3, previousPeriod);
   }
 
   @Test
   public void shouldReturnWholeListIfAmountGreaterThanListSize() throws Exception {
-    doReturn(currentPeriod)
+    doReturn(period4)
         .when(periodReferenceDataService)
-        .findOne(currentPeriod.getId());
-    doReturn(Arrays.asList(period1, period2, period3, period4, currentPeriod))
+        .findOne(period4.getId());
+    doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
         .search(any(), any());
 
     List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(currentPeriod.getId(), 5);
+        periodService.findPreviousPeriods(period4.getId(), 5);
 
-    assertEquals(Arrays.asList(period4, period3, period2, period1), previousPeriods);
+    assertEquals(Arrays.asList(period3, period2, period1, currentPeriod), previousPeriods);
   }
 
   private ProcessingPeriodDto createPeriod(int plusMonth) {
@@ -322,7 +386,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionIfScheduleDoesNotExist()
       throws ContentNotFoundMessageException {
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Lists.newArrayList(period1));
+        .thenReturn(Lists.newArrayList(currentPeriod));
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(null);
 
@@ -334,11 +398,11 @@ public class PeriodServiceTest {
     ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
     processingScheduleDto.setId(UUID.randomUUID());
 
-    period1.setProcessingSchedule(processingScheduleDto);
-    period1.setId(UUID.randomUUID());
+    currentPeriod.setProcessingSchedule(processingScheduleDto);
+    currentPeriod.setId(UUID.randomUUID());
 
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Lists.newArrayList(period1));
+        .thenReturn(Lists.newArrayList(currentPeriod));
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Collections.singletonList(processingScheduleDto));
@@ -361,8 +425,8 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(INITIATED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(INITIATED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
@@ -371,8 +435,8 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(SUBMITTED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(SUBMITTED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
@@ -381,45 +445,45 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(AUTHORIZED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(AUTHORIZED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
-    assertEquals(period2, period);
+    assertEquals(period1, period);
   }
 
   @Test
   public void shouldSucceedWhenPreviousReqHasApprovedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(APPROVED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
-    assertEquals(period2, period);
+    assertEquals(period1, period);
   }
 
   @Test
   public void shouldSucceedWhenPreviousReqHasSkippedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(SKIPPED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(SKIPPED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
-    assertEquals(period2, period);
+    assertEquals(period1, period);
   }
 
   @Test
   public void shouldSucceedWhenRequisitionForNextPeriodIsPresent() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(AUTHORIZED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
-    mockRequisitionFound(getRequisition(INITIATED), period3.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(AUTHORIZED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(INITIATED), period2.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
-    assertEquals(period2, period);
+    assertEquals(period1, period);
   }
 
   @Test
@@ -429,14 +493,14 @@ public class PeriodServiceTest {
 
     // we mock the requisition search to return a requisition for the first period
     // but not for the second
-    mockRequisitionFound(getRequisition(APPROVED), period1.getId(), facilityId, programId);
-    mockNoRequisitionFound(period2.getId(), facilityId, programId);
+    mockRequisitionFound(getRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     //when
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
 
     // then, we expect a second period to be returned
-    assertEquals(period2, period);
+    assertEquals(period1, period);
   }
 
   @Test
@@ -446,14 +510,14 @@ public class PeriodServiceTest {
 
     // we mock the requisition search to return a requisition for the first period
     // in facility with ID facilityId
-    mockRequisitionFound(initiatedRequsition, period1.getId(), facilityId, programId);
+    mockRequisitionFound(initiatedRequsition, currentPeriod.getId(), facilityId, programId);
 
     //when
     ProcessingPeriodDto period = periodService.findPeriod(programId, facility2Id, null, false);
 
     // then, we expect a first period to be returned for second facility, despite it being used in
     // the first facility
-    assertEquals(period1, period);
+    assertEquals(currentPeriod, period);
   }
 
   private Requisition getRequisition(RequisitionStatus status) {
@@ -477,9 +541,9 @@ public class PeriodServiceTest {
 
   private void setMockForFindPeriod() {
     List<ProcessingPeriodDto> periods = new ArrayList<>();
+    periods.add(currentPeriod);
     periods.add(period1);
     periods.add(period2);
-    periods.add(period3);
 
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(periods);
@@ -494,8 +558,8 @@ public class PeriodServiceTest {
         .thenReturn(Collections.singletonList(processingScheduleDto));
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facility2Id))
         .thenReturn(Collections.singletonList(processingScheduleDto));
+    when(currentPeriod.getProcessingSchedule().getId()).thenReturn(id);
     when(period1.getProcessingSchedule().getId()).thenReturn(id);
-    when(period2.getProcessingSchedule().getId()).thenReturn(id);
   }
 
 }
