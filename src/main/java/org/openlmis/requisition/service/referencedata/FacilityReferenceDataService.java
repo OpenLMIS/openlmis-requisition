@@ -72,8 +72,9 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     requestBody.put("code", code);
     requestBody.put("name", name);
     requestBody.put("recurse", recurse);
-    requestBody.put("zoneId", zoneId);
-
+    if (null != zoneId) {
+      requestBody.put("zoneId", zoneId);
+    }
     return getBasicFacilityPage("search", RequestParameters.init(), requestBody).getContent();
   }
 
