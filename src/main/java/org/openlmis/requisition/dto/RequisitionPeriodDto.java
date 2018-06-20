@@ -15,14 +15,14 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class RequisitionPeriodDto extends ProcessingPeriodDto {
   private UUID requisitionId;
   private RequisitionStatus requisitionStatus;

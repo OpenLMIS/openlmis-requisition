@@ -2,7 +2,7 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
   "title": "RequisitionPeriodDto",
-  "description": "A single requisitionPeriodDto",
+  "description": "A processing period combined with id and status of a related requisition",
   "properties": {
     "id": {
       "type": "string",

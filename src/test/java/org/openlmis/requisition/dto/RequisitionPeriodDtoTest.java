@@ -15,15 +15,27 @@
 
 package org.openlmis.requisition.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.requisition.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
-  private ProcessingScheduleDto processingSchedule;
-  private String description;
-  private Integer durationInMonths;
+public class RequisitionPeriodDtoTest extends DtoTest<RequisitionPeriodDto> {
+
+  @Override
+  protected Class<RequisitionPeriodDto> getTestClass() {
+    return RequisitionPeriodDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<RequisitionPeriodDto> verifier) {
+    verifier
+        .withRedefinedSuperclass()
+        .suppress(Warning.STRICT_INHERITANCE); // suppress not final class
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(RequisitionPeriodDto.class, new RequisitionPeriodDto());
+  }
 }
