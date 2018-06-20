@@ -20,48 +20,58 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataServiceTest {
+public class GeographicZoneReferenceDataServiceTest
+    extends BaseReferenceDataServiceTest<GeographicZoneDto> {
 
-  private SupervisingUsersReferenceDataService service;
+  private GeographicZoneReferenceDataService service;
 
   @Override
-  protected BaseCommunicationService<UserDto> getService() {
-    return new SupervisingUsersReferenceDataService();
+  protected GeographicZoneDto generateInstance() {
+    return new GeographicZoneDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<GeographicZoneDto> getService() {
+    return new GeographicZoneReferenceDataService();
   }
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    service = (SupervisingUsersReferenceDataService) prepareService();
+    service = (GeographicZoneReferenceDataService) prepareService();
   }
 
   @Test
-  public void testFindAll() {
+  public void shouldSearch() {
     // given
-    UUID right = UUID.randomUUID();
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
+    Integer levelNumber = new Random().nextInt(100);
+    UUID parent = UUID.randomUUID();
+
+    Map<String, Object> expectedBody = new HashMap<>();
+    expectedBody.put("levelNumber", levelNumber);
+    expectedBody.put("parent", parent);
 
     // when
-    UserDto dto = mockArrayResponseEntityAndGetDto();
-    Collection<UserDto> result = service.findAll(supervisoryNode, right, program);
+    GeographicZoneDto geographicZoneDto = mockPageResponseEntityAndGetDto();
+    Collection<GeographicZoneDto> result = service.search(levelNumber, parent);
 
     // then
     assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
+    assertTrue(result.contains(geographicZoneDto));
 
-    verifyArrayRequest()
-        .isGetRequest()
+    verifyPageRequest()
+        .isPostRequest()
         .hasAuthHeader()
-        .hasEmptyBody()
-        .hasQueryParameter("rightId", right)
-        .hasQueryParameter("programId", program);
+        .hasBody(expectedBody);
   }
 }

@@ -19,39 +19,44 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataServiceTest {
+public class SupplyLineReferenceDataServiceTest
+    extends BaseReferenceDataServiceTest<SupplyLineDto> {
 
-  private SupervisingUsersReferenceDataService service;
+  private SupplyLineReferenceDataService service;
 
   @Override
-  protected BaseCommunicationService<UserDto> getService() {
-    return new SupervisingUsersReferenceDataService();
+  protected SupplyLineDto generateInstance() {
+    return new SupplyLineDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<SupplyLineDto> getService() {
+    return new SupplyLineReferenceDataService();
   }
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    service = (SupervisingUsersReferenceDataService) prepareService();
+    service = (SupplyLineReferenceDataService) prepareService();
   }
 
   @Test
-  public void testFindAll() {
-    // given
-    UUID right = UUID.randomUUID();
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
+  public void shouldSearchSupplyLines() {
+    // givne
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
 
     // when
-    UserDto dto = mockArrayResponseEntityAndGetDto();
-    Collection<UserDto> result = service.findAll(supervisoryNode, right, program);
+    SupplyLineDto dto = mockArrayResponseEntityAndGetDto();
+    List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
 
     // then
     assertThat(result, hasSize(1));
@@ -61,7 +66,7 @@ public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataS
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter("rightId", right)
-        .hasQueryParameter("programId", program);
+        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("supervisoryNodeId", supervisoryNodeId);
   }
 }

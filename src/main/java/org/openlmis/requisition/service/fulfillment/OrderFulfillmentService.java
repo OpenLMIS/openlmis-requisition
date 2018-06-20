@@ -34,25 +34,6 @@ import java.util.UUID;
 public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
 
   /**
-   * Creates a new instance of an order.
-   *
-   * @param order instance that contain data required to save order
-   */
-  public void create(OrderDto order) {
-    try {
-      String url = getServiceUrl() + getUrl();
-      HttpEntity<OrderDto> body = createEntity(authService.obtainAccessToken(),
-              order);
-      postNew(url, body);
-    } catch (RestClientException ex) {
-      throw new ValidationMessageException(
-          new Message(
-              MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER, order.getExternalId()),
-          ex);
-    }
-  }
-
-  /**
    * Creates a new instance of order multiple orders by posting to the
    * batch order creation endpoint.
    *

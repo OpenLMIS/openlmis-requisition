@@ -15,27 +15,42 @@
 
 package org.openlmis.requisition.service.stockmanagement;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.openlmis.requisition.dto.LocalizedMessageDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
+import org.openlmis.requisition.exception.ExternalApiException;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.RequestHelper;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class StockEventStockManagementServiceTest
@@ -46,10 +61,16 @@ public class StockEventStockManagementServiceTest
   private StockEventStockManagementService service;
   private StockEventDto stockEventDto;
 
+  @Mock
+  private ObjectMapper objectMapper;
+
   @Before
   public void setUp() {
     super.setUp();
+
     service = (StockEventStockManagementService) prepareService();
+    ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
+
     stockEventDto = generateInstance();
   }
 
@@ -95,6 +116,31 @@ public class StockEventStockManagementServiceTest
     thenPostRequestIsSentThrice();
     andUriIsCorrect();
     andEntityIsCorrect();
+  }
+
+  @Test
+  public void shouldPassErrorMessageFromExternalService() throws IOException {
+    HttpStatusCodeException exp = mock(HttpStatusCodeException.class);
+    when(exp.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+    when(exp.getResponseBodyAsString()).thenReturn("body");
+
+    when(objectMapper.readValue("body", LocalizedMessageDto.class))
+        .thenReturn(new LocalizedMessageDto("key", "message"));
+
+    expectedException.expect(ExternalApiException.class);
+    mockRequestFail(exp);
+    service.submit(stockEventDto);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfThereWereProblemWithRequest() {
+    HttpStatusCodeException exp = mock(HttpStatusCodeException.class);
+    when(exp.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+    when(exp.getResponseBodyAsString()).thenReturn("body");
+
+    mockRequestFail(exp);
+    expectedException.expect(DataRetrievalException.class);
+    service.submit(stockEventDto);
   }
 
   private void givenMockedOkResponse() {
@@ -148,6 +194,13 @@ public class StockEventStockManagementServiceTest
     assertNotNull(entityCaptor.getValue().getBody());
     assertEquals(stockEventDto, entityCaptor.getValue().getBody());
     assertAuthHeader(entityCaptor.getValue());
+  }
+
+  private void assertAuthHeader(HttpEntity value) {
+    List<String> authorization = value.getHeaders().get(HttpHeaders.AUTHORIZATION);
+
+    assertThat(authorization, hasSize(1));
+    assertThat(authorization, hasItem(TOKEN_HEADER));
   }
 
   private void verifyRequest(int times) {

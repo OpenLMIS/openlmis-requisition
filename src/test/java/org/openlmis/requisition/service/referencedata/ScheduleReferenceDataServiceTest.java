@@ -23,35 +23,41 @@ import java.util.Collection;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataServiceTest {
+public class ScheduleReferenceDataServiceTest
+    extends BaseReferenceDataServiceTest<ProcessingScheduleDto> {
 
-  private SupervisingUsersReferenceDataService service;
+  private ScheduleReferenceDataService service;
 
   @Override
-  protected BaseCommunicationService<UserDto> getService() {
-    return new SupervisingUsersReferenceDataService();
+  protected ProcessingScheduleDto generateInstance() {
+    return new ProcessingScheduleDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<ProcessingScheduleDto> getService() {
+    return new ScheduleReferenceDataService();
   }
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    service = (SupervisingUsersReferenceDataService) prepareService();
+    service = (ScheduleReferenceDataService) prepareService();
   }
 
   @Test
-  public void testFindAll() {
+  public void shouldSearchSupplyLines() {
     // given
-    UUID right = UUID.randomUUID();
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    UUID facilityId = UUID.randomUUID();
 
     // when
-    UserDto dto = mockArrayResponseEntityAndGetDto();
-    Collection<UserDto> result = service.findAll(supervisoryNode, right, program);
+    ProcessingScheduleDto dto = mockArrayResponseEntityAndGetDto();
+    Collection<ProcessingScheduleDto> result = service
+        .searchByProgramAndFacility(programId, facilityId);
 
     // then
     assertThat(result, hasSize(1));
@@ -61,7 +67,7 @@ public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataS
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter("rightId", right)
-        .hasQueryParameter("programId", program);
+        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("facilityId", facilityId);
   }
 }

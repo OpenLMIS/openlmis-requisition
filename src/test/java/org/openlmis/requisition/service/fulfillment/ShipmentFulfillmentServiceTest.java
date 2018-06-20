@@ -16,26 +16,19 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import java.net.URI;
-import java.util.List;
-import java.util.UUID;
 
 public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<ShipmentDto> {
+
+  private ShipmentFulfillmentService service;
 
   @Override
   protected ShipmentDto generateInstance() {
@@ -47,34 +40,32 @@ public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<S
     return new ShipmentFulfillmentService();
   }
 
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (ShipmentFulfillmentService) prepareService();
+  }
+
   @Test
   public void shouldGetShipment() {
     // given
-    final UUID orderId = UUID.randomUUID();
-
-    ShipmentDto shipmentDto = mockPageResponseEntityAndGetDto();
+    UUID orderId = UUID.randomUUID();
 
     // when
-    ShipmentFulfillmentService service = (ShipmentFulfillmentService) prepareService();
+    ShipmentDto shipmentDto = mockPageResponseEntityAndGetDto();
     List<ShipmentDto> actual = service.getShipments(orderId);
 
     // then
     assertThat(actual, hasSize(1));
     assertThat(actual, contains(shipmentDto));
 
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl();
-
-    assertThat(uri.toString(), startsWith(url));
-    assertThat(uri.toString(), containsString("orderId=" + orderId));
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("orderId", orderId);
   }
 
 }

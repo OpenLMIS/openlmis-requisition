@@ -23,35 +23,35 @@ import java.util.Collection;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataServiceTest {
+public class UserFulfillmentFacilitiesReferenceDataServiceTest
+    extends FacilityReferenceDataServiceTest {
 
-  private SupervisingUsersReferenceDataService service;
+  private UserFulfillmentFacilitiesReferenceDataService service;
 
   @Override
-  protected BaseCommunicationService<UserDto> getService() {
-    return new SupervisingUsersReferenceDataService();
+  protected BaseCommunicationService<FacilityDto> getService() {
+    return new UserFulfillmentFacilitiesReferenceDataService();
   }
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    service = (SupervisingUsersReferenceDataService) prepareService();
+    service = (UserFulfillmentFacilitiesReferenceDataService) prepareService();
   }
 
   @Test
-  public void testFindAll() {
+  public void shouldGetFulfillmentFacilities() {
     // given
+    UUID user = UUID.randomUUID();
     UUID right = UUID.randomUUID();
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
 
     // when
-    UserDto dto = mockArrayResponseEntityAndGetDto();
-    Collection<UserDto> result = service.findAll(supervisoryNode, right, program);
+    FacilityDto dto = mockArrayResponseEntityAndGetDto();
+    Collection<FacilityDto> result = service.getFulfillmentFacilities(user, right);
 
     // then
     assertThat(result, hasSize(1));
@@ -61,7 +61,6 @@ public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataS
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter("rightId", right)
-        .hasQueryParameter("programId", program);
+        .hasQueryParameter("rightId", right);
   }
 }

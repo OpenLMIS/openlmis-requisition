@@ -17,26 +17,17 @@
 package org.openlmis.requisition.service.stockmanagement;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.verify;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
 
 public class StockCardRangeSummaryStockManagementSerivceTest
     extends BaseStockmanagementServiceTest<StockCardRangeSummaryDto> {
@@ -48,41 +39,7 @@ public class StockCardRangeSummaryStockManagementSerivceTest
   private LocalDate startDate = LocalDate.of(2017, 1, 1);
   private LocalDate endDate = LocalDate.now();
 
-  @Test
-  public void shouldFindStockCardSummaries() {
-    // given
-    StockCardRangeSummaryDto stockCardRangeSummaryDto = mockPageResponseEntityAndGetDto();
-
-    // when
-    StockCardRangeSummaryStockManagementService service =
-        (StockCardRangeSummaryStockManagementService) prepareService();
-    List<StockCardRangeSummaryDto> actual = service.search(
-        programId, facilityId, Collections.singleton(orderableId), tag, startDate, endDate);
-
-    // then
-    assertThat(actual, hasSize(1));
-    assertThat(actual, contains(stockCardRangeSummaryDto));
-
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), refEq(
-            new DynamicPageTypeReference<>(StockCardRangeSummaryDto.class))
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = serviceUrl + "/api/stockCardRangeSummaries";
-
-    assertThat(uri.toString(), startsWith(url));
-    assertThat(uri.toString(), containsString("programId=" + programId));
-    assertThat(uri.toString(), containsString("facilityId=" + facilityId));
-    assertThat(uri.toString(), containsString("orderableId=" + orderableId));
-    assertThat(uri.toString(), containsString("tag=" + tag));
-    assertThat(uri.toString(), containsString("startDate=" + startDate));
-    assertThat(uri.toString(), containsString("endDate=" + endDate));
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
-  }
+  private StockCardRangeSummaryStockManagementService service;
 
   @Override
   protected StockCardRangeSummaryDto generateInstance() {
@@ -92,5 +49,36 @@ public class StockCardRangeSummaryStockManagementSerivceTest
   @Override
   protected BaseCommunicationService<StockCardRangeSummaryDto> getService() {
     return new StockCardRangeSummaryStockManagementService();
+  }
+
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (StockCardRangeSummaryStockManagementService) prepareService();
+  }
+
+  @Test
+  public void shouldFindStockCardSummaries() {
+    // when
+    StockCardRangeSummaryDto stockCardRangeSummaryDto = mockPageResponseEntityAndGetDto();
+    List<StockCardRangeSummaryDto> actual = service.search(
+        programId, facilityId, Collections.singleton(orderableId), tag, startDate, endDate);
+
+    // then
+    assertThat(actual, hasSize(1));
+    assertThat(actual, contains(stockCardRangeSummaryDto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("facilityId", facilityId)
+        .hasQueryParameter("orderableId", orderableId)
+        .hasQueryParameter("tag", tag)
+        .hasQueryParameter("startDate", startDate)
+        .hasQueryParameter("endDate", endDate);
   }
 }

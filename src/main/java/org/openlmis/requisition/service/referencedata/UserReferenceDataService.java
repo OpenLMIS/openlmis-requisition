@@ -15,14 +15,11 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.RequestParameters;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,20 +38,6 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
   @Override
   protected Class<UserDto[]> getArrayResultClass() {
     return UserDto[].class;
-  }
-
-  /**
-   * This method retrieves a user with given name.
-   *
-   * @param name the name of user.
-   * @return UserDto containing user's data, or null if such user was not found.
-   */
-  public UserDto findUser(String name) {
-    Map<String, Object> requestBody = new HashMap<>();
-    requestBody.put("username", name);
-
-    Page<UserDto> users = getPage("search", RequestParameters.init(), requestBody);
-    return users.getContent().isEmpty() ? null : users.getContent().get(0);
   }
 
   /**

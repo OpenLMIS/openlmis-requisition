@@ -15,31 +15,20 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.service.BaseCommunicationServiceTest;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.test.util.ReflectionTestUtils;
-import java.util.List;
-import java.util.UUID;
 
 public class IdealStockAmountReferenceDataServiceTest
-    extends BaseCommunicationServiceTest<IdealStockAmountDto> {
+    extends BaseReferenceDataServiceTest<IdealStockAmountDto> {
 
   private IdealStockAmountReferenceDataService service;
 
@@ -57,35 +46,30 @@ public class IdealStockAmountReferenceDataServiceTest
   @Before
   public void setUp() {
     super.setUp();
-
     service = (IdealStockAmountReferenceDataService) prepareService();
-    ReflectionTestUtils.setField(service, "referenceDataUrl", "http://localhost");
   }
 
   @Test
   public void shouldFindIdealStockAmountBasedOnParameters() {
-    IdealStockAmountDto isa = new IdealStockAmountDtoDataBuilder().build();
-    mockPageResponseEntity(isa);
+    // given
     UUID facilityId = UUID.randomUUID();
     UUID processingPeriodId = UUID.randomUUID();
+    IdealStockAmountDto isa = new IdealStockAmountDtoDataBuilder().build();
 
+    // when
+    mockPageResponseEntity(isa);
     List<IdealStockAmountDto> result = service.search(facilityId, processingPeriodId);
+
+    // then
     assertThat(result, hasSize(1));
     assertThat(result, hasItem(isa));
 
-    // then
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), any(DynamicPageTypeReference.class));
-
-    String uri = uriCaptor.getValue().toString();
-    String url = service.getServiceUrl() + service.getUrl();
-
-    assertThat(uri, startsWith(url));
-    assertThat(uri, containsString("facilityId=" + facilityId));
-    assertThat(uri, containsString("processingPeriodId=" + processingPeriodId));
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("facilityId", facilityId)
+        .hasQueryParameter("processingPeriodId", processingPeriodId);
   }
 }

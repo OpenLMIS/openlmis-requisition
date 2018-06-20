@@ -16,26 +16,19 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.springframework.http.HttpEntity;
 import org.springframework.web.client.RestClientException;
 
-import java.net.URI;
-import java.util.UUID;
-
 public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<OrderDto> {
+
+  private OrderFulfillmentService service;
 
   @Override
   protected BaseCommunicationService<OrderDto> getService() {
@@ -50,69 +43,38 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
     return order;
   }
 
-  @Test
-  public void shouldSendRequestToCreateOrder() throws Exception {
-    // given
-    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
-    OrderDto order = generateInstance();
-
-    // then
-    service.create(order);
-
-    // then
-    verify(restTemplate)
-        .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl();
-
-    assertThat(uri.toString(), is(equalTo(url)));
-
-    HttpEntity entity = entityCaptor.getValue();
-    Object body = entity.getBody();
-
-    assertThat(body, instanceOf(OrderDto.class));
-    assertThat(((OrderDto) body).getId(), is(equalTo(order.getId())));
-    assertAuthHeader(entity);
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (OrderFulfillmentService) prepareService();
   }
 
   @Test
   public void shouldSendRequestToCreateMultipleOrders() {
     // given
-    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
     OrderDto order = generateInstance();
     OrderDto order2 = generateInstance();
+    List<OrderDto> body = asList(order, order2);
 
     // when
-    service.create(asList(order, order2));
+    service.create(body);
 
     // then
-    verify(restTemplate)
-        .postForEntity(uriCaptor.capture(), entityCaptor.capture(), eq(Object.class));
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getBatchUrl();
-
-    assertThat(uri.toString(), is(equalTo(url)));
-
-    HttpEntity entity = entityCaptor.getValue();
-    Object body = entity.getBody();
-
-    assertThat(body, is(asList(order, order2)));
-    assertAuthHeader(entity);
+    verifyPostRequest()
+        .hasAuthHeader()
+        .hasBody(body)
+        .isUriStartsWith(service.getServiceUrl() + service.getBatchUrl());
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowValidationMessageExceptionWhenCreatingMultipleOrdersFails() {
     // given
-    OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
     OrderDto order = generateInstance();
     OrderDto order2 = generateInstance();
 
-    when(restTemplate.postForEntity(any(URI.class), any(), eq(Object.class))).thenThrow(
-        new RestClientException("test"));
-
     // when
+    mockPostRequestFail(new RestClientException("test"));
     service.create(asList(order, order2));
   }
 

@@ -17,23 +17,15 @@ package org.openlmis.requisition.service.referencedata;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.verify;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
 
 public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceTest<OrderableDto> {
 
@@ -59,30 +51,50 @@ public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceT
 
   @Test
   public void shouldReturnOrderablesById() {
-    OrderableDto product = mockPageResponseEntityAndGetDto();
-
+    // given
     UUID orderableId = UUID.randomUUID();
+
+    // when
+    OrderableDto product = mockPageResponseEntityAndGetDto();
     List<OrderableDto> response = service.findByIds(Collections.singleton(orderableId));
 
+    // then
     assertThat(response, hasSize(1));
     assertThat(response, hasItem(product));
 
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-        refEq(new DynamicPageTypeReference<>(OrderableDto.class)));
-
-    URI uri = uriCaptor.getValue();
-    assertEquals(serviceUrl + service.getUrl() + "?id=" + orderableId.toString(), uri.toString());
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertNull(entityCaptor.getValue().getBody());
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("id", orderableId);
   }
 
   @Test
   public void shouldReturnEmptyListIfEmptyParamProvided() {
-    checkAuth = false;
+    // given
+    disableAuthCheck();
+
+    // when
     List<OrderableDto> response = service.findByIds(Collections.emptyList());
 
+    // then
     assertTrue(response.isEmpty());
+  }
+
+  @Test
+  public void shouldFindAllResources() {
+    // when
+    OrderableDto dto = mockPageResponseEntityAndGetDto();
+    List<OrderableDto> found = service.findAll();
+
+    // then
+    assertThat(found, hasItem(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }
 }

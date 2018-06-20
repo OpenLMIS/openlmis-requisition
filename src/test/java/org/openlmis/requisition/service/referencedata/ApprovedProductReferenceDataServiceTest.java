@@ -18,34 +18,20 @@ package org.openlmis.requisition.service.referencedata;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
-import java.net.URI;
-import java.util.List;
 import java.util.UUID;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.service.BaseCommunicationServiceTest;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.test.util.ReflectionTestUtils;
 
 public class ApprovedProductReferenceDataServiceTest
-    extends BaseCommunicationServiceTest<ApprovedProductDto> {
+    extends BaseReferenceDataServiceTest<ApprovedProductDto> {
 
   private ApprovedProductReferenceDataService service;
 
@@ -63,13 +49,12 @@ public class ApprovedProductReferenceDataServiceTest
   @Before
   public void setUp() {
     super.setUp();
-
     service = (ApprovedProductReferenceDataService) prepareService();
-    ReflectionTestUtils.setField(service, "referenceDataUrl", "http://localhost");
   }
 
   @Test
   public void shouldReturnApprovedProducts() {
+    // given
     ProgramDto program = new ProgramDtoDataBuilder().build();
     UUID facilityId = randomUUID();
 
@@ -80,29 +65,21 @@ public class ApprovedProductReferenceDataServiceTest
         .withProgram(program)
         .build();
 
+    // when
     mockPageResponseEntity(product);
 
     ApproveProductsAggregator response = service.getApprovedProducts(facilityId, program.getId());
 
+    // then
     assertThat(response.getOrderableIds(), hasSize(1));
     assertThat(response.getOrderableIds(), hasItem(product.getOrderable().getId()));
 
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-        any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl()
-        + facilityId + "/approvedProducts";
-
-    assertThat(uri.toString(), startsWith(url));
-
-    List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
-
-    assertQueryParameter(parse, "programId", program.getId());
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl()
+            + facilityId + "/approvedProducts")
+        .hasQueryParameter("programId", program.getId());
   }
 }

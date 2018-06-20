@@ -17,17 +17,13 @@ package org.openlmis.requisition.service.fulfillment;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 import static org.openlmis.requisition.dto.OrderStatus.RECEIVED;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,13 +31,6 @@ import org.junit.runners.Parameterized;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(Parameterized.class)
 public class OrderFulfillmentServiceParameterizedTest
@@ -113,12 +102,12 @@ public class OrderFulfillmentServiceParameterizedTest
   }
 
   @Test
-  public void shouldCheckUserRight() {
+  public void shouldFindOrders() {
     // given
     OrderFulfillmentService service = (OrderFulfillmentService) prepareService();
-    OrderDto order = mockPageResponseEntityAndGetDto();
 
     // when
+    OrderDto order = mockPageResponseEntityAndGetDto();
     List<OrderDto> result = service.search(
         supplyingFacility, requestingFacility, program, processingPeriod, status
     );
@@ -127,21 +116,14 @@ public class OrderFulfillmentServiceParameterizedTest
     assertThat(result, hasSize(1));
     assertThat(result, contains(order));
 
-    verify(restTemplate, atLeastOnce()).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-        any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
-
-    assertQueryParameter(parse, "supplyingFacilityId", supplyingFacility);
-    assertQueryParameter(parse, "requestingFacilityId", requestingFacility);
-    assertQueryParameter(parse, "programId", program);
-    assertQueryParameter(parse, "processingPeriodId", processingPeriod);
-    assertQueryParameter(parse, "status", status);
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("supplyingFacilityId", supplyingFacility)
+        .hasQueryParameter("requestingFacilityId", requestingFacility)
+        .hasQueryParameter("programId", program)
+        .hasQueryParameter("processingPeriodId", processingPeriod)
+        .hasQueryParameter("status", status);
   }
 }

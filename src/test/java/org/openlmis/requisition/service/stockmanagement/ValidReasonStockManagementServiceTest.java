@@ -16,14 +16,11 @@
 package org.openlmis.requisition.service.stockmanagement;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_OCCURED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
 
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,17 +31,7 @@ import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.DataRetrievalException;
-import org.openlmis.requisition.service.RequestParameters;
-import org.openlmis.requisition.utils.RequestHelper;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 public class ValidReasonStockManagementServiceTest
     extends BaseStockmanagementServiceTest<ValidReasonDto> {
@@ -80,73 +67,46 @@ public class ValidReasonStockManagementServiceTest
   }
 
   @Test
-  public void shouldGetValidReasons() throws Exception {
+  public void shouldGetValidReasons() {
     // given
     ValidReasonDto validReason = generateInstance();
 
-    ResponseEntity response = ResponseEntity
-        .ok(Collections.singletonList(validReason).toArray());
-
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(ValidReasonDto[].class)))
-        .thenReturn(response);
-
     // when
+    mockArrayResponseEntity(validReason);
     List<ValidReasonDto> actual =
         service.search(validReason.getProgramId(), validReason.getFacilityTypeId());
 
     // then
-    verify(restTemplate).exchange(
-          uriCaptor.capture(), eq(HttpMethod.GET),
-          entityCaptor.capture(), eq(ValidReasonDto[].class)
-    );
-
     assertEquals(1, actual.size());
     assertEquals(validReason, actual.get(0));
-    assertEquals(prepareUrl(validReason), uriCaptor.getValue());
-    assertNull(entityCaptor.getValue().getBody());
-    assertAuthHeader(entityCaptor.getValue());
+
+    verifyArrayRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("program", validReason.getProgramId())
+        .hasQueryParameter("facilityType", validReason.getFacilityTypeId());
   }
 
   @Test
-  public void shouldThrowExceptionWithProperKeyIfServerCannotBeFound() throws Exception {
+  public void shouldThrowExceptionWithProperKeyIfServerCannotBeFound() {
+    // when
     thrown.expect(DataRetrievalException.class);
     thrown.expectMessage(ERROR_SERVICE_REQUIRED);
 
-    // given
-    when(restTemplate
-        .exchange(any(URI.class), eq(HttpMethod.GET),
-            any(HttpEntity.class), eq(ValidReasonDto[].class)))
-        .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-
-    // when
+    mockRequestFail(HttpStatus.NOT_FOUND);
     service.search(UUID.randomUUID(), UUID.randomUUID());
   }
 
 
   @Test
-  public void shouldThrowExceptionWithProperKeyIfOtherErrorOccured() throws Exception {
+  public void shouldThrowExceptionWithProperKeyIfOtherErrorOccurred() {
+    // when
     thrown.expect(DataRetrievalException.class);
     thrown.expectMessage(ERROR_SERVICE_OCCURED);
 
-    // given
-    when(restTemplate
-        .exchange(any(URI.class), eq(HttpMethod.GET),
-            any(HttpEntity.class), eq(ValidReasonDto[].class)))
-        .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
-
-    // when
+    mockRequestFail(HttpStatus.BAD_REQUEST);
     service.search(UUID.randomUUID(), UUID.randomUUID());
-  }
-
-
-  private URI prepareUrl(ValidReasonDto validReason) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("program", validReason.getProgramId())
-        .set("facilityType", validReason.getFacilityTypeId());
-
-    return RequestHelper.createUri(service.getServiceUrl() + service.getUrl(), parameters);
   }
 }

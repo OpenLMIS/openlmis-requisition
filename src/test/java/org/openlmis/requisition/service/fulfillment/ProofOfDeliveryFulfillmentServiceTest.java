@@ -16,27 +16,20 @@
 package org.openlmis.requisition.service.fulfillment;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import java.net.URI;
-import java.util.List;
-import java.util.UUID;
 
 public class ProofOfDeliveryFulfillmentServiceTest
     extends BaseFulfillmentServiceTest<ProofOfDeliveryDto> {
+
+  private ProofOfDeliveryFulfillmentService service;
 
   @Override
   protected ProofOfDeliveryDto generateInstance() {
@@ -48,35 +41,32 @@ public class ProofOfDeliveryFulfillmentServiceTest
     return new ProofOfDeliveryFulfillmentService();
   }
 
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (ProofOfDeliveryFulfillmentService) prepareService();
+  }
+
   @Test
   public void shouldGetProofOfDeliveries() {
     // given
-    final UUID shipmentId = UUID.randomUUID();
-
-    ProofOfDeliveryDto pod = mockPageResponseEntityAndGetDto();
+    UUID shipmentId = UUID.randomUUID();
 
     // when
-    ProofOfDeliveryFulfillmentService service =
-        (ProofOfDeliveryFulfillmentService) prepareService();
+    ProofOfDeliveryDto pod = mockPageResponseEntityAndGetDto();
     List<ProofOfDeliveryDto> actual = service.getProofOfDeliveries(shipmentId);
 
     // then
     assertThat(actual, hasSize(1));
     assertThat(actual, contains(pod));
 
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl();
-
-    assertThat(uri.toString(), startsWith(url));
-    assertThat(uri.toString(), containsString("shipmentId=" + shipmentId));
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("shipmentId", shipmentId);
   }
 
 }

@@ -15,93 +15,114 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
-import org.openlmis.requisition.service.RequestParameters;
-import org.openlmis.requisition.testutils.DtoGenerator;
-import org.springframework.data.domain.PageImpl;
+import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisoryNodeReferenceDataServiceTest {
-
-  private static final String PROGRAM_ID = "programId";
-  private static final String FACILITY_ID = "facilityId";
-
-  private UUID facility = UUID.randomUUID();
-  private UUID program = UUID.randomUUID();
-  private SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
-  private SupervisoryNodeDto supervisoryNode2 = DtoGenerator.of(SupervisoryNodeDto.class);
+public class SupervisoryNodeReferenceDataServiceTest
+    extends BaseReferenceDataServiceTest<SupervisoryNodeDto> {
 
   private SupervisoryNodeReferenceDataService service;
 
+  @Override
+  protected SupervisoryNodeDto generateInstance() {
+    return new SupervisoryNodeDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<SupervisoryNodeDto> getService() {
+    return new SupervisoryNodeReferenceDataService();
+  }
+
+  @Override
   @Before
   public void setUp() {
-    service = spy(new SupervisoryNodeReferenceDataService());
+    super.setUp();
+    service = (SupervisoryNodeReferenceDataService) prepareService();
   }
 
   @Test
-  public void shouldReturnNullIfEmptyPage() {
-    doReturn(new PageImpl<SupervisoryNodeDto>(Collections.emptyList()))
-        .when(service)
-        .getPage(RequestParameters.init()
-            .set(PROGRAM_ID, program)
-            .set(FACILITY_ID, facility));
+  public void shouldFindSupervisoryNode() {
+    // given
+    UUID program = UUID.randomUUID();
+    UUID facility = UUID.randomUUID();
 
-    assertNull(service.findSupervisoryNode(program, facility));
+    // when
+    SupervisoryNodeDto dto = mockPageResponseEntityAndGetDto();
+    SupervisoryNodeDto result = service.findSupervisoryNode(program, facility);
+
+    // then
+    assertThat(result, is(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("programId", program)
+        .hasQueryParameter("facilityId", facility);
   }
 
   @Test
-  public void shouldReturnFirstElementIfMoreThanOneFound() {
-    List<SupervisoryNodeDto> found = Arrays.asList(supervisoryNode, supervisoryNode2);
-    doReturn(new PageImpl<>(found))
-        .when(service)
-        .getPage(RequestParameters.init()
-            .set(PROGRAM_ID, program)
-            .set(FACILITY_ID, facility));
+  public void shouldReturnNullIfCanNotFindSupervisoryNode() {
+    // given
+    UUID program = UUID.randomUUID();
+    UUID facility = UUID.randomUUID();
 
-    SupervisoryNodeDto foundNode = service.findSupervisoryNode(program, facility);
+    // when
+    mockPageResponseEntity(Lists.newArrayList());
+    SupervisoryNodeDto result = service.findSupervisoryNode(program, facility);
 
-    assertEquals(supervisoryNode, foundNode);
-    assertNotEquals(supervisoryNode2, foundNode);
+    // then
+    assertThat(result, is(nullValue()));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("programId", program)
+        .hasQueryParameter("facilityId", facility);
   }
 
   @Test
-  public void shouldReturnFirstElementIfOneFound() {
-    doReturn(new PageImpl<>(Collections.singletonList(supervisoryNode)))
-        .when(service)
-        .getPage(RequestParameters.init()
-            .set(PROGRAM_ID, program)
-            .set(FACILITY_ID, facility));
+  public void shouldFindByIds() {
+    // given
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
 
-    SupervisoryNodeDto foundNode = service.findSupervisoryNode(program, facility);
+    // when
+    SupervisoryNodeDto dto = mockPageResponseEntityAndGetDto();
+    List<SupervisoryNodeDto> result = service.findByIds(Sets.newHashSet(id1, id2));
 
-    assertEquals(supervisoryNode, foundNode);
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody();
   }
 
   @Test
-  public void shouldFindSupervisoryNodesByIds() {
-    HashSet<UUID> uuids = Sets.newHashSet(UUID.randomUUID(), UUID.randomUUID());
-    List<SupervisoryNodeDto> expected = Arrays.asList(supervisoryNode, supervisoryNode2);
-    doReturn(new PageImpl<>(expected))
-        .when(service)
-        .getPage(RequestParameters.init().set("id", uuids));
+  public void shouldReturnEmptyListForFindByIdsIfParameterIsEmptyOrNull() {
+    // given
+    disableAuthCheck();
 
-    List<SupervisoryNodeDto> supervisoryNodes = service.findByIds(uuids);
-
-    assertEquals(expected, supervisoryNodes);
+    // when & then
+    assertThat(service.findByIds(null), hasSize(0));
+    assertThat(service.findByIds(emptyList()), hasSize(0));
   }
 
 }

@@ -15,53 +15,72 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Collection;
-import java.util.UUID;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
-public class SupervisingUsersReferenceDataServiceTest extends UserReferenceDataServiceTest {
+public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<RightDto> {
 
-  private SupervisingUsersReferenceDataService service;
+  private RightReferenceDataService service;
 
   @Override
-  protected BaseCommunicationService<UserDto> getService() {
-    return new SupervisingUsersReferenceDataService();
+  protected RightDto generateInstance() {
+    return new RightDto();
+  }
+
+  @Override
+  protected BaseCommunicationService<RightDto> getService() {
+    return new RightReferenceDataService();
   }
 
   @Override
   @Before
   public void setUp() {
     super.setUp();
-    service = (SupervisingUsersReferenceDataService) prepareService();
+    service = (RightReferenceDataService) prepareService();
   }
 
   @Test
-  public void testFindAll() {
+  public void shouldFindRightByName() {
     // given
-    UUID right = UUID.randomUUID();
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
+    String name = RandomStringUtils.randomAlphanumeric(10);
 
     // when
-    UserDto dto = mockArrayResponseEntityAndGetDto();
-    Collection<UserDto> result = service.findAll(supervisoryNode, right, program);
+    RightDto dto = mockArrayResponseEntityAndGetDto();
+    RightDto result = service.findRight(name);
 
     // then
-    assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
+    assertThat(result, is(dto));
 
     verifyArrayRequest()
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter("rightId", right)
-        .hasQueryParameter("programId", program);
+        .hasQueryParameter("name", name);
+  }
+
+  @Test
+  public void shouldReturnNullIfRightDoesNotExist() {
+    // given
+    String name = RandomStringUtils.randomAlphanumeric(10);
+
+    // when
+    mockArrayResponseEntity(new RightDto[0]);
+    RightDto result = service.findRight(name);
+
+    // then
+    assertThat(result, is(nullValue()));
+
+    verifyArrayRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("name", name);
   }
 }

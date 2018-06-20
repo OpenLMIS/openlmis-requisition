@@ -16,34 +16,25 @@
 package org.openlmis.requisition.service.referencedata;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PeriodReferenceDataServiceTest
     extends BaseCommunicationServiceTest<ProcessingPeriodDto> {
+
+  private PeriodReferenceDataService service;
 
   @Override
   protected ProcessingPeriodDto generateInstance() {
@@ -55,46 +46,44 @@ public class PeriodReferenceDataServiceTest
     return new PeriodReferenceDataService();
   }
 
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (PeriodReferenceDataService) prepareService();
+  }
+
   @Test
   public void shouldSearchProcessingPeriodsByScheduleIdAndEndDate() {
+    // given
     UUID scheduleId = UUID.randomUUID();
     LocalDate date = LocalDate.now();
 
-    PeriodReferenceDataService service = (PeriodReferenceDataService) prepareService();
-    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
-
     // when
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
     Collection<ProcessingPeriodDto> result = service.search(scheduleId, date);
 
     // then
     assertThat(result, hasSize(1));
     assertTrue(result.contains(period));
 
-    verify(restTemplate, atLeastOnce()).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-        Matchers.any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
-
-    assertQueryParameter(parse, "processingScheduleId", scheduleId);
-    assertQueryParameter(parse, "endDate", date);
-    assertQueryParameter(parse, "size", 2000);
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("processingScheduleId", scheduleId)
+        .hasQueryParameter("endDate", date)
+        .hasQueryParameter("size", 2000);
   }
 
   @Test
   public void shouldSearchProcessingPeriodsByFacilityAndProgram() {
+    // given
     UUID facilityId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    PeriodReferenceDataService service = (PeriodReferenceDataService) prepareService();
-    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
-
     // when
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
     Collection<ProcessingPeriodDto> result = service
         .searchByProgramAndFacility(programId, facilityId);
 
@@ -102,19 +91,12 @@ public class PeriodReferenceDataServiceTest
     assertThat(result, hasSize(1));
     assertTrue(result.contains(period));
 
-    verify(restTemplate, atLeastOnce()).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-        Matchers.any(DynamicPageTypeReference.class)
-    );
-
-    URI uri = uriCaptor.getValue();
-    List<NameValuePair> parse = URLEncodedUtils.parse(uri, "UTF-8");
-
-    assertQueryParameter(parse, "facilityId", facilityId);
-    assertQueryParameter(parse, "programId", programId);
-    assertQueryParameter(parse, "size", 2000);
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("facilityId", facilityId)
+        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("size", 2000);
   }
 }

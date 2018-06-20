@@ -18,10 +18,12 @@ package org.openlmis.requisition.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 public class ResultDto<T> {
   T result;
 }

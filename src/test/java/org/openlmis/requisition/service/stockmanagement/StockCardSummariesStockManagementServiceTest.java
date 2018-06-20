@@ -16,26 +16,17 @@
 package org.openlmis.requisition.service.stockmanagement;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.verify;
 
-import org.junit.Test;
-import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
-import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.utils.DynamicPageTypeReference;
-import org.springframework.http.HttpMethod;
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
+import org.openlmis.requisition.service.BaseCommunicationService;
 
 public class StockCardSummariesStockManagementServiceTest
     extends BaseStockmanagementServiceTest<StockCardSummaryDto> {
@@ -45,38 +36,7 @@ public class StockCardSummariesStockManagementServiceTest
   private UUID orderableId = UUID.randomUUID();
   private LocalDate asOfDate = LocalDate.now();
 
-  @Test
-  public void shouldFindStockCardSummaries() {
-    // given
-    StockCardSummaryDto stockCardSummaryDto = mockPageResponseEntityAndGetDto();
-
-    // when
-    StockCardSummariesStockManagementService service =
-        (StockCardSummariesStockManagementService) prepareService();
-    List<StockCardSummaryDto> actual =
-        service.search(programId, facilityId, Collections.singleton(orderableId), asOfDate);
-
-    // then
-    assertThat(actual, hasSize(1));
-    assertThat(actual, contains(stockCardSummaryDto));
-
-    verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), refEq(new DynamicPageTypeReference<>(StockCardSummaryDto.class))
-    );
-
-    URI uri = uriCaptor.getValue();
-    String url = serviceUrl + "/api/v2/stockCardSummaries";
-
-    assertThat(uri.toString(), startsWith(url));
-    assertThat(uri.toString(), containsString("programId=" + programId));
-    assertThat(uri.toString(), containsString("facilityId=" + facilityId));
-    assertThat(uri.toString(), containsString("orderableId=" + orderableId));
-    assertThat(uri.toString(), containsString("asOfDate=" + asOfDate));
-
-    assertAuthHeader(entityCaptor.getValue());
-    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
-  }
+  private StockCardSummariesStockManagementService service;
 
   @Override
   protected StockCardSummaryDto generateInstance() {
@@ -86,6 +46,35 @@ public class StockCardSummariesStockManagementServiceTest
   @Override
   protected BaseCommunicationService<StockCardSummaryDto> getService() {
     return new StockCardSummariesStockManagementService();
+  }
+
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    service = (StockCardSummariesStockManagementService) prepareService();
+  }
+
+  @Test
+  public void shouldFindStockCardSummaries() {
+    // when
+    StockCardSummaryDto stockCardSummaryDto = mockPageResponseEntityAndGetDto();
+    List<StockCardSummaryDto> actual =
+        service.search(programId, facilityId, Collections.singleton(orderableId), asOfDate);
+
+    // then
+    assertThat(actual, hasSize(1));
+    assertThat(actual, contains(stockCardSummaryDto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl())
+        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("facilityId", facilityId)
+        .hasQueryParameter("orderableId", orderableId)
+        .hasQueryParameter("asOfDate", asOfDate);
   }
 
 }

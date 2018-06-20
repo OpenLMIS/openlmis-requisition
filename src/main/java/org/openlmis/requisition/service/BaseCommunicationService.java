@@ -153,19 +153,6 @@ public abstract class BaseCommunicationService<T> {
     return findAll(resourceUrl, parameters, null, HttpMethod.GET, type);
   }
 
-  /**
-   * Return all reference data T objects that need to be retrieved with POST request.
-   *
-   * @param resourceUrl Endpoint url.
-   * @param parameters  Map of query parameters.
-   * @param payload     body to include with the outgoing request.
-   * @return all reference data T objects.
-   */
-  protected List<T> findAll(String resourceUrl, RequestParameters parameters,
-                            Object payload) {
-    return findAll(resourceUrl, parameters, payload, HttpMethod.POST, getArrayResultClass());
-  }
-
   protected <P> List<P> findAll(String resourceUrl, RequestParameters parameters,
                           Object payload, HttpMethod method, Class<P[]> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
