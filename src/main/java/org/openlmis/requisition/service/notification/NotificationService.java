@@ -37,9 +37,6 @@ public class NotificationService {
   @Value("${notification.url}")
   private String notificationUrl;
 
-  @Value("${email.noreply}")
-  private String from;
-
   private RestOperations restTemplate = new RestTemplate();
 
   /**
@@ -53,9 +50,7 @@ public class NotificationService {
   public boolean notify(UserDto user, String subject, String content) {
     String url = notificationUrl + "/api/v2/notification";
 
-    NotificationDto request = new NotificationDto(
-        from, user.getId(), subject, content
-    );
+    NotificationDto request = new NotificationDto(user.getId(), subject, content);
 
     try {
       restTemplate.postForObject(
