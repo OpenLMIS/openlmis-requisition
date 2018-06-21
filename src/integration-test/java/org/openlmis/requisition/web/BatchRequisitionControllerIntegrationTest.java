@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -25,15 +26,20 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
@@ -44,6 +50,7 @@ import com.google.common.collect.Sets;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -72,11 +79,15 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
@@ -97,6 +108,7 @@ import org.springframework.http.MediaType;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/requisitions";
+  private static final String BATCH_RELEASES_URL = RESOURCE_URL + "/batchReleases";
   private static final String RETRIEVE_ALL = "retrieveAll";
   private static final String APPROVE_ALL = "approveAll";
   private static final String SAVE_ALL = "saveAll";
@@ -193,7 +205,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
     List<OrderableDto> orderables =
-        Collections.singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID, requisitions));
+        singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID, requisitions));
     doReturn(orderables)
         .when(orderableReferenceDataService)
         .findByIds(Collections.singleton(LINE_ITEM_PRODUCT_ID));
@@ -325,6 +337,117 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
     Response response = put(SAVE_ALL, approveRequisitions);
     checkPermissionErrorResponseBody(response, 400);
+  }
+
+  // POST /api/requisitions/batchReleases
+
+  @Test
+  public void shouldConvertRequisitionToOrder() {
+    // given
+    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
+    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    releaseDto.setCreateOrder(true);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canConvertToOrder(anyList());
+
+    doReturn(new ArrayList<>())
+        .when(requisitionService).convertToOrder(any(), any());
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(releaseDto)
+        .when()
+        .post(BATCH_RELEASES_URL)
+        .then()
+        .statusCode(201);
+
+    // then
+    verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderWhenCreateOrderIsFalse() {
+    // given
+    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
+    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    releaseDto.setCreateOrder(false);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canConvertToOrder(anyList());
+    doReturn(new ArrayList<>())
+        .when(requisitionService).convertToOrder(any(), any());
+    doReturn(new ArrayList<>())
+        .when(requisitionService).releaseWithoutOrder(any());
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(releaseDto)
+        .when()
+        .post(BATCH_RELEASES_URL)
+        .then()
+        .statusCode(201);
+
+    // then
+    verify(requisitionService, never()).convertToOrder(any(), any());
+    verify(requisitionService, atLeastOnce()).releaseWithoutOrder(any());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
+    // given
+    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
+    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    releaseDto.setCreateOrder(true);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService).canConvertToOrder(anyList());
+
+    String errorKey = MessageKeys.ERROR_CONVERTING_REQUISITION_TO_ORDER;
+    ValidationMessageException exception = mockValidationException(errorKey);
+    doThrow(exception).when(requisitionService).convertToOrder(any(), any());
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(releaseDto)
+        .when()
+        .post(BATCH_RELEASES_URL)
+        .then()
+        .statusCode(400);
+
+    // then
+    verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private ReleaseRequisitionDto generateReleaseRequisitionDto(
+      List<ReleaseRequisitionLineItemDto> requisitions) {
+    ReleaseRequisitionDto releaseDto = new ReleaseRequisitionDto();
+    releaseDto.setRequisitionsToRelease(requisitions);
+    return releaseDto;
+  }
+
+  private ReleaseRequisitionLineItemDto generateConvertToOrderDto() {
+    ReleaseRequisitionLineItemDto releaseLineItemDto = new ReleaseRequisitionLineItemDto();
+    releaseLineItemDto.setSupplyingDepotId(UUID.randomUUID());
+    releaseLineItemDto.setRequisitionId(UUID.randomUUID());
+    return releaseLineItemDto;
+  }
+
+  private ValidationMessageException mockValidationException(String key, Object... args) {
+    ValidationMessageException exception = mock(ValidationMessageException.class);
+    Message errorMessage = new Message(key, (Object[]) args);
+    given(exception.asMessage()).willReturn(errorMessage);
+
+    return exception;
   }
 
   private void checkResponseBody(Response response) throws IOException {

@@ -59,6 +59,10 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/approveRequisitionDto.json" }
       }
 
+  - releaseRequisitionDto: !include schemas/releaseRequisitionDto.json
+
+  - releaseRequisitionLineItemDto: !include schemas/releaseRequisitionLineItemDto.json
+
   - requisitionError: |
       {   "type": "object",
           "$schema": "http://json-schema.org/draft-04/schema",
@@ -705,6 +709,27 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+                  "403":
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  "500":
+      /batchReleases:
+          post:
+              is: [ secured ]
+              description: Release Requisition/s with or without orders.
+              body:
+                application/json:
+                  schema: releaseRequisitionDto
+              responses:
+                  "201":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
+                  "400":
+                      body:
+                        application/json:
+                            schema: requisitionsProcessingStatus
                   "403":
                       body:
                         application/json:

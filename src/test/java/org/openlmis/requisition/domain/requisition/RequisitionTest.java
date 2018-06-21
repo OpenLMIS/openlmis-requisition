@@ -1204,6 +1204,18 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldRecordStatusChangeOnReleaseWithoutOrder() {
+    UUID releaserId = UUID.randomUUID();
+    Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.APPROVED);
+
+    requisition.releaseWithoutOrder(releaserId);
+
+    assertStatusChangeExistsAndAuthorIdMatches(requisition,
+        RequisitionStatus.RELEASED_WITHOUT_ORDER, releaserId);
+  }
+
+
+  @Test
   public void shouldProperlyRecognizeDeletableRequisition() {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     assertTrue(requisition.isDeletable());
@@ -1227,6 +1239,9 @@ public class RequisitionTest {
     assertFalse(requisition.isDeletable());
 
     requisition.setStatus(RequisitionStatus.RELEASED);
+    assertFalse(requisition.isDeletable());
+
+    requisition.setStatus(RequisitionStatus.RELEASED_WITHOUT_ORDER);
     assertFalse(requisition.isDeletable());
   }
 

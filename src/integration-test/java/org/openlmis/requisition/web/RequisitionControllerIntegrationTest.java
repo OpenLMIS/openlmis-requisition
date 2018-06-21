@@ -87,7 +87,6 @@ import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -96,6 +95,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -2118,11 +2118,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldConvertRequisitionToOrder() {
     // given
-    List<ConvertToOrderDto> requisitions = singletonList(generateConvertToOrderDto());
+    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
-    doNothing().when(requisitionService).convertToOrder(any(), any());
+    doReturn(new ArrayList<>())
+        .when(requisitionService).convertToOrder(any(), any());
 
     // when
     restAssured.given()
@@ -2142,7 +2143,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
-    List<ConvertToOrderDto> requisitions = singletonList(generateConvertToOrderDto());
+    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -2300,8 +2301,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
-  private ConvertToOrderDto generateConvertToOrderDto() {
-    ConvertToOrderDto convertDto = new ConvertToOrderDto();
+  private ReleaseRequisitionLineItemDto generateConvertToOrderDto() {
+    ReleaseRequisitionLineItemDto convertDto = new ReleaseRequisitionLineItemDto();
     convertDto.setSupplyingDepotId(UUID.randomUUID());
     convertDto.setRequisitionId(UUID.randomUUID());
 

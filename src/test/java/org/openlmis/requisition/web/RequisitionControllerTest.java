@@ -69,7 +69,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -771,8 +771,9 @@ public class RequisitionControllerTest {
 
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
-    ConvertToOrderDto entry = new ConvertToOrderDto(uuid4, supplyLineDto.getSupplyingFacility());
-    ImmutableList<ConvertToOrderDto> list = ImmutableList.of(entry);
+    ReleaseRequisitionLineItemDto entry = new ReleaseRequisitionLineItemDto(uuid4,
+        supplyLineDto.getSupplyingFacility());
+    ImmutableList<ReleaseRequisitionLineItemDto> list = ImmutableList.of(entry);
     verify(requisitionService).convertToOrder(eq(list), any(UserDto.class));
   }
 

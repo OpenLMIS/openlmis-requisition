@@ -52,7 +52,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -105,8 +105,8 @@ public class PermissionServiceTest {
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private ConvertToOrderDto convertToOrderDto = new ConvertToOrderDto();
-  private List<ConvertToOrderDto> convertToOrderDtos = new ArrayList<>();
+  private ReleaseRequisitionLineItemDto convertToOrderDto = new ReleaseRequisitionLineItemDto();
+  private List<ReleaseRequisitionLineItemDto> convertToOrderDtos = new ArrayList<>();
 
   @Before
   public void setUp() {

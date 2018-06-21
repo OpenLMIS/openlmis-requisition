@@ -627,6 +627,16 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Release the requisition.
+   */
+  public void releaseWithoutOrder(UUID releaser) {
+    status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
+    setModifiedDate(ZonedDateTime.now());
+
+    statusChanges.add(StatusChange.newStatusChange(this, releaser));
+  }
+
+  /**
    * Skip the requisition.
    */
   public void skip(boolean periodsSkippable, UUID userId) {

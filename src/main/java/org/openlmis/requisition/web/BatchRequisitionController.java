@@ -49,6 +49,7 @@ import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
@@ -76,6 +77,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 
 @Controller
 @SuppressWarnings("PMD.TooManyMethods")
@@ -138,7 +141,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     processingStatus.removeSkippedProducts();
 
     ResponseEntity<RequisitionsProcessingStatusDto> response = buildResponse(processingStatus,
-        profiler);
+        profiler, HttpStatus.OK);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -193,7 +196,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     submitStockEvent(profiler, user, requisitions);
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
-        buildResponse(processingStatus, profiler);
+        buildResponse(processingStatus, profiler, HttpStatus.OK);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
@@ -245,12 +248,52 @@ public class BatchRequisitionController extends BaseRequisitionController {
     processingStatus.removeSkippedProducts();
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
-        buildResponse(processingStatus, profiler);
+        buildResponse(processingStatus, profiler, HttpStatus.OK);
 
     profiler.stop().log();
     XLOGGER.exit(processingStatus);
     return response;
   }
+
+  /**
+   * Batch release of requisitions with or without an order.
+   *
+   * @param releaseDto An object containing List of Requisitions with their supplyingDepots that
+   *                   should be released with or without being converted to Orders
+   */
+  @RequestMapping(value = "/requisitions/batchReleases", method = RequestMethod.POST)
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public ResponseEntity<RequisitionsProcessingStatusDto> batchReleaseRequisitions(
+      @RequestBody ReleaseRequisitionDto releaseDto) {
+    Profiler profiler = getProfiler("RELEASE_REQUISITIONS", releaseDto);
+    RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
+    ValidationResult result = permissionService.canConvertToOrder(releaseDto
+        .getRequisitionsToRelease());
+    if (!addValidationErrors(processingStatus, result, null)) {
+      List<Requisition> releasedRequisitions;
+      if (releaseDto.getCreateOrder()) {
+        profiler.start("CONVERT");
+        releasedRequisitions = requisitionService.convertToOrder(
+            releaseDto.getRequisitionsToRelease(), getCurrentUser(profiler));
+      } else {
+        profiler.start("RELEASE_WITHOUT_ORDER");
+        releasedRequisitions = requisitionService.releaseWithoutOrder(
+            releaseDto.getRequisitionsToRelease());
+      }
+      for (Requisition requisition : releasedRequisitions) {
+        processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisition));
+      }
+    }
+    stopProfiler(profiler);
+
+    ResponseEntity<RequisitionsProcessingStatusDto> response =
+        buildResponse(processingStatus, profiler, HttpStatus.CREATED);
+
+    profiler.stop().log();
+    return response;
+  }
+
 
   private Map<UUID, SupervisoryNodeDto> findSupervisoryNodes(List<Requisition> requisitions,
       Profiler profiler) {
@@ -410,11 +453,13 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private ResponseEntity<RequisitionsProcessingStatusDto> buildResponse(
-      RequisitionsProcessingStatusDto processingStatus, Profiler profiler) {
+      RequisitionsProcessingStatusDto processingStatus, Profiler profiler,
+      HttpStatus successStatus) {
     profiler.start("BUILD_RESPONSE");
     return new ResponseEntity<>(processingStatus, processingStatus.getRequisitionErrors().isEmpty()
-        ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+        ? successStatus : HttpStatus.BAD_REQUEST);
   }
+
 
   private Message.LocalizedMessage localizeMessage(Message message) {
     return message == null ? null : messageService.localize(message);

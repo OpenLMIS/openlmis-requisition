@@ -34,7 +34,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -685,7 +685,7 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/convertToOrder")
   @ResponseStatus(HttpStatus.CREATED)
-  public void convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
+  public void convertToOrder(@RequestBody List<ReleaseRequisitionLineItemDto> list) {
     Profiler profiler = getProfiler("CONVERT_TO_ORDER", list);
     checkPermission(profiler, () -> permissionService.canConvertToOrder(list));
 

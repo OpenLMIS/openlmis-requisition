@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 
 import lombok.AllArgsConstructor;
@@ -56,6 +57,17 @@ public class ApproveRequisitionDto {
         .stream()
         .map(ApproveRequisitionLineItemDto::new)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Creates an instance from a persisted requisition object.
+   *
+   * @param requisition requisition domain object.
+   */
+  public ApproveRequisitionDto(Requisition requisition) {
+    this.id = requisition.getId();
+    this.emergency = requisition.getEmergency();
+    this.status = requisition.getStatus();
   }
 
 }

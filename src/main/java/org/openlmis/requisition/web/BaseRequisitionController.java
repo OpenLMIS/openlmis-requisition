@@ -45,7 +45,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ConvertToOrderDto;
+import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -226,7 +226,8 @@ public abstract class BaseRequisitionController extends BaseController {
 
       if (supportedProgram != null && supportedProgram.isSupportLocallyFulfilled()) {
         profiler.start("CONVERT_TO_ORDER");
-        ConvertToOrderDto entry = new ConvertToOrderDto(requisition.getId(), facility.getId());
+        ReleaseRequisitionLineItemDto entry = new ReleaseRequisitionLineItemDto(requisition.getId(),
+            facility.getId());
         requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user);
       }
     }

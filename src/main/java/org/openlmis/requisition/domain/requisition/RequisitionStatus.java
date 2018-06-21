@@ -25,6 +25,7 @@ public enum RequisitionStatus {
   IN_APPROVAL(3),
   APPROVED(4),
   RELEASED(5),
+  RELEASED_WITHOUT_ORDER(6),
   SKIPPED(-1);
 
   private int value;

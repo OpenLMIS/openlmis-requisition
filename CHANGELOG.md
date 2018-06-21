@@ -19,6 +19,7 @@ New functionality:
 * [OLMIS-4748](https://openlmis.atlassian.net/browse/OLMIS-4748): Total Losses and Adjustment column is populated from stock cards for Stock Based Requisitions.
 * [OLMIS-4760](https://openlmis.atlassian.net/browse/OLMIS-4760): Total Stockout Days column is populated from stock cards for Stock Based Requisitions.
 * [OLMIS-4683](https://openlmis.atlassian.net/browse/OLMIS-4683): Carry over skipped column value from previous requisition
+* [OLMIS-4958](https://openlmis.atlassian.net/browse/OLMIS-4958): Add a new /requisitions/batchReleases endpoint to release requisitions with or without order.
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile
