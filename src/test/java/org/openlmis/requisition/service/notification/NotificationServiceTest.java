@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.service;
+package org.openlmis.requisition.service.notification;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.service.AuthService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

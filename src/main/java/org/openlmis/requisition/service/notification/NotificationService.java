@@ -13,9 +13,10 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.requisition.service;
+package org.openlmis.requisition.service.notification;
 
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.service.AuthService;
 import org.openlmis.requisition.utils.RequestHelper;
 import org.openlmis.util.NotificationRequest;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class NotificationService {
    * @param content content of the email
    * @return true if success, false if failed.
    */
-  boolean notify(UserDto user, String subject, String content) {
+  public boolean notify(UserDto user, String subject, String content) {
     String url = notificationUrl + "/api/notification";
 
     NotificationRequest request = new NotificationRequest(
