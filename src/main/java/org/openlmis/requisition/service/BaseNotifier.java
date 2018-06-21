@@ -18,30 +18,21 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.utils.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.FormatStyle;
 import java.util.Locale;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.utils.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 public class BaseNotifier {
 
   @Autowired
   protected MessageService messageService;
-
-  /**
-   * Check if user want notifications: (enabled, verified, allowNotify all true).
-   */
-  protected static boolean canBeNotified(UserDto user) {
-    return user != null && user.allowNotify()
-        && user.activeAndVerified() && user.getEmail() != null;
-  }
 
   protected String getMessage(String key) {
     return messageService

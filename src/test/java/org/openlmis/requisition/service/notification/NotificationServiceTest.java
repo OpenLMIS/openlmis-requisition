@@ -21,6 +21,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +36,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationServiceTest {
@@ -71,7 +70,7 @@ public class NotificationServiceTest {
     ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
 
     verify(restTemplate).postForObject(eq(
-        new URI(BASE_URL + "/api/notification")),
+        new URI(BASE_URL + "/api/v2/notification")),
         captor.capture(), eq(Object.class));
 
     assertEquals(singletonList("Bearer " + ACCESS_TOKEN), captor.getValue().getHeaders()

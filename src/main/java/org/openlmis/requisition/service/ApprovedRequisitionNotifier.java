@@ -20,6 +20,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUIS
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -30,18 +36,11 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class ApprovedRequisitionNotifier extends BaseNotifier {
@@ -132,6 +131,6 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
             null,
             warehouse.getId())));
 
-    return users.stream().filter(BaseNotifier::canBeNotified).collect(Collectors.toSet());
+    return new HashSet<>(users);
   }
 }

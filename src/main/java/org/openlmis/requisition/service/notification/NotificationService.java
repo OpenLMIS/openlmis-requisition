@@ -18,7 +18,6 @@ package org.openlmis.requisition.service.notification;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.AuthService;
 import org.openlmis.requisition.utils.RequestHelper;
-import org.openlmis.util.NotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,17 +51,16 @@ public class NotificationService {
    * @return true if success, false if failed.
    */
   public boolean notify(UserDto user, String subject, String content) {
-    String url = notificationUrl + "/api/notification";
+    String url = notificationUrl + "/api/v2/notification";
 
-    NotificationRequest request = new NotificationRequest(
-        from, user.getEmail(), subject, content
+    NotificationDto request = new NotificationDto(
+        from, user.getId(), subject, content
     );
-    
+
     try {
       restTemplate.postForObject(
               RequestHelper.createUri(url),
-              RequestHelper.createEntity(authService.obtainAccessToken(),
-                      request),
+              RequestHelper.createEntity(authService.obtainAccessToken(), request),
               Object.class);
     } catch (HttpStatusCodeException ex) {
       logger.error(

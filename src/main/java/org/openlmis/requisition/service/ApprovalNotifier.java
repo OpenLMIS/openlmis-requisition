@@ -115,10 +115,8 @@ public class ApprovalNotifier extends BaseNotifier {
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
 
     for (UserDto approver : approvers) {
-      if (canBeNotified(approver)) {
-        valuesMap.put("approver", approver.getUsername());
-        notificationService.notify(approver, subject, sub.replace(content));
-      }
+      valuesMap.put("approver", approver.getUsername());
+      notificationService.notify(approver, subject, sub.replace(content));
     }
   }
 

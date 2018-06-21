@@ -83,9 +83,6 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     }
 
     UserDto initiator = getInitiator(statusChanges, requisition.getId());
-    if (!canBeNotified(initiator)) {
-      return;
-    }
 
     Optional<StatusChange> submitAuditEntry = getSubmitAuditEntry(requisition, statusChanges);
     if (!submitAuditEntry.isPresent()) {
