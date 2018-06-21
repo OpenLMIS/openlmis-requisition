@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 
 import java.lang.reflect.Field;
@@ -61,8 +62,10 @@ import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class ApprovalNotifierTest {
   public static final String TEST_KEY = "testKey";
+  private static final String APPROVER_1 = "approver1";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -94,6 +97,7 @@ public class ApprovalNotifierTest {
   private Requisition requisition = mock(Requisition.class);
 
   private static final String SUBJECT = "subject";
+  private static final String EMERGENCY = "emergency";
   private static final String CONTENT = "Dear ${approver}: This email is informing you that the "
       + "${requisitionType} requisition submitted on ${submittedDate} for the Period ${periodName} "
       + "and ${programName} at ${facilityName} is ready for review. Please login to review "
@@ -126,9 +130,26 @@ public class ApprovalNotifierTest {
   }
 
   @Test
+  public void shouldCallNotificationServiceForEmergencyRequisition() throws Exception {
+    UserDto approver = new UserDtoDataBuilder().withUsername("approver").build();
+
+    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
+        .thenReturn(Collections.singletonList(approver));
+    mockRequisition(true);
+    mockMessages();
+
+    mockChangeDate();
+
+    approvalNotifier.notifyApprovers(requisition);
+
+    verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
+        + "This email is informing you that the emergency requisition"));
+  }
+
+  @Test
   public void shouldCallNotificationServiceTwoTimesForTwoApproversWithProperUsernameInContent()
       throws Exception {
-    UserDto approver = new UserDtoDataBuilder().withUsername("approver1").build();
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
     UserDto approver2 = new UserDtoDataBuilder().withUsername("approver2").build();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
@@ -146,68 +167,60 @@ public class ApprovalNotifierTest {
 
     List<String> values = argument.getAllValues();
 
-    assertTrue(values.get(0).contains("approver1"));
+    assertTrue(values.get(0).contains(APPROVER_1));
     assertTrue(values.get(1).contains("approver2"));
   }
 
   @Test
-  public void shouldNotCallNotificationServiceWhenUserNotActive() throws Exception {
-    UserDto approver = new UserDtoDataBuilder().asInactive().build();
+  public void shouldNotCallNotificationServiceIfStatusChangesAreNull() {
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
-        .thenReturn(Collections.singletonList(approver));
+        .thenReturn(Arrays.asList(approver));
     mockRequisition();
     mockMessages();
 
-    mockChangeDate();
-
     approvalNotifier.notifyApprovers(requisition);
 
-    verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
+    verify(notificationService, times(0))
+        .notify(any(UserDto.class), any(), any());
   }
 
   @Test
-  public void shouldNotCallNotificationServiceWhenUserNotVerified() throws Exception {
-    UserDto approver = new UserDtoDataBuilder().asUnverified().build();
+  public void shouldNotCallNotificationServiceIfStatusChangeForSubmitIsMissing() {
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
-        .thenReturn(Collections.singletonList(approver));
+        .thenReturn(Arrays.asList(approver));
     mockRequisition();
     mockMessages();
-
-    mockChangeDate();
+    mockChangeDate(RequisitionStatus.REJECTED);
 
     approvalNotifier.notifyApprovers(requisition);
 
-    verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
-  }
-
-  @Test
-  public void shouldNotCallNotificationServiceWhenUserNotAllowNotify() throws Exception {
-    UserDto approver = new UserDtoDataBuilder().denyNotify().build();
-
-    when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
-        .thenReturn(Collections.singletonList(approver));
-    mockRequisition();
-    mockMessages();
-
-    mockChangeDate();
-
-    approvalNotifier.notifyApprovers(requisition);
-
-    verify(notificationService, times(0)).notify(refEq(approver), eq(SUBJECT), eq(CONTENT));
+    verify(notificationService, times(0))
+        .notify(any(UserDto.class), any(), any());
   }
 
   private void mockChangeDate() {
+    mockChangeDate(RequisitionStatus.SUBMITTED);
+  }
+
+  private void mockChangeDate(RequisitionStatus status) {
     StatusChange submitAuditEntry = mock(StatusChange.class);
     when(requisition.getStatusChanges()).thenReturn(Collections.singletonList(submitAuditEntry));
-    when(submitAuditEntry.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(submitAuditEntry.getStatus()).thenReturn(status);
     when(submitAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
   }
 
   private void mockRequisition() {
+    mockRequisition(false);
+  }
+
+  private void mockRequisition(Boolean emergency) {
     when(requisition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
     when(requisition.getProgramId()).thenReturn(programId);
+    when(requisition.getEmergency()).thenReturn(emergency);
   }
 
   private void mockServices() {
@@ -221,6 +234,9 @@ public class ApprovalNotifierTest {
     Message.LocalizedMessage localizedMessage = new Message(TEST_KEY).new LocalizedMessage("test");
     when(messageService.localize(any())).thenReturn(localizedMessage);
 
+    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(EMERGENCY);
+    when(messageService.localize(new Message(REQUISITION_TYPE_EMERGENCY)))
+        .thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY).new LocalizedMessage(SUBJECT);
     when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)))
         .thenReturn(localizedMessage);
