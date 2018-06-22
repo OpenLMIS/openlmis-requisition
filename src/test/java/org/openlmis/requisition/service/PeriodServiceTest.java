@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
@@ -323,6 +325,34 @@ public class PeriodServiceTest {
     assertTrue(requisitionIds.contains(anotherRequisition.getId()));
     // should allow to initiate another requisition for the same period
     assertTrue(requisitionIds.contains(null));
+  }
+
+  @Test
+  public void shouldNotReturnRequisitionsPostAuthorizeForEmergency() {
+    doReturn(Collections.singletonList(currentPeriod))
+        .when(periodReferenceDataService)
+        .searchByProgramAndFacility(programId, facilityId);
+
+    Requisition requisition = new Requisition();
+    requisition.setId(UUID.randomUUID());
+    requisition.setStatus(APPROVED);
+    requisition.setEmergency(true);
+
+    Requisition anotherRequisition = new Requisition();
+    anotherRequisition.setId(UUID.randomUUID());
+    anotherRequisition.setStatus(RELEASED);
+    anotherRequisition.setEmergency(true);
+
+    doReturn(Arrays.asList(requisition, anotherRequisition))
+        .when(requisitionRepository)
+        .searchRequisitions(currentPeriod.getId(), facilityId, programId, true);
+
+    Collection<RequisitionPeriodDto> periods =
+        periodService.getPeriods(programId, facilityId, true);
+
+    assertNotNull(periods);
+    assertThat(periods, hasSize(1));
+    assertNull(periods.iterator().next().getRequisitionId());
   }
 
   @Test

@@ -122,10 +122,12 @@ public class PeriodService {
 
       if (emergency) {
         for (Requisition requisition : requisitions) {
-          RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
-          additionalPeriod.setRequisitionId(requisition.getId());
-          additionalPeriod.setRequisitionStatus(requisition.getStatus());
-          requisitionPeriods.add(additionalPeriod);
+          if (requisition.getStatus().isPreAuthorize()) {
+            RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
+            additionalPeriod.setRequisitionId(requisition.getId());
+            additionalPeriod.setRequisitionStatus(requisition.getStatus());
+            requisitionPeriods.add(additionalPeriod);
+          }
         }
       } else if (!requisitions.isEmpty()) {
         Requisition requisition = requisitions.get(0);
