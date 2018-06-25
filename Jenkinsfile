@@ -115,10 +115,12 @@ pipeline {
                                     sed -i '' -e "s#^BASE_URL=.*#BASE_URL=http://localhost#" .env  2>/dev/null || true
                                     sed -i '' -e "s#^VIRTUAL_HOST=.*#VIRTUAL_HOST=localhost#" .env  2>/dev/null || true
 
+                                    SONAR_BRANCH_TEMP=$(echo $GIT_BRANCH)
                                     SONAR_LOGIN_TEMP=$(echo $SONAR_LOGIN | cut -f2 -d=)
                                     SONAR_PASSWORD_TEMP=$(echo $SONAR_PASSWORD | cut -f2 -d=)
                                     echo "SONAR_LOGIN=$SONAR_LOGIN_TEMP" >> .env
                                     echo "SONAR_PASSWORD=$SONAR_PASSWORD_TEMP" >> .env
+                                    echo "SONAR_BRANCH=$SONAR_BRANCH_TEMP" >> .env
 
                                     docker-compose -f docker-compose.builder.yml run sonar
                                     docker-compose -f docker-compose.builder.yml down --volumes

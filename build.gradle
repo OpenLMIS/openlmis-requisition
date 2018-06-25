@@ -193,6 +193,10 @@ checkstyle {
 //Usage: gradle sonarqube
 sonarqube {
     properties {
+        def branch = System.getenv("SONAR_BRANCH")
+        if (branch && branch != 'master') {
+            property "sonar.branch", branch
+        }
         property "sonar.projectName", "OpenLMIS Requisition"
         property "sonar.projectKey", "org.sonarqube:openlmis-requisition"
         property "sonar.host.url", "http://sonar.openlmis.org"
