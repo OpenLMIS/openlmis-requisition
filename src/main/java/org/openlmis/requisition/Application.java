@@ -15,6 +15,9 @@
 
 package org.openlmis.requisition;
 
+import java.time.Clock;
+import java.time.ZoneId;
+import java.util.Locale;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
 import org.javers.core.diff.ListCompareAlgorithm;
@@ -35,11 +38,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -47,9 +52,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
-import java.time.Clock;
-import java.time.ZoneId;
-import java.util.Locale;
 
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
@@ -79,6 +81,15 @@ public class Application {
 
   @Value("${db.clustering.enabled}")
   private boolean dbClusteringEnabled;
+
+  @Value("${redis.url}")
+  private String redisUrl;
+
+  @Value("${redis.port}")
+  private int redisPort;
+
+  @Value("${redis.password}")
+  private String redisPassword;
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -178,6 +189,24 @@ public class Application {
   @Bean
   public Clock clock() {
     return Clock.system(ZoneId.of(timeZoneId));
+  }
+
+  @Bean
+  JedisConnectionFactory connectionFactory() {
+    JedisConnectionFactory factory = new JedisConnectionFactory();
+    factory.setHostName(redisUrl);
+    factory.setPort(redisPort);
+    factory.setPassword(redisPassword);
+
+    factory.setUsePool(true);
+    return factory;
+  }
+
+  @Bean
+  RedisTemplate<?, ?> redisTemplate(JedisConnectionFactory factory) {
+    RedisTemplate<Object, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(factory);
+    return template;
   }
 
   /**
