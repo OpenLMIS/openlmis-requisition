@@ -1,7 +1,7 @@
 execution:
-  - concurrency: 1
-    iterations: 1
-    scenario: batch-workflow
+#  - concurrency: 1
+#    iterations: 1
+#    scenario: batch-workflow
 
 scenarios:
   search-requisitions:
