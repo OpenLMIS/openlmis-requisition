@@ -19,6 +19,7 @@ services:
     image: openlmis/dev:3
     links:
       - db
+      - redis
       - log
     volumes:
       - '.:/app'
