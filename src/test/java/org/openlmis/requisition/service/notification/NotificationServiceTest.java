@@ -70,7 +70,7 @@ public class NotificationServiceTest {
     ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
 
     verify(restTemplate).postForObject(eq(
-        new URI(BASE_URL + "/api/v2/notification")),
+        new URI(BASE_URL + "/api/notifications")),
         captor.capture(), eq(Object.class));
 
     assertEquals(singletonList("Bearer " + ACCESS_TOKEN), captor.getValue().getHeaders()
