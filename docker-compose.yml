@@ -5,6 +5,7 @@ services:
     image: openlmis/requisition
     links:
       - db
+      - redis
       - log
     env_file: .env
 
@@ -17,6 +18,10 @@ services:
         syslog-facility: "local1"
     depends_on: [log]
     env_file: .env
+
+  redis:
+    image: redis:3.2.12
+    depends_on: [log]
 
   log:
     image: openlmis/rsyslog:1
