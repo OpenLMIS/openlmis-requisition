@@ -203,10 +203,10 @@ public class Application {
   }
 
   @Bean
-  RedisTemplate<?, ?> redisTemplate(JedisConnectionFactory factory) {
-    RedisTemplate<Object, Object> template = new RedisTemplate<>();
-    template.setConnectionFactory(factory);
-    return template;
+  RedisTemplate<Object, Object> redisTemplate(JedisConnectionFactory factory) {
+    RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(factory);
+    return redisTemplate;
   }
 
   /**
