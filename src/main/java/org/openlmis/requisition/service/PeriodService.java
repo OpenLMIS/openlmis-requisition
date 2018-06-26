@@ -120,22 +120,23 @@ public class PeriodService {
       List<Requisition> requisitions = requisitionRepository.searchRequisitions(
           period.getId(), facility, program, emergency);
 
+      List<Requisition> preAuthorizeRequisitions = requisitions.stream()
+          .filter(requisition -> requisition.getStatus().isPreAuthorize())
+          .collect(Collectors.toList());
+
       if (emergency) {
-        for (Requisition requisition : requisitions) {
-          if (requisition.getStatus().isPreAuthorize()) {
-            RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
-            additionalPeriod.setRequisitionId(requisition.getId());
-            additionalPeriod.setRequisitionStatus(requisition.getStatus());
-            requisitionPeriods.add(additionalPeriod);
-          }
+        for (Requisition requisition : preAuthorizeRequisitions) {
+          RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
+          additionalPeriod.setRequisitionId(requisition.getId());
+          additionalPeriod.setRequisitionStatus(requisition.getStatus());
+          requisitionPeriods.add(additionalPeriod);
         }
       } else if (!requisitions.isEmpty()) {
-        Requisition requisition = requisitions.get(0);
-        if (!requisition.getStatus().isPreAuthorize()) {
+        if (preAuthorizeRequisitions.isEmpty()) {
           requisitionPeriods.remove(requisitionPeriod);
         } else {
-          requisitionPeriod.setRequisitionId(requisition.getId());
-          requisitionPeriod.setRequisitionStatus(requisition.getStatus());
+          requisitionPeriod.setRequisitionId(preAuthorizeRequisitions.get(0).getId());
+          requisitionPeriod.setRequisitionStatus(preAuthorizeRequisitions.get(0).getStatus());
         }
       }
     }
