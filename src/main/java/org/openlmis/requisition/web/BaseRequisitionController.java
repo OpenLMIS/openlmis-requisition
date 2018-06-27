@@ -16,10 +16,13 @@
 package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
+import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.ImmutableList;
@@ -34,6 +37,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -53,8 +58,10 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.IdempotencyKeyException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
@@ -77,11 +84,20 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseRequisitionController extends BaseController {
+
+  static final String RESOURCE_URL = "/requisitions";
+  static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
+
   private final XLogger extLogger = XLoggerFactory.getXLogger(getClass());
   final Logger logger = LoggerFactory.getLogger(getClass());
+
+  @Value("service.url")
+  private String baseUrl;
 
   @Autowired
   RequisitionService requisitionService;
@@ -140,6 +156,9 @@ public abstract class BaseRequisitionController extends BaseController {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @Autowired
+  private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
 
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
@@ -360,6 +379,40 @@ public abstract class BaseRequisitionController extends BaseController {
           requisition.getProgramId(), requisition.getFacilityId()).getId();
       requisition.setSupervisoryNodeId(supervisoryNode);
     }
+  }
+
+  void validateIdempotencyKey(HttpServletRequest request, Profiler profiler) {
+    profiler.start("VALIDATE_IDEMPOTENCY_KEY");
+    UUID key = retrieveIdempotencyKey(request);
+    if (null != key) {
+      if (processedRequestsRedisRepository.exists(key)) {
+        throw new IdempotencyKeyException(new Message(IDEMPOTENCY_KEY_ALREADY_USED));
+      }
+      processedRequestsRedisRepository.addOrUpdate(key, null);
+    }
+  }
+
+  void addLocationHeader(HttpServletRequest request, HttpServletResponse response,
+      UUID requisitionId, Profiler profiler) {
+    profiler.start("ADD_LOCATION_HEADER");
+    UUID key = retrieveIdempotencyKey(request);
+    if (null != key) {
+      response.addHeader(HttpHeaders.LOCATION,
+          baseUrl + API_URL + RESOURCE_URL + '/' + requisitionId);
+      processedRequestsRedisRepository.addOrUpdate(key, requisitionId);
+    }
+  }
+
+  private UUID retrieveIdempotencyKey(HttpServletRequest request) {
+    String key = request.getHeader(IDEMPOTENCY_KEY_HEADER);
+    if (isNotEmpty(key)) {
+      try {
+        return UUID.fromString(key);
+      } catch (IllegalArgumentException cause) {
+        throw new ValidationMessageException(new Message(IDEMPOTENCY_KEY_WRONG_FORMAT, key), cause);
+      }
+    }
+    return null;
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,

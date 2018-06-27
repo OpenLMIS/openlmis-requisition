@@ -40,6 +40,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
+import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT;
+import static org.openlmis.requisition.web.BaseController.API_URL;
+import static org.openlmis.requisition.web.BaseRequisitionController.IDEMPOTENCY_KEY_HEADER;
+import static org.openlmis.requisition.web.BaseRequisitionController.RESOURCE_URL;
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
@@ -62,6 +67,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
+import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.ConvertToOrderDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -77,10 +83,12 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.BindingResultException;
+import org.openlmis.requisition.exception.IdempotencyKeyException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -105,6 +113,8 @@ import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.profiler.Profiler;
+import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
@@ -131,6 +141,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private Requisition approvedRequsition;
+
+  @Mock
+  private BasicRequisitionDto basicRequisitionDto;
 
   @Mock
   private RequisitionTemplate template;
@@ -199,6 +212,9 @@ public class RequisitionControllerTest {
   private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
 
   @Mock
+  private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
+
+  @Mock
   private DateHelper dateHelper;
 
   @Mock
@@ -224,6 +240,9 @@ public class RequisitionControllerTest {
   private SupervisoryNodeDto supervisoryNode;
   private UserDto currentUser;
   private StockCardRangeSummaryDto stockCardRangeSummaryDto;
+  private UUID key = UUID.randomUUID();
+  private String baseUrl = "https://openlmis/";
+  private String wrongUuidFormat = "wrong-key";
 
   @Before
   public void setUp() {
@@ -261,6 +280,20 @@ public class RequisitionControllerTest {
 
     currentUser = DtoGenerator.of(UserDto.class);
     when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
+
+    when(processedRequestsRedisRepository.exists(any()))
+        .thenReturn(false);
+
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER))
+        .thenReturn(null);
+
+    when(basicRequisitionDtoBuilder.build(any(Requisition.class)))
+        .thenReturn(basicRequisitionDto);
+    when(basicRequisitionDto.getId())
+        .thenReturn(uuid1);
+
+    ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
+        "baseUrl", baseUrl, String.class);
   }
 
   private void stubValidations(Requisition... requisitions) {
@@ -296,8 +329,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldSubmitValidInitiatedRequisition() {
     mockDependenciesForSubmit();
-
-    requisitionController.submitRequisition(uuid1);
+    requisitionController.submitRequisition(uuid1, request, response);
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
@@ -312,7 +344,7 @@ public class RequisitionControllerTest {
     ProgramDto programDto = new ProgramDtoDataBuilder().buildWithSkippedAuthorizationStep();
     doReturn(programDto).when(programReferenceDataService).findOne(any(UUID.class));
 
-    requisitionController.submitRequisition(uuid1);
+    requisitionController.submitRequisition(uuid1, request, response);
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true));
     // we do not update in this endpoint
@@ -327,7 +359,7 @@ public class RequisitionControllerTest {
 
     when(dateHelper.isDateAfterNow(processingPeriod.getEndDate())).thenReturn(true);
 
-    requisitionController.submitRequisition(uuid1);
+    requisitionController.submitRequisition(uuid1, request, response);
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
@@ -344,11 +376,53 @@ public class RequisitionControllerTest {
 
     when(dateHelper.isDateAfterNow(processingPeriod.getEndDate())).thenReturn(true);
 
-    requisitionController.submitRequisition(uuid1);
+    requisitionController.submitRequisition(uuid1, request, response);
 
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
+  }
+
+  @Test
+  public void shouldSubmitRequisitionWithIdempotencyKey() {
+    mockDependenciesForSubmit();
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    requisitionController.submitRequisition(uuid1, request, response);
+
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
+    // we do not update in this endpoint
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
+    verify(initiatedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+
+
+    verify(response, times(1)).addHeader(
+        HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, uuid1);
+  }
+
+  @Test
+  public void shouldNotSubmitRequisitionIfIdempotencyKeyHasWrongFormat() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_WRONG_FORMAT);
+
+    mockDependenciesForSubmit();
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
+
+    requisitionController.submitRequisition(uuid1, request, response);
+  }
+
+  @Test
+  public void shouldNotSubmitRequisitionWithUsedIdempotencyKey() {
+    exception.expect(IdempotencyKeyException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_ALREADY_USED);
+
+    mockDependenciesForSubmit();
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
+
+    requisitionController.submitRequisition(uuid1, request, response);
   }
 
   @Test
@@ -360,7 +434,7 @@ public class RequisitionControllerTest {
         .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
-    assertThatThrownBy(() -> requisitionController.submitRequisition(uuid1))
+    assertThatThrownBy(() -> requisitionController.submitRequisition(uuid1, request, response))
         .isInstanceOf(BindingResultException.class)
         .hasMessage(bindingResultMessage);
 
@@ -478,9 +552,63 @@ public class RequisitionControllerTest {
   @Test
   public void shouldThrowExceptionWhenFacilityOrProgramIdNotFound() throws Exception {
     exception.expect(ValidationMessageException.class);
-    requisitionController.initiate(programUuid, null, null, false);
+    requisitionController.initiate(programUuid, null, null, false, request, response);
     exception.expect(ValidationMessageException.class);
-    requisitionController.initiate(null, facilityUuid, null, false);
+    requisitionController.initiate(null, facilityUuid, null, false, request, response);
+  }
+
+  @Test
+  public void shouldApproveRequisitionWithIdempotencyKey() {
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+
+    verify(response, times(1)).addHeader(
+        HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, uuid1);
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionIfIdempotencyKeyHasWrongFormat() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_WRONG_FORMAT);
+
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn( wrongUuidFormat);
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionWithUsedIdempotencyKey() {
+    exception.expect(IdempotencyKeyException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_ALREADY_USED);
+
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
+    UUID parentNodeId = UUID.randomUUID();
+    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
   }
 
   @Test
@@ -495,7 +623,7 @@ public class RequisitionControllerTest {
 
     setUpApprover();
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -506,7 +634,7 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
   }
 
   @Test
@@ -524,7 +652,7 @@ public class RequisitionControllerTest {
 
     setUpApprover();
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -549,7 +677,7 @@ public class RequisitionControllerTest {
 
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -569,7 +697,7 @@ public class RequisitionControllerTest {
     when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any()))
         .thenReturn(stockEventDto);
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -588,7 +716,7 @@ public class RequisitionControllerTest {
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(true);
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -606,7 +734,7 @@ public class RequisitionControllerTest {
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -627,7 +755,7 @@ public class RequisitionControllerTest {
         .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
 
     assertThatThrownBy(() ->
-        requisitionController.approveRequisition(authorizedRequsition.getId()))
+        requisitionController.approveRequisition(authorizedRequsition.getId(), request, response))
         .isInstanceOf(BindingResultException.class)
         .hasMessage(bindingResultMessage);
 
@@ -641,7 +769,7 @@ public class RequisitionControllerTest {
     SupplyLineDto supplyLineDto = prepareSupplyLine(authorizedRequsition, true, true);
     setUpApprover();
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     ConvertToOrderDto entry = new ConvertToOrderDto(uuid4, supplyLineDto.getSupplyingFacility());
     ImmutableList<ConvertToOrderDto> list = ImmutableList.of(entry);
@@ -655,7 +783,7 @@ public class RequisitionControllerTest {
     prepareSupplyLine(authorizedRequsition, true, false);
     setUpApprover();
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, never()).convertToOrder(anyList(), any(UserDto.class));
   }
@@ -669,7 +797,7 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
   }
 
   @Test
@@ -679,7 +807,7 @@ public class RequisitionControllerTest {
     when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
         .thenReturn(initiatedRequsition);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId());
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).reject(authorizedRequsition, Collections.emptyMap());
   }
@@ -689,10 +817,56 @@ public class RequisitionControllerTest {
     doReturn(ValidationResult.noPermission("notAuthorized"))
         .when(permissionService).canApproveRequisition(authorizedRequsition);
 
-    assertThatThrownBy(() -> requisitionController.rejectRequisition(authorizedRequsition.getId()))
+    assertThatThrownBy(() ->
+        requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response))
         .isInstanceOf(PermissionMessageException.class);
 
     verify(requisitionService, times(0)).reject(authorizedRequsition, Collections.emptyMap());
+  }
+
+  @Test
+  public void shouldRejectRequisitionWithIdempotencyKey() {
+    when(permissionService.canApproveRequisition(authorizedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+        .thenReturn(initiatedRequsition);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+
+    verify(response, times(1)).addHeader(
+        HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, uuid1);
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionIfIdempotencyKeyHasWrongFormat() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_WRONG_FORMAT);
+
+    when(permissionService.canApproveRequisition(authorizedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+        .thenReturn(initiatedRequsition);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
+
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionWithUsedIdempotencyKey() {
+    exception.expect(IdempotencyKeyException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_ALREADY_USED);
+
+    when(permissionService.canApproveRequisition(authorizedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+        .thenReturn(initiatedRequsition);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
+
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
   }
 
   @Test
@@ -702,7 +876,7 @@ public class RequisitionControllerTest {
     when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
         .thenReturn(initiatedRequsition);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId());
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionStatusNotifier).notifyStatusChanged(initiatedRequsition);
   }
@@ -713,7 +887,7 @@ public class RequisitionControllerTest {
         any(UUID.class)))
         .thenReturn(ValidationResult.success());
 
-    requisitionController.approveRequisition(authorizedRequsition.getId());
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, times(1)).validateCanApproveRequisition(
         any(Requisition.class),
@@ -723,10 +897,46 @@ public class RequisitionControllerTest {
   }
 
   @Test
+  public void shouldAuthorizeRequisitionWithIdempotencyKey() {
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    setUpAuthorizer();
+
+    requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
+
+    verify(response, times(1)).addHeader(
+        HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, uuid1);
+  }
+
+  @Test
+  public void shouldNotAuthorizeRequisitionIfIdempotencyKeyHasWrongFormat() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_WRONG_FORMAT);
+
+    setUpAuthorizer();
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
+
+    requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
+  }
+
+  @Test
+  public void shouldNotAuthorizeRequisitionWithUsedIdempotencyKey() {
+    exception.expect(IdempotencyKeyException.class);
+    exception.expectMessage(IDEMPOTENCY_KEY_ALREADY_USED);
+
+    setUpAuthorizer();
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+    when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
+
+    requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
+  }
+
+  @Test
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() {
     setUpAuthorizer();
 
-    requisitionController.authorizeRequisition(submittedRequsition.getId());
+    requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(requisitionStatusProcessor).statusChange(submittedRequsition);
   }
@@ -735,7 +945,7 @@ public class RequisitionControllerTest {
   public void shouldCallValidationsWhenAuthorizingRequisition() {
     setUpAuthorizer();
 
-    requisitionController.authorizeRequisition(submittedRequsition.getId());
+    requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(submittedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
@@ -749,7 +959,7 @@ public class RequisitionControllerTest {
         .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
 
     assertThatThrownBy(() ->
-        requisitionController.authorizeRequisition(submittedRequsition.getId()))
+        requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response))
         .isInstanceOf(BindingResultException.class)
         .hasMessage(bindingResultMessage);
 

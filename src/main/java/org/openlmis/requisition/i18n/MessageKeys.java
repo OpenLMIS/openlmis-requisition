@@ -145,6 +145,10 @@ public abstract class MessageKeys {
       "requisition.error.validation.dateModifiedMismatch";
   public static final String VERSION_MISMATCH =
       "requisition.error.validation.versionMismatch";
+  public static final String IDEMPOTENCY_KEY_ALREADY_USED =
+      "requisition.error.validation.idempotencyKey.alreadyUsed";
+  public static final String IDEMPOTENCY_KEY_WRONG_FORMAT =
+      "requisition.error.validation.idempotencyKey.wrongFormat";
   public static final String ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST =
       "requisition.error.validation.reasonNotInRequisitionReasonList";
   public static final String ERROR_DATE_STOCK_COUNT_IS_IN_FUTURE = ERROR_PREFIX

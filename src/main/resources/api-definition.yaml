@@ -185,6 +185,14 @@ traits:
                   type: string
                   required: false
                   repeat: true
+    - idempotent:
+          headers:
+              Idempotency-Key:
+                  displayName: Idempotency Key
+                  description: Idempotency Key in UUIDv4 format to avoid duplicated requests.
+                  type: string
+                  required: false
+                  repeat: false
 
 resourceTypes:
     - collection:
@@ -305,7 +313,7 @@ resourceTypes:
       displayName: Requisition
       /initiate:
           post:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Initiate requisition.
               queryParameters:
                   program:
@@ -337,6 +345,10 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      body:
+                        application/json:
+                            schema: localizedMessage
+                  "409":
                       body:
                         application/json:
                             schema: localizedMessage
@@ -423,7 +435,7 @@ resourceTypes:
                   required: true
                   repeat: false
           put:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Skip chosen requisition period.
               responses:
                   "200":
@@ -442,6 +454,10 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+                  "409":
+                      body:
+                        application/json:
+                            schema: localizedMessage
       /{id}/reject:
           uriParameters:
               id:
@@ -450,7 +466,7 @@ resourceTypes:
                   required: true
                   repeat: false
           put:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Reject requisition which is waiting for approval.
               responses:
                   "200":
@@ -469,9 +485,13 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+                  "409":
+                      body:
+                        application/json:
+                            schema: localizedMessage
       /{id}/submit:
           post:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Submit earlier initiated requisition.
               responses:
                   "200":
@@ -485,6 +505,10 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+                  "409":
+                      body:
+                        application/json:
+                            schema: localizedMessage
       /{id}/authorize:
           uriParameters:
               id:
@@ -493,7 +517,7 @@ resourceTypes:
                   required: true
                   repeat: false
           post:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Authorize submitted requisition.
               responses:
                   "200":
@@ -506,6 +530,10 @@ resourceTypes:
                             schema: localizedMessage
                   "404":
                   "403":
+                      body:
+                        application/json:
+                            schema: localizedMessage
+                  "409":
                       body:
                         application/json:
                             schema: localizedMessage
@@ -603,7 +631,7 @@ resourceTypes:
                   required: true
                   repeat: false
           post:
-              is: [ secured ]
+              is: [ secured, idempotent ]
               description: Approve specified by id requisition.
               responses:
                   "200":
@@ -615,6 +643,10 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      body:
+                        application/json:
+                            schema: localizedMessage
+                  "409":
                       body:
                         application/json:
                             schema: localizedMessage
