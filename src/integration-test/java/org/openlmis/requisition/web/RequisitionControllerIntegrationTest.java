@@ -517,7 +517,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(statusSet), eq(null), any(Pageable.class))
+        eq(null), eq(statusSet), eq(false), any(Pageable.class))
     ).willReturn(Pagination.getPage(requisitions, pageRequest));
 
     // when

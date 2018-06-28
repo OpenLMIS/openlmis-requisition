@@ -22,11 +22,11 @@ public class ToStringTestUtils {
   /**
    * Checks if given class has proper toString method.
    */
-  public static <T> void verify(Class<T> clazz, T object) {
+  public static <T> void verify(Class<T> clazz, T object, String... ignore) {
     ToStringVerifier
         .forClass(clazz)
         .ignore("$jacocoData") // external library is checking for this field, has to be ignored
+        .ignore(ignore)
         .containsAllPrivateFields(object);
   }
-
 }

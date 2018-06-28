@@ -254,6 +254,16 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".lineItem.added";
   public static final String ERROR_DUPLICATE_STATUS_CHANGE =
       ERROR_PREFIX + ".validation.duplicateStatusChange";
+  public static final String ERROR_INVALID_REQUISITION_STATUS =
+      ERROR_PREFIX + ".validation.params.requisitionStatus.notValidStatus";
+  public static final String ERROR_SEARCH_INVALID_PARAMS =
+      ERROR_PREFIX + ".search.invalidParams";
+  public static final String ERROR_INVALID_DATE_FORMAT =
+      ERROR_PREFIX + ".validation.invalidDateFormat";
+  public static final String ERROR_INVALID_BOOLEAN_FORMAT =
+      ERROR_PREFIX + ".validation.invalidBooleanFormat";
+  public static final String ERROR_INVALID_UUID_FORMAT =
+      ERROR_PREFIX + ".validation.invalidUuidFormat";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";
