@@ -96,7 +96,7 @@ public abstract class BaseRequisitionController extends BaseController {
   private final XLogger extLogger = XLoggerFactory.getXLogger(getClass());
   final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @Value("service.url")
+  @Value("${service.url}")
   private String baseUrl;
 
   @Autowired
