@@ -52,7 +52,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -105,8 +105,8 @@ public class PermissionServiceTest {
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private ReleaseRequisitionLineItemDto convertToOrderDto = new ReleaseRequisitionLineItemDto();
-  private List<ReleaseRequisitionLineItemDto> convertToOrderDtos = new ArrayList<>();
+  private ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
+  private List<ReleasableRequisitionDto> releasableDtos = new ArrayList<>();
 
   @Before
   public void setUp() {
@@ -117,9 +117,9 @@ public class PermissionServiceTest {
     userClient = asClient("admin");
     apiKeyClient = asApiKey();
 
-    convertToOrderDto.setRequisitionId(requisitionId);
-    convertToOrderDto.setSupplyingDepotId(facilityId);
-    convertToOrderDtos.add(convertToOrderDto);
+    releasableRequisitionDto.setRequisitionId(requisitionId);
+    releasableRequisitionDto.setSupplyingDepotId(facilityId);
+    releasableDtos.add(releasableRequisitionDto);
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -321,7 +321,7 @@ public class PermissionServiceTest {
   public void canConvertToOrder() throws Exception {
     hasRight(requisitionConvertRight, true);
 
-    permissionService.canConvertToOrder(convertToOrderDtos);
+    permissionService.canConvertToOrder(releasableDtos);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRight);
@@ -329,7 +329,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotConvertToOrder() throws Exception {
-    expectMissingPermission(permissionService.canConvertToOrder(convertToOrderDtos), ORDERS_EDIT);
+    expectMissingPermission(permissionService.canConvertToOrder(releasableDtos), ORDERS_EDIT);
   }
 
   @Test
@@ -364,7 +364,7 @@ public class PermissionServiceTest {
     assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(true));
     assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(true));
     assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(true));
+    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(true));
 
     // Report permissions
     assertThat(permissionService.canViewReports().isSuccess(), is(true));
@@ -388,7 +388,7 @@ public class PermissionServiceTest {
     assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
+    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(false));
 
     // Report permissions
     assertThat(permissionService.canViewReports().isSuccess(), is(false));
@@ -412,7 +412,7 @@ public class PermissionServiceTest {
     assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
     assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canConvertToOrder(convertToOrderDtos).isSuccess(), is(false));
+    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(false));
 
     // Report permissions
     assertThat(permissionService.canViewReports().isSuccess(), is(false));

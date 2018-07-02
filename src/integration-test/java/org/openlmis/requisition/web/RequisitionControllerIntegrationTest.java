@@ -95,7 +95,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -2118,7 +2118,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldConvertRequisitionToOrder() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
+    List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -2143,7 +2143,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Test
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
+    List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -2301,12 +2301,12 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
-  private ReleaseRequisitionLineItemDto generateConvertToOrderDto() {
-    ReleaseRequisitionLineItemDto convertDto = new ReleaseRequisitionLineItemDto();
-    convertDto.setSupplyingDepotId(UUID.randomUUID());
-    convertDto.setRequisitionId(UUID.randomUUID());
+  private ReleasableRequisitionDto generateReleasableRequisitionDto() {
+    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
+    releasableRequisitionDto.setSupplyingDepotId(UUID.randomUUID());
+    releasableRequisitionDto.setRequisitionId(UUID.randomUUID());
 
-    return convertDto;
+    return releasableRequisitionDto;
   }
 
   private List<Requisition> generateRequisitions(RequisitionStatus... statuses) {

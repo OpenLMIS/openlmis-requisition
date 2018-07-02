@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -197,18 +197,18 @@ public class PermissionService {
   /**
    * Checks if current user has permission to convert requisition to order.
    *
-   * @param list of ReleaseRequisitionLineItemDto containing requisitionId and supplyingDepotId.
+   * @param list of ReleasableRequisitionDto containing requisitionId and supplyingDepotId.
    * @return ValidationResult containing info about the result of this check
    */
-  public ValidationResult canConvertToOrder(List<ReleaseRequisitionLineItemDto> list) {
+  public ValidationResult canConvertToOrder(List<ReleasableRequisitionDto> list) {
     Map<UUID, Requisition> requisitions = requisitionRepository
         .findAll(list
             .stream()
-            .map(ReleaseRequisitionLineItemDto::getRequisitionId).collect(Collectors.toSet()))
+            .map(ReleasableRequisitionDto::getRequisitionId).collect(Collectors.toSet()))
         .stream()
         .collect(Collectors.toMap(BaseEntity::getId, Function.identity()));
 
-    for (ReleaseRequisitionLineItemDto convertToOrder : list) {
+    for (ReleasableRequisitionDto convertToOrder : list) {
       Requisition requisition = requisitions.get(convertToOrder.getRequisitionId());
 
       if (requisition == null) {

@@ -59,9 +59,9 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/approveRequisitionDto.json" }
       }
 
-  - releaseRequisitionDto: !include schemas/releaseRequisitionDto.json
+  - releasableBatchDto: !include schemas/releasableBatchDto.json
 
-  - releaseRequisitionLineItemDto: !include schemas/releaseRequisitionLineItemDto.json
+  - releasableRequisitionDto: !include schemas/releasableRequisitionDto.json
 
   - requisitionError: |
       {   "type": "object",
@@ -720,7 +720,7 @@ resourceTypes:
               description: Release Requisition/s with or without orders.
               body:
                 application/json:
-                  schema: releaseRequisitionDto
+                  schema: releasableBatchDto
               responses:
                   "201":
                       body:

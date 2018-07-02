@@ -1,8 +1,8 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "ReleaseRequisitionLineItemDto",
-  "description": "The ReleaseRequisitionLineItemDto object is used in the release process.",
+  "title": "ReleasableRequisitionDto",
+  "description": "The ReleasableRequisitionDto object is used to represent requisitions in the release process.",
   "properties": {
     "requisitionId": {
       "type": "string",

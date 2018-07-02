@@ -79,8 +79,8 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ReleaseRequisitionDto;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableBatchDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -344,8 +344,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @Test
   public void shouldConvertRequisitionToOrder() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
-    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
+    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
@@ -372,8 +372,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @Test
   public void shouldNotConvertRequisitionToOrderWhenCreateOrderIsFalse() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
-    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
+    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(false);
 
     doReturn(ValidationResult.success())
@@ -402,8 +402,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @Test
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = singletonList(generateConvertToOrderDto());
-    ReleaseRequisitionDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
+    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
@@ -428,18 +428,18 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private ReleaseRequisitionDto generateReleaseRequisitionDto(
-      List<ReleaseRequisitionLineItemDto> requisitions) {
-    ReleaseRequisitionDto releaseDto = new ReleaseRequisitionDto();
+  private ReleasableBatchDto generateReleaseRequisitionDto(
+      List<ReleasableRequisitionDto> requisitions) {
+    ReleasableBatchDto releaseDto = new ReleasableBatchDto();
     releaseDto.setRequisitionsToRelease(requisitions);
     return releaseDto;
   }
 
-  private ReleaseRequisitionLineItemDto generateConvertToOrderDto() {
-    ReleaseRequisitionLineItemDto releaseLineItemDto = new ReleaseRequisitionLineItemDto();
-    releaseLineItemDto.setSupplyingDepotId(UUID.randomUUID());
-    releaseLineItemDto.setRequisitionId(UUID.randomUUID());
-    return releaseLineItemDto;
+  private ReleasableRequisitionDto generateReleasableRequisitionDto() {
+    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
+    releasableRequisitionDto.setSupplyingDepotId(UUID.randomUUID());
+    releasableRequisitionDto.setRequisitionId(UUID.randomUUID());
+    return releasableRequisitionDto;
   }
 
   private ValidationMessageException mockValidationException(String key, Object... args) {

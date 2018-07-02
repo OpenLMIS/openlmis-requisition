@@ -53,7 +53,7 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
@@ -474,7 +474,7 @@ public class RequisitionService {
    * @return list of released requisitions
    */
   private List<Requisition> releaseRequisitionsAsOrder(
-      List<ReleaseRequisitionLineItemDto> convertToOrderDtos, UserDto user) {
+      List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_AS_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -488,7 +488,7 @@ public class RequisitionService {
         .collect(toSet());
 
     profiler.start("RELEASE");
-    for (ReleaseRequisitionLineItemDto convertToOrderDto : convertToOrderDtos) {
+    for (ReleasableRequisitionDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
       isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
@@ -522,17 +522,17 @@ public class RequisitionService {
    * @return list of released requisitions
    */
   private List<Requisition> releaseRequisitionsWithoutOrder(
-      List<ReleaseRequisitionLineItemDto> releaseWithoutOrderDtos) {
+      List<ReleasableRequisitionDto> releaseWithoutOrderDtos) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_WITHOUT_ORDER");
     profiler.setLogger(LOGGER);
 
     List<Requisition> releasedRequisitions = new ArrayList<>();
 
     profiler.start("RELEASE_WITHOUT_ORDER");
-    for (ReleaseRequisitionLineItemDto convertToOrderDto : releaseWithoutOrderDtos) {
+    for (ReleasableRequisitionDto convertToOrderDto : releaseWithoutOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
-      isEligibleForReleasingWithoutOrder(loadedRequisition).throwExceptionIfHasErrors();
+      validateIfEligibleForReleasingWithoutOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.releaseWithoutOrder(authenticationHelper.getCurrentUser().getId());
       releasedRequisitions.add(loadedRequisition);
     }
@@ -590,7 +590,7 @@ public class RequisitionService {
   /**
    * Converting Requisition list to Orders.
    */
-  public List<Requisition> convertToOrder(List<ReleaseRequisitionLineItemDto> list, UserDto user) {
+  public List<Requisition> convertToOrder(List<ReleasableRequisitionDto> list, UserDto user) {
     Profiler profiler = new Profiler("CONVERT_TO_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -617,7 +617,7 @@ public class RequisitionService {
   /**
    * Release requisitions without order.
    */
-  public List<Requisition> releaseWithoutOrder(List<ReleaseRequisitionLineItemDto> list) {
+  public List<Requisition> releaseWithoutOrder(List<ReleasableRequisitionDto> list) {
     Profiler profiler = new Profiler("RELEASE_WITHOUT_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -720,7 +720,7 @@ public class RequisitionService {
     return ValidationResult.success();
   }
 
-  private ValidationResult isEligibleForReleasingWithoutOrder(Requisition requisition) {
+  private ValidationResult validateIfEligibleForReleasingWithoutOrder(Requisition requisition) {
     if (APPROVED != requisition.getStatus()) {
       return ValidationResult.failedValidation(
           ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());

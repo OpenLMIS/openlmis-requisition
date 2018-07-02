@@ -90,7 +90,7 @@ import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ReleaseRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -893,7 +893,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldReleaseRequisitionsAsOrder() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
         APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -917,7 +917,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
         APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -926,7 +926,7 @@ public class RequisitionServiceTest {
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
 
-    for (ReleaseRequisitionLineItemDto requisition : requisitions) {
+    for (ReleasableRequisitionDto requisition : requisitions) {
       requisition.setSupplyingDepotId(null);
     }
 
@@ -937,7 +937,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
         APPROVED);
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
@@ -951,7 +951,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfApprovedQtyDisabled() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
         APPROVED);
     when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
 
@@ -962,7 +962,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderInIncorrectStatus() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
         SUBMITTED);
 
     // when
@@ -1272,7 +1272,7 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    List<ReleaseRequisitionLineItemDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount,
+    List<ReleasableRequisitionDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount,
         APPROVED);
 
     List<FacilityDto> facilities = list.stream()
@@ -1297,7 +1297,7 @@ public class RequisitionServiceTest {
     // given
     int requisitionsCount = 5;
 
-    List<ReleaseRequisitionLineItemDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount,
+    List<ReleasableRequisitionDto> list = setUpReleaseRequisitionsAsOrder(requisitionsCount,
         APPROVED);
 
     List<FacilityDto> facilities = list.stream()
@@ -1316,7 +1316,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldProcessStatusChangeWhenConvertingRequisitionToOrder() throws Exception {
-    List<ReleaseRequisitionLineItemDto> list = setUpReleaseRequisitionsAsOrder(1, APPROVED);
+    List<ReleasableRequisitionDto> list = setUpReleaseRequisitionsAsOrder(1, APPROVED);
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
@@ -1404,7 +1404,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldReleaseRequisitionsWithoutOrder() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
         APPROVED);
 
     // when
@@ -1420,7 +1420,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldReleaseRequisitionsWithoutOrderIfApprovedQtyDisabled() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
         APPROVED);
     when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
 
@@ -1432,7 +1432,7 @@ public class RequisitionServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsWithoutOrderIfInIncorrectStatus() {
     // given
-    List<ReleaseRequisitionLineItemDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
         SUBMITTED);
 
     // when
@@ -1462,13 +1462,13 @@ public class RequisitionServiceTest {
     return pageable;
   }
 
-  private List<ReleaseRequisitionLineItemDto> setUpReleaseRequisitionsAsOrder(
+  private List<ReleasableRequisitionDto> setUpReleaseRequisitionsAsOrder(
       int amount, RequisitionStatus status) {
     if (amount < 1) {
       throw new IllegalArgumentException("Amount must be a positive number");
     }
 
-    List<ReleaseRequisitionLineItemDto> result = new ArrayList<>();
+    List<ReleasableRequisitionDto> result = new ArrayList<>();
 
     for (int i = 0; i < amount; i++) {
       FacilityDto facility = mock(FacilityDto.class);
@@ -1488,7 +1488,7 @@ public class RequisitionServiceTest {
           .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId()))
           .thenReturn(singletonList(facility));
 
-      result.add(new ReleaseRequisitionLineItemDto(requisition.getId(), facility.getId()));
+      result.add(new ReleasableRequisitionDto(requisition.getId(), facility.getId()));
     }
 
     return result;

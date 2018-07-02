@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openlmis.requisition.dto.ReleaseRequisitionDto;
+import org.openlmis.requisition.dto.ReleasableBatchDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.PermissionService;
@@ -62,8 +62,8 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithOrderWhenUserHasPermission() {
-    ReleaseRequisitionDto releaseRequisitionDto = new ReleaseRequisitionDto();
-    releaseRequisitionDto.setCreateOrder(true);
+    ReleasableBatchDto releasableBatchDto = new ReleasableBatchDto();
+    releasableBatchDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -72,7 +72,7 @@ public class BatchRequisitionControllerTest {
     when(requisitionService.releaseWithoutOrder(any()))
         .thenReturn(new ArrayList<>());
 
-    batchRequisitionController.batchReleaseRequisitions(releaseRequisitionDto);
+    batchRequisitionController.batchReleaseRequisitions(releasableBatchDto);
 
     verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
     verify(requisitionService, never()).releaseWithoutOrder(any());
@@ -80,8 +80,8 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithoutOrderWhenUserHasPermission() {
-    ReleaseRequisitionDto releaseRequisitionDto = new ReleaseRequisitionDto();
-    releaseRequisitionDto.setCreateOrder(false);
+    ReleasableBatchDto releasableBatchDto = new ReleasableBatchDto();
+    releasableBatchDto.setCreateOrder(false);
 
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
@@ -90,7 +90,7 @@ public class BatchRequisitionControllerTest {
     when(requisitionService.releaseWithoutOrder(any()))
         .thenReturn(new ArrayList<>());
 
-    batchRequisitionController.batchReleaseRequisitions(releaseRequisitionDto);
+    batchRequisitionController.batchReleaseRequisitions(releasableBatchDto);
 
     verify(requisitionService, never()).convertToOrder(any(), any());
     verify(requisitionService, atLeastOnce()).releaseWithoutOrder(any());
