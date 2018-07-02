@@ -49,7 +49,7 @@ import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ReleasableBatchDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
@@ -265,7 +265,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public ResponseEntity<RequisitionsProcessingStatusDto> batchReleaseRequisitions(
-      @RequestBody ReleasableBatchDto releaseDto) {
+      @RequestBody ReleasableRequisitionBatchDto releaseDto) {
     Profiler profiler = getProfiler("RELEASE_REQUISITIONS", releaseDto);
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
     ValidationResult result = permissionService.canConvertToOrder(releaseDto

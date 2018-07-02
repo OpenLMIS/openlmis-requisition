@@ -20,7 +20,7 @@ package org.openlmis.requisition.dto;
 @lombok.AllArgsConstructor
 @lombok.NoArgsConstructor
 @lombok.EqualsAndHashCode
-public final class ReleasableBatchDto {
+public final class ReleasableRequisitionBatchDto {
   private Boolean createOrder;
   private java.util.List<ReleasableRequisitionDto> requisitionsToRelease;
 

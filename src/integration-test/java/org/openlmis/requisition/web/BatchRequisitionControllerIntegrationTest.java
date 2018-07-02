@@ -79,7 +79,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ReleasableBatchDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -345,7 +345,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   public void shouldConvertRequisitionToOrder() {
     // given
     List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
-    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    ReleasableRequisitionBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
@@ -373,7 +373,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   public void shouldNotConvertRequisitionToOrderWhenCreateOrderIsFalse() {
     // given
     List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
-    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    ReleasableRequisitionBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(false);
 
     doReturn(ValidationResult.success())
@@ -403,7 +403,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   public void shouldNotConvertRequisitionToOrderWhenConvertToOrderDtoIsInvalid() {
     // given
     List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
-    ReleasableBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
+    ReleasableRequisitionBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
@@ -428,9 +428,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private ReleasableBatchDto generateReleaseRequisitionDto(
+  private ReleasableRequisitionBatchDto generateReleaseRequisitionDto(
       List<ReleasableRequisitionDto> requisitions) {
-    ReleasableBatchDto releaseDto = new ReleasableBatchDto();
+    ReleasableRequisitionBatchDto releaseDto = new ReleasableRequisitionBatchDto();
     releaseDto.setRequisitionsToRelease(requisitions);
     return releaseDto;
   }

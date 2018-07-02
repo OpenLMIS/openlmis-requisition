@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openlmis.requisition.dto.ReleasableBatchDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.PermissionService;
@@ -62,7 +62,7 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithOrderWhenUserHasPermission() {
-    ReleasableBatchDto releasableBatchDto = new ReleasableBatchDto();
+    ReleasableRequisitionBatchDto releasableBatchDto = new ReleasableRequisitionBatchDto();
     releasableBatchDto.setCreateOrder(true);
 
     doReturn(ValidationResult.success())
@@ -80,7 +80,7 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithoutOrderWhenUserHasPermission() {
-    ReleasableBatchDto releasableBatchDto = new ReleasableBatchDto();
+    ReleasableRequisitionBatchDto releasableBatchDto = new ReleasableRequisitionBatchDto();
     releasableBatchDto.setCreateOrder(false);
 
     doReturn(ValidationResult.success())

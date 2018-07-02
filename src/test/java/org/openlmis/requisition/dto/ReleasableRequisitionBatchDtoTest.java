@@ -15,11 +15,11 @@
 
 package org.openlmis.requisition.dto;
 
-public class ReleasableBatchDtoTest extends DtoTest {
+public class ReleasableRequisitionBatchDtoTest extends DtoTest {
 
   @Override
-  protected Class<ReleasableBatchDto> getTestClass() {
-    return ReleasableBatchDto.class;
+  protected Class<ReleasableRequisitionBatchDto> getTestClass() {
+    return ReleasableRequisitionBatchDto.class;
   }
 
 }
