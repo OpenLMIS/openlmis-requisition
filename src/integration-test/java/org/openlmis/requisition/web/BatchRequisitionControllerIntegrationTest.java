@@ -370,13 +370,13 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   }
 
   @Test
-  public void shouldNotConvertRequisitionToOrderWhenCreateOrderIsFalse() {
+  public void shouldReturn403StatusWhenUserHasNoPermission() {
     // given
     List<ReleasableRequisitionDto> requisitions = singletonList(generateReleasableRequisitionDto());
     ReleasableRequisitionBatchDto releaseDto = generateReleaseRequisitionDto(requisitions);
     releaseDto.setCreateOrder(false);
 
-    doReturn(ValidationResult.success())
+    doReturn(ValidationResult.noPermission("No permission", "no permission"))
         .when(permissionService).canConvertToOrder(anyList());
     doReturn(new ArrayList<>())
         .when(requisitionService).convertToOrder(any(), any());
@@ -391,11 +391,11 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .when()
         .post(BATCH_RELEASES_URL)
         .then()
-        .statusCode(201);
+        .statusCode(403);
 
     // then
     verify(requisitionService, never()).convertToOrder(any(), any());
-    verify(requisitionService, atLeastOnce()).releaseWithoutOrder(any());
+    verify(requisitionService, never()).releaseWithoutOrder(any());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

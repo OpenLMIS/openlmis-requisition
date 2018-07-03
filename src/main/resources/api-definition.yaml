@@ -699,7 +699,7 @@ resourceTypes:
       /convertToOrder:
           post:
               is: [ secured ]
-              description: Convert Requisition list to orders.
+              description: WARNING! deprecated; Please use /batchReleases to convert Requisition to orders.
               body:
                 application/json:
                   schema: convertToOrderDtoArray

@@ -264,13 +264,20 @@ public class BatchRequisitionController extends BaseRequisitionController {
   @RequestMapping(value = "/requisitions/batchReleases", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public ResponseEntity<RequisitionsProcessingStatusDto> batchReleaseRequisitions(
+  public ResponseEntity batchReleaseRequisitions(
       @RequestBody ReleasableRequisitionBatchDto releaseDto) {
+
     Profiler profiler = getProfiler("RELEASE_REQUISITIONS", releaseDto);
+
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
     ValidationResult result = permissionService.canConvertToOrder(releaseDto
         .getRequisitionsToRelease());
-    if (!addValidationErrors(processingStatus, result, null)) {
+    ResponseEntity response;
+
+    if (addValidationErrors(processingStatus, result, null)) {
+      response = ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(localizeMessage(result.getError().getMessage()));
+    } else {
       List<Requisition> releasedRequisitions;
       if (releaseDto.getCreateOrder()) {
         profiler.start("CONVERT");
@@ -284,13 +291,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
       for (Requisition requisition : releasedRequisitions) {
         processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisition));
       }
+
+      response = buildResponse(processingStatus, profiler, HttpStatus.CREATED);
     }
+
     stopProfiler(profiler);
 
-    ResponseEntity<RequisitionsProcessingStatusDto> response =
-        buildResponse(processingStatus, profiler, HttpStatus.CREATED);
-
-    profiler.stop().log();
     return response;
   }
 
