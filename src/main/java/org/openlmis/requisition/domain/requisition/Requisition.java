@@ -193,6 +193,10 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private Boolean emergency;
 
+  @Getter
+  @Setter
+  private Boolean reportOnly;
+
   @Column(nullable = false)
   @Getter
   @Setter
@@ -787,6 +791,7 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
     exporter.setEmergency(emergency);
+    exporter.setReportOnly(reportOnly);
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
@@ -936,6 +941,8 @@ public class Requisition extends BaseTimestampedEntity {
     void setStatus(RequisitionStatus status);
 
     void setEmergency(Boolean emergency);
+    
+    void setReportOnly(Boolean reportOnly);
 
     void setSupplyingFacility(UUID supplyingFacility);
 

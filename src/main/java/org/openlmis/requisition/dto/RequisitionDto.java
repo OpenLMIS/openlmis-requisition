@@ -79,6 +79,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private Boolean emergency;
+  
+  @Getter
+  @Setter
+  private Boolean reportOnly;
 
   @Getter
   @Setter

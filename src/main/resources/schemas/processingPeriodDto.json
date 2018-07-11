@@ -32,6 +32,9 @@
     "durationInMonths": {
       "type": "integer",
       "title": "durationInMonths"
+    },
+    "extraData": {
+      "type": "object"
     }
   },
   "required": [

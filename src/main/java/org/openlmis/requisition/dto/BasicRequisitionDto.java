@@ -40,6 +40,7 @@ import java.util.UUID;
 public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter {
 
   private Boolean emergency;
+  private Boolean reportOnly;
   private RequisitionStatus status;
   private ZonedDateTime modifiedDate;
   private ZonedDateTime createdDate;

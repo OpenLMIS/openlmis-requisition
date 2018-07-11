@@ -1,0 +1,1 @@
+ALTER TABLE requisition.requisitions ADD COLUMN reportonly boolean;

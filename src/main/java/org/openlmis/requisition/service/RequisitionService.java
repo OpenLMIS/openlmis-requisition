@@ -187,6 +187,9 @@ public class RequisitionService {
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
+    if (null != period.getExtraData()) {
+      requisition.setReportOnly(Boolean.valueOf(period.getExtraData().get("reportOnly")));
+    }
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     int numberOfPreviousPeriodsToAverage;

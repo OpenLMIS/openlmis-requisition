@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +27,5 @@ public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
   private ProcessingScheduleDto processingSchedule;
   private String description;
   private Integer durationInMonths;
+  private Map<String, String> extraData;
 }

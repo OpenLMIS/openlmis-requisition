@@ -37,6 +37,10 @@
       "type": "boolean",
       "title": "emergency"
     },
+    "reportOnly": {
+      "type": "boolean",
+      "title": "reportOnly"
+    },
     "supervisoryNode": {
       "type": "string",
       "title": "supervisoryNode"
