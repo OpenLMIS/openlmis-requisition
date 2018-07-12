@@ -3,6 +3,7 @@
 
 Improvements:
 * [OLMIS-4728](https://openlmis.atlassian.net/browse/OLMIS-4728): Added optimistic locking for requisition updates, eTags and If-Match header support in PUT /requisitions
+* [OLMIS-4935](https://openlmis.atlassian.net/browse/OLMIS-4935): Requisition status change endpoints now are supporting Idempotent-Key header.
 
 6.0.0 / 2018-04-24
 ==================

@@ -42,6 +42,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
@@ -55,6 +56,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_APP
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_DELETE;
+import static org.openlmis.requisition.web.BaseRequisitionController.IDEMPOTENCY_KEY_HEADER;
 
 import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -76,6 +78,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -104,6 +107,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.service.PeriodService;
@@ -135,6 +139,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -215,6 +220,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ReasonsValidator reasonsValidator;
 
   @MockBean
+  private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
+
+  @MockBean
   protected RequisitionVersionValidator requisitionVersionValidator;
 
   @Autowired
@@ -223,8 +231,14 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   @Autowired
   private DateHelper dateHelper;
 
+  @Autowired
+  private RequisitionController requisitionController;
+
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID facilityTypeId = UUID.randomUUID();
+  private UUID key = UUID.randomUUID();
+  private String baseUrl = "https://openlmis";
+  private String wrongFormatKey = "some-key";
 
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
@@ -240,6 +254,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     mockReasons();
 
     mockSearchSupervisoryNodeByProgramAndFacility();
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(false);
+    ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
+        "baseUrl", baseUrl, String.class);
   }
 
   @Test
@@ -551,6 +569,96 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldSubmitRequisitionWithIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
+
+    doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
+    doReturn(ValidationResult.success())
+        .when(permissionService).canSubmitRequisition(requisition);
+    doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
+        .when(programReferenceDataService).findOne(anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    BasicRequisitionDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(200)
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .extract().as(BasicRequisitionDto.class);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    assertEquals(requisition.getId(), result.getId());
+    verify(requisition, atLeastOnce()).submit(any(), any(UUID.class), anyBoolean());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitRequisitionWithUsedIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
+
+    doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
+    doReturn(ValidationResult.success())
+        .when(permissionService).canSubmitRequisition(requisition);
+    doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
+        .when(programReferenceDataService).findOne(anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitRequisitionWithIdempotencyKeyInWrongFormat() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
+
+    doNothing().when(requisition).submit(any(), anyUuid(), anyBoolean());
+    doReturn(ValidationResult.success())
+        .when(permissionService).canSubmitRequisition(requisition);
+    doReturn(new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep())
+        .when(programReferenceDataService).findOne(anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotSubmitWhenPeriodEndDateIsInFuture() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.INITIATED);
@@ -687,6 +795,100 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   @Test
+  public void shouldSkipRequisitionWithIdempotencyKey() {
+    Requisition requisition = generateRequisition();
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .statusCode(200);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionWithUsedIdempotencyKey() {
+    Requisition requisition = generateRequisition();
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionWithIdempotencyKeyInWrongFormat() {
+    Requisition requisition = generateRequisition();
+    doReturn(ValidationResult.success())
+        .when(permissionService).canUpdateRequisition(requisition);
+    mockValidationSuccess();
+    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionIfRequisitionNotExist() {
+    // given
+    UUID requisitionId = UUID.randomUUID();
+    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionId)
+        .when()
+        .put(SKIP_URL)
+        .then()
+        .statusCode(404)
+        .body(MESSAGE, equalTo(getMessage(ERROR_REQUISITION_NOT_FOUND, requisitionId)));
+
+    // then
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotSkipRequisitionIfUserHasNoRightForCreate() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
@@ -767,6 +969,75 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectRequisitionWithIdempotencyKey() {
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    doReturn(ValidationResult.success())
+        .when(permissionService).canApproveRequisition(requisition);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .statusCode(200);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionWithUsedIdempotencyKey() {
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    doReturn(ValidationResult.success())
+        .when(permissionService).canApproveRequisition(requisition);
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionWithIdempotencyKeyInWrongFormat() {
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    doReturn(ValidationResult.success())
+        .when(permissionService).canApproveRequisition(requisition);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .put(REJECT_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -854,6 +1125,88 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
     verify(supervisoryNodeReferenceDataService)
         .findSupervisoryNode(requisition.getProgramId(), requisition.getFacilityId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldAuthorizeRequisitionWithIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
+    when(requisition.isApprovable()).thenReturn(true);
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .willReturn(Collections.emptyList());
+    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doReturn(ValidationResult.success()).when(permissionService)
+        .canAuthorizeRequisition(requisition);
+    mockValidationSuccess();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .statusCode(200);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    verify(requisition, atLeastOnce())
+        .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    verify(supervisoryNodeReferenceDataService)
+        .findSupervisoryNode(requisition.getProgramId(), requisition.getFacilityId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeRequisitionWithUsedIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
+    when(requisition.isApprovable()).thenReturn(true);
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .willReturn(Collections.emptyList());
+    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doReturn(ValidationResult.success()).when(permissionService)
+        .canAuthorizeRequisition(requisition);
+    mockValidationSuccess();
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAuthorizeRequisitionWithIdempotencyKeyInWrongFormat() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
+    when(requisition.isApprovable()).thenReturn(true);
+    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .willReturn(Collections.emptyList());
+    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doReturn(ValidationResult.success()).when(permissionService)
+        .canAuthorizeRequisition(requisition);
+    mockValidationSuccess();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .pathParam("id", requisition.getId())
+        .when()
+        .post(AUTHORIZATION_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1081,6 +1434,246 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
             anyUuid(), anyBoolean(), anyList());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldInitiateRequisitionWithIdempotencyKey() {
+    // given
+    ProgramDto program = mockProgram();
+    FacilityDto facility = mockFacility();
+    UUID periodId = UUID.randomUUID();
+    Requisition requisition =
+        generateRequisition(RequisitionStatus.INITIATED, program.getId(), facility.getId());
+    requisition.setProcessingPeriodId(periodId);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService)
+        .canInitRequisition(program.getId(), facility.getId());
+    doReturn(requisition)
+        .when(requisitionService)
+        .initiate(eq(program), eq(facility), eq(periodId), eq(false),
+            anyListOf(StockAdjustmentReason.class));
+    mockValidationSuccess();
+
+    // when
+    RequisitionDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .queryParam(PROGRAM, program.getId())
+        .queryParam(FACILITY, facility.getId())
+        .queryParam(SUGGESTED_PERIOD, periodId)
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(201)
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .extract().as(RequisitionDto.class);
+
+    // then
+    assertEquals(requisition.getId(), result.getId());
+    verify(facilityReferenceDataService).findOne(facility.getId());
+    verify(validReasonStockmanagementService).search(program.getId(), facilityTypeId);
+
+    verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
+    verify(requisitionService, atLeastOnce())
+        .initiate(program, facility, periodId, false, stockAdjustmentReasons);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotInitiateRequisitionWithUsedIdempotencyKey() {
+    // given
+    ProgramDto program = mockProgram();
+    FacilityDto facility = mockFacility();
+    UUID periodId = UUID.randomUUID();
+    Requisition requisition =
+        generateRequisition(RequisitionStatus.INITIATED, program.getId(), facility.getId());
+    requisition.setProcessingPeriodId(periodId);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService)
+        .canInitRequisition(program.getId(), facility.getId());
+    doReturn(requisition)
+        .when(requisitionService)
+        .initiate(eq(program), eq(facility), eq(periodId), eq(false),
+            anyListOf(StockAdjustmentReason.class));
+    mockValidationSuccess();
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .queryParam(PROGRAM, program.getId())
+        .queryParam(FACILITY, facility.getId())
+        .queryParam(SUGGESTED_PERIOD, periodId)
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    // then
+    verify(requisitionService, never())
+        .initiate(any(ProgramDto.class), any(FacilityDto.class),
+            any(UUID.class), anyBoolean(), anyList());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotInitiateRequisitionWithIdempotencyKeyInWrongFormat() {
+    // given
+    ProgramDto program = mockProgram();
+    FacilityDto facility = mockFacility();
+    UUID periodId = UUID.randomUUID();
+    Requisition requisition =
+        generateRequisition(RequisitionStatus.INITIATED, program.getId(), facility.getId());
+    requisition.setProcessingPeriodId(periodId);
+
+    doReturn(ValidationResult.success())
+        .when(permissionService)
+        .canInitRequisition(program.getId(), facility.getId());
+    doReturn(requisition)
+        .when(requisitionService)
+        .initiate(eq(program), eq(facility), eq(periodId), eq(false),
+            anyListOf(StockAdjustmentReason.class));
+    mockValidationSuccess();
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .queryParam(PROGRAM, program.getId())
+        .queryParam(FACILITY, facility.getId())
+        .queryParam(SUGGESTED_PERIOD, periodId)
+        .queryParam(EMERGENCY, false)
+        .when()
+        .post(INITIATE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
+    // then
+    verify(requisitionService, never())
+        .initiate(any(ProgramDto.class), any(FacilityDto.class),
+            any(UUID.class), anyBoolean(), anyList());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldApproveRequisitionWithIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
+
+    doReturn(ValidationResult.success())
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
+        anyUuid());
+    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    UUID requisitionId = requisition.getId();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .pathParam("id", requisitionId)
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .statusCode(200);
+
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
+    verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionWithUsedIdempotencyKey() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
+
+    doReturn(ValidationResult.success())
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
+        anyUuid());
+    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
+
+    UUID requisitionId = requisition.getId();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, key)
+        .pathParam("id", requisitionId)
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED)));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotApproveRequisitionWithIdempotencyKeyInWrongFormat() {
+    Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.AUTHORIZED);
+
+    doReturn(ValidationResult.success())
+        .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
+        anyUuid());
+    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
+
+    mockExternalServiceCalls();
+    mockValidationSuccess();
+
+    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
+    when(processingPeriodDto.getEndDate())
+        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
+    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
+        .thenReturn(processingPeriodDto);
+
+    UUID requisitionId = requisition.getId();
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
+        .pathParam("id", requisitionId)
+        .when()
+        .post(APPROVE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE,
+            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -21,10 +21,15 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMEN
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
 import static org.openlmis.requisition.i18n.MessageKeys.VERSION_MISMATCH;
 
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.requisition.dto.LocalizedMessageDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.exception.ExternalApiException;
+import org.openlmis.requisition.exception.IdempotencyKeyException;
 import org.openlmis.requisition.exception.ServerException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.exception.VersionMismatchException;
@@ -40,16 +45,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.persistence.PersistenceException;
-
 /**
  * Global error handling for all controllers in the service.
  * Contains common error handling mappings.
  */
+@SuppressWarnings("PMD.TooManyMethods")
 @ControllerAdvice
 public class GlobalErrorHandling extends AbstractErrorHandling {
   private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
@@ -179,6 +179,13 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
   public Message.LocalizedMessage handlePermissionException(VersionMismatchException ex) {
+    return getLocalizedMessage(ex);
+  }
+
+  @ExceptionHandler(IdempotencyKeyException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ResponseBody
+  public Message.LocalizedMessage handleIdempotencyException(IdempotencyKeyException ex) {
     return getLocalizedMessage(ex);
   }
 

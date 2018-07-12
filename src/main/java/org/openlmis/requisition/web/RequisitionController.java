@@ -16,8 +16,6 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -68,10 +66,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -103,19 +103,22 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Allows creating new requisitions.
    *
-   * @param programId         UUID of Program.
-   * @param facilityId        UUID of Facility.
+   * @param programId       UUID of Program.
+   * @param facilityId      UUID of Facility.
    * @param emergency       Emergency status.
    * @param suggestedPeriod Period for requisition.
    * @return created requisition.
    */
-  @RequestMapping(value = "/requisitions/initiate", method = POST)
+  @PostMapping(RESOURCE_URL + "/initiate")
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public RequisitionDto initiate(@RequestParam(value = "program") UUID programId,
-                    @RequestParam(value = "facility") UUID facilityId,
-                    @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
-                    @RequestParam(value = "emergency") boolean emergency) {
+      @RequestParam(value = "facility") UUID facilityId,
+      @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
+      @RequestParam(value = "emergency") boolean emergency,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler(
         "POST_REQUISITION_INITIATE",
         programId, facilityId, suggestedPeriod, emergency
@@ -127,6 +130,9 @@ public class RequisitionController extends BaseRequisitionController {
     }
 
     checkPermission(profiler, () -> permissionService.canInitRequisition(programId, facilityId));
+
+    validateIdempotencyKey(request, profiler);
+
     FacilityDto facility = findFacility(facilityId, profiler);
 
     profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
@@ -150,6 +156,9 @@ public class RequisitionController extends BaseRequisitionController {
         findOrderables(profiler, newRequisition::getAllOrderableIds),
         facility, program
     );
+
+    addLocationHeader(request, response, requisitionDto.getId(), profiler);
+
     stopProfiler(profiler, requisitionDto);
 
     return requisitionDto;
@@ -163,7 +172,7 @@ public class RequisitionController extends BaseRequisitionController {
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return processing periods.
    */
-  @RequestMapping(value = "/requisitions/periodsForInitiate", method = GET)
+  @GetMapping(RESOURCE_URL + "/periodsForInitiate")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Collection<ProcessingPeriodDto> getProcessingPeriodIds(
@@ -199,13 +208,21 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Submits earlier initiated requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}/submit", method = RequestMethod.POST)
+  @PostMapping(RESOURCE_URL + "/{id}/submit")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto submitRequisition(@PathVariable("id") UUID requisitionId) {
+  public BasicRequisitionDto submitRequisition(
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler("SUBMIT_REQUISITION", requisitionId);
+
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canSubmitRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
+
     validateForStatusChange(requisition, profiler);
     checkIfPeriodIsValid(requisition, profiler);
 
@@ -229,6 +246,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
 
+    addLocationHeader(request, response, dto.getId(), profiler);
+
     stopProfiler(profiler, dto);
 
     return dto;
@@ -237,7 +256,7 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Deletes requisition with the given id.
    */
-  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.DELETE)
+  @DeleteMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
     Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
@@ -257,7 +276,7 @@ public class RequisitionController extends BaseRequisitionController {
    * @param requisitionId  UUID of requisition which we want to update.
    * @return updated requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.PUT)
+  @PutMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
@@ -316,7 +335,7 @@ public class RequisitionController extends BaseRequisitionController {
    * @param requisitionId UUID of requisition whose we want to get
    * @return Requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}", method = RequestMethod.GET)
+  @GetMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId,
@@ -340,7 +359,7 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  @RequestMapping(value = "/requisitions/search", method = RequestMethod.GET)
+  @GetMapping(RESOURCE_URL + "/search")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicRequisitionDto> searchRequisitions(
@@ -382,13 +401,21 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Skipping chosen requisition period.
    */
-  @RequestMapping(value = "/requisitions/{id}/skip", method = RequestMethod.PUT)
+  @PutMapping(RESOURCE_URL + "/{id}/skip")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto skipRequisition(@PathVariable("id") UUID requisitionId) {
+  public BasicRequisitionDto skipRequisition(
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
+
     Requisition requisition = findRequisition(requisitionId, profiler);
+
     checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
 
     profiler.start("SKIP");
     Requisition skippedRequisition = requisitionService.skip(requisition);
@@ -397,6 +424,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
 
+    addLocationHeader(request, response, dto.getId(), profiler);
+
     stopProfiler(profiler, dto);
     return dto;
   }
@@ -404,13 +433,21 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Rejecting requisition which is waiting for approve.
    */
-  @RequestMapping(value = "/requisitions/{id}/reject", method = RequestMethod.PUT)
+  @PutMapping(RESOURCE_URL + "/{id}/reject")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto rejectRequisition(@PathVariable("id") UUID requisitionId) {
+  public BasicRequisitionDto rejectRequisition(
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler("REJECT", requisitionId);
+
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canApproveRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
+
     Map<UUID, OrderableDto> orderables = findOrderables(
         profiler, () -> getLineItemOrderableIds(requisition)
     );
@@ -425,6 +462,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     BasicRequisitionDto dto = buildBasicDto(profiler, rejectedRequisition);
 
+    addLocationHeader(request, response, dto.getId(), profiler);
+
     stopProfiler(profiler, dto);
     return dto;
   }
@@ -432,17 +471,23 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Approve specified by id requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}/approve", method = RequestMethod.POST)
+  @PostMapping(RESOURCE_URL + "/{id}/approve")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto approveRequisition(@PathVariable("id") UUID requisitionId) {
+  public BasicRequisitionDto approveRequisition(
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler("APPROVE_REQUISITION", requisitionId);
+
     Requisition requisition = findRequisition(requisitionId, profiler);
     UserDto user = getCurrentUser(profiler);
-    checkPermission(
-        profiler,
-        () -> requisitionService.validateCanApproveRequisition(requisition, user.getId())
-    );
+
+    checkPermission(profiler,
+        () -> requisitionService.validateCanApproveRequisition(requisition, user.getId()));
+
+    validateIdempotencyKey(request, profiler);
 
     validateForStatusChange(requisition, profiler);
 
@@ -459,6 +504,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     submitStockEvent(requisition, user.getId());
 
+    addLocationHeader(request, response, requisitionDto.getId(), profiler);
+
     stopProfiler(profiler, requisitionDto);
     return requisitionDto;
   }
@@ -468,7 +515,7 @@ public class RequisitionController extends BaseRequisitionController {
    *
    * @return Approved requisitions.
    */
-  @RequestMapping(value = "/requisitions/requisitionsForApproval", method = RequestMethod.GET)
+  @GetMapping(RESOURCE_URL + "/requisitionsForApproval")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicRequisitionDto> requisitionsForApproval(
@@ -496,7 +543,7 @@ public class RequisitionController extends BaseRequisitionController {
    *
    * @return Submitted requisitions.
    */
-  @RequestMapping(value = "/requisitions/submitted", method = RequestMethod.GET)
+  @GetMapping(RESOURCE_URL + "/submitted")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
@@ -522,13 +569,21 @@ public class RequisitionController extends BaseRequisitionController {
    * @param requisitionId UUID of Requisition to authorize.
    * @return authorized Requisition.
    */
-  @RequestMapping(value = "/requisitions/{id}/authorize", method = RequestMethod.POST)
+  @PostMapping(RESOURCE_URL + "/{id}/authorize")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public BasicRequisitionDto authorizeRequisition(@PathVariable("id") UUID requisitionId) {
+  public BasicRequisitionDto authorizeRequisition(
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     Profiler profiler = getProfiler("AUTHORIZE_REQUISITION", requisitionId);
+
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canAuthorizeRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
+
     validateForStatusChange(requisition, profiler);
     checkIfPeriodIsValid(requisition, profiler);
 
@@ -550,6 +605,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     BasicRequisitionDto dto = buildBasicDto(profiler, requisition);
 
+    addLocationHeader(request, response, dto.getId(), profiler);
+
     stopProfiler(profiler, dto);
     return dto;
   }
@@ -564,7 +621,7 @@ public class RequisitionController extends BaseRequisitionController {
    *                     and "size" (page size) query parameters to the request.
    * @return Page of approved requisitions.
    */
-  @RequestMapping(value = "/requisitions/requisitionsForConvert", method = RequestMethod.GET)
+  @GetMapping(RESOURCE_URL + "/requisitionsForConvert")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
@@ -603,7 +660,7 @@ public class RequisitionController extends BaseRequisitionController {
    *
    * @param list List of Requisitions with their supplyingDepots that will be converted to Orders
    */
-  @RequestMapping(value = "/requisitions/convertToOrder", method = RequestMethod.POST)
+  @PostMapping(RESOURCE_URL + "/convertToOrder")
   @ResponseStatus(HttpStatus.CREATED)
   public void convertToOrder(@RequestBody List<ConvertToOrderDto> list) {
     Profiler profiler = getProfiler("CONVERT_TO_ORDER", list);
@@ -645,5 +702,4 @@ public class RequisitionController extends BaseRequisitionController {
 
     return StockAdjustmentReason.newInstance(reasonDtos);
   }
-
 }
