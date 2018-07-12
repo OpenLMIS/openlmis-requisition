@@ -258,6 +258,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .get(ID_URL)
         .then()
         .statusCode(200)
+        .header(HttpHeaders.ETAG, "W/1")
         .extract().as(RequisitionDto.class);
 
     // then

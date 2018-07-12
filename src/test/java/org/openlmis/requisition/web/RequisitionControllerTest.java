@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -191,6 +192,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private DateHelper dateHelper;
+
+  @Mock
+  private HttpServletResponse response;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -358,11 +362,47 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
 
-    requisitionController.updateRequisition(requisitionDto, uuid2);
+    requisitionController.updateRequisition(requisitionDto, uuid2, response);
   }
 
   @Test
-  public void shouldUpdateRequisition() throws Exception {
+  public void shouldUpdateRequisition() {
+    RequisitionDto requisitionDto = mock(RequisitionDto.class);
+
+    when(requisitionDto.getId()).thenReturn(uuid1);
+    when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
+    when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
+    when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
+    when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
+
+    when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
+    when(initiatedRequsition.getId()).thenReturn(uuid1);
+    when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
+        .thenReturn(ValidationResult.success());
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
+    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
+    when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
+        new ProgramDtoDataBuilder().build());
+    when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
+        DtoGenerator.of(FacilityDto.class));
+
+    requisitionController.updateRequisition(requisitionDto, uuid1, response);
+
+    assertEquals(template, initiatedRequsition.getTemplate());
+    verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
+    verify(requisitionRepository).save(initiatedRequsition);
+    verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
+        eq(initiatedRequsition));
+    verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldUpdateStockBasedRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
 
     when(requisitionDto.getId()).thenReturn(uuid1);
@@ -386,7 +426,7 @@ public class RequisitionControllerTest {
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1);
+    requisitionController.updateRequisition(requisitionDto, uuid1, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
@@ -411,7 +451,8 @@ public class RequisitionControllerTest {
     doReturn(ValidationResult.conflict("test")).when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
 
-    assertThatThrownBy(() -> requisitionController.updateRequisition(requisitionDto, uuid1))
+    assertThatThrownBy(() -> requisitionController
+        .updateRequisition(requisitionDto, uuid1, response))
         .isInstanceOf(VersionMismatchException.class);
 
     verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);

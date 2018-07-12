@@ -38,6 +38,7 @@ public class RequisitionDataBuilder {
   private List<StatusChange> statusChanges = new ArrayList<>();
   private Boolean emergency = false;
   private Integer numberOfMonthsInPeriod = 1;
+  private Long version = 1L;
   private UUID supervisoryNodeId = null;
   private List<Requisition> previousRequisitions = Lists.newArrayList();
   private Set<UUID> availableProducts = Sets.newHashSet();
@@ -72,7 +73,7 @@ public class RequisitionDataBuilder {
    */
   public Requisition buildInitiatedRegularRequisition() {
     Requisition requisition = new Requisition(
-        requisitionLineItems, draftStatusMessage, template, facilityId, programId,
+        requisitionLineItems, version, draftStatusMessage, template, facilityId, programId,
         processingPeriodId, supplyingFacilityId, status, statusChanges, emergency,
         numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
         datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings

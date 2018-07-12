@@ -19,6 +19,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -26,6 +27,9 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
 import static org.openlmis.requisition.utils.RequisitionHelper.validateAreRequiredRegularRequisitionFieldsNotFilled;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -60,6 +64,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -126,6 +131,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   private List<RequisitionLineItem> requisitionLineItems;
+
+  @Version
+  @Getter
+  @Setter
+  private Long version;
 
   @Getter
   private String draftStatusMessage;
@@ -304,7 +314,7 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.setLogger(LOGGER);
 
     profiler.start("SET_NUMBER_OF_MONTHS_IN_PERIOD");
-    this.numberOfMonthsInPeriod = requisition.getNumberOfMonthsInPeriod();
+    this.numberOfMonthsInPeriod = requisition.numberOfMonthsInPeriod;
 
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
     this.draftStatusMessage = requisition.draftStatusMessage;
@@ -475,6 +485,7 @@ public class Requisition extends BaseTimestampedEntity {
       LOGGER.debug("Skipping authorize step.");
       prepareRequisitionForApproval(submitter);
     }
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
@@ -491,6 +502,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
     prepareRequisitionForApproval(authorizer);
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**
@@ -530,6 +542,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
+    setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, approver));
   }
@@ -541,6 +554,7 @@ public class Requisition extends BaseTimestampedEntity {
     status = RequisitionStatus.REJECTED;
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
+    setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, rejector));
   }
@@ -550,7 +564,34 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void release(UUID releaser) {
     status = RequisitionStatus.RELEASED;
+    setModifiedDate(ZonedDateTime.now());
+
     statusChanges.add(StatusChange.newStatusChange(this, releaser));
+  }
+
+  /**
+   * Skip the requisition.
+   */
+  public void skip(boolean periodsSkippable, UUID userId) {
+    if (!periodsSkippable) {
+      throw new ValidationMessageException(new Message(ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP));
+    }
+
+    if (!status.isSubmittable()) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_WRONG_STATUS));
+    }
+
+    if (isTrue(emergency)) {
+      throw new ValidationMessageException(new Message(ERROR_SKIP_FAILED_EMERGENCY));
+    }
+
+    for (RequisitionLineItem item : requisitionLineItems) {
+      item.skipLineItem(template);
+    }
+
+    status = RequisitionStatus.SKIPPED;
+    statusChanges.add(StatusChange.newStatusChange(this, userId));
+    setModifiedDate(ZonedDateTime.now());
   }
 
   /**

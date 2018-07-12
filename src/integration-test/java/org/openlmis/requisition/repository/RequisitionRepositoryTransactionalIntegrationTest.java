@@ -15,6 +15,11 @@
 
 package org.openlmis.requisition.repository;
 
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
+
+import java.util.UUID;
+import javax.transaction.Transactional;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Before;
@@ -23,15 +28,17 @@ import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.transaction.TestTransaction;
 
-import java.util.UUID;
-
-import javax.transaction.Transactional;
-
+/**
+ * Pay attention when adding tests to this class as it does NOT rollback
+ * the database state after tests by default. The transactions are managed manually here,
+ * so clean up anything that your tests have saved in the database in the @After-annotated method.
+ */
 @Transactional(Transactional.TxType.REQUIRES_NEW)
-public class RequisitionRepositoryStatusChangesIntegrationTest
+public class RequisitionRepositoryTransactionalIntegrationTest
     extends BaseRequisitionRepositoryIntegrationTest {
 
   @Before
@@ -78,6 +85,26 @@ public class RequisitionRepositoryStatusChangesIntegrationTest
     repository.save(requisition);
 
     // Trigger is fired at the end of the transaction
+    TestTransaction.end();
+  }
+
+  @Test(expected = ObjectOptimisticLockingFailureException.class)
+  public void shouldFailSavingRequisitionWithTheSameVersionTwice() {
+    TestTransaction.flagForCommit();
+    Requisition requisition = generateInstance();
+    Requisition saved = repository.save(requisition);
+    saved.setStatus(SUBMITTED);
+    repository.save(saved);
+    entityManager.flush();
+    TestTransaction.end();
+
+    // We simulate that another transaction has made a different change and commits with the same
+    // version as the above one.
+    TestTransaction.start();
+    saved.setStatus(APPROVED);
+    saved.setVersion(saved.getVersion() - 1);
+    repository.save(saved);
+    entityManager.flush();
     TestTransaction.end();
   }
 

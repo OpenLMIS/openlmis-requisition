@@ -195,6 +195,7 @@ public abstract class BaseWebIntegrationTest {
         UUID.randomUUID(), generateProgram(), generateProcessingPeriod(), requisitionStatus, true);
 
     requisition.setId(UUID.randomUUID());
+    requisition.setVersion(1L);
     requisition.setCreatedDate(ZonedDateTime.now());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));

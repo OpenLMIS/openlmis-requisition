@@ -233,7 +233,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
         if (!addValidationErrors(processingStatus, result, dto.getId())) {
           profiler.start("DO_UPDATE");
-          RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition);
+          RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition).getResource();
 
           profiler.start("ADD_PROCESSED_REQUISITION");
           processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));
