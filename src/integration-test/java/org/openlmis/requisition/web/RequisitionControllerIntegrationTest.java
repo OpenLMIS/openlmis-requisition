@@ -78,7 +78,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -801,6 +800,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionService.skip(requisition)).willReturn(requisition);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

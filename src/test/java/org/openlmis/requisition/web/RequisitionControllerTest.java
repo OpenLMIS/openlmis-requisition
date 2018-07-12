@@ -717,24 +717,6 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldNotSendStockEventWhenRequisitionIsConfiguredToPullFromStockCards() {
-    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
-    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-
-    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
-
-    verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
-
-    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
-    verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
-    verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
-  }
-
-  @Test
   public void shouldNotApproveInvalidRequisition() {
     setUpApprover();
     doReturn(fieldErrors)
