@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
@@ -261,6 +262,7 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
                                           @PathVariable("id") UUID requisitionId,
+                                          HttpServletRequest request,
                                           HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
@@ -274,6 +276,10 @@ public class RequisitionController extends BaseRequisitionController {
         () -> requisitionService.validateCanSaveRequisition(requisitionToUpdate)
     );
 
+    profiler.start("VALIDATE_VERSION");
+    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisitionToUpdate)
+        .throwExceptionIfHasErrors();
+
     Map<UUID, OrderableDto> orderables = findOrderables(
         profiler, requisitionToUpdate::getAllOrderableIds
     );
@@ -283,10 +289,6 @@ public class RequisitionController extends BaseRequisitionController {
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
         requisitionToUpdate.getStatus(), orderables);
     requisition.setId(requisitionId);
-
-    profiler.start("VALIDATE_TIMESTAMPS");
-    requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
-        .throwExceptionIfHasErrors();
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 

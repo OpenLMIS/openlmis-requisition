@@ -29,4 +29,18 @@ public class ETagResourceTest {
     assertEquals("W/17", etagResource.getEtag());
     assertNotNull(etagResource.getResource());
   }
+
+  @Test
+  public void shouldCorrectlyReadVersionFromWeakETag() {
+    Long version = ETagResource.readVersionFromEtag("W/7");
+
+    assertEquals(7L, version.longValue());
+  }
+
+  @Test
+  public void shouldCorrectlyReadVersionFromStringETag() {
+    Long version = ETagResource.readVersionFromEtag("7");
+
+    assertEquals(7L, version.longValue());
+  }
 }

@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Rule;
@@ -195,6 +196,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private HttpServletResponse response;
+
+  @Mock
+  private HttpServletRequest request;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -362,7 +366,7 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
 
-    requisitionController.updateRequisition(requisitionDto, uuid2, response);
+    requisitionController.updateRequisition(requisitionDto, uuid2, request, response);
   }
 
   @Test
@@ -384,19 +388,20 @@ public class RequisitionControllerTest {
 
     when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1, response);
+    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
         eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
@@ -419,19 +424,20 @@ public class RequisitionControllerTest {
 
     when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1, response);
+    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(any(Requisition.class), anyMap(), eq(true));
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateRequisitionTimestamps(any(Requisition.class),
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
         eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
@@ -445,14 +451,12 @@ public class RequisitionControllerTest {
     when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
     when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class))).thenReturn(ValidationResult.success());
 
     doReturn(ValidationResult.conflict("test")).when(requisitionVersionValidator)
-        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class));
 
     assertThatThrownBy(() -> requisitionController
-        .updateRequisition(requisitionDto, uuid1, response))
+        .updateRequisition(requisitionDto, uuid1, request, response))
         .isInstanceOf(VersionMismatchException.class);
 
     verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);

@@ -19,6 +19,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -26,9 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-
-import java.time.ZonedDateTime;
-import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionVersionValidatorTest {
@@ -41,6 +42,9 @@ public class RequisitionVersionValidatorTest {
 
   @Mock
   private Requisition existingReq;
+
+  @Mock
+  private HttpServletRequest request;
 
   @Test
   public void shouldAcceptCorrectModifiedDate() {
@@ -77,6 +81,35 @@ public class RequisitionVersionValidatorTest {
     ValidationResult result = testModifiedDateValidation(incomingDate, dateModified);
     assertTrue(result.hasErrors());
     assertEquals(FailureType.CONFLICT, result.getError().getType());
+  }
+
+  @Test
+  public void shouldPassValidationIfHeaderIsNotSet() {
+    ValidationResult result = testVersionValidation(null, null);
+
+    assertTrue(result.isSuccess());
+  }
+
+  @Test
+  public void shouldPassValidationIfVersionsAreTheSame() {
+    ValidationResult result = testVersionValidation("W/7", 7L);
+
+    assertTrue(result.isSuccess());
+  }
+
+  @Test
+  public void shouldFailValidationIfVersionsAreDifferent() {
+    ValidationResult result = testVersionValidation("W/5", 7L);
+
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.CONFLICT, result.getError().getType());
+  }
+
+  private ValidationResult testVersionValidation(String etagVersion, Long requisitionVersion) {
+    when(request.getHeader(HttpHeaders.IF_MATCH)).thenReturn(etagVersion);
+    when(existingReq.getVersion()).thenReturn(requisitionVersion);
+
+    return requisitionVersionValidator.validateEtagVersionIfPresent(request, existingReq);
   }
 
   private ValidationResult testModifiedDateValidation(ZonedDateTime incomingDate, ZonedDateTime
