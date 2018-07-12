@@ -61,11 +61,11 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -363,19 +363,20 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicRequisitionDto> searchRequisitions(
-      @RequestParam(value = "facility", required = false) UUID facility,
-      @RequestParam(value = "program", required = false) UUID program,
-      @RequestParam(value = "initiatedDateFrom", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate initiatedDateFrom,
-      @RequestParam(value = "initiatedDateTo", required = false)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate initiatedDateTo,
-      @RequestParam(value = "processingPeriod", required = false)
-          UUID processingPeriod,
-      @RequestParam(value = "supervisoryNode", required = false) UUID supervisoryNode,
-      @RequestParam(value = "requisitionStatus", required = false)
-          Set<RequisitionStatus> requisitionStatuses,
-      @RequestParam(value = "emergency", required = false) Boolean emergency,
+      @RequestParam MultiValueMap<String, String> queryParams,
       Pageable pageable) {
+
+    RequisitionSearchParams params = new RequisitionSearchParams(queryParams);
+
+    final UUID facility = params.getFacility();
+    final UUID program = params.getProgram();
+    final LocalDate initiatedDateFrom = params.getInitiatedDateFrom();
+    final LocalDate initiatedDateTo = params.getInitiatedDateTo();
+    final UUID processingPeriod = params.getProcessingPeriod();
+    final UUID supervisoryNode = params.getSupervisoryNode();
+    final Set<RequisitionStatus> requisitionStatuses = params.getRequisitionStatuses();
+    final Boolean emergency = params.isEmergency();
+
     Profiler profiler = getProfiler(
         "REQUISITIONS_SEARCH",
         facility, program, initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode,
