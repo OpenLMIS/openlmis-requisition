@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.openlmis.requisition.domain.RequisitionTemplate.ORDER_RELATED_COLUMNS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
@@ -311,6 +312,24 @@ public class RequisitionTemplateTest {
 
     // This shouldn't throw exception, even though we don't have tags
     RequisitionTemplate.newInstance(templateDto, columnsWithTags);
+  }
+
+  @Test
+  public void hideOrderColumnsShouldHideOrderColumnsFromMap() {
+    //given
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .build();
+    
+    //when
+    template.hideOrderRelatedColumns();
+    
+    //then
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : template.viewColumns().entrySet()) {
+      if (ORDER_RELATED_COLUMNS.contains(entry.getKey())) {
+        assertFalse(entry.getValue().getIsDisplayed());
+      }
+    }
   }
 
   private void setColumns(RequisitionTemplateDto templateDto, RequisitionTemplate template) {

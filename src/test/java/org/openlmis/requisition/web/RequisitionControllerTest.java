@@ -28,9 +28,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -56,6 +59,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,12 +71,15 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
-import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.FacilityTypeDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
@@ -94,6 +101,7 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -102,6 +110,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -111,6 +120,7 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.profiler.Profiler;
 import org.springframework.http.HttpHeaders;
@@ -222,6 +232,15 @@ public class RequisitionControllerTest {
 
   @Mock
   private HttpServletRequest request;
+  
+  @Mock
+  private ValidReasonStockmanagementService validReasonStockmanagementService;
+  
+  @Mock
+  private ReasonsValidator reasonsValidator;
+  
+  @Mock
+  private RequisitionTemplateService requisitionTemplateService;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -234,6 +253,7 @@ public class RequisitionControllerTest {
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
   private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
+  private FacilityDto facility = mock(FacilityDto.class);
   private ValidationResult fieldErrors = ValidationResult
       .fieldErrors(newHashMap("someField", new Message("some-key", "someParam")));
   private String bindingResultMessage = "{someField=some-key: someParam}";
@@ -557,6 +577,50 @@ public class RequisitionControllerTest {
     requisitionController.initiate(programUuid, null, null, false, request, response);
     exception.expect(ValidationMessageException.class);
     requisitionController.initiate(null, facilityUuid, null, false, request, response);
+  }
+  
+  @Test
+  public void initiateShouldFindReportOnlyTemplateIfPeriodIsReportOnly() {
+    //given
+    when(permissionService.canInitRequisition(programUuid, facilityUuid))
+        .thenReturn(ValidationResult.success());
+    UUID facilityTypeId = UUID.randomUUID();
+    FacilityTypeDto facilityType = mock(FacilityTypeDto.class);
+    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facility);
+    when(facility.getType()).thenReturn(facilityType);
+    when(facilityType.getId()).thenReturn(facilityTypeId);
+    ProgramDto program = new ProgramDto();
+    program.setId(programUuid);
+    when(programReferenceDataService.findOne(programUuid)).thenReturn(program);
+    doNothing().when(facilitySupportsProgramHelper).checkIfFacilitySupportsProgram(
+        any(FacilityDto.class), eq(programUuid));
+    when(validReasonStockmanagementService.search(programUuid, facilityTypeId))
+        .thenReturn(Collections.emptyList());
+    Requisition requisition = mock(Requisition.class);
+    when(requisitionService.initiate(any(ProgramDto.class), any(FacilityDto.class),
+        any(ProcessingPeriodDto.class), eq(false), anyListOf(StockAdjustmentReason.class),
+        any(RequisitionTemplate.class))).thenReturn(requisition);
+    when(requisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
+    doNothing().when(reasonsValidator).validate(anyListOf(StockAdjustmentReason.class),
+        any(RequisitionTemplate.class));
+    RequisitionDto requisitionDto = new RequisitionDto();
+    requisitionDto.setId(UUID.randomUUID());
+    when(requisitionDtoBuilder.build(any(Requisition.class),
+        anyMapOf(UUID.class, OrderableDto.class), any(FacilityDto.class), any(ProgramDto.class),
+        any(ProcessingPeriodDto.class)))
+        .thenReturn(requisitionDto);
+
+    ProcessingPeriodDto reportOnlyPeriod = new ProcessingPeriodDto();
+    reportOnlyPeriod.setExtraData(Maps.newHashMap("reportOnly", "true"));
+    when(periodService.findPeriod(programUuid, facilityUuid, null, false))
+        .thenReturn(processingPeriod);
+    when(processingPeriod.getExtraData()).thenReturn(Maps.newHashMap("reportOnly", "true"));
+    
+    //when
+    requisitionController.initiate(programUuid, facilityUuid, null, false, request, response);
+    
+    //then
+    verify(requisitionTemplateService).findTemplate(programUuid, facilityTypeId, true);
   }
 
   @Test

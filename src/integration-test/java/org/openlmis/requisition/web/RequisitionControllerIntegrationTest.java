@@ -1277,6 +1277,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         mockDataException(ERROR_SERVICE_REQUIRED, "Stock Management");
     doThrow(exception).when(validReasonStockmanagementService).search(anyUuid(), anyUuid());
     mockValidationSuccess();
+    mockPeriod();
 
     // when
     restAssured.given()

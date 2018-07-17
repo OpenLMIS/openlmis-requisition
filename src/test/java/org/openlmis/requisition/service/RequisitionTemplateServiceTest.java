@@ -59,7 +59,7 @@ public class RequisitionTemplateServiceTest {
         .thenReturn(template);
 
     RequisitionTemplate found = requisitionTemplateService.findTemplate(
-        programId, facilityTypeId
+        programId, facilityTypeId, false
     );
 
     assertThat(found, is(template));
@@ -73,7 +73,7 @@ public class RequisitionTemplateServiceTest {
     when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
         .thenReturn(null);
 
-    requisitionTemplateService.findTemplate(programId, facilityTypeId);
+    requisitionTemplateService.findTemplate(programId, facilityTypeId, false);
   }
 
   @Test
@@ -84,6 +84,6 @@ public class RequisitionTemplateServiceTest {
     when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
         .thenReturn(new RequisitionTemplateDataBuilder().build());
 
-    requisitionTemplateService.findTemplate(programId, facilityTypeId);
+    requisitionTemplateService.findTemplate(programId, facilityTypeId, false);
   }
 }

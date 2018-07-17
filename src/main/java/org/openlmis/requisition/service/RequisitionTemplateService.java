@@ -36,7 +36,7 @@ public class RequisitionTemplateService {
   /**
    * Find template for the given program and facility type.
    */
-  public RequisitionTemplate findTemplate(UUID programId, UUID facilityTypeId) {
+  public RequisitionTemplate findTemplate(UUID programId, UUID facilityTypeId, boolean reportOnly) {
     RequisitionTemplate template = requisitionTemplateRepository
         .findTemplate(programId, facilityTypeId);
 
@@ -46,6 +46,10 @@ public class RequisitionTemplateService {
 
     if (!template.hasColumnsDefined()) {
       throw new ValidationMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_DEFINED));
+    }
+    
+    if (reportOnly) {
+      template.hideOrderRelatedColumns();
     }
 
     return template;

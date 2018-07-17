@@ -141,19 +141,24 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
+    profiler.start("FIND_PROCESSING_PERIOD");
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+
+    boolean reportOnly = false;
+    if (null != period.getExtraData()) {
+      reportOnly = Boolean.valueOf(period.getExtraData().get("reportOnly"));
+    }
+
     profiler.start("GET_STOCK_ADJ_REASONS");
     List<StockAdjustmentReason> stockAdjustmentReasons =
         getStockAdjustmentReasons(programId, facility);
 
     ProgramDto program = findProgram(programId, profiler);
 
-    profiler.start("FIND_PROCESSING_PERIOD");
-    ProcessingPeriodDto period = periodService
-        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
-
     profiler.start("FIND_REQUISITION_TEMPLATE");
     RequisitionTemplate requisitionTemplate = requisitionTemplateService.findTemplate(
-        program.getId(), facility.getType().getId()
+        program.getId(), facility.getType().getId(), reportOnly
     );
 
     profiler.start("INITIATE_REQUISITION");

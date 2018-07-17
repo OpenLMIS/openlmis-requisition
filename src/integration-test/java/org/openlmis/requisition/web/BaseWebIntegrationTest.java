@@ -235,7 +235,7 @@ public abstract class BaseWebIntegrationTest {
         .withColumns(RequisitionValidationTestUtils.initiateColumns())
         .build();
 
-    given(requisitionTemplateService.findTemplate(anyUuid(), anyUuid()))
+    given(requisitionTemplateService.findTemplate(anyUuid(), anyUuid(), eq(false)))
         .willReturn(template);
 
     return template;

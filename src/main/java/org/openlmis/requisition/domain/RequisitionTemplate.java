@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_IS_NULL;
@@ -66,6 +67,15 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
+
+  static final List<String> ORDER_RELATED_COLUMNS = asList("requestedQuantity",
+      "requestedQuantityExplanation",
+      "approvedQuantity",
+      "packsToShip",
+      "calculatedOrderQuantity",
+      "pricePerPack",
+      "totalCost"
+  );
 
   @Getter
   private Integer numberOfPeriodsToAverage;
@@ -360,6 +370,17 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     // assignment
     this.templateAssignments.clear();
     archived = true;
+  }
+
+  /**
+   * Hides all order-related columns in the template.
+   */
+  public void hideOrderRelatedColumns() {
+    for (Map.Entry<String, RequisitionTemplateColumn> entry : columnsMap.entrySet()) {
+      if (ORDER_RELATED_COLUMNS.contains(entry.getKey())) {
+        entry.getValue().setIsDisplayed(false);
+      }
+    }
   }
 
   /**
