@@ -669,8 +669,8 @@ public class RequisitionService {
    *                    requisition's program.
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser, Map<UUID, OrderableDto> orderables,
-      Requisition requisition, List<SupplyLineDto> supplyLines) {
-    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
+      Requisition requisition, List<SupplyLineDto> supplyLines, boolean isReportOnly) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId(), isReportOnly);
 
     saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);

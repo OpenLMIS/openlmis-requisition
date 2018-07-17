@@ -19,6 +19,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +35,12 @@ import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -50,7 +51,6 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
@@ -84,9 +84,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
   private static final String BUILD_DTO_LIST = "BUILD_DTO_LIST";
-
-  @Autowired
-  private PeriodService periodService;
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
@@ -240,7 +237,9 @@ public class RequisitionController extends BaseRequisitionController {
     validateIdempotencyKey(request, profiler);
 
     validateForStatusChange(requisition, profiler);
-    checkIfPeriodIsValid(requisition, profiler);
+
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+    checkIfPeriodIsValid(requisition, period, profiler);
 
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
@@ -514,11 +513,14 @@ public class RequisitionController extends BaseRequisitionController {
 
     SupervisoryNodeDto supervisoryNodeDto = getSupervisoryNodeDto(profiler, requisition);
     Map<UUID, OrderableDto> orderables = findOrderables(profiler, requisition);
-    List<SupplyLineDto> supplyLines = getSupplyLineDtos(profiler, requisition);
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+    List<SupplyLineDto> supplyLines = period.isReportOnly()
+        ? Collections.emptyList()
+        : getSupplyLineDtos(profiler, requisition);
 
     profiler.start("DO_APPROVE");
     ApproveParams approveParams = new ApproveParams(user, supervisoryNodeDto, orderables,
-        supplyLines);
+        supplyLines, period);
     doApprove(requisition, approveParams);
 
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
@@ -608,7 +610,9 @@ public class RequisitionController extends BaseRequisitionController {
     validateIdempotencyKey(request, profiler);
 
     validateForStatusChange(requisition, profiler);
-    checkIfPeriodIsValid(requisition, profiler);
+
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+    checkIfPeriodIsValid(requisition, period, profiler);
 
     UserDto user = getCurrentUser(profiler);
 

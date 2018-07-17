@@ -15,7 +15,12 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.requisition.dto.ProcessingPeriodDto.REPORT_ONLY;
+
+import com.google.common.collect.Maps;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 
 public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
 
@@ -29,5 +34,49 @@ public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
     verifier
         .withRedefinedSuperclass()
         .withRedefinedSubclass(RequisitionPeriodDto.class);
+  }
+
+  @Test
+  public void shouldReturnTrueIfReportOnlyExistsAndItIsSetToTrue() {
+    ProcessingPeriodDto period = prepareForReportOnlyTest(true, "true");
+    assertThat(period.isReportOnly()).isTrue();
+  }
+
+  @Test
+  public void shouldReturnFalseIfReportOnlyExistsAndItIsSetToTrue() {
+    ProcessingPeriodDto period = prepareForReportOnlyTest(true, "false");
+    assertThat(period.isReportOnly()).isFalse();
+  }
+
+  @Test
+  public void shouldReturnFalseIfReportOnlyExistsAndItHasInvalidValue() {
+    ProcessingPeriodDto period = prepareForReportOnlyTest(true, "some-invalid-value");
+    assertThat(period.isReportOnly()).isFalse();
+  }
+
+  @Test
+  public void shouldReturnFalseIfReportOnlyDoesNotExist() {
+    ProcessingPeriodDto period = prepareForReportOnlyTest(true, null);
+    assertThat(period.isReportOnly()).isFalse();
+  }
+
+  @Test
+  public void shouldReturnFalseIfExtraDataDoesNotExist() {
+    ProcessingPeriodDto period = prepareForReportOnlyTest(false, null);
+    assertThat(period.isReportOnly()).isFalse();
+  }
+
+  private ProcessingPeriodDto prepareForReportOnlyTest(boolean extraData, String reportOnly) {
+    ProcessingPeriodDto period = new ProcessingPeriodDto();
+
+    if (extraData) {
+      period.setExtraData(Maps.newHashMap());
+    }
+
+    if (null != reportOnly) {
+      period.getExtraData().put(REPORT_ONLY, reportOnly);
+    }
+
+    return period;
   }
 }

@@ -21,6 +21,7 @@ New functionality:
 * [OLMIS-4683](https://openlmis.atlassian.net/browse/OLMIS-4683): Carry over skipped column value from previous requisition
 * [OLMIS-4958](https://openlmis.atlassian.net/browse/OLMIS-4958): Add a new /requisitions/batchReleases endpoint to release requisitions with or without order.
 * [OLMIS-4982](https://openlmis.atlassian.net/browse/OLMIS-4982): Support initiating report-only requisitions.
+* [OLMIS-4981](https://openlmis.atlassian.net/browse/OLMIS-4981): Support approving report-only requisitions.
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile

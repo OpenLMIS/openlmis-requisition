@@ -81,11 +81,15 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -98,14 +102,20 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseWebIntegrationTest {
+  static final String BASE_URL = System.getenv("BASE_URL");
 
-  protected static final String BASE_URL = System.getenv("BASE_URL");
-  protected static final String CONTENT_TYPE = "Content-Type";
-  protected static final String APPLICATION_JSON = MediaType.APPLICATION_JSON_VALUE;
-  protected static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
-  protected static final String RAML_ASSERT_MESSAGE =
-      "HTTP request/response should match RAML definition.";
-  protected static final UUID LINE_ITEM_PRODUCT_ID = UUID.randomUUID();
+  static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
+  static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
+  static final UUID LINE_ITEM_PRODUCT_ID = UUID.randomUUID();
+
+  static final String SORT = "sort";
+  static final String PAGE = "page";
+
+  static final String FILTER_VALUE = "filterValue";
+  static final String FILTER_BY = "filterBy";
+
+  static final Pageable FIRST_PAGE =
+      new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
@@ -285,13 +295,13 @@ public abstract class BaseWebIntegrationTest {
     // This mocks the auth check to always return valid admin credentials.
     wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
         .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .withBody(MOCK_CHECK_RESULT)));
 
     // This mocks the auth token request response
     wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
         .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
 
   }
@@ -309,14 +319,14 @@ public abstract class BaseWebIntegrationTest {
     return requisitionSpy;
   }
 
-  protected void mockSearchSupervisoryNodeByProgramAndFacility() {
+  void mockSearchSupervisoryNodeByProgramAndFacility() {
     SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
     given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(anyUuid(), anyUuid()))
         .willReturn(supervisoryNode);
   }
 
-  protected static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
+  static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
 
     @Override
     public T answer(InvocationOnMock invocation) throws Throwable {

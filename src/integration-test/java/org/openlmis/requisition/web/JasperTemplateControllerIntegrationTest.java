@@ -81,7 +81,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     JasperTemplateDto[] result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -129,7 +129,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
         .delete(ID_URL)
@@ -149,7 +149,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
         .delete(ID_URL)
@@ -170,7 +170,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     JasperTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
         .get(ID_URL)
@@ -191,7 +191,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
         .get(ID_URL)
@@ -212,7 +212,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .pathParam(FORMAT_PARAM, "pdf")
         .when()

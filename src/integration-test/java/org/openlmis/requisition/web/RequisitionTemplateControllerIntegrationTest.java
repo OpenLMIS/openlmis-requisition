@@ -108,7 +108,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplateDto[] result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -133,7 +133,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(templateDto)
         .when()
         .post(RESOURCE_URL)
@@ -157,7 +157,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(templateDto)
         .when()
         .post(RESOURCE_URL)
@@ -179,7 +179,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
         .get(ID_URL)
@@ -234,7 +234,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .body(newTemplateDto)
         .when()
@@ -269,7 +269,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .body(newTemplateDto)
         .when()
@@ -303,7 +303,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .body(templateDto)
         .when()
@@ -333,7 +333,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .body(templateDto)
         .when()
@@ -377,7 +377,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
         .delete(ID_URL)

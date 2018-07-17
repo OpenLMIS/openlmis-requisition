@@ -68,6 +68,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.springframework.http.MediaType;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -101,7 +102,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", UUID.randomUUID())
         .when()
         .get(PRINT_URL)
@@ -125,7 +126,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
         .get(PRINT_URL)

@@ -15,7 +15,10 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,8 +27,28 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
+  static final String REPORT_ONLY = "reportOnly";
+
   private ProcessingScheduleDto processingSchedule;
   private String description;
   private Integer durationInMonths;
   private Map<String, String> extraData;
+
+  /**
+   * Returns the value of {@link #REPORT_ONLY} key from the {@link #extraData} map. If the map does
+   * not exist or the key does not exist or it contains non-boolean value, the method will return
+   * false.
+   *
+   * @return true if key exists and the value is true; otherwise false.
+   */
+  @JsonIgnore
+  public boolean isReportOnly() {
+    return Boolean.parseBoolean(
+        Optional
+            .ofNullable(extraData)
+            .orElse(Collections.emptyMap())
+            .get(REPORT_ONLY)
+    );
+  }
+
 }

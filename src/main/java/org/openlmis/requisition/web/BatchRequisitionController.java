@@ -60,7 +60,6 @@ import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
@@ -89,9 +88,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private MessageService messageService;
-
-  @Autowired
-  private PeriodService periodService;
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
@@ -187,8 +183,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .get(requisition.getSupervisoryNodeId());
       List<SupplyLineDto> supplyLines = supplyLinesMap
           .get(Pair.of(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
+      ProcessingPeriodDto period = periods.get(requisition.getProcessingPeriodId());
       ApproveParams approveParams =
-          new ApproveParams(user, supervisoryNode, orderables, supplyLines);
+          new ApproveParams(user, supervisoryNode, orderables, supplyLines, period);
       validateAndApprove(requisition, processingStatus, permissionStrings,
           facilities, periods, approveParams);
     }

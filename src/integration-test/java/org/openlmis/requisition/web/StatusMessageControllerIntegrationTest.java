@@ -39,6 +39,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.MediaType;
 
 public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -69,7 +70,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
     // when
     StatusMessageDto[] result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
         .get(STATUS_MESSAGE_URL)
@@ -93,7 +94,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
         .get(STATUS_MESSAGE_URL)

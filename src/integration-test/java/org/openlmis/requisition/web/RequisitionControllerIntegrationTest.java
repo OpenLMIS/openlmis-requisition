@@ -16,7 +16,6 @@
 package org.openlmis.requisition.web;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
@@ -31,7 +30,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
@@ -64,7 +62,6 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -77,8 +74,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -86,9 +81,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -102,7 +95,6 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -118,7 +110,6 @@ import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -126,7 +117,6 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.postgresql.util.PSQLException;
@@ -143,7 +133,7 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
-public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
+public class RequisitionControllerIntegrationTest extends BaseRequisitionWebIntegrationTest {
 
   private static final String SIZE = "size";
   private static final String RESOURCE_URL = "/api/requisitions";
@@ -172,17 +162,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private static final String PROCESSING_PERIOD = "processingPeriod";
   private static final String INITIATED_DATE_FROM = "initiatedDateFrom";
   private static final String INITIATED_DATE_TO = "initiatedDateTo";
-  private static final String SORT = "sort";
-  private static final String FILTER_VALUE = "filterValue";
-  private static final String FILTER_BY = "filterBy";
-  private static final String PAGE = "page";
   private static final String FACILITY_CODE_ASC = "facilityCode,asc";
 
   @MockBean
   private StatusMessageRepository statusMessageRepository;
-
-  @MockBean
-  private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @MockBean
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
@@ -212,19 +195,13 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private ValidReasonStockmanagementService validReasonStockmanagementService;
 
   @MockBean
-  private StockEventStockManagementService stockEventStockManagementService;
-
-  @MockBean
-  private StockEventBuilder stockEventBuilder;
-
-  @MockBean
   private ReasonsValidator reasonsValidator;
 
   @MockBean
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
 
   @MockBean
-  protected RequisitionVersionValidator requisitionVersionValidator;
+  private RequisitionVersionValidator requisitionVersionValidator;
 
   @Autowired
   private MessageService messageService;
@@ -238,11 +215,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID facilityTypeId = UUID.randomUUID();
   private UUID key = UUID.randomUUID();
-  private String baseUrl = "https://openlmis";
   private String wrongFormatKey = "some-key";
-
-  private Pageable pageRequest = new PageRequest(
-      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {
@@ -258,7 +231,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(false);
     ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
-        "baseUrl", baseUrl, String.class);
+        "baseUrl", BASE_URL, String.class);
   }
 
   @Test
@@ -279,7 +252,8 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .then()
         .statusCode(200)
         .header(HttpHeaders.ETAG, "W/1")
-        .extract().as(RequisitionDto.class);
+        .extract()
+        .as(RequisitionDto.class);
 
     // then
     assertEquals(requisition.getId(), result.getId());
@@ -472,16 +446,9 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition requisition = generateRequisition();
 
     given(requisitionService.searchRequisitions(
-        eq(facilityId),
-        eq(programId),
-        any(LocalDate.class),
-        any(LocalDate.class),
-        eq(periodId),
-        eq(supervisoryNodeId),
-        eq(statuses),
-        eq(false),
-        any(Pageable.class))
-    ).willReturn(Pagination.getPage(singletonList(requisition), pageRequest));
+        eq(facilityId), eq(programId), any(LocalDate.class), any(LocalDate.class), eq(periodId),
+        eq(supervisoryNodeId), eq(statuses), eq(false), any(Pageable.class))
+    ).willReturn(Pagination.getPage(singletonList(requisition), FIRST_PAGE));
 
     // when
     PageDto resultPage = restAssured.given()
@@ -518,7 +485,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
         eq(null), eq(statusSet), eq(false), any(Pageable.class))
-    ).willReturn(Pagination.getPage(requisitions, pageRequest));
+    ).willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
     PageDto resultPage = restAssured.given()
@@ -551,6 +518,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockExternalServiceCalls();
     mockValidationSuccess();
+    mockPeriod();
 
     // when
     BasicRequisitionDto result = restAssured.given()
@@ -581,6 +549,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockExternalServiceCalls();
     mockValidationSuccess();
+    mockPeriod();
 
     BasicRequisitionDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -591,7 +560,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .post(SUBMIT_URL)
         .then()
         .statusCode(200)
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .extract().as(BasicRequisitionDto.class);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
@@ -670,12 +639,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockExternalServiceCalls();
     mockValidationSuccess();
-
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
+    ProcessingPeriodDto period = mockPeriod(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
 
     // when
     restAssured.given()
@@ -686,9 +650,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .post(SUBMIT_URL)
         .then()
         .statusCode(400)
-        .body(MESSAGE,
-            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
-                processingPeriodDto.getEndDate())));
+        .body(MESSAGE, is(getMessage(ERROR_PERIOD_END_DATE_WRONG, period.getEndDate())));
 
     // then
     verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
@@ -750,6 +712,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     mockExternalServiceCalls();
     mockValidationSuccess();
+    mockPeriod();
 
     // when
     restAssured.given()
@@ -809,7 +772,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .put(SKIP_URL)
         .then()
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .statusCode(200);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
@@ -981,7 +944,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .put(REJECT_URL)
         .then()
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .statusCode(200);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
@@ -1104,6 +1067,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
+    mockPeriod();
 
     // when
     restAssured.given()
@@ -1132,6 +1096,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
+    mockPeriod();
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1140,7 +1105,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when()
         .post(AUTHORIZATION_URL)
         .then()
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .statusCode(200);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
@@ -1214,12 +1179,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
-
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
+    ProcessingPeriodDto period = mockPeriod(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
 
     // when
     restAssured.given()
@@ -1229,9 +1189,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .post(AUTHORIZATION_URL)
         .then()
         .statusCode(400)
-        .body(MESSAGE,
-            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG,
-                processingPeriodDto.getEndDate())));
+        .body(MESSAGE, is(getMessage(ERROR_PERIOD_END_DATE_WRONG, period.getEndDate())));
 
     // then
     verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
@@ -1468,7 +1426,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .post(INITIATE_URL)
         .then()
         .statusCode(201)
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .extract().as(RequisitionDto.class);
 
     // then
@@ -1580,27 +1538,20 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
 
     mockExternalServiceCalls();
     mockValidationSuccess();
-
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
-
-    UUID requisitionId = requisition.getId();
+    mockPeriod();
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .header(IDEMPOTENCY_KEY_HEADER, key)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(APPROVE_URL)
         .then()
-        .header(HttpHeaders.LOCATION, baseUrl + RESOURCE_URL + '/' + requisition.getId())
+        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
         .statusCode(200);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
@@ -1617,16 +1568,10 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
 
     mockExternalServiceCalls();
     mockValidationSuccess();
-
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
 
@@ -1653,23 +1598,15 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
 
     mockExternalServiceCalls();
     mockValidationSuccess();
 
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone());
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
-
-    UUID requisitionId = requisition.getId();
-
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(APPROVE_URL)
         .then()
@@ -1689,30 +1626,23 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
 
     mockExternalServiceCalls();
     mockValidationSuccess();
-
-    ProcessingPeriodDto processingPeriodDto = mock(ProcessingPeriodDto.class);
-    when(processingPeriodDto.getEndDate())
-        .thenReturn(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
-    when(periodReferenceDataService.findOne(requisition.getProcessingPeriodId()))
-        .thenReturn(processingPeriodDto);
-
-    UUID requisitionId = requisition.getId();
+    ProcessingPeriodDto period = mockPeriod(dateHelper.getCurrentDateWithSystemZone().plusDays(2));
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", requisitionId)
+        .pathParam("id", requisition.getId())
         .when()
         .post(APPROVE_URL)
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG, processingPeriodDto.getEndDate())),
-            MESSAGE, containsString(ISO_DATE.format(processingPeriodDto.getEndDate())));
+            equalTo(getMessage(ERROR_PERIOD_END_DATE_WRONG, period.getEndDate())),
+            MESSAGE, containsString(ISO_DATE.format(period.getEndDate())));
 
     // then
     verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
@@ -1742,7 +1672,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1770,7 +1700,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
 
     // then
     verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid());
+        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1781,7 +1711,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     Requisition[] requisitions = {generateRequisition(), generateRequisition()};
     given(requisitionService.searchRequisitions(
         anySetOf(RequisitionStatus.class), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Arrays.asList(requisitions), pageRequest));
+        .willReturn(Pagination.getPage(Arrays.asList(requisitions), FIRST_PAGE));
 
     // when
     PageDto response = restAssured.given()
@@ -1837,7 +1767,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(
         eq(userId), eq(null), any(Pageable.class)))
-        .willReturn(Pagination.getPage(requisitions, pageRequest));
+        .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
     PageDto result = restAssured.given()
@@ -1864,7 +1794,7 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(
         eq(userId), eq(program), any(Pageable.class)))
-        .willReturn(Pagination.getPage(requisitions, pageRequest));
+        .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
     PageDto result = restAssured.given()
@@ -2210,31 +2140,33 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
   }
 
   private ProgramDto mockProgram() {
-    ProgramDto programDto = new ProgramDto();
-    programDto.setId(UUID.randomUUID());
-    given(programReferenceDataService.findOne(anyUuid()))
-        .willReturn(programDto);
+    ProgramDto programDto = DtoGenerator.of(ProgramDto.class);
+
+    given(programReferenceDataService.findOne(anyUuid())).willReturn(programDto);
+
     return programDto;
   }
 
   private FacilityDto mockFacility() {
-    FacilityTypeDto facilityTypeDto = new FacilityTypeDto();
-    facilityTypeDto.setId(facilityTypeId);
+    FacilityDto facilityDto = DtoGenerator.of(FacilityDto.class);
+    facilityDto.getType().setId(facilityTypeId);
 
-    FacilityDto facilityDto = new FacilityDto();
-    facilityDto.setId(UUID.randomUUID());
-    facilityDto.setType(facilityTypeDto);
-
-    when(facilityReferenceDataService.findOne(anyUuid()))
-        .thenReturn(facilityDto);
+    when(facilityReferenceDataService.findOne(anyUuid())).thenReturn(facilityDto);
 
     return facilityDto;
   }
 
   private ProcessingPeriodDto mockPeriod() {
+    return mockPeriod(dateHelper.getCurrentDateWithSystemZone());
+  }
+
+  private ProcessingPeriodDto mockPeriod(LocalDate endDate) {
     ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
+    period.setEndDate(endDate);
 
     when(periodService.findPeriod(anyUuid(), anyUuid(), anyUuid(), anyBoolean()))
+        .thenReturn(period);
+    when(periodService.getPeriod(anyUuid()))
         .thenReturn(period);
 
     return period;
@@ -2262,24 +2194,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
         .collect(Collectors.toList());
   }
 
-  private void mockRequisitionDtoBuilderResponses() {
-    given(requisitionDtoBuilder.build(any(Requisition.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder
-        .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder
-        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class),
-            any(ProcessingPeriodDto.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
-        .willAnswer(new BuildListOfRequisitionDtosAnswer());
-  }
-
-  private void mockRepositorySaveAnswer() {
-    given(requisitionRepository.save(any(Requisition.class))).willAnswer(new SaveAnswer<>());
-  }
-
   private ValidationMessageException mockValidationException(String key, Object... args) {
     ValidationMessageException exception = mock(ValidationMessageException.class);
     Message errorMessage = new Message(key, (Object[]) args);
@@ -2294,11 +2208,6 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     given(exception.getStatus()).willReturn(HttpStatus.NOT_FOUND);
 
     return exception;
-  }
-
-  private void mockStockEventServiceResponses() {
-    when(stockEventBuilder.fromRequisition(any(), any())).thenReturn(new StockEventDto());
-    doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
   private ReleasableRequisitionDto generateReleasableRequisitionDto() {
@@ -2331,66 +2240,4 @@ public class RequisitionControllerIntegrationTest extends BaseWebIntegrationTest
     return messageService.localize(new Message(messageKey, messageParams)).asMessage();
   }
 
-  protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
-
-    @Override
-    public RequisitionDto answer(InvocationOnMock invocation) throws Throwable {
-      Requisition requisition = (Requisition) invocation.getArguments()[0];
-
-      if (null == requisition) {
-        return null;
-      }
-
-      return export(requisition);
-    }
-
-    public static RequisitionDto export(Requisition requisition) {
-      RequisitionDto dto = new RequisitionDto();
-      requisition.export(dto);
-
-      dto.setTemplate(BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
-      dto.setRequisitionLineItems(Collections.emptyList());
-
-      FacilityDto facility = null;
-      if (requisition.getFacilityId() != null) {
-        facility = new FacilityDto();
-        facility.setId(requisition.getFacilityId());
-      }
-
-      ProgramDto program = null;
-      if (requisition.getProgramId() != null) {
-        program = new ProgramDto();
-        program.setId(requisition.getProgramId());
-      }
-
-      ProcessingPeriodDto period = null;
-      if (requisition.getSupervisoryNodeId() != null) {
-        period = new ProcessingPeriodDto();
-        period.setId(requisition.getProcessingPeriodId());
-      }
-
-      dto.setProcessingPeriod(period);
-      dto.setFacility(facility);
-      dto.setProgram(program);
-
-      return dto;
-    }
-  }
-
-  protected static class BuildListOfRequisitionDtosAnswer implements Answer<List<RequisitionDto>> {
-
-    @Override
-    public List<RequisitionDto> answer(InvocationOnMock invocation) throws Throwable {
-      Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
-
-      if (null == collection) {
-        return emptyList();
-      }
-
-      return collection
-          .stream()
-          .map(BuildRequisitionDtoAnswer::export)
-          .collect(Collectors.toList());
-    }
-  }
 }

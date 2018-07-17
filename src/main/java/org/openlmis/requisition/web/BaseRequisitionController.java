@@ -45,11 +45,11 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
@@ -62,12 +62,12 @@ import org.openlmis.requisition.exception.IdempotencyKeyException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
@@ -143,7 +143,7 @@ public abstract class BaseRequisitionController extends BaseController {
   private DateHelper dateHelper;
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
+  PeriodService periodService;
 
   @Autowired
   FacilityReferenceDataService facilityReferenceDataService;
@@ -195,9 +195,8 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   void doApprove(Requisition requisition, ApproveParams approveParams) {
-    Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition,
-        approveParams.user);
-    checkIfPeriodIsValid(requisition, profiler);
+    Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition, approveParams.user);
+    checkIfPeriodIsValid(requisition, approveParams.period, profiler);
 
     SupervisoryNodeDto parentNode = null;
     UUID parentNodeId = null;
@@ -213,7 +212,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     profiler.start("DO_APPROVE");
     requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
-        requisition, approveParams.supplyLines);
+        requisition, approveParams.supplyLines, approveParams.period.isReportOnly());
 
     if (requisition.getStatus().isApproved() && !isEmpty(approveParams.supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");
@@ -263,13 +262,12 @@ public abstract class BaseRequisitionController extends BaseController {
         .collect(Collectors.toSet());
   }
 
-  void checkIfPeriodIsValid(Requisition requisition, Profiler profiler) {
+  void checkIfPeriodIsValid(Requisition requisition, ProcessingPeriodDto period,
+      Profiler profiler) {
     profiler.start("CHECK_IF_PERIOD_IS_VALID");
 
     if (requisition.getEmergency() != null && !requisition.getEmergency()) {
-      LocalDate endDate = periodReferenceDataService
-          .findOne(requisition.getProcessingPeriodId())
-          .getEndDate();
+      LocalDate endDate = period.getEndDate();
       if (dateHelper.isDateAfterNow(endDate)) {
         throw new ValidationMessageException(new Message(
             ERROR_PERIOD_END_DATE_WRONG, DateTimeFormatter.ISO_DATE.format(endDate)));
@@ -435,6 +433,7 @@ public abstract class BaseRequisitionController extends BaseController {
     private SupervisoryNodeDto supervisoryNode;
     private Map<UUID, OrderableDto> orderables;
     private List<SupplyLineDto> supplyLines;
+    private ProcessingPeriodDto period;
   }
 
 }

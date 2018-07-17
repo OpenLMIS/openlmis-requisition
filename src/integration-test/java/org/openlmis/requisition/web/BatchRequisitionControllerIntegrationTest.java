@@ -27,11 +27,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -46,45 +42,35 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Sets;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
-import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
-import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -93,20 +79,17 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
-public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegrationTest {
+public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String BATCH_RELEASES_URL = RESOURCE_URL + "/batchReleases";
   private static final String RETRIEVE_ALL = "retrieveAll";
@@ -116,9 +99,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
   @MockBean
   private RequisitionService requisitionService;
-
-  @MockBean
-  private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @MockBean
   private DatePhysicalStockCountCompletedEnabledPredicate predicate;
@@ -135,17 +115,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
   @MockBean
   private RequisitionVersionValidator requisitionVersionValidator;
 
-  @MockBean
-  private StockEventStockManagementService stockEventStockManagementService;
-
-  @MockBean
-  private StockEventBuilder stockEventBuilder;
-
   @MockBean(name = "facilityReferenceDataService")
   private FacilityReferenceDataService facilityReferenceDataService;
-
-  @MockBean
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @MockBean(name = "userReferenceDataService")
   private UserReferenceDataService userReferenceDataService;
@@ -193,7 +164,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
 
     approveRequisitions = requisitions
         .stream()
-        .map(requisition -> requisitionDtoBuilder.build(requisition))
+        .map(requisitionDtoBuilder::build)
         .map(ApproveRequisitionDto::new)
         .collect(Collectors.toList());
 
@@ -557,33 +528,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
         .queryParam(param, "");
   }
 
-  private void mockRepositorySaveAnswer() {
-    given(requisitionRepository.save(any(Requisition.class))).willAnswer(new SaveAnswer<>());
-  }
-
-  private void mockRequisitionDtoBuilderResponses() {
-    given(requisitionDtoBuilder.build(any(Requisition.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder
-        .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder
-        .build(any(Requisition.class), anyMap(), any(FacilityDto.class), any(ProgramDto.class),
-            any(ProcessingPeriodDto.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder
-        .buildBatch(any(Requisition.class), any(FacilityDto.class),
-            anyMapOf(UUID.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
-        .willAnswer(new BuildRequisitionDtoAnswer());
-    given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
-        .willAnswer(new BuildListOfRequisitionDtosAnswer());
-  }
-
-  private void mockStockEventServiceResponses() {
-    when(stockEventBuilder.fromRequisition(any(), any())).thenReturn(new StockEventDto());
-    doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
-  }
-
   private List<Requisition> mockRequisitionValidatonsAndStubRepository() {
     List<Requisition> requisitionSpies = new ArrayList<>();
     requisitions.forEach(requisition -> {
@@ -596,87 +540,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseWebIntegratio
     given(requisitionRepository.readDistinctByIdIn(requisitionIds)).willReturn(requisitionSpies);
 
     return requisitionSpies;
-  }
-
-  protected static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {
-
-    @Override
-    public RequisitionDto answer(InvocationOnMock invocation) {
-      Requisition requisition = (Requisition) invocation.getArguments()[0];
-
-      if (null == requisition) {
-        return null;
-      }
-
-      return export(requisition);
-    }
-
-    public static RequisitionDto export(Requisition requisition) {
-      RequisitionDto dto = new RequisitionDto();
-      requisition.export(dto);
-
-      dto.setTemplate(BasicRequisitionTemplateDto.newInstance(requisition.getTemplate()));
-      dto.setRequisitionLineItems(requisition
-          .getRequisitionLineItems()
-          .stream()
-          .map(line -> {
-            OrderableDto orderableDto = new OrderableDto();
-            orderableDto.setId(line.getOrderableId());
-            orderableDto.setPrograms(Sets.newHashSet());
-            orderableDto.setProductCode(RandomStringUtils.randomAlphanumeric(5));
-            orderableDto.setFullProductName(RandomStringUtils.randomAlphanumeric(5));
-
-            RequisitionLineItemDto lineDto = new RequisitionLineItemDto();
-            line.export(lineDto, orderableDto);
-
-            return lineDto;
-          })
-          .collect(Collectors.toList()));
-
-      FacilityDto facility = null;
-      if (requisition.getFacilityId() != null) {
-        facility = new FacilityDto();
-        facility.setId(requisition.getFacilityId());
-        facility.setName("facility");
-      }
-
-      ProgramDto program = null;
-      if (requisition.getProgramId() != null) {
-        program = new ProgramDto();
-        program.setId(requisition.getProgramId());
-        program.setName("program");
-      }
-
-      ProcessingPeriodDto period = null;
-      if (requisition.getProcessingPeriodId() != null) {
-        period = new ProcessingPeriodDto();
-        period.setId(requisition.getProcessingPeriodId());
-        period.setName("period");
-      }
-
-      dto.setProcessingPeriod(period);
-      dto.setFacility(facility);
-      dto.setProgram(program);
-
-      return dto;
-    }
-  }
-
-  protected static class BuildListOfRequisitionDtosAnswer implements Answer<List<RequisitionDto>> {
-
-    @Override
-    public List<RequisitionDto> answer(InvocationOnMock invocation) {
-      Collection<Requisition> collection = (Collection) invocation.getArguments()[0];
-
-      if (null == collection) {
-        return Collections.emptyList();
-      }
-
-      return collection
-          .stream()
-          .map(BatchRequisitionControllerIntegrationTest.BuildRequisitionDtoAnswer::export)
-          .collect(Collectors.toList());
-    }
   }
 
 }
