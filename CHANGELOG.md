@@ -1,5 +1,5 @@
-6.1.0 / WIP
-===========
+6.1.0 / 2018-07-18
+==================
 
 Improvements:
 * [OLMIS-4728](https://openlmis.atlassian.net/browse/OLMIS-4728): Added optimistic locking for requisition updates, eTags and If-Match header support in PUT /requisitions
