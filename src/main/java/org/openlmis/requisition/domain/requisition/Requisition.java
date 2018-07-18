@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
@@ -868,7 +869,8 @@ public class Requisition extends BaseTimestampedEntity {
 
     if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod)
+          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod,
+              this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
       ));
     }
 

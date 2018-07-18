@@ -278,7 +278,18 @@
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
-
+  {
+    "requisitionTemplateId": "5a268780-fafd-4243-9551-5c7daa824913",
+    "key": "additionalQuantityRequired",
+    "name": "additionalQuantityRequired",
+    "label": "Additional quantity required",
+    "indicator": "Z",
+    "displayOrder": 24,
+    "isDisplayed": false,
+    "source": 0,
+    "definition": "Additional quantity required for new patients",
+    "requisitionColumnId": "90a84767-1009-4d8e-be13-f006fce2a002"
+  },
 
 
 
@@ -561,6 +572,18 @@
     "requisitionColumnId": "913e1a4f-f3b0-40c6-a422-2f73608c6f3d",
     "requisitionColumnOptionId": "ff2b350c-37f2-4801-b21e-27ca12c12b3c"
   },
+  {
+    "requisitionTemplateId": "4b30f6c9-b84b-4f17-8173-852101a5ea29",
+    "key": "additionalQuantityRequired",
+    "name": "additionalQuantityRequired",
+    "label": "Additional quantity required",
+    "indicator": "Z",
+    "displayOrder": 24,
+    "isDisplayed": false,
+    "source": 0,
+    "definition": "Additional quantity required for new patients",
+    "requisitionColumnId": "90a84767-1009-4d8e-be13-f006fce2a002"
+  },
 
 
 
@@ -870,7 +893,18 @@
     "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
   },
-
+  {
+    "requisitionTemplateId": "6c4b004b-b7c9-46f0-bb1b-bd128d36729f",
+    "key": "additionalQuantityRequired",
+    "name": "additionalQuantityRequired",
+    "label": "Additional quantity required",
+    "indicator": "Z",
+    "displayOrder": 24,
+    "isDisplayed": false,
+    "source": 0,
+    "definition": "Additional quantity required for new patients",
+    "requisitionColumnId": "90a84767-1009-4d8e-be13-f006fce2a002"
+  },
 
 
   {
@@ -1178,5 +1212,17 @@
     "source": 1,
     "definition": "Calculated Order Quantity ISA is based on an ISA configured by commodity type, and several trade items may fill for one commodity type.",
     "requisitionColumnId": "9ac91518-38c7-494c-95d9-c37ef2ffff81"
+  },
+  {
+    "requisitionTemplateId": "37f29736-f0db-4de3-98ad-f8d85c848711",
+    "key": "additionalQuantityRequired",
+    "name": "additionalQuantityRequired",
+    "label": "Additional quantity required",
+    "indicator": "Z",
+    "displayOrder": 24,
+    "isDisplayed": false,
+    "source": 0,
+    "definition": "Additional quantity required for new patients",
+    "requisitionColumnId": "90a84767-1009-4d8e-be13-f006fce2a002"
   }
 ]

@@ -16,6 +16,7 @@
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
@@ -113,6 +114,14 @@ public class RequisitionValidationTestUtils {
     columns.put(
         CALCULATED_ORDER_QUANTITY_ISA,
         generateTemplateColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED)
+    );
+
+    RequisitionTemplateColumn column = generateTemplateColumn(ADDITIONAL_QUANTITY_REQUIRED,
+        "Z", USER_INPUT);
+    column.setIsDisplayed(false);
+    columns.put(
+        ADDITIONAL_QUANTITY_REQUIRED,
+        column
     );
 
     return columns;

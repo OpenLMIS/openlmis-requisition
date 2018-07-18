@@ -39,6 +39,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_I
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY;
 
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -83,10 +84,11 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+  static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
   static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(
       TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED, ADJUSTED_CONSUMPTION, MAXIMUM_STOCK_QUANTITY,
-      CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION);
+      ADDITIONAL_QUANTITY_REQUIRED, CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION);
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
       TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS);
@@ -316,6 +318,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
             ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS);
       }
+    } else if ( template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)) {
+      rejectValue(errors, ADDITIONAL_QUANTITY_REQUIRED,
+          new Message(ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY));
     }
   }
 

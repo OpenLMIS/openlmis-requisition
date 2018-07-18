@@ -73,6 +73,11 @@ public class RequisitionTemplateColumnDataBuilder {
     return this;
   }
 
+  public RequisitionTemplateColumnDataBuilder withDisplay(Boolean display) {
+    this.isDisplayed = display;
+    return this;
+  }
+
   public RequisitionTemplateColumnDataBuilder withName(String name) {
     this.name = name;
     return this;

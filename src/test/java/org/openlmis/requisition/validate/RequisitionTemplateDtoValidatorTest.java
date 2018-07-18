@@ -49,6 +49,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.BEGINNING_BALANCE;
@@ -757,6 +758,7 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   private RequisitionTemplateDataBuilder baseTemplateBuilder() {
+
     return new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
         .withColumn(TOTAL_CONSUMED_QUANTITY, "C", USER_INPUT,
@@ -767,6 +769,8 @@ public class RequisitionTemplateDtoValidatorTest {
             Sets.asSet(USER_INPUT))
         .withColumn(COLUMN_NAME, "T", USER_INPUT,
             Sets.asSet(USER_INPUT))
+        .withColumn(ADDITIONAL_QUANTITY_REQUIRED, "Z", USER_INPUT,
+            Sets.asSet(USER_INPUT), false)
         .withAssignment(UUID.randomUUID(), UUID.randomUUID());
   }
 

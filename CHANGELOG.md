@@ -22,6 +22,7 @@ New functionality:
 * [OLMIS-4958](https://openlmis.atlassian.net/browse/OLMIS-4958): Add a new /requisitions/batchReleases endpoint to release requisitions with or without order.
 * [OLMIS-4982](https://openlmis.atlassian.net/browse/OLMIS-4982): Support initiating report-only requisitions.
 * [OLMIS-4981](https://openlmis.atlassian.net/browse/OLMIS-4981): Support approving report-only requisitions.
+* [OLMIS-4966](https://openlmis.atlassian.net/browse/OLMIS-4966): Add additionalQuantityRequired, a new column on requisition template.
 
 Improvements:
 * [OLMIS-4642](https://openlmis.atlassian.net/browse/OLMIS-4642): Added Jenkinsfile

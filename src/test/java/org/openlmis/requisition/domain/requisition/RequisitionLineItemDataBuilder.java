@@ -63,6 +63,7 @@ public class RequisitionLineItemDataBuilder {
   private Integer idealStockAmount = 100;
   //this needs to be always idealStockAmount - stockOnHand
   private Integer calculatedOrderQuantityIsa = 50;
+  private Integer additionalQuantityRequired = 0;
 
   public RequisitionLineItemDataBuilder withId(UUID id) {
     this.id = id;
@@ -137,8 +138,8 @@ public class RequisitionLineItemDataBuilder {
         orderableId, requisition, beginningBalance, totalReceivedQuantity,
         totalLossesAndAdjustments, stockOnHand, requestedQuantity, totalConsumedQuantity, total,
         requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays, packsToShip,
-        skipped, pricePerPack, totalCost, numberOfNewPatientsAdded, adjustedConsumption,
-        previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
+        skipped, pricePerPack, totalCost, numberOfNewPatientsAdded, additionalQuantityRequired,
+        adjustedConsumption, previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
         calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock, nonFullSupply,
         idealStockAmount, calculatedOrderQuantityIsa
     );

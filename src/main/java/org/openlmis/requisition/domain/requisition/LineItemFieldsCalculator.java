@@ -140,15 +140,19 @@ public final class LineItemFieldsCalculator {
 
   /**
    * Calculates Adjusted Consumption (N) value and returns it.
-   * The formula is N = RoundUp(C * ((M * 30) / ((M * 30) - X)))
+   * - When additionalQuantityRequired field is not in template,
+   * The formula used is N = RoundUp(C * ((M * 30) / ((M * 30) - X)))
+   * If non-stockout days is zero the formula is N = C
+   * When additionalQuantityRequire column is present in the template,
+   * The formula is N = (RoundUp(C * ((M * 30) / ((M * 30) - X))) + additionalQuantityRequired)
    * C = Total Consumed Quantity
    * M = Months in the period (integer)
    * N = Adjusted Consumption
    * X = Total Stockout Days
-   * If non-stockout days is zero the formula is N = C
    */
   public static int calculateAdjustedConsumption(RequisitionLineItem lineItem,
-                                                 int monthsInThePeriod) {
+                                                 int monthsInThePeriod,
+                                                 Boolean additionalQuantityColumnPresent ) {
     int consumedQuantity = zeroIfNull(lineItem.getTotalConsumedQuantity());
 
     if (consumedQuantity == 0) {
@@ -170,6 +174,10 @@ public final class LineItemFieldsCalculator {
         .multiply(divide)
         .setScale(0, RoundingMode.CEILING);
 
+    if (additionalQuantityColumnPresent
+        && lineItem.getAdditionalQuantityRequired() > 0) {
+      return adjustedConsumption.intValue() + lineItem.getAdditionalQuantityRequired();
+    }
     return adjustedConsumption.intValue();
   }
 

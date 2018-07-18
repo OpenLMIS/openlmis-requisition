@@ -209,6 +209,8 @@ public abstract class MessageKeys {
       + ".validation.mustBeDisplayedWhenConsumptionIsCalculated";
   public static final String ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED =
       ERROR_PREFIX + ".validation.mustBeDisplayedWhenAverageConsumptionIsCalculated";
+  public static final String ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY =
+      ERROR_PREFIX + ".validation.showAdditionalQuantityRequiredOnlyWhenAdjustedConsumptionVisible";
   public static final String ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE = ERROR_PREFIX
       + ".validation.valueDoesNotMatchCalculatedValue";
   public static final String ERROR_CANNOT_UPDATE_REQUISITION = ERROR_PREFIX

@@ -93,6 +93,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
   public static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
+  public static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
 
   @Getter
   @Setter
@@ -173,6 +174,10 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   @Getter
   private Integer numberOfNewPatientsAdded;
+
+  @Setter
+  @Getter
+  private Integer additionalQuantityRequired;
 
   @Setter
   @Getter
@@ -297,6 +302,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
+    requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -330,6 +336,7 @@ public class RequisitionLineItem extends BaseEntity {
       this.maximumStockQuantity = requisitionLineItem.getMaximumStockQuantity();
       this.calculatedOrderQuantity = requisitionLineItem.getCalculatedOrderQuantity();
       this.calculatedOrderQuantityIsa = requisitionLineItem.getCalculatedOrderQuantityIsa();
+      this.additionalQuantityRequired = requisitionLineItem.getAdditionalQuantityRequired();
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
       } else {
@@ -428,6 +435,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
     exporter.setIdealStockAmount(idealStockAmount);
     exporter.setCalculatedOrderQuantityIsa(calculatedOrderQuantityIsa);
+    exporter.setAdditionalQuantityRequired(additionalQuantityRequired);
   }
 
   private void exportStockAdjustments(Exporter exporter) {
@@ -679,8 +687,11 @@ public class RequisitionLineItem extends BaseEntity {
    */
   private void calculateAndSetAdjustedConsumption(RequisitionTemplate template,
                                                   Integer monthsInThePeriod) {
+    Boolean additionalQuantityRequiredVisible = template
+        .isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED);
     if (template.isColumnInTemplate(ADJUSTED_CONSUMPTION)) {
-      int calculated = calculateAdjustedConsumption(this, monthsInThePeriod);
+      int calculated = calculateAdjustedConsumption(this,
+          monthsInThePeriod, additionalQuantityRequiredVisible);
 
       if (getAdjustedConsumption() != null
           && !Objects.equals(getAdjustedConsumption(), calculated)) {
@@ -805,6 +816,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setIdealStockAmount(Integer idealStockAmount);
 
     void setCalculatedOrderQuantityIsa(Integer calculatedOrderQuantityIsa);
+
+    void setAdditionalQuantityRequired(Integer additionalQuantityRequired);
   }
 
   public interface Importer {
@@ -859,5 +872,7 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getIdealStockAmount();
 
     Integer getCalculatedOrderQuantityIsa();
+
+    Integer getAdditionalQuantityRequired();
   }
 }

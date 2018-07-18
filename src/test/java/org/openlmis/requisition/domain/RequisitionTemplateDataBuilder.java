@@ -184,22 +184,28 @@ public class RequisitionTemplateDataBuilder {
   public RequisitionTemplateDataBuilder withDuplicatedTag() {
     return this
         .withColumn(CALCULATED_ORDER_QUANTITY, "I", SourceType.CALCULATED, null,
-            Sets.asSet(SourceType.CALCULATED), "tag1")
+            Sets.asSet(SourceType.CALCULATED), "tag1", true)
         .withColumn(REQUESTED_QUANTITY, "J", SourceType.USER_INPUT, null,
             Sets.asSet(SourceType.USER_INPUT))
         .withColumn(REQUESTED_QUANTITY_EXPLANATION, "W", SourceType.USER_INPUT, null,
-            Sets.asSet(SourceType.USER_INPUT), "tag1");
+            Sets.asSet(SourceType.USER_INPUT), "tag1", true);
   }
 
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
                                                    SourceType source,
                                                    Set<SourceType> sources) {
-    return withColumn(name, indicator, source, null, sources, null);
+    return withColumn(name, indicator, source, null, sources, null, true);
+  }
+
+  public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
+                                                   SourceType source,
+                                                   Set<SourceType> sources, Boolean display) {
+    return withColumn(name, indicator, source, null, sources, null, display);
   }
 
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
       SourceType source, AvailableRequisitionColumnOption option, Set<SourceType> sources) {
-    return withColumn(name, indicator, source, option, sources, null);
+    return withColumn(name, indicator, source, option, sources, null, true);
   }
 
   /**
@@ -209,10 +215,11 @@ public class RequisitionTemplateDataBuilder {
                                                    SourceType source,
                                                    AvailableRequisitionColumnOption option,
                                                    Set<SourceType> sources,
-                                                   String tag) {
+                                                   String tag, Boolean display) {
     columnsMap.put(name, new RequisitionTemplateColumnDataBuilder()
         .withName(name)
         .withIndicator(indicator)
+        .withDisplay(display)
         .withDisplayOrder(columnsMap.size() + 1)
         .withOption(option)
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()

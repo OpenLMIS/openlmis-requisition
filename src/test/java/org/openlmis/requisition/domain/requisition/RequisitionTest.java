@@ -1635,7 +1635,7 @@ public class RequisitionTest {
 
     PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
-        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
+        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD, true)
     ).thenReturn(ADJUSTED_CONSUMPTION);
     when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CURRENCY_UNIT))
         .thenReturn(TOTAL_COST);
@@ -1657,7 +1657,7 @@ public class RequisitionTest {
 
     PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
-        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD)
+        .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD, false)
     ).thenReturn(ADJUSTED_CONSUMPTION);
 
     setUpValidRequisitionTemplate();

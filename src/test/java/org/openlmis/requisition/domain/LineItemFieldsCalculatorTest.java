@@ -194,7 +194,30 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalStockoutDays(5);
     requisitionLineItem.setTotalConsumedQuantity(20);
 
-    assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
+    assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
+        3, false));
+  }
+
+  @Test
+  public void shouldCalculateAdjustedConsumptionWithAdditionalQuantityRequested() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setTotalStockoutDays(5);
+    requisitionLineItem.setAdditionalQuantityRequired(20);
+    requisitionLineItem.setTotalConsumedQuantity(20);
+
+    assertEquals(42, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
+        3, true));
+  }
+
+  @Test
+  public void shouldCalcAdjustedConsumptionWithoutAdditionalQuantityRequested() throws Exception {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
+    requisitionLineItem.setTotalStockoutDays(5);
+    requisitionLineItem.setAdditionalQuantityRequired(10);
+    requisitionLineItem.setTotalConsumedQuantity(20);
+
+    assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
+        3, false));
   }
 
   @Test
@@ -203,7 +226,8 @@ public class LineItemFieldsCalculatorTest {
     requisitionLineItem.setTotalStockoutDays(90);
     requisitionLineItem.setTotalConsumedQuantity(20);
 
-    assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem, 3));
+    assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
+        3, false));
   }
 
   @Test
@@ -236,7 +260,7 @@ public class LineItemFieldsCalculatorTest {
         .withRequiredColumns()
         .withColumn(MAXIMUM_STOCK_QUANTITY, null, CALCULATED,
             new AvailableRequisitionColumnOption(null, "default", "Default"),
-            Sets.newHashSet(CALCULATED), null)
+            Sets.newHashSet(CALCULATED), null, true)
         .build();
 
     RequisitionLineItem item = new RequisitionLineItem();
