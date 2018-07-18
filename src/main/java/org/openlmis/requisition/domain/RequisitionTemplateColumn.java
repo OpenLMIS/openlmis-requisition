@@ -82,12 +82,7 @@ public class RequisitionTemplateColumn {
   private String definition;
 
   @Getter
-  @Setter
   private String tag;
-
-  public RequisitionTemplateColumn(AvailableRequisitionColumn columnDefinition) {
-    this(null, null, null, 0, null, null, columnDefinition, null, null, null);
-  }
 
   RequisitionTemplateColumn copy() {
     return new RequisitionTemplateColumn(

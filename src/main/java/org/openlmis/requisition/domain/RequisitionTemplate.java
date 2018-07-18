@@ -68,13 +68,16 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
 
-  public static final List<String> ORDER_RELATED_COLUMNS = asList("requestedQuantity",
-      "requestedQuantityExplanation",
-      "approvedQuantity",
-      "packsToShip",
-      "calculatedOrderQuantity",
-      "pricePerPack",
-      "totalCost"
+  public static final List<String> ORDER_RELATED_COLUMNS = Collections.unmodifiableList(
+      asList(
+          "requestedQuantity",
+          "requestedQuantityExplanation",
+          "approvedQuantity",
+          "packsToShip",
+          "calculatedOrderQuantity",
+          "pricePerPack",
+          "totalCost"
+      )
   );
 
   @Getter
