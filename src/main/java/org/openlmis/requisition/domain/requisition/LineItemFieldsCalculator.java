@@ -140,15 +140,36 @@ public final class LineItemFieldsCalculator {
 
   /**
    * Calculates Adjusted Consumption (N) value and returns it.
-   * - When additionalQuantityRequired field is not in template,
-   * The formula used is N = RoundUp(C * ((M * 30) / ((M * 30) - X)))
-   * If non-stockout days is zero the formula is N = C
-   * When additionalQuantityRequire column is present in the template,
-   * The formula is N = (RoundUp(C * ((M * 30) / ((M * 30) - X))) + additionalQuantityRequired)
-   * C = Total Consumed Quantity
-   * M = Months in the period (integer)
-   * N = Adjusted Consumption
-   * X = Total Stockout Days
+   * <p>
+   *   The calculations used can be different depending on Additional Quantity Required column
+   *   being enabled or disabled in the requisition template.
+   * </p>
+   *
+   * <p>
+   *   When Additional Quantity Required field is not enabled in template,
+   *   The formula used is N = RoundUp(C * ((M * 30) / ((M * 30) - X)))
+   *   If Total Stockout Days is zero, the formula used is N = C
+   * </p>
+   *
+   * <p>
+   *   When Additional Quantity Required column is enabled in the template,
+   *   The formula used is N = (RoundUp(C * ((M * 30) / ((M * 30) - X))) + Z)
+   *   If Total Stockout Days is zero, the formula used is N = C + Z
+   * </p>
+   *
+   * <p>
+   *   C = Total Consumed Quantity
+   *   M = Months in the period (integer)
+   *   N = Adjusted Consumption
+   *   X = Total Stockout Days
+   *   Z = Additional Quantity Required
+   * </p>
+   *
+   * @param lineItem the line item to calculate the value for
+   * @param monthsInThePeriod number of months in period
+   * @param additionalQuantityColumnPresent Boolean value weather additional quantity required
+   *                                         column is enabled on the requisition template
+   * @return an integer with the value of calculated adjusted consumption
    */
   public static int calculateAdjustedConsumption(RequisitionLineItem lineItem,
                                                  int monthsInThePeriod,
