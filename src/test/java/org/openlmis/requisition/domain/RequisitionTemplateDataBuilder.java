@@ -143,6 +143,15 @@ public class RequisitionTemplateDataBuilder {
   }
 
   /**
+   * Sets all initiate columns and hide total consumed quantity column.
+   */
+  public RequisitionTemplateDataBuilder withAdditionalQuantityRequiredColumnDisplayed() {
+    withAllColumns();
+    columnsMap.get(RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED).setIsDisplayed(true);
+    return this;
+  }
+
+  /**
    * Set populateStockOnHandFromStockCards flag. If builder contains stock based columns,
    * the method will modify the source to {@link SourceType#STOCK_CARDS}.
    */

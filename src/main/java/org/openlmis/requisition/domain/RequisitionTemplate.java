@@ -76,7 +76,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
           "packsToShip",
           "calculatedOrderQuantity",
           "pricePerPack",
-          "totalCost"
+          "totalCost",
+          "additionalQuantityRequired"
       )
   );
 
@@ -164,7 +165,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.archived = source.archived;
     this.programId = source.programId;
 
-    this.columnsMap = source.viewColumns();
+    this.columnsMap = new HashMap<>();
+    source.columnsMap.forEach((key, value) -> this.columnsMap.put(key, value.copy()));
     this.templateAssignments = new HashSet<>();
     this.templateAssignments.addAll(source.templateAssignments);
     this.facilityTypeIds = new HashSet<>();
