@@ -594,8 +594,8 @@ public class Requisition extends BaseTimestampedEntity {
    * @param approver    user who approves this requisition.
    */
   public void approve(UUID nodeId, Map<UUID, OrderableDto> products,
-      Collection<SupplyLineDto> supplyLines, UUID approver, boolean isReportOnly) {
-    if (isReportOnly) {
+      Collection<SupplyLineDto> supplyLines, UUID approver) {
+    if (isTrue(reportOnly)) {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
     } else {
       if (CollectionUtils.isEmpty(supplyLines) && nodeId != null) {

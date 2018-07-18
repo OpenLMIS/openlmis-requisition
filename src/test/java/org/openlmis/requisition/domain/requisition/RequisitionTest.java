@@ -266,7 +266,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
-        UUID.randomUUID(), false);
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -278,7 +278,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
-        UUID.randomUUID(), false);
+        UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
   }
@@ -291,7 +291,7 @@ public class RequisitionTest {
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(),
-        Collections.singletonList(supplyLine), UUID.randomUUID(), false);
+        Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -304,7 +304,7 @@ public class RequisitionTest {
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(),
-        Collections.singletonList(supplyLine), UUID.randomUUID(), false);
+        Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
   }
@@ -891,11 +891,12 @@ public class RequisitionTest {
   public void shouldSetStatusAsReleasedWithoutOrderIfPeriodIsReportOnly() {
     // given
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
+    requisition.setReportOnly(true);
     setUpValidRequisitionTemplate();
 
     // when
     requisition.approve(null, Collections.emptyMap(), Collections.emptyList(),
-        UUID.randomUUID(), true);
+        UUID.randomUUID());
 
     // then
     assertThat(requisition.getStatus(), is(RequisitionStatus.RELEASED_WITHOUT_ORDER));
@@ -916,7 +917,7 @@ public class RequisitionTest {
 
     // when
     requisition.approve(null, ImmutableMap.of(productId, product), Collections.emptyList(),
-        UUID.randomUUID(), false);
+        UUID.randomUUID());
 
     // then
     assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
@@ -1013,7 +1014,7 @@ public class RequisitionTest {
 
     //when
     requisition.approve(null, Collections.emptyMap(), Collections.emptyList(),
-        UUID.randomUUID(), false);
+        UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -1188,7 +1189,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(), approverId, false);
+    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(), approverId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.APPROVED,
         approverId);

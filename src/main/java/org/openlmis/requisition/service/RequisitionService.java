@@ -53,7 +53,6 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
-import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
@@ -63,6 +62,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
@@ -187,9 +187,7 @@ public class RequisitionService {
 
     requisition.setProcessingPeriodId(period.getId());
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
-    if (null != period.getExtraData()) {
-      requisition.setReportOnly(Boolean.valueOf(period.getExtraData().get("reportOnly")));
-    }
+    requisition.setReportOnly(period.isReportOnly());
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     int numberOfPreviousPeriodsToAverage;
@@ -669,8 +667,8 @@ public class RequisitionService {
    *                    requisition's program.
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser, Map<UUID, OrderableDto> orderables,
-      Requisition requisition, List<SupplyLineDto> supplyLines, boolean isReportOnly) {
-    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId(), isReportOnly);
+      Requisition requisition, List<SupplyLineDto> supplyLines) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
 
     saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);

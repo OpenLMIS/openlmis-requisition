@@ -980,12 +980,12 @@ public class RequisitionServiceTest {
 
     requisitionService.doApprove(
         parentId, user, ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable),
-        requisitionMock, singletonList(supplyLineDto), false
+        requisitionMock, singletonList(supplyLineDto)
     );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
         eq(ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable)),
-        eq(singletonList(supplyLineDto)), eq(user.getId()), eq(false));
+        eq(singletonList(supplyLineDto)), eq(user.getId()));
   }
 
   @Test

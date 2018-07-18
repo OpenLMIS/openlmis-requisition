@@ -632,7 +632,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(emptyList()), eq(false));
+        any(), eq(authorizedRequsition), eq(emptyList()));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
@@ -661,7 +661,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(null), eq(false));
+        any(), eq(authorizedRequsition), eq(null));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
@@ -686,7 +686,7 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)), eq(false));
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -708,7 +708,7 @@ public class RequisitionControllerTest {
     verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition, currentUser.getId());
     verify(stockEventService).submit(stockEventDto);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)), eq(false));
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -726,7 +726,7 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)), eq(false));
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -744,7 +744,7 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)), eq(false));
+        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
   }
@@ -1087,7 +1087,7 @@ public class RequisitionControllerTest {
     verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
-        .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class), eq(false));
+        .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class));
   }
 
   private void verifyNoAuthorizeOrUpdate(Requisition requisition) {

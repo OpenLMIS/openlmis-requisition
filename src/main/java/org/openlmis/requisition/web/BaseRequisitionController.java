@@ -212,7 +212,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     profiler.start("DO_APPROVE");
     requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
-        requisition, approveParams.supplyLines, approveParams.period.isReportOnly());
+        requisition, approveParams.supplyLines);
 
     if (requisition.getStatus().isApproved() && !isEmpty(approveParams.supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");

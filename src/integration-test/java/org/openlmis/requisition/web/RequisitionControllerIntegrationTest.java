@@ -1538,7 +1538,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -1568,7 +1568,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -1598,7 +1598,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -1626,7 +1626,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
     doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
     mockValidationSuccess();
@@ -1672,7 +1672,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1700,7 +1700,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
-        anyCollectionOf(SupplyLineDto.class), anyUuid(), eq(false));
+        anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
