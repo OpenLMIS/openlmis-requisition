@@ -17,6 +17,8 @@ package org.openlmis.requisition.domain;
 
 import static org.junit.Assert.assertEquals;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.javers.common.collections.Sets;
 import org.junit.Test;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.testutils.RequisitionTemplateColumnDtoDataBuilder;
@@ -41,6 +43,23 @@ public class RequisitionTemplateColumnTest {
     RequisitionTemplateColumn column = RequisitionTemplateColumn.newInstance(dto);
 
     assertValues(dto, column);
+  }
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(RequisitionTemplateColumn.class)
+        .withPrefabValues(AvailableRequisitionColumn.class,
+            new AvailableRequisitionColumn("column1", Sets.asSet(SourceType.CALCULATED),
+                Sets.asSet(new AvailableRequisitionColumnOption()), "label1", "A", true, true,
+                true,true, true, "definition1", ColumnType.NUMERIC),
+            new AvailableRequisitionColumn("column2", Sets.asSet(SourceType.USER_INPUT),
+                Sets.asSet(new AvailableRequisitionColumnOption()), "label2", "B", false,false,
+                false, false, false, "definition2", ColumnType.TEXT))
+        .withPrefabValues(AvailableRequisitionColumnOption.class,
+            new AvailableRequisitionColumnOption(null, "optionName1", "optionLabel1"),
+            new AvailableRequisitionColumnOption(null, "optionName2", "optionLabel2"))
+        .verify();
   }
 
   private void assertValues(RequisitionTemplateColumnDto dto, RequisitionTemplateColumn column) {
