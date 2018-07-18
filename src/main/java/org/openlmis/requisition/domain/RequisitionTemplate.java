@@ -62,13 +62,13 @@ import org.openlmis.requisition.utils.Message;
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, exclude = {"programId", "facilityTypeIds"})
 public class RequisitionTemplate extends BaseTimestampedEntity {
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
   public static final String WARNING_SUFFIX = " is not available for this column.";
 
-  static final List<String> ORDER_RELATED_COLUMNS = asList("requestedQuantity",
+  public static final List<String> ORDER_RELATED_COLUMNS = asList("requestedQuantity",
       "requestedQuantityExplanation",
       "approvedQuantity",
       "packsToShip",
@@ -82,6 +82,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Getter
   private boolean populateStockOnHandFromStockCards;
+  
+  @Getter
   private String name;
 
   @Column(nullable = false)
@@ -142,6 +144,28 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     addColumns(columnsMap);
     addAssignments(templateAssignments);
+  }
+
+  /**
+   * Copy constructor.
+   * 
+   * @param source source requisition template to copy from
+   */
+  public RequisitionTemplate(RequisitionTemplate source) {
+    this.id = source.id;
+    this.setCreatedDate(source.getCreatedDate());
+    this.setModifiedDate(source.getModifiedDate());
+    this.numberOfPeriodsToAverage = source.numberOfPeriodsToAverage;
+    this.populateStockOnHandFromStockCards = source.populateStockOnHandFromStockCards;
+    this.name = source.name;
+    this.archived = source.archived;
+    this.programId = source.programId;
+
+    this.columnsMap = source.viewColumns();
+    this.templateAssignments = new HashSet<>();
+    this.templateAssignments.addAll(source.templateAssignments);
+    this.facilityTypeIds = new HashSet<>();
+    this.facilityTypeIds.addAll(source.facilityTypeIds);
   }
 
   /**

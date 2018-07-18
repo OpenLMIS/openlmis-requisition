@@ -49,10 +49,12 @@ public class RequisitionTemplateService {
     }
     
     if (reportOnly) {
-      template.hideOrderRelatedColumns();
+      RequisitionTemplate templateCopy = new RequisitionTemplate(template);
+      templateCopy.hideOrderRelatedColumns();
+      return templateCopy;
+    } else {
+      return template;
     }
-
-    return template;
   }
 
 }

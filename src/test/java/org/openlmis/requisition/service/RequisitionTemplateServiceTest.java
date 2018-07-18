@@ -17,8 +17,11 @@ package org.openlmis.requisition.service;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionTemplate.ORDER_RELATED_COLUMNS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 
@@ -54,7 +57,7 @@ public class RequisitionTemplateServiceTest {
       .build();
 
   @Test
-  public void shouldFindTemplate() {
+  public void findTemplateShouldReturnTemplate() {
     when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
         .thenReturn(template);
 
@@ -63,6 +66,29 @@ public class RequisitionTemplateServiceTest {
     );
 
     assertThat(found, is(template));
+  }
+  
+  @Test
+  public void findTemplateShouldReturnModifiedTemplateWhenReportOnlyIsTrue() {
+    //given
+    when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
+        .thenReturn(template);
+
+    //when
+    RequisitionTemplate found = requisitionTemplateService.findTemplate(
+        programId, facilityTypeId, true
+    );
+
+    //then
+    for (String columnName : ORDER_RELATED_COLUMNS) {
+      try {
+        assertNotEquals(
+            found.findColumn(columnName).getIsDisplayed(),
+            template.findColumn(columnName).getIsDisplayed());
+      } catch (ValidationMessageException vme) {
+        assertTrue(vme.getMessage().contains("requisition.error.columnNotInTemplate"));
+      }
+    }
   }
 
   @Test

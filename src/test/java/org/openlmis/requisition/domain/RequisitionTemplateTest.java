@@ -47,7 +47,6 @@ import java.util.stream.IntStream;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -131,8 +130,6 @@ public class RequisitionTemplateTest {
         + RequisitionTemplate.WARNING_SUFFIX);
   }
 
-  // TODO fix this test
-  @Ignore
   @Test
   public void equalsContract() {
     EqualsVerifier
@@ -140,7 +137,11 @@ public class RequisitionTemplateTest {
         .withRedefinedSuperclass()
         .withPrefabValues(RequisitionTemplateColumn.class,
             new RequisitionTemplateColumnDataBuilder().build(),
-            new RequisitionTemplateColumnDataBuilder().build())
+            new RequisitionTemplateColumnDataBuilder().withName("another-column").build())
+        .withPrefabValues(RequisitionTemplateAssignment.class,
+            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null),
+            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null))
+        .withIgnoredFields("id", "createdDate", "modifiedDate", "programId", "facilityTypeIds")
         .verify();
   }
 
@@ -330,6 +331,19 @@ public class RequisitionTemplateTest {
         assertFalse(entry.getValue().getIsDisplayed());
       }
     }
+  }
+  
+  @Test
+  public void copyConstructorShouldReturnEquivalentTemplate() {
+    //given
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .build();
+    
+    //when
+    RequisitionTemplate templateCopy = new RequisitionTemplate(template);
+    
+    assertEquals(template, templateCopy);
   }
 
   private void setColumns(RequisitionTemplateDto templateDto, RequisitionTemplate template) {

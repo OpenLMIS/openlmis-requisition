@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain;
 
 import static org.openlmis.requisition.domain.BaseEntity.TEXT_COLUMN_DEFINITION;
 
+import lombok.EqualsAndHashCode;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnDto;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
 
@@ -36,6 +37,7 @@ import javax.persistence.ManyToOne;
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class RequisitionTemplateColumn {
   public static final String COLUMN_DEFINITION = "columnDefinition";
   public static final String DEFINITION_KEY = "definition";
