@@ -43,7 +43,7 @@ public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
   }
 
   @Test
-  public void shouldReturnFalseIfReportOnlyExistsAndItIsSetToTrue() {
+  public void shouldReturnFalseIfReportOnlyExistsAndItIsSetToFalse() {
     ProcessingPeriodDto period = prepareForReportOnlyTest(true, "false");
     assertThat(period.isReportOnly()).isFalse();
   }
