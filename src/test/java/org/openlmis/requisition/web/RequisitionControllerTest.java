@@ -59,7 +59,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -610,11 +609,9 @@ public class RequisitionControllerTest {
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
 
-    ProcessingPeriodDto reportOnlyPeriod = new ProcessingPeriodDto();
-    reportOnlyPeriod.setExtraData(Maps.newHashMap("reportOnly", "true"));
     when(periodService.findPeriod(programUuid, facilityUuid, null, false))
         .thenReturn(processingPeriod);
-    when(processingPeriod.getExtraData()).thenReturn(Maps.newHashMap("reportOnly", "true"));
+    when(processingPeriod.isReportOnly()).thenReturn(true);
     
     //when
     requisitionController.initiate(programUuid, facilityUuid, null, false, request, response);

@@ -145,10 +145,7 @@ public class RequisitionController extends BaseRequisitionController {
     ProcessingPeriodDto period = periodService
         .findPeriod(programId, facilityId, suggestedPeriod, emergency);
 
-    boolean reportOnly = false;
-    if (null != period.getExtraData()) {
-      reportOnly = Boolean.valueOf(period.getExtraData().get("reportOnly"));
-    }
+    boolean reportOnly = period.isReportOnly();
 
     profiler.start("GET_STOCK_ADJ_REASONS");
     List<StockAdjustmentReason> stockAdjustmentReasons =
