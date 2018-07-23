@@ -77,11 +77,14 @@ public class RequisitionRepositoryTransactionalIntegrationTest
 
     StatusChange change1 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
     change1.setSupervisoryNodeId(UUID.randomUUID());
-
     StatusChange change2 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
     change2.setSupervisoryNodeId(UUID.randomUUID());
+    StatusChange change3 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    change3.setSupervisoryNodeId(UUID.randomUUID());
+    StatusChange change4 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    change4.setSupervisoryNodeId(UUID.randomUUID());
 
-    requisition.setStatusChanges(Lists.newArrayList(change1, change2));
+    requisition.setStatusChanges(Lists.newArrayList(change1, change2, change3, change4));
     repository.save(requisition);
 
     // Trigger is fired at the end of the transaction
