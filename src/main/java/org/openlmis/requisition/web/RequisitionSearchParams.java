@@ -164,7 +164,7 @@ public final class RequisitionSearchParams {
    */
   public Boolean isEmergency() {
     if (!queryParams.containsKey(EMERGENCY)) {
-      return false;
+      return null;
     }
     return queryParams.getBoolean(EMERGENCY);
   }

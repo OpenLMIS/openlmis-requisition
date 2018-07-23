@@ -196,10 +196,10 @@ public class RequisitionSearchParamsTest {
   }
 
   @Test
-  public void shouldGetFalseIfMapHasNoSupervisoryNodeProperty() {
+  public void shouldGetNullIfMapHasNoEmergencyProperty() {
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
-    assertFalse(params.isEmergency());
+    assertNull(params.isEmergency());
   }
 
 

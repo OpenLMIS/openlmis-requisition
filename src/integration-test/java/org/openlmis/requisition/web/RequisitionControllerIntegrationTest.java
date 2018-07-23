@@ -484,7 +484,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     given(requisitionService.searchRequisitions(
         eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(statusSet), eq(false), any(Pageable.class))
+        eq(null), eq(statusSet), eq(null), any(Pageable.class))
     ).willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
