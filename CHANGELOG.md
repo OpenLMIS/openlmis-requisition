@@ -31,6 +31,7 @@ Improvements:
 * [OLMIS-4728](https://openlmis.atlassian.net/browse/OLMIS-4728): Added optimistic locking for requisition updates, eTags and If-Match header support in PUT /requisitions
 * [OLMIS-4935](https://openlmis.atlassian.net/browse/OLMIS-4935): Requisition status change endpoints now are supporting Idempotent-Key header.
 * [OLMIS-4905](https://openlmis.atlassian.net/browse/OLMIS-4905): Updated notification service to use v2 endpoint.
+* [OLMIS-4876](https://openlmis.atlassian.net/browse/OLMIS-4876): Applied new demo data loading approach
 
 Bug fixes:
 * [OLMIS-4581](https://openlmis.atlassian.net/browse/OLMIS-4581): Fixed packs to ship and total cost calculation on Approve step to always use approved quantity.

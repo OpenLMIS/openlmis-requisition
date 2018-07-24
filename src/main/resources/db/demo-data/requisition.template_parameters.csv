@@ -1,0 +1,9 @@
+id,dataType,displayName,name,selectExpression,selectProperty,templateId,required,selectMethod,selectBody,displayProperty
+5a3ae444-681e-4c6f-8728-94776ba55935,java.lang.String,Program Name,Program,/api/programs,name,4a052c83-4607-4a32-9e78-1f18c94d88e4,true,,,
+5c8037ff-f887-4537-969a-975019b926ff,org.openlmis.requisition.dto.GeographicZoneDto,District,district,/api/geographicZones/search,id,f0f78846-8a7b-4f7b-87cf-d38e744683a3,false,POST,"{""levelNumber"": ""3""}",name
+e83765b9-9799-4062-ad4d-792c690eed7e,org.openlmis.requisition.dto.ProgramDto,Program Name,program,/api/programs,id,f0f78846-8a7b-4f7b-87cf-d38e744683a3,true,,,name
+bcd7bb13-6018-4375-9467-abf52bba0533,org.openlmis.requisition.dto.ProcessingPeriodDto,Period Name,period,/api/processingPeriods,id,f0f78846-8a7b-4f7b-87cf-d38e744683a3,true,,,name
+2bffed39-b764-4709-8106-417ff43d61d3,java.lang.String,Geographic Zone,GeographicZone,/api/geographicZones/search,id,ea05b845-0f3c-4672-9dda-08279c0c9dad,false,POST,"{""levelNumber"": ""2""}",name
+5a7e6bc3-66c2-4b6b-b4d1-f2b38d8b8309,java.lang.String,Program,Program,/api/programs,id,ea05b845-0f3c-4672-9dda-08279c0c9dad,true,,,name
+2550a167-b6db-48bc-a08f-6495357061a1,java.lang.String,Processing Period,Period,/api/processingPeriods,id,ea05b845-0f3c-4672-9dda-08279c0c9dad,true,,,name
+dcdde3cc-0839-4cd8-9dc1-de39d405632d,java.lang.Integer,Due date (days),DueDays,,,ea05b845-0f3c-4672-9dda-08279c0c9dad,false,,,

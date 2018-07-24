@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.utils;
@@ -32,6 +32,8 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -140,13 +142,14 @@ public class Resource2Db {
    and Pair.right is the rows of data which go into those columns (each row is an array, the array
    matches the order of the columns
    */
-  private Pair<List<String>, List<Object[]>> resourceCsvToBatchedPair(final Resource resource)
+  Pair<List<String>, List<Object[]>> resourceCsvToBatchedPair(final Resource resource)
       throws IOException {
     XLOGGER.entry(resource.getDescription());
 
     // parse CSV
-    try (InputStreamReader isReader = new InputStreamReader(resource.getInputStream())) {
-      CSVParser parser = CSVFormat.DEFAULT.withHeader().parse(isReader);
+    try (InputStreamReader isReader = new InputStreamReader(
+        new BOMInputStream(resource.getInputStream(), ByteOrderMark.UTF_8))) {
+      CSVParser parser = CSVFormat.DEFAULT.withHeader().withNullString("").parse(isReader);
 
       // read header row
       MutablePair<List<String>, List<Object[]>> readData = new MutablePair<>();
@@ -173,7 +176,7 @@ public class Resource2Db {
   /*
    runs the list of SQL strings directly on the database - could be insert / update
    */
-  private void updateDbFromSqlStrings(final List<String> sqlLines) {
+  void updateDbFromSqlStrings(final List<String> sqlLines) {
     XLOGGER.entry();
 
     if (CollectionUtils.isEmpty(sqlLines)) {
@@ -184,12 +187,16 @@ public class Resource2Db {
     XLOGGER.exit("Total db updates: " + Arrays.stream(updateCounts).sum());
   }
 
-  /*
-   runs a sql insert with the contents of a Pair as defined in resourceCsvToBatchedPair against
-   the given table name (which should include the schema name)
+  /**
+   * Inserts data into a single table.  Given the columns and a list of data to insert, will
+   * run a batch update to insert it.
+   * @param tableName the name of the table (including schema) to insert into.
+   * @param dataWithHeader a pair where pair.left is an ordered list of column names and pair.right
+   *                       is an array of rows to insert, where each row is similarly ordered as
+   *                       the columns in pair.left.
    */
-  private void insertToDbFromBatchedPair(String tableName,
-                                         Pair<List<String>, List<Object[]>> dataWithHeader) {
+  public void insertToDbFromBatchedPair(String tableName,
+                                        Pair<List<String>, List<Object[]>> dataWithHeader) {
     XLOGGER.entry(tableName);
 
     String columnDesc = dataWithHeader.getLeft()
@@ -208,7 +215,6 @@ public class Resource2Db {
     List<Object[]> data = dataWithHeader.getRight();
     data.forEach(e -> XLOGGER.info(tableName + ": " + Arrays.toString(e)));
     int[] updateCount = template.batchUpdate(insertSql, data);
-
 
     XLOGGER.exit("Total " + tableName + " inserts: " + Arrays.stream(updateCount).sum());
   }

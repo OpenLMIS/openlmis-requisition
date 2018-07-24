@@ -29,49 +29,138 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("performance-data")
+@Profile("demo-data")
 @Order(5)
 public class TestDataInitializer implements CommandLineRunner {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(TestDataInitializer.class);
-  private static final String PERF_DATA_PATH = "classpath:db/performance-data/";
+
+  private static final String DEMO_DATA_PATH = "classpath:db/demo-data/";
   private static final String DB_MIGRATION_PATH = "classpath:db/migration/";
 
-  @Value(value = PERF_DATA_PATH + "Requisitions5k.csv")
-  private Resource requisitions;
+  private static final String FILE_EXTENSION = ".csv";
 
-  @Value(value = PERF_DATA_PATH + "RequisitionLineItems100k.csv")
-  private Resource requisitionLineItems;
+  // table names
+  private static final String COLUMNS_MAPS = "columns_maps";
+  private static final String JASPER_TEMPLATE_PARAMETER_DEPENDENCIES =
+      "jasper_template_parameter_dependencies";
+  private static final String JASPER_TEMPLATES = "jasper_templates";
+  private static final String PREVIOUS_ADJUSTED_CONSUMPTIONS = "previous_adjusted_consumptions";
+  private static final String REQUISITION_LINE_ITEMS = "requisition_line_items";
+  private static final String REQUISITION_TEMPLATE_ASSIGNMENTS = "requisition_template_assignments";
+  private static final String REQUISITION_TEMPLATES = "requisition_templates";
+  private static final String REQUISITIONS = "requisitions";
+  private static final String STATUS_CHANGES = "status_changes";
+  private static final String STATUS_MESSAGES = "status_messages";
+  private static final String STOCK_ADJUSTMENT_REASONS = "stock_adjustment_reasons";
+  private static final String STOCK_ADJUSTMENTS = "stock_adjustments";
+  private static final String TEMPLATE_PARAMETERS = "template_parameters";
 
-  @Value(value = PERF_DATA_PATH + "StockAdjustments300k.csv")
-  private Resource stockAdjustments;
-  
-  @Value(value = PERF_DATA_PATH + "StockAdjustmentReasons.csv")
-  private Resource stockAdjustmentReasons;
+  // database path
+  private static final String DB_SCHEMA = "requisition.";
+  static final String COLUMNS_MAPS_TABLE = DB_SCHEMA + COLUMNS_MAPS;
+  static final String JASPER_TEMPLATE_PARAMETER_DEPENDENCIES_TABLE =
+      DB_SCHEMA + JASPER_TEMPLATE_PARAMETER_DEPENDENCIES;
+  static final String JASPER_TEMPLATES_TABLE = DB_SCHEMA + JASPER_TEMPLATES;
+  static final String PREVIOUS_ADJUSTED_CONSUMPTIONS_TABLE =
+      DB_SCHEMA + PREVIOUS_ADJUSTED_CONSUMPTIONS;
+  static final String REQUISITION_LINE_ITEMS_TABLE = DB_SCHEMA + REQUISITION_LINE_ITEMS;
+  static final String REQUISITION_TEMPLATE_ASSIGNMENTS_TABLE =
+      DB_SCHEMA + REQUISITION_TEMPLATE_ASSIGNMENTS;
+  static final String REQUISITION_TEMPLATES_TABLE = DB_SCHEMA + REQUISITION_TEMPLATES;
+  static final String REQUISITIONS_TABLE = DB_SCHEMA + REQUISITIONS;
+  static final String STATUS_CHANGES_TABLE = DB_SCHEMA + STATUS_CHANGES;
+  static final String STATUS_MESSAGES_TABLE = DB_SCHEMA + STATUS_MESSAGES;
+  static final String STOCK_ADJUSTMENT_REASONS_TABLE = DB_SCHEMA + STOCK_ADJUSTMENT_REASONS;
+  static final String STOCK_ADJUSTMENTS_TABLE = DB_SCHEMA + STOCK_ADJUSTMENTS;
+  static final String TEMPLATE_PARAMETERS_TABLE = DB_SCHEMA + TEMPLATE_PARAMETERS;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + COLUMNS_MAPS + FILE_EXTENSION)
+  private Resource columnsMapsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + JASPER_TEMPLATE_PARAMETER_DEPENDENCIES
+      + FILE_EXTENSION)
+  private Resource jasperTemplateParameterDependenciesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + JASPER_TEMPLATES + FILE_EXTENSION)
+  private Resource jasperTemplatesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + PREVIOUS_ADJUSTED_CONSUMPTIONS + FILE_EXTENSION)
+  private Resource previousAdjustedConsumptionsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REQUISITION_LINE_ITEMS + FILE_EXTENSION)
+  private Resource requisitionLineItemsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REQUISITION_TEMPLATE_ASSIGNMENTS + FILE_EXTENSION)
+  private Resource requisitionTemplateAssignmentsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REQUISITION_TEMPLATES + FILE_EXTENSION)
+  private Resource requisitionTemplatesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REQUISITIONS + FILE_EXTENSION)
+  private Resource requisitionsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + STATUS_CHANGES + FILE_EXTENSION)
+  private Resource statusChangesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + STATUS_MESSAGES + FILE_EXTENSION)
+  private Resource statusMessagesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + STOCK_ADJUSTMENT_REASONS + FILE_EXTENSION)
+  private Resource stockAdjustmentReasonsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + STOCK_ADJUSTMENTS + FILE_EXTENSION)
+  private Resource stockAdjustmentsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + TEMPLATE_PARAMETERS + FILE_EXTENSION)
+  private Resource templateParametersResource;
 
   @Value(value = DB_MIGRATION_PATH
       + "20170822230153657__generate_requisition_permission_strings.sql")
-  private Resource generateRequisitionPermissionStrings;
+  private Resource generateRequisitionPermissionStringsResource;
+
+  private JdbcTemplate template;
+  private Resource2Db loader;
 
   @Autowired
-  private JdbcTemplate template;
+  public TestDataInitializer(JdbcTemplate template) {
+    this(template, new Resource2Db(template));
+  }
+
+  TestDataInitializer(JdbcTemplate template, Resource2Db loader) {
+    this.template = template;
+    this.loader = loader;
+  }
 
   /**
-   * Initializes test data.in
+   * Initializes test data.
    * @param args command line arguments
    */
   public void run(String... args) throws IOException {
     XLOGGER.entry();
 
-    Resource2Db r2db = new Resource2Db(template);
+    loader.insertToDbFromCsv(REQUISITION_TEMPLATES_TABLE, requisitionTemplatesResource);
+    loader.insertToDbFromCsv(COLUMNS_MAPS_TABLE, columnsMapsResource);
+    loader.insertToDbFromCsv(
+        REQUISITION_TEMPLATE_ASSIGNMENTS_TABLE, requisitionTemplateAssignmentsResource);
 
-    r2db.insertToDbFromCsv("requisition.requisitions", requisitions);
-    r2db.insertToDbFromCsv("requisition.requisition_line_items", requisitionLineItems);
-    r2db.insertToDbFromCsv("requisition.stock_adjustments", stockAdjustments);
-    r2db.insertToDbFromCsv("requisition.stock_adjustment_reasons", stockAdjustmentReasons);
+    loader.insertToDbFromCsv(REQUISITIONS_TABLE, requisitionsResource);
+    loader.insertToDbFromCsv(STATUS_CHANGES_TABLE, statusChangesResource);
+    loader.insertToDbFromCsv(STATUS_MESSAGES_TABLE, statusMessagesResource);
+    loader.insertToDbFromCsv(STOCK_ADJUSTMENT_REASONS_TABLE, stockAdjustmentReasonsResource);
+    loader.insertToDbFromCsv(REQUISITION_LINE_ITEMS_TABLE, requisitionLineItemsResource);
+    loader.insertToDbFromCsv(
+        PREVIOUS_ADJUSTED_CONSUMPTIONS_TABLE, previousAdjustedConsumptionsResource);
+    loader.insertToDbFromCsv(STOCK_ADJUSTMENTS_TABLE, stockAdjustmentsResource);
+
+    loader.insertToDbFromCsv(JASPER_TEMPLATES_TABLE, jasperTemplatesResource);
+    loader.insertToDbFromCsv(TEMPLATE_PARAMETERS_TABLE, templateParametersResource);
+    loader.insertToDbFromCsv(
+        JASPER_TEMPLATE_PARAMETER_DEPENDENCIES_TABLE, jasperTemplateParameterDependenciesResource);
 
     template.update("DELETE FROM requisition.requisition_permission_strings;");
-    r2db.updateDbFromSqlSingle(generateRequisitionPermissionStrings);
+    loader.updateDbFromSqlSingle(generateRequisitionPermissionStringsResource);
 
     XLOGGER.exit();
   }
+
 }

@@ -18,6 +18,7 @@ package org.openlmis.requisition;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
+import org.flywaydb.core.api.callback.FlywayCallback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
 import org.javers.core.diff.ListCompareAlgorithm;
@@ -58,6 +59,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 @EntityScan(basePackageClasses = {BaseEntity.class})
 @EnableScheduling
 @EnableAsync
+@SuppressWarnings("PMD.TooManyMethods")
 public class Application {
   private Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -181,9 +183,15 @@ public class Application {
   public FlywayMigrationStrategy cleanMigrationStrategy() {
     return flyway -> {
       logger.info("Using clean-migrate flyway strategy -- production profile not active");
+      flyway.setCallbacks(flywayCallback());
       flyway.clean();
       flyway.migrate();
     };
+  }
+
+  @Bean
+  public FlywayCallback flywayCallback() {
+    return new ExportSchemaFlywayCallback();
   }
 
   @Bean
