@@ -156,8 +156,8 @@ pipeline {
                             slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
                             mail subject: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED",
                                  body: """<p>"${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED</p><p>"<a href="${env.BUILD_URL}">Open</a>" console output</p>""",
-                                 to: "${GIT_AUTHOR_EMAIL}",
-                                 from: "${env.MAIL_ADDRESS}"   
+                                 to: "${env.CHANGE_AUTHOR_EMAIL}",
+                                 from: "${env.MAIL_ADDRESS}"
                         }
                     }
                 }
