@@ -69,7 +69,9 @@ pipeline {
                 }
                 failure {
                     slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
-                    emailext recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                    emailext subject: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED",
+                            body: """<p>"${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED</p><p>"<a href="${env.BUILD_URL}">Open</a>" console output</p>""",
+                            recipientProviders: [[$class: 'DevelopersRecipientProvider']]
                 }
                 always {
                     checkstyle pattern: '**/build/reports/checkstyle/*.xml'
@@ -155,7 +157,9 @@ pipeline {
                     post {
                         failure {
                             slackSend color: 'danger', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED (<${env.BUILD_URL}|Open>)"
-                            emailext recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                            emailext subject: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED",
+                                    body: """<p>"${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} FAILED</p><p>"<a href="${env.BUILD_URL}">Open</a>" console output</p>""",
+                                    recipientProviders: [[$class: 'DevelopersRecipientProvider']]
                         }
                     }
                 }
