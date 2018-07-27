@@ -37,10 +37,11 @@ public class RequisitionForConvertComparator implements
     Comparator<RequisitionWithSupplyingDepotsDto> {
 
   private static final Map<String, BeanComparator> AVAILABLE_COMPARATORS;
+  private static final String EMERGENCY = "emergency";
 
   static {
     AVAILABLE_COMPARATORS = Maps.newHashMap();
-    AVAILABLE_COMPARATORS.put("emergency", new BeanComparator("emergency"));
+    AVAILABLE_COMPARATORS.put(EMERGENCY, new BeanComparator(EMERGENCY));
     AVAILABLE_COMPARATORS.put("programName", new BeanComparator("program.name"));
     AVAILABLE_COMPARATORS.put("facilityCode", new BeanComparator("facility.code"));
     AVAILABLE_COMPARATORS.put("facilityName", new BeanComparator("facility.name"));
@@ -58,7 +59,7 @@ public class RequisitionForConvertComparator implements
 
     if (null == sort) {
       sort = new Sort(
-          new Sort.Order(DESC, "emergency"), new Sort.Order(ASC, "programName")
+          new Sort.Order(DESC, EMERGENCY), new Sort.Order(ASC, "programName")
       );
     }
 
