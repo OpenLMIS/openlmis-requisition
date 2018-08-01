@@ -123,6 +123,25 @@ public class StockOnHandValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectIfStockOnHandIsIncorrectlyCalculatedAndPopulatedFromStockCards() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder().buildWithIncorrectStockOnHand())
+        .setTemplate(new RequisitionTemplateDataBuilder()
+            .withAllColumns()
+            .withPopulateStockOnHandFromStockCards()
+            .build())
+        .build();
+
+    StockOnHandValidator validator =
+        new StockOnHandValidator(requisition, requisition.getTemplate());
+
+    Map<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(0);
+  }
+
+  @Test
   public void shouldNotRejectIfStockOnHandIsCorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())

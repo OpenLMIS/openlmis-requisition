@@ -44,7 +44,9 @@ class StockOnHandValidator extends AbstractRegularRequisitionFullSupplyLineItemV
 
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
                                             RequisitionLineItem item) {
-    validateCalculations(errors, item);
+    if (!requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
+      validateCalculations(errors, item);
+    }
     rejectIfNullOrNegative(errors, requisitionTemplate, item.getStockOnHand(), STOCK_ON_HAND);
   }
 
