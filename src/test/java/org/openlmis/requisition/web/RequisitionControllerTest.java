@@ -21,6 +21,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Maps.newHashMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.RequisitionTemplate.ORDER_RELATED_COLUMNS;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT;
 import static org.openlmis.requisition.web.BaseController.API_URL;
@@ -67,6 +69,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -1064,6 +1067,36 @@ public class RequisitionControllerTest {
     verify(supervisoryNodeReferenceDataService, never())
         .findSupervisoryNode(any(UUID.class), any(UUID.class));
     assertNull(requisition.getSupervisoryNodeId());
+  }
+  
+  @Test
+  public void findRequisitionShouldHaveHiddenColumnsInTemplateForReportOnlyRequisition() {
+    //given
+    RequisitionTemplate repositoryTemplate = new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .withAdditionalQuantityRequiredColumnDisplayed()
+        .build();
+    Requisition repositoryRequisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+    repositoryRequisition.setReportOnly(true);
+    repositoryRequisition.setTemplate(repositoryTemplate);
+    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(repositoryRequisition);
+
+    //when
+    Requisition foundRequisition = requisitionController.findRequisition(UUID.randomUUID(),
+        mock(Profiler.class));
+
+    //then
+    RequisitionTemplate foundTemplate = foundRequisition.getTemplate();
+    for (String columnName : ORDER_RELATED_COLUMNS) {
+      try {
+        assertNotEquals(
+            repositoryTemplate.findColumn(columnName).getIsDisplayed(),
+            foundTemplate.findColumn(columnName).getIsDisplayed());
+      } catch (ValidationMessageException vme) {
+        assertTrue(vme.getMessage().contains("requisition.error.columnNotInTemplate"));
+      }
+    }
   }
 
   private void mockDependenciesForSubmit() {

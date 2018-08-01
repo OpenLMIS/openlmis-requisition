@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
@@ -312,9 +314,15 @@ public abstract class BaseRequisitionController extends BaseController {
 
   Requisition findRequisition(UUID requisitionId, Profiler profiler) {
     profiler.start("GET_REQUISITION_BY_ID");
-    return findResource(
+    Requisition requisition = findResource(
         profiler, requisitionId, requisitionRepository::findOne, ERROR_REQUISITION_NOT_FOUND
     );
+    if (null != requisition && isTrue(requisition.getReportOnly())) {
+      RequisitionTemplate templateCopy = new RequisitionTemplate(requisition.getTemplate());
+      templateCopy.hideOrderRelatedColumns();
+      requisition.setTemplate(templateCopy);
+    }
+    return requisition;
   }
 
   FacilityDto findFacility(UUID facilityId, Profiler profiler) {
