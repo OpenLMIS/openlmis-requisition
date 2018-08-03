@@ -20,7 +20,5 @@ SELECT
 	t.id, a.id, a.definition, c.count + 1, a.indicator, false, a.label, a.name, NULL, 0, a.name, NULL
 FROM
 	requisition.requisition_templates AS t
-	INNER JOIN (SELECT requisitiontemplateid, count(*) FROM requisition.columns_maps GROUP BY requisitiontemplateid) AS c ON c.requisitiontemplateid = t.id,
-	requisition.available_requisition_columns AS a
-WHERE
-	a.name = 'additionalQuantityRequired';
+	INNER JOIN (SELECT requisitiontemplateid, count(*) FROM requisition.columns_maps GROUP BY requisitiontemplateid) AS c ON c.requisitiontemplateid = t.id
+	INNER JOIN requisition.available_requisition_columns AS a ON a.name = 'additionalQuantityRequired';
