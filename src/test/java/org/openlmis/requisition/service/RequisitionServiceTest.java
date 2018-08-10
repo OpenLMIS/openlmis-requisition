@@ -431,6 +431,20 @@ public class RequisitionServiceTest {
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
   }
 
+  @Test
+  public void shouldSetNullToSupervisoryNodeWhileRejectingRequisition() {
+    requisition.setStatus(AUTHORIZED);
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
+    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
+
+    assertEquals(returnedRequisition.getStatus(), REJECTED);
+    assertNull(returnedRequisition.getSupervisoryNodeId());
+  }
+
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {

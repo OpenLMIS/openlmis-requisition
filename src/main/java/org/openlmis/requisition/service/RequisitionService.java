@@ -308,6 +308,7 @@ public class RequisitionService {
 
       LOGGER.debug("Requisition rejected: {}", requisition.getId());
       requisition.reject(orderables, userId);
+      requisition.setSupervisoryNodeId(null);
       saveStatusMessage(requisition, currentUser);
       return requisitionRepository.save(requisition);
     } else {

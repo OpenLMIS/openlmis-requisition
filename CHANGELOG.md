@@ -39,6 +39,7 @@ Bug fixes:
 * [OLMIS-3288](https://openlmis.atlassian.net/browse/OLMIS-3288): Fix period select issues in the Timeliness and Reporting Rate reports
 * [OLMIS-4639](https://openlmis.atlassian.net/browse/OLMIS-4639): Made Requisition's numberOfMonthsInPeriod field as invariant
 * [OLMIS-4768](https://openlmis.atlassian.net/browse/OLMIS-4768): Fixed duplicate status changes check for programs with skip authorization step enabled
+* [OLMIS-5242](https://openlmis.atlassian.net/browse/OLMIS-5242): Added supervisory node reset after rejection
 
 6.0.0 / 2018-04-24
 ==================
