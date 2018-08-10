@@ -709,6 +709,40 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldInitiateReportOnlyRequisition() {
+    prepareForTestInitiate(SETTING);
+    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+        .thenReturn(singletonList(new ProcessingPeriodDto()));
+    mockPreviousRequisition();
+    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+
+    processingPeriod.setExtraData(ImmutableMap.of("reportOnly", "true"));
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        program, facility, processingPeriod, false,
+        stockAdjustmentReasons, requisitionTemplate);
+
+    assertTrue(initiatedRequisition.getReportOnly());
+  }
+
+  @Test
+  public void shouldNotInitiateReportOnlyRequisitionIfItIsEmergency() {
+    prepareForTestInitiate(SETTING);
+    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+        .thenReturn(singletonList(new ProcessingPeriodDto()));
+    mockPreviousRequisition();
+    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+
+    processingPeriod.setExtraData(ImmutableMap.of("reportOnly", "true"));
+
+    Requisition initiatedRequisition = requisitionService.initiate(
+        program, facility, processingPeriod, true,
+        stockAdjustmentReasons, requisitionTemplate);
+
+    assertFalse(initiatedRequisition.getReportOnly());
+  }
+
+  @Test
   public void shouldInitiatePreviousAdjustedConsumptionsBasedOnRegularRequisitions() {
     prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
