@@ -624,6 +624,48 @@ public class RequisitionControllerTest {
   }
 
   @Test
+  public void initiateEmergencyRequisitionShouldFindRegularTemplateIfPeriodIsReportOnly() {
+    //given
+    when(permissionService.canInitRequisition(programUuid, facilityUuid))
+        .thenReturn(ValidationResult.success());
+    UUID facilityTypeId = UUID.randomUUID();
+    FacilityTypeDto facilityType = mock(FacilityTypeDto.class);
+    when(facilityReferenceDataService.findOne(facilityUuid)).thenReturn(facility);
+    when(facility.getType()).thenReturn(facilityType);
+    when(facilityType.getId()).thenReturn(facilityTypeId);
+    ProgramDto program = new ProgramDto();
+    program.setId(programUuid);
+    when(programReferenceDataService.findOne(programUuid)).thenReturn(program);
+    doNothing().when(facilitySupportsProgramHelper).checkIfFacilitySupportsProgram(
+        any(FacilityDto.class), eq(programUuid));
+    when(validReasonStockmanagementService.search(programUuid, facilityTypeId))
+        .thenReturn(Collections.emptyList());
+    Requisition requisition = mock(Requisition.class);
+    when(requisitionService.initiate(any(ProgramDto.class), any(FacilityDto.class),
+        any(ProcessingPeriodDto.class), eq(true), anyListOf(StockAdjustmentReason.class),
+        any(RequisitionTemplate.class))).thenReturn(requisition);
+    when(requisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
+    doNothing().when(reasonsValidator).validate(anyListOf(StockAdjustmentReason.class),
+        any(RequisitionTemplate.class));
+    RequisitionDto requisitionDto = new RequisitionDto();
+    requisitionDto.setId(UUID.randomUUID());
+    when(requisitionDtoBuilder.build(any(Requisition.class),
+        anyMapOf(UUID.class, OrderableDto.class), any(FacilityDto.class), any(ProgramDto.class),
+        any(ProcessingPeriodDto.class)))
+        .thenReturn(requisitionDto);
+
+    when(periodService.findPeriod(programUuid, facilityUuid, null, true))
+        .thenReturn(processingPeriod);
+    when(processingPeriod.isReportOnly()).thenReturn(true);
+
+    //when
+    requisitionController.initiate(programUuid, facilityUuid, null, true, request, response);
+
+    //then
+    verify(requisitionTemplateService).findTemplate(programUuid, facilityTypeId, false);
+  }
+
+  @Test
   public void shouldApproveRequisitionWithIdempotencyKey() {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
     UUID parentNodeId = UUID.randomUUID();
