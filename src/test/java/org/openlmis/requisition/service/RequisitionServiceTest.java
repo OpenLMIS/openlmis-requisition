@@ -740,7 +740,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldNotInitiateReportOnlyRequisitionIfItIsEmergency() {
+  public void shouldInitiateRegularRequisitionIfItIsEmergencyForReportOnlyPeriod() {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
