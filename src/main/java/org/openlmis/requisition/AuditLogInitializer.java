@@ -80,7 +80,7 @@ public class AuditLogInitializer implements CommandLineRunner {
       if (bean instanceof PagingAndSortingRepository) {
         createSnapshots((BaseRepository<?, ?>) bean);
       } else if (bean instanceof CrudRepository) {
-        createSnapshots((BaseRepository<?, ?>) bean);
+        createSnapshots((BaseCrudRepository<?, ?>) bean);
       }
     }
 
