@@ -18,10 +18,10 @@ package org.openlmis.requisition;
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 
 import org.javers.core.Javers;
-import org.javers.core.metamodel.object.CdoSnapshot;
-import org.javers.repository.jql.QueryBuilder;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.repository.BaseCrudRepository;
+import org.openlmis.requisition.repository.BaseRepository;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -37,7 +37,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -79,9 +78,9 @@ public class AuditLogInitializer implements CommandLineRunner {
       Object bean = entry.getValue();
       profiler.start("CREATE_SNAPSHOTS_OF_" + beanName);
       if (bean instanceof PagingAndSortingRepository) {
-        createSnapshots((PagingAndSortingRepository<?, ?>) bean);
+        createSnapshots((BaseRepository<?, ?>) bean);
       } else if (bean instanceof CrudRepository) {
-        createSnapshots((CrudRepository<?, ?>) bean);
+        createSnapshots((BaseRepository<?, ?>) bean);
       }
     }
 
@@ -89,11 +88,11 @@ public class AuditLogInitializer implements CommandLineRunner {
     LOGGER.exit();
   }
 
-  private void createSnapshots(PagingAndSortingRepository<?, ?> repository) {
+  private void createSnapshots(BaseRepository<?, ?> repository) {
     Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
 
     while (true) {
-      Page<?> page = repository.findAll(pageable);
+      Page<?> page = repository.findAllWithoutSnapshots(pageable);
 
       if (!page.hasContent()) {
         break;
@@ -105,9 +104,9 @@ public class AuditLogInitializer implements CommandLineRunner {
     }
   }
 
-  private void createSnapshots(CrudRepository<?, ?> repository) {
+  private void createSnapshots(BaseCrudRepository<?, ?> repository) {
     //... retrieve all of its domain objects and...
-    repository.findAll().forEach(this::createSnapshot);
+    repository.findAllWithoutSnapshots().forEach(this::createSnapshot);
   }
 
   private void createSnapshot(Object object) {
@@ -116,13 +115,6 @@ public class AuditLogInitializer implements CommandLineRunner {
     // and thus use findSnapshots() rather than findChanges()
     BaseEntity baseEntity = (BaseEntity) object;
 
-    QueryBuilder jqlQuery = QueryBuilder.byInstanceId(baseEntity.getId(), object.getClass());
-    List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery.build());
-
-    //If there are no snapshots of the domain object, then take one
-    if (snapshots.isEmpty()) {
-      javers.commit("System: AuditLogInitializer", baseEntity);
-    }
+    javers.commit("System: AuditLogInitializer", baseEntity);
   }
-
 }

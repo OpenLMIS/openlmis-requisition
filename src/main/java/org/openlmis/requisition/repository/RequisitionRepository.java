@@ -20,18 +20,57 @@ import java.util.UUID;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 @JaversSpringDataAuditable
 public interface RequisitionRepository extends
     JpaRepository<Requisition, UUID>,
-    RequisitionRepositoryCustom {
+    RequisitionRepositoryCustom,
+    BaseRepository<Requisition, UUID>,
+    BaseCrudRepository<Requisition, UUID> {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 
   @EntityGraph(attributePaths = { "requisitionLineItems" }, type = EntityGraphType.LOAD)
   List<Requisition> readDistinctByIdIn(Iterable<UUID> ids);
 
+  @Query(value = "SELECT\n"
+      + "    r.*\n"
+      + "FROM\n"
+      + "    requisition.requisitions r\n"
+      + "WHERE\n"
+      + "    id NOT IN (\n"
+      + "        SELECT\n"
+      + "            id\n"
+      + "        FROM\n"
+      + "            requisition.requisitions r\n"
+      + "            INNER JOIN requisition.jv_global_id g "
+      + "ON CAST(r.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
+      + "            INNER JOIN requisition.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
+      + "    )\n"
+      + " ORDER BY ?#{#pageable}",
+      nativeQuery = true)
+  Page<Requisition> findAllWithoutSnapshots(Pageable pageable);
+
+  @Query(value = "SELECT\n"
+      + "    r.*\n"
+      + "FROM\n"
+      + "    requisition.requisitions r\n"
+      + "WHERE\n"
+      + "    id NOT IN (\n"
+      + "        SELECT\n"
+      + "            id\n"
+      + "        FROM\n"
+      + "            requisition.requisitions r\n"
+      + "            INNER JOIN requisition.jv_global_id g "
+      + "ON CAST(r.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
+      + "            INNER JOIN requisition.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
+      + "    )\n",
+      nativeQuery = true)
+  Iterable<Requisition> findAllWithoutSnapshots();
 }
