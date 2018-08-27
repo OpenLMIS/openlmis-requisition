@@ -1,5 +1,11 @@
+7.0.1 / WIP
+==================
+
+Improvements:
+* [OLMIS-4295](https://openlmis.atlassian.net/browse/OLMIS-4295): Updated checkstyle to use newest google style.
+
 7.0.0 / 2018-08-16
-===========
+==================
 
 Contract breaking changes:
 * [OLMIS-3162](https://openlmis.atlassian.net/browse/OLMIS-3162): Make periodsForInitiate endpoint self-sufficient to determine available actions.
