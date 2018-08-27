@@ -22,7 +22,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 @NoRepositoryBean
-public interface BaseRepository<T, I extends Serializable>
+public interface BaseAuditableRepository<T, I extends Serializable>
     extends PagingAndSortingRepository<T, I> {
 
   Page<T> findAllWithoutSnapshots(Pageable pageable);

@@ -20,8 +20,7 @@ import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 import org.javers.core.Javers;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.BaseEntity;
-import org.openlmis.requisition.repository.BaseCrudRepository;
-import org.openlmis.requisition.repository.BaseRepository;
+import org.openlmis.requisition.repository.BaseAuditableRepository;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -33,8 +32,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -77,18 +74,14 @@ public class AuditLogInitializer implements CommandLineRunner {
       String beanName = entry.getKey();
       Object bean = entry.getValue();
       profiler.start("CREATE_SNAPSHOTS_OF_" + beanName);
-      if (bean instanceof PagingAndSortingRepository) {
-        createSnapshots((BaseRepository<?, ?>) bean);
-      } else if (bean instanceof CrudRepository) {
-        createSnapshots((BaseCrudRepository<?, ?>) bean);
-      }
+      createSnapshots((BaseAuditableRepository<?, ?>) bean);
     }
 
     profiler.stop().log();
     LOGGER.exit();
   }
 
-  private void createSnapshots(BaseRepository<?, ?> repository) {
+  private void createSnapshots(BaseAuditableRepository<?, ?> repository) {
     Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
 
     while (true) {
@@ -102,11 +95,6 @@ public class AuditLogInitializer implements CommandLineRunner {
 
       pageable = pageable.next();
     }
-  }
-
-  private void createSnapshots(BaseCrudRepository<?, ?> repository) {
-    //... retrieve all of its domain objects and...
-    repository.findAllWithoutSnapshots().forEach(this::createSnapshot);
   }
 
   private void createSnapshot(Object object) {

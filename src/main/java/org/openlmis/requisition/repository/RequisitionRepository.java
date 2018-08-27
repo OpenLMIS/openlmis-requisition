@@ -32,8 +32,7 @@ import org.springframework.data.repository.query.Param;
 public interface RequisitionRepository extends
     JpaRepository<Requisition, UUID>,
     RequisitionRepositoryCustom,
-    BaseRepository<Requisition, UUID>,
-    BaseCrudRepository<Requisition, UUID> {
+    BaseAuditableRepository<Requisition, UUID> {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 
   @EntityGraph(attributePaths = { "requisitionLineItems" }, type = EntityGraphType.LOAD)
@@ -56,21 +55,4 @@ public interface RequisitionRepository extends
       + " ORDER BY ?#{#pageable}",
       nativeQuery = true)
   Page<Requisition> findAllWithoutSnapshots(Pageable pageable);
-
-  @Query(value = "SELECT\n"
-      + "    r.*\n"
-      + "FROM\n"
-      + "    requisition.requisitions r\n"
-      + "WHERE\n"
-      + "    id NOT IN (\n"
-      + "        SELECT\n"
-      + "            id\n"
-      + "        FROM\n"
-      + "            requisition.requisitions r\n"
-      + "            INNER JOIN requisition.jv_global_id g "
-      + "ON CAST(r.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
-      + "            INNER JOIN requisition.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
-      + "    )\n",
-      nativeQuery = true)
-  Iterable<Requisition> findAllWithoutSnapshots();
 }

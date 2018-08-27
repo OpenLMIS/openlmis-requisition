@@ -26,21 +26,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.requisition.dto.CodeDto;
+import org.openlmis.requisition.web.BaseWebIntegrationTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@SpringApplicationConfiguration(Application.class)
-public class JaVersIntegrationTest {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+public class JaVersIntegrationTest extends BaseWebIntegrationTest {
 
   @Autowired
   private Javers javers;
@@ -83,5 +85,6 @@ public class JaVersIntegrationTest {
 
     int delta = Math.abs(Seconds.secondsBetween(commitTime1, commitTime2).getSeconds());
     assertTrue(delta < 1);
+
   }
 }
