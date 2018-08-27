@@ -15,8 +15,8 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import org.openlmis.requisition.utils.Message;
 import java.util.Map;
+import org.openlmis.requisition.utils.Message;
 
 abstract class AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator
     extends AbstractRegularRequisitionFullSupplyLineItemValidator {

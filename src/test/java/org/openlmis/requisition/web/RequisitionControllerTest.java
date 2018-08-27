@@ -695,7 +695,7 @@ public class RequisitionControllerTest {
     when(parentNode.getId()).thenReturn(parentNodeId);
     when(supervisoryNode.getParentNode()).thenReturn(parentNode);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
-    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn( wrongUuidFormat);
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
     setUpApprover();
 
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);

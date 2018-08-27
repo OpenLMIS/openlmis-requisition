@@ -19,11 +19,11 @@ import static org.openlmis.requisition.domain.requisition.Requisition.DATE_PHYSI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_STOCK_COUNT_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
-import lombok.AllArgsConstructor;
-import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
+import lombok.AllArgsConstructor;
+import org.openlmis.requisition.utils.Message;
 
 @AllArgsConstructor
 class DatePhysicalStockCountCompletedValidator

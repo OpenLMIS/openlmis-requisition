@@ -5,17 +5,18 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_TAG_NOT_SET;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
@@ -39,8 +40,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_I
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.SourceType;
@@ -54,10 +57,6 @@ import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 @Component
 @SuppressWarnings("PMD.TooManyMethods")
@@ -318,7 +317,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
             ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY,
             TOTAL_STOCKOUT_DAYS);
       }
-    } else if ( template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)) {
+    } else if (template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)) {
       rejectValue(errors, ADDITIONAL_QUANTITY_REQUIRED,
           new Message(ERROR_ADJUSTED_CONSUMPTION_MUST_BE_DISPLAYED_WITH_ADDITIONAL_QUANTITY));
     }

@@ -17,9 +17,9 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
+import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
-import java.util.Map;
 
 class TotalReceivedQuantityValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {

@@ -5,18 +5,27 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.domain.requisition;
 
 import static java.util.Objects.isNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,15 +36,6 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -78,7 +78,7 @@ public class StockAdjustmentReason extends BaseEntity {
   }
 
   /**
-   * Create a new list of Stock Adjustment Reason based on data from {@link Importer}s
+   * Create a new list of Stock Adjustment Reason based on data from {@link Importer}.
    *
    * @param importerList list of {@link Importer}
    * @return new list of Stock Adjustment Reason.
@@ -94,7 +94,7 @@ public class StockAdjustmentReason extends BaseEntity {
   }
 
   /**
-   * Create a new instance of Stock Adjustment Reason based on data from {@link Importer}
+   * Create a new instance of Stock Adjustment Reason based on data from {@link Importer}.
    *
    * @param importer instance of {@link Importer}
    * @return new instance of Stock Adjustment Reason.

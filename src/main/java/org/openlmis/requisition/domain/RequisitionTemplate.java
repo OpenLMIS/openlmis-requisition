@@ -271,6 +271,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
+   * Changes display flag of given column.
    * @param key     Key to column which needs a new display property.
    * @param display Should column be displayed.
    */
@@ -285,6 +286,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
+   * Changes label of given column.
    * @param key  Key to column which needs a new name.
    * @param name New name for label.
    */
@@ -414,7 +416,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   /**
    * Create a new instance of requisiton template based on data
-   * from {@link RequisitionTemplate.Importer}
+   * from {@link RequisitionTemplate.Importer}.
    *
    * @param importer instance of {@link RequisitionTemplate.Importer}
    * @return new instance od template.

@@ -347,7 +347,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Initiates the state of a requisition by creating line items based on products
+   * Initiates the state of a requisition by creating line items based on products.
    *
    * @param template             the requisition template for this requisition to use (based on
    *                             program)

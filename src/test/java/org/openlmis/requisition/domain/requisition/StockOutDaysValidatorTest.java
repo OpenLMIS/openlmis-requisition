@@ -22,11 +22,11 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT_BE_GREATER_THAN_LENGTH_OF_PERIOD;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
-import org.junit.Test;
-import org.openlmis.requisition.utils.Message;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Test;
+import org.openlmis.requisition.utils.Message;
 
 public class StockOutDaysValidatorTest {
 

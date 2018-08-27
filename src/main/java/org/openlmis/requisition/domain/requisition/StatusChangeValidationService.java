@@ -18,15 +18,15 @@ package org.openlmis.requisition.domain.requisition;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.utils.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StatusChangeValidationService {
 

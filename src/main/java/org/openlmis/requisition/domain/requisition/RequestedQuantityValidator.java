@@ -20,14 +20,12 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 
+import java.util.Map;
+import java.util.Objects;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang.BooleanUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
-
-import lombok.AllArgsConstructor;
-
-import java.util.Map;
-import java.util.Objects;
 
 @AllArgsConstructor
 class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidator {

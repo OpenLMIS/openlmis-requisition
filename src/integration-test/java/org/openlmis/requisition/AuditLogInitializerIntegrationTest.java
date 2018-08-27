@@ -27,7 +27,6 @@ import org.javers.repository.jql.QueryBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.requisition.domain.requisition.Requisition;
-
 import org.openlmis.requisition.dto.CodeDto;
 import org.openlmis.requisition.web.BaseWebIntegrationTest;
 import org.springframework.beans.factory.annotation.Autowired;

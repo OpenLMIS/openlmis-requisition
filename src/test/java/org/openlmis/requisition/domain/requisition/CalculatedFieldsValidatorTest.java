@@ -22,10 +22,10 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 
-import org.junit.Test;
-import org.openlmis.requisition.utils.Message;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Test;
+import org.openlmis.requisition.utils.Message;
 
 public class CalculatedFieldsValidatorTest {
 

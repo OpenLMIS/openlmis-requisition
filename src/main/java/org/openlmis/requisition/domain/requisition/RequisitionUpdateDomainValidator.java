@@ -18,9 +18,9 @@ package org.openlmis.requisition.domain.requisition;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_IS_CALCULATED;
 
+import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
-import java.util.Map;
 
 /**
  * Interface that all domain validators should implement.

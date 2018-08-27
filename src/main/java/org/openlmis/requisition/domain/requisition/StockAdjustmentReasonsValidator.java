@@ -18,12 +18,12 @@ package org.openlmis.requisition.domain.requisition;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 
-import lombok.AllArgsConstructor;
-import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import org.openlmis.requisition.utils.Message;
 
 @AllArgsConstructor
 class StockAdjustmentReasonsValidator implements RequisitionUpdateDomainValidator {

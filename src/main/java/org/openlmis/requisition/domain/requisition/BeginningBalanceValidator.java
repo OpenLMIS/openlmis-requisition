@@ -17,9 +17,9 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 
+import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
-import java.util.Map;
 
 class BeginningBalanceValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {

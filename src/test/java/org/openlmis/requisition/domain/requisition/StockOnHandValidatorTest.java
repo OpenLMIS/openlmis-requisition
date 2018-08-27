@@ -25,13 +25,13 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
 
 public class StockOnHandValidatorTest {
 

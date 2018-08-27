@@ -21,9 +21,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_HIDDEN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
+import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.utils.Message;
-import java.util.Map;
 
 /**
  * Interface that all domain validators should implement.

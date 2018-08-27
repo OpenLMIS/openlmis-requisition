@@ -17,8 +17,8 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 
-import org.openlmis.requisition.utils.Message;
 import java.util.Map;
+import org.openlmis.requisition.utils.Message;
 
 class NumberOfNewPatientsAddedValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {

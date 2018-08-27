@@ -20,11 +20,11 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NON_NEGATIVE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCK_ADJUSTMENT_NOT_FOUND;
 
+import java.util.HashMap;
+import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.utils.Message;
-import java.util.HashMap;
-import java.util.UUID;
 
 public class StockAdjustmentsValidatorTest {
 

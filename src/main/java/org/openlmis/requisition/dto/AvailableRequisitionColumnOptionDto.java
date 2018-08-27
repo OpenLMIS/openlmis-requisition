@@ -5,27 +5,25 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.dto;
 
 import static java.util.Objects.isNull;
 
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 
 @Getter
 @Setter
@@ -41,7 +39,7 @@ public final class AvailableRequisitionColumnOptionDto implements
 
   /**
    * Create new set of AvailableRequisitionColumnOptionDto
-   * based on given set of {@link AvailableRequisitionColumnOption}
+   * based on given set of {@link AvailableRequisitionColumnOption}.
    *
    * @param options set of {@link AvailableRequisitionColumnOption}
    * @return new set of AvailableRequisitionColumnOptionDto.
@@ -59,7 +57,7 @@ public final class AvailableRequisitionColumnOptionDto implements
 
   /**
    * Create new instance of AvailableRequisitionColumnOptionDto based
-   * on given {@link AvailableRequisitionColumnOption}
+   * on given {@link AvailableRequisitionColumnOption}.
    *
    * @param option instance of AvailableRequisitionColumnOption
    * @return new instance of AvailableRequisitionColumnOptionDto.

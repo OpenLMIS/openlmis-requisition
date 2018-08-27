@@ -19,11 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REASON_NOT_IN_REQUISITION_REASON_LIST;
 
+import java.util.HashMap;
+import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.utils.Message;
-import java.util.HashMap;
-import java.util.UUID;
 
 public class StockAdjustmentReasonsValidatorTest {
 

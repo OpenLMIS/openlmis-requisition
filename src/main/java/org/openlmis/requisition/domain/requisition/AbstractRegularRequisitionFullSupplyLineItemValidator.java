@@ -15,9 +15,9 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.openlmis.requisition.utils.Message;
-import java.util.Map;
 
 @AllArgsConstructor
 abstract class AbstractRegularRequisitionFullSupplyLineItemValidator

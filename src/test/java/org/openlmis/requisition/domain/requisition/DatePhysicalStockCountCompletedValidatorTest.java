@@ -15,13 +15,12 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.openlmis.requisition.utils.Message;
 import java.time.LocalDate;
 import java.util.HashMap;
+import org.junit.Test;
+import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class DatePhysicalStockCountCompletedValidatorTest {

@@ -21,10 +21,10 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ST
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
 
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Objects;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.utils.Message;
 
 class StockOnHandValidator extends AbstractRegularRequisitionFullSupplyLineItemValidator {
 

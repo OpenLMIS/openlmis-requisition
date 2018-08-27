@@ -24,10 +24,10 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CA
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE;
 
-import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.utils.Message;
 import java.util.Map;
 import java.util.Objects;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.utils.Message;
 
 class CalculatedFieldsValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {

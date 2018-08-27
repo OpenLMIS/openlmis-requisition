@@ -10,7 +10,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.requisition.utils;
@@ -55,7 +55,7 @@ public class Resource2Db {
   private final JdbcTemplate template;
 
   /**
-   * new with given data connection
+   * New with given data connection.
    * @param template the active {@link JdbcTemplate} to run SQL updates against.
    * @throws NullPointerException if template is null.
    */
@@ -153,18 +153,18 @@ public class Resource2Db {
 
       // read header row
       MutablePair<List<String>, List<Object[]>> readData = new MutablePair<>();
-      readData.setLeft( new ArrayList<>( parser.getHeaderMap().keySet() ) );
-      XLOGGER.info("Read header: " + readData.getLeft() );
+      readData.setLeft(new ArrayList<>(parser.getHeaderMap().keySet()));
+      XLOGGER.info("Read header: " + readData.getLeft());
 
       // read data rows
       List<Object[]> rows = new ArrayList<>();
-      for ( CSVRecord record : parser.getRecords() ) {
-        if ( ! record.isConsistent() ) {
+      for (CSVRecord record : parser.getRecords()) {
+        if (!record.isConsistent()) {
           throw new IllegalArgumentException("CSV record inconsistent: " + record);
         }
 
         List theRow = IteratorUtils.toList(record.iterator());
-        rows.add( theRow.toArray() );
+        rows.add(theRow.toArray());
       }
       readData.setRight(rows);
 

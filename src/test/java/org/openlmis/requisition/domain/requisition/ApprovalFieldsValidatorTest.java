@@ -22,10 +22,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_AVAILABLE_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
-import org.junit.Test;
-import org.openlmis.requisition.utils.Message;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import org.junit.Test;
+import org.openlmis.requisition.utils.Message;
 
 public class ApprovalFieldsValidatorTest {
 
