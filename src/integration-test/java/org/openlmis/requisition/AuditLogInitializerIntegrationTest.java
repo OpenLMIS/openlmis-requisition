@@ -15,17 +15,20 @@
 
 package org.openlmis.requisition;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.mockito.BDDMockito.given;
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.CodeDto;
 import org.openlmis.requisition.web.BaseWebIntegrationTest;
@@ -33,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -44,7 +49,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class AuditLogInitializerIntegrationTest extends BaseWebIntegrationTest {
 
   private List<CdoSnapshot> snapshots;
-  private Requisition requisition;
 
   @Autowired
   private Javers javers;
@@ -53,19 +57,27 @@ public class AuditLogInitializerIntegrationTest extends BaseWebIntegrationTest {
   private AuditLogInitializer auditLogInitializer;
 
   @Test
-  public void shouldReturnNullAfterRequisitionIsCreated() throws IOException {
+  public void shouldReturnEmptyPageAfterRequisitionIsCreated() throws IOException {
     // given
-    requisition = generateRequisition();
+    generateRequisition();
     final Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
+    final Page<Requisition> emptyPage = new PageImpl<>(Collections.emptyList());
 
     //when
-    auditLogInitializer.run();
+    auditLogInitializer.createSnapshots(requisitionRepository);
 
     //then
     snapshots = javers.findSnapshots(QueryBuilder.byClass(CodeDto.class).build());
 
     assertNotNull(snapshots);
-    assertNotNull(requisition);
-    assertNull(requisitionRepository.findAllWithoutSnapshots(pageable));
+    given(requisitionRepository.findAllWithoutSnapshots(pageable)).willReturn(emptyPage);
+  }
+
+  @Test
+  public void shouldReturnNotEmptyPage() throws IOException {
+    final Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
+    Page<Requisition> emptyPage = new PageImpl<>(Collections.emptyList());
+
+    assertNotEquals(requisitionRepository.findAllWithoutSnapshots(pageable), emptyPage);
   }
 }

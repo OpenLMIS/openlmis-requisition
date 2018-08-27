@@ -17,11 +17,17 @@ package org.openlmis.requisition;
 
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 
+import java.util.List;
 import java.util.Map;
 import org.javers.core.Javers;
+import org.javers.core.metamodel.object.CdoSnapshot;
+import org.javers.repository.jql.QueryBuilder;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.exception.JaversExistingEntryException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.BaseAuditableRepository;
+import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -59,6 +65,8 @@ public class AuditLogInitializer implements CommandLineRunner {
    * @param args Main method arguments.
    */
   public void run(String... args) {
+    String warning = "The repository should implement findAllWithoutSnapshots method"
+        + "from BaseAuditableRepository with appropriate query";
     LOGGER.entry();
     Profiler profiler = new Profiler("RUN_AUDIT_LOG_INIT");
     profiler.setLogger(LOGGER);
@@ -73,14 +81,18 @@ public class AuditLogInitializer implements CommandLineRunner {
       String beanName = entry.getKey();
       Object bean = entry.getValue();
       profiler.start("CREATE_SNAPSHOTS_OF_" + beanName);
-      createSnapshots((BaseAuditableRepository<?, ?>) bean);
+      if (bean instanceof BaseAuditableRepository) {
+        createSnapshots((BaseAuditableRepository<?, ?>) bean);
+      } else {
+        LOGGER.warn(warning);
+      }
     }
 
     profiler.stop().log();
     LOGGER.exit();
   }
 
-  private void createSnapshots(BaseAuditableRepository<?, ?> repository) {
+  protected void createSnapshots(BaseAuditableRepository<?, ?> repository) {
     Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
 
     while (true) {
@@ -102,6 +114,13 @@ public class AuditLogInitializer implements CommandLineRunner {
     // and thus use findSnapshots() rather than findChanges()
     BaseEntity baseEntity = (BaseEntity) object;
 
-    javers.commit("System: AuditLogInitializer", baseEntity);
+    QueryBuilder jqlQuery = QueryBuilder.byInstanceId(baseEntity.getId(), object.getClass());
+    List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery.build());
+
+    if (snapshots.isEmpty()) {
+      javers.commit("System: AuditLogInitializer", baseEntity);
+    } else {
+      throw new JaversExistingEntryException(new Message(MessageKeys.ERROR_JAVERS_EXISTING_ENTRY));
+    }
   }
 }

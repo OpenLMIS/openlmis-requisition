@@ -26,6 +26,8 @@ public abstract class MessageKeys {
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.fileCreation";
   public static final String ERROR_JASPER_TEMPLATE_NOT_FOUND = ERROR_PREFIX
       + ".jasper.templateNotFound";
+  public static final String ERROR_JAVERS_EXISTING_ENTRY = ERROR_PREFIX
+      + ".javers.entryAlreadyExists";
   public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
   public static final String ERROR_REPORTING_FILE_EMPTY = ERROR_PREFIX + ".reporting.file.empty";
   public static final String ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID = ERROR_PREFIX
