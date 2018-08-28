@@ -21,12 +21,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class StatusChangeDto implements StatusChange.Exporter {
 
   @Getter

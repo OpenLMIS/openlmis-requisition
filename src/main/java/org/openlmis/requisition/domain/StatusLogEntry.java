@@ -17,11 +17,13 @@ package org.openlmis.requisition.domain;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import lombok.ToString;
 
 /**
  * StatusLogEntry is used to encapsulate data (author and dateTime) associated with a
  * requisition's status change.
  */
+@ToString
 public class StatusLogEntry {
   private UUID authorId;
   private ZonedDateTime changeDate;
