@@ -37,13 +37,15 @@ public class StatusChangeHelper {
     logger.debug("addOrUpdate method");
     logger.debug("statusLogEntries {}", statusLogEntries);
     logger.debug("statusChange {}", statusChange);
-    logger.debug("statusChange.getStatus() {}", statusChange.getStatus());
-    StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
-    // Only add entry if none exists or existing one has later date
-    if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
-      StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
-          statusChange.getCreatedDate());
-      statusLogEntries.put(statusChange.getStatus().toString(), entry);
+
+    if (statusChange.getStatus() != null && statusChange.getCreatedDate() != null) {
+      StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
+      // Only add entry if none exists or existing one has later date
+      if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
+        StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
+            statusChange.getCreatedDate());
+        statusLogEntries.put(statusChange.getStatus().toString(), entry);
+      }
     }
   }
 
