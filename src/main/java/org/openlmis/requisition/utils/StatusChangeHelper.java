@@ -18,8 +18,12 @@ package org.openlmis.requisition.utils;
 import java.util.Map;
 import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.dto.StatusChangeDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StatusChangeHelper {
+
+  private static final Logger logger = LoggerFactory.getLogger(StatusChangeHelper.class);
 
   /**
    * Adds or updates the given status change to the given maps status log entries. It will only
@@ -30,6 +34,9 @@ public class StatusChangeHelper {
    */
   public static void addOrUpdate(Map<String, StatusLogEntry> statusLogEntries,
                                  StatusChangeDto statusChange) {
+    logger.debug("addOrUpdate method");
+    logger.debug("statusLogEntries {}", statusLogEntries);
+    logger.debug("statusChange {}", statusLogEntries);
     StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
     // Only add entry if none exists or existing one has later date
     if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
