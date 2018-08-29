@@ -38,7 +38,9 @@ public class StatusChangeHelper {
     logger.debug("statusLogEntries {}", statusLogEntries);
     logger.debug("statusChange {}", statusChange);
 
-    if (statusChange.getStatus() != null && statusChange.getCreatedDate() != null) {
+    if (statusChange != null
+        && statusChange.getStatus() != null
+        && statusChange.getCreatedDate() != null) {
       StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
       // Only add entry if none exists or existing one has later date
       if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
