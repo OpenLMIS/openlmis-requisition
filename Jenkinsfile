@@ -40,7 +40,7 @@ pipeline {
                     }
                     VERSION = properties.serviceVersion
                     STAGING_VERSION = properties.serviceVersion
-                    if (env.GIT_BRANCH != 'master') {
+                    if (CURRENT_BRANCH != 'master' || (CURRENT_BRANCH == 'master' && !VERSION.endsWith("SNAPSHOT"))) {
                         STAGING_VERSION += "-STAGING"
                     }
                     currentBuild.displayName += " - " + VERSION
@@ -101,7 +101,7 @@ pipeline {
         stage('Deploy to test') {
             when {
                 expression {
-                    return CURRENT_BRANCH == 'master'
+                    return CURRENT_BRANCH == 'master' && VERSION.endsWith("SNAPSHOT")
                 }
             }
             steps {
@@ -198,10 +198,11 @@ pipeline {
             agent any
             when {
                 expression {
-                    env.GIT_BRANCH =~ /rel-.+/
+                    env.GIT_BRANCH =~ /rel-.+/ || (env.GIT_BRANCH == 'master' && !VERSION.endsWith("SNAPSHOT"))
                 }
             }
             steps {
+                sh "docker pull openlmis/requisition:${STAGING_VERSION}"
                 sh "docker tag openlmis/requisition:${STAGING_VERSION} openlmis/requisition:${VERSION}"
                 sh "docker push openlmis/requisition:${VERSION}"
             }
@@ -209,7 +210,7 @@ pipeline {
                 success {
                     script {
                         if (!VERSION.endsWith("SNAPSHOT")) {
-                            currentBuild.rawBuild.keepLog(true)
+                            currentBuild.setKeepLog(true)
                         }
                     }
                 }
