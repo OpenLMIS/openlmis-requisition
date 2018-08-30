@@ -15,69 +15,127 @@
 
 package org.openlmis.requisition;
 
+import static java.util.UUID.fromString;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.BDDMockito.given;
-import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+import org.openlmis.requisition.domain.ColumnType;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.dto.CodeDto;
-import org.openlmis.requisition.web.BaseWebIntegrationTest;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnOptionRepository;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-public class AuditLogInitializerIntegrationTest extends BaseWebIntegrationTest {
+@Transactional
+public class AuditLogInitializerIntegrationTest extends BaseAuditLogInitializerIntegrationTest {
 
   private List<CdoSnapshot> snapshots;
+  private Set<AvailableRequisitionColumnOption> options  = new HashSet<>();
+  private HashMap<String, RequisitionTemplateColumn> columns;
+  private String name = "Default Name";
+
+  private static final String templateId = "'460d7666-aac2-11e8-98d0-529269fb1459'";
+  private final String requisitionTemplateId = "460d7666-aac2-11e8-98d0-529269fb1459";
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private AvailableRequisitionColumnOptionRepository availableRequisitionColumnOptionRepository;
+
+  private static final String INSERT_REQ_SQL = "INSERT INTO "
+      + "requisition.requisitions "
+      + "(id, createddate, modifieddate, draftstatusmessage, "
+      + "emergency, facilityid, numberofmonthsinperiod, "
+      + "processingperiodid, programid, status, supervisorynodeid, "
+      + "supplyingfacilityid, templateid, datephysicalstockcountcompleted, "
+      + "version, reportonly) \n"
+      + " VALUES \n"
+      + "('460d6554-aac2-11e8-98d0-529269fb1459',"
+      + "'2018-08-28 14:00:00', '2018-08-28 14:06:00',"
+      + "'draft-status', false, "
+      + "'460d68f6-aac2-11e8-98d0-529269fb1459',"
+      + "1, '460d6dd8-aac2-11e8-98d0-529269fb1459',"
+      + "'460d7008-aac2-11e8-98d0-529269fb1459', "
+      + "'status', '460d726a-aac2-11e8-98d0-529269fb1459',"
+      + "'460d7472-aac2-11e8-98d0-529269fb1459', "
+      + templateId
+      + ", '2018-08-23', 7784847621901938732, false)";
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Autowired
   private Javers javers;
 
-  @MockBean
-  private AuditLogInitializer auditLogInitializer;
+  @Before
+  public void createQuery() {
+    addRequisitionTemplate();
+    StringBuilder builder = new StringBuilder(INSERT_REQ_SQL);
 
-  @Test
-  public void shouldReturnEmptyPageAfterRequisitionIsCreated() throws IOException {
-    // given
-    generateRequisition();
-    final Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
-    final Page<Requisition> emptyPage = new PageImpl<>(Collections.emptyList());
+    entityManager.createNativeQuery(builder.toString()).executeUpdate();
+  }
 
-    //when
-    auditLogInitializer.createSnapshots(requisitionRepository);
+  @Transactional
+  private RequisitionTemplate addRequisitionTemplate() {
 
-    //then
-    snapshots = javers.findSnapshots(QueryBuilder.byClass(CodeDto.class).build());
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder().withColumnDefinition(getAvailableRequisitionColumn()).build();
+    columns.put(name, column);
 
-    assertNotNull(snapshots);
-    given(requisitionRepository.findAllWithoutSnapshots(pageable)).willReturn(emptyPage);
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
+        .withoutId()
+        .withColumns(columns)
+        .build();
+
+    requisitionTemplate.setId(fromString(requisitionTemplateId));
+    requisitionTemplateRepository.save(requisitionTemplate);
+    entityManager.flush();
+    return requisitionTemplateRepository.findOne(fromString(requisitionTemplateId));
+  }
+
+  @Transactional
+  private AvailableRequisitionColumn getAvailableRequisitionColumn () {
+    AvailableRequisitionColumn availableRequisitionColumn = new AvailableRequisitionColumnDataBuilder()
+        .build();
+
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(availableRequisitionColumn, "default", "Default");
+    options.add(option);
+
+    availableRequisitionColumn.setOptions(options);
+    availableRequisitionColumn.setColumnType(ColumnType.TEXT);
+    availableRequisitionColumnRepository.save(availableRequisitionColumn);
+    entityManager.flush();
+
+    return availableRequisitionColumnRepository.findOne(availableRequisitionColumn.getId());
   }
 
   @Test
-  public void shouldReturnNotEmptyPage() throws IOException {
-    final Pageable pageable = new PageRequest(DEFAULT_PAGE_NUMBER, 2000);
-    Page<Requisition> emptyPage = new PageImpl<>(Collections.emptyList());
-
-    assertNotEquals(requisitionRepository.findAllWithoutSnapshots(pageable), emptyPage);
+  public void shouldCreateSnapshots() throws IOException {
+    snapshots = javers.findSnapshots(QueryBuilder.byClass(CodeDto.class).build());
+    assertNotEquals(0, snapshots.size());
   }
 }
