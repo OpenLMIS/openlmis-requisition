@@ -122,7 +122,7 @@ public class AuditLogInitializerIntegrationTest {
     assertThat(instanceId.getTypeName(), is("Requisition"));
   }
 
-  private AvailableRequisitionColumn addAvailableRequisitionColumn () {
+  private AvailableRequisitionColumn addAvailableRequisitionColumn() {
     AvailableRequisitionColumn availableRequisitionColumn =
         new AvailableRequisitionColumnDataBuilder()
             .withoutId()
