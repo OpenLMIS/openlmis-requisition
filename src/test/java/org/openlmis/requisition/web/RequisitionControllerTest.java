@@ -53,6 +53,7 @@ import static org.openlmis.requisition.web.BaseRequisitionController.RESOURCE_UR
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -473,6 +474,33 @@ public class RequisitionControllerTest {
     requisitionController.updateRequisition(requisitionDto, uuid2, request, response);
   }
 
+  @Test(expected = VersionMismatchException.class)
+  public void shouldReturnBadRequestWhenThereIsNewerVersion() throws Exception {
+    RequisitionDto requisitionDto = mock(RequisitionDto.class);
+    when(requisitionDto.getId()).thenReturn(uuid1);
+    when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
+    when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
+    when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
+    when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
+
+    ZonedDateTime currentDate = ZonedDateTime.now();
+    when(requisitionDto.getModifiedDate()).thenReturn(currentDate.minusMonths(10));
+    when(initiatedRequsition.getId()).thenReturn(uuid1);
+    when(initiatedRequsition.getModifiedDate()).thenReturn(currentDate);
+
+    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class)))
+        .thenCallRealMethod();
+
+    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
+  }
+
   @Test
   public void shouldUpdateRequisition() {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
@@ -494,6 +522,9 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateEtagVersionIfPresent(
         any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());
@@ -531,6 +562,9 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateEtagVersionIfPresent(
         any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(Requisition.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());

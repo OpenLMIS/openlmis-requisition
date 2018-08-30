@@ -326,6 +326,10 @@ public class RequisitionController extends BaseRequisitionController {
         requisitionToUpdate.getStatus(), orderables);
     requisition.setId(requisitionId);
 
+    profiler.start("VALIDATE_TIMESTAMPS");
+    requisitionVersionValidator.validateRequisitionTimestamps(requisition, requisitionToUpdate)
+        .throwExceptionIfHasErrors();
+
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 
     profiler.start("VALIDATE_CAN_BE_UPDATED");

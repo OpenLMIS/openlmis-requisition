@@ -314,6 +314,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     when(requisitionVersionValidator
         .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator
+        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
     doReturn(ValidationResult.fieldErrors(
         Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))
         .when(requisition).validateCanBeUpdated(any(RequisitionValidationService.class));
