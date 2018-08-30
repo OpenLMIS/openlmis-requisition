@@ -38,15 +38,14 @@ public class RequisitionVersionValidator {
    * Validates if the date modified of the incoming requisition matches
    * the date modified of the existing requisition. If the incoming requisition has
    * no modified date, that will not trigger the exception.
-   * @param incomingReq the requisition to validate
+   * @param incomingModifiedDate modified date from incoming requisition
    * @param existingReq the existing version of the requisition
    * @return ValidationResult that contains outcome of this validation
    */
-  public ValidationResult validateRequisitionTimestamps(Requisition incomingReq,
-                                                        Requisition existingReq) {
-    ZonedDateTime dateModified = incomingReq.getModifiedDate();
-    if (dateModified != null
-        && !dateModified.isEqual(existingReq.getModifiedDate())) {
+  public ValidationResult validateRequisitionTimestamps(ZonedDateTime incomingModifiedDate,
+      Requisition existingReq) {
+    if (incomingModifiedDate != null
+        && !incomingModifiedDate.isEqual(existingReq.getModifiedDate())) {
       return ValidationResult.conflict(ERROR_DATE_MODIFIED_MISMATCH,
           existingReq.getId().toString());
     }

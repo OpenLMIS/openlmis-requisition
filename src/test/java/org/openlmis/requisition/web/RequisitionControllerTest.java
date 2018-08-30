@@ -317,6 +317,10 @@ public class RequisitionControllerTest {
     when(basicRequisitionDto.getId())
         .thenReturn(uuid1);
 
+    when(requisitionVersionValidator.validateRequisitionTimestamps(
+        any(ZonedDateTime.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
     ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
         "baseUrl", baseUrl, String.class);
   }
@@ -488,14 +492,8 @@ public class RequisitionControllerTest {
     when(initiatedRequsition.getId()).thenReturn(uuid1);
     when(initiatedRequsition.getModifiedDate()).thenReturn(currentDate);
 
-    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
-        .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateEtagVersionIfPresent(
-        any(HttpServletRequest.class), any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-
     when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class)))
+        any(ZonedDateTime.class), any(Requisition.class)))
         .thenCallRealMethod();
 
     requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
@@ -522,9 +520,6 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateEtagVersionIfPresent(
         any(HttpServletRequest.class), any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());
@@ -562,9 +557,6 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator.validateEtagVersionIfPresent(
         any(HttpServletRequest.class), any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateRequisitionTimestamps(
-        any(Requisition.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().build());

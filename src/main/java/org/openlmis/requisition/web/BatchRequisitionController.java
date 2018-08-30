@@ -226,8 +226,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
         Requisition requisition = buildRequisition(dto, requisitionToUpdate);
 
         profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
-        result = requisitionVersionValidator.validateRequisitionTimestamps(
-            requisition, requisitionToUpdate);
+        result = requisitionVersionValidator
+            .validateRequisitionTimestamps(requisition.getModifiedDate(), requisitionToUpdate);
         result
             .addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition));
 

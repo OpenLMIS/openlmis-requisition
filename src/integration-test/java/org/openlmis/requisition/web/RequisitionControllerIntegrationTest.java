@@ -60,6 +60,7 @@ import static org.openlmis.requisition.web.BaseRequisitionController.IDEMPOTENCY
 import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -315,7 +316,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(requisitionVersionValidator
-        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class)))
+        .validateRequisitionTimestamps(any(ZonedDateTime.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     doReturn(ValidationResult.fieldErrors(
         Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))

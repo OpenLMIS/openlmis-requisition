@@ -47,6 +47,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -173,7 +174,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     doReturn(ValidationResult.success())
         .when(requisitionVersionValidator)
-        .validateRequisitionTimestamps(any(Requisition.class), any(Requisition.class));
+        .validateRequisitionTimestamps(any(ZonedDateTime.class), any(Requisition.class));
 
     List<OrderableDto> orderables =
         singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID, requisitions));

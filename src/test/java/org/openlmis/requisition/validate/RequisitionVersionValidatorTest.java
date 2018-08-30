@@ -118,6 +118,6 @@ public class RequisitionVersionValidatorTest {
     when(existingReq.getModifiedDate()).thenReturn(databaseDate);
     when(existingReq.getId()).thenReturn(UUID.randomUUID());
     return requisitionVersionValidator.validateRequisitionTimestamps(
-        incomingReq, existingReq);
+        incomingReq.getModifiedDate(), existingReq);
   }
 }
