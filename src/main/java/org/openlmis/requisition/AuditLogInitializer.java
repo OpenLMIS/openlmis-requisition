@@ -49,7 +49,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-@Profile("refresh-db")
+@Profile({"refresh-db", "!test"})
 @Order(20)
 public class AuditLogInitializer implements CommandLineRunner {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(AuditLogInitializer.class);
@@ -65,8 +65,6 @@ public class AuditLogInitializer implements CommandLineRunner {
    * @param args Main method arguments.
    */
   public void run(String... args) {
-    String warning = "The repository should implement findAllWithoutSnapshots method"
-        + "from BaseAuditableRepository with appropriate query";
     LOGGER.entry();
     Profiler profiler = new Profiler("RUN_AUDIT_LOG_INIT");
     profiler.setLogger(LOGGER);
@@ -84,7 +82,8 @@ public class AuditLogInitializer implements CommandLineRunner {
       if (bean instanceof BaseAuditableRepository) {
         createSnapshots((BaseAuditableRepository<?, ?>) bean);
       } else {
-        LOGGER.warn(warning);
+        LOGGER.warn("The repository should implement findAllWithoutSnapshots method"
+            + "from BaseAuditableRepository with appropriate query");
       }
     }
 

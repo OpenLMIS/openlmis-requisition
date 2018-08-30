@@ -31,7 +31,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.requisition.dto.CodeDto;
-import org.openlmis.requisition.web.BaseWebIntegrationTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -41,7 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class JaVersIntegrationTest extends BaseWebIntegrationTest {
+public class JaVersIntegrationTest {
 
   @Autowired
   private Javers javers;
@@ -84,6 +83,5 @@ public class JaVersIntegrationTest extends BaseWebIntegrationTest {
 
     int delta = Math.abs(Seconds.secondsBetween(commitTime1, commitTime2).getSeconds());
     assertTrue(delta < 1);
-
   }
 }
