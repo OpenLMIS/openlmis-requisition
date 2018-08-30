@@ -61,7 +61,9 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -75,6 +77,9 @@ public class RequisitionRepositoryIntegrationTest
   
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+
+  @Autowired
+  private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   @Before
   public void setUp() {
@@ -621,7 +626,14 @@ public class RequisitionRepositoryIntegrationTest
   private RequisitionTemplate setUpTemplateWithBeginningBalance() {
     RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
         .withName(RequisitionLineItem.BEGINNING_BALANCE)
+        .withoutOption()
+        .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
+            .withoutId()
+            .withoutOptions()
+            .build())
         .build();
+
+    availableRequisitionColumnRepository.save(column.getColumnDefinition());
 
     return templateRepository.save(new RequisitionTemplate(
         Collections.singletonMap(RequisitionLineItem.BEGINNING_BALANCE, column)));
