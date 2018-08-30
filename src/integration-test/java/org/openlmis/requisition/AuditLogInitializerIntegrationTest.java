@@ -15,48 +15,63 @@
 
 package org.openlmis.requisition;
 
-import static java.util.UUID.fromString;
-import static org.junit.Assert.assertNotEquals;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
-
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringUtils;
+import org.assertj.core.util.Maps;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
+import org.javers.core.metamodel.object.GlobalId;
+import org.javers.core.metamodel.object.InstanceId;
 import org.javers.repository.jql.QueryBuilder;
-import org.junit.Before;
 import org.junit.Test;
-
+import org.junit.runner.RunWith;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
-import org.openlmis.requisition.domain.ColumnType;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
-import org.openlmis.requisition.dto.CodeDto;
-import org.openlmis.requisition.repository.AvailableRequisitionColumnOptionRepository;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class AuditLogInitializerIntegrationTest extends BaseAuditLogInitializerIntegrationTest {
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+public class AuditLogInitializerIntegrationTest {
 
-  private List<CdoSnapshot> snapshots;
-  private Set<AvailableRequisitionColumnOption> options  = new HashSet<>();
-  private HashMap<String, RequisitionTemplateColumn> columns;
-  private String name = "Default Name";
+  private static final String[] REQUISITION_FIELDS = {
+      "id", "createddate", "modifieddate", "draftstatusmessage", "emergency", "facilityid",
+      "numberofmonthsinperiod", "processingperiodid", "programid", "status", "supervisorynodeid",
+      "supplyingfacilityid", "templateid", "datephysicalstockcountcompleted", "version",
+      "reportonly"
+  };
 
-  private static final String templateId = "'460d7666-aac2-11e8-98d0-529269fb1459'";
-  private final String requisitionTemplateId = "460d7666-aac2-11e8-98d0-529269fb1459";
+  private static final String INSERT_SQL = String.format(
+      "INSERT INTO requisition.requisitions (%s) VALUES (%s);",
+      StringUtils.join(REQUISITION_FIELDS, ", "),
+      StringUtils.repeat("?", ", ", REQUISITION_FIELDS.length)
+  );
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
@@ -65,77 +80,93 @@ public class AuditLogInitializerIntegrationTest extends BaseAuditLogInitializerI
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   @Autowired
-  private AvailableRequisitionColumnOptionRepository availableRequisitionColumnOptionRepository;
+  private Javers javers;
 
-  private static final String INSERT_REQ_SQL = "INSERT INTO "
-      + "requisition.requisitions "
-      + "(id, createddate, modifieddate, draftstatusmessage, "
-      + "emergency, facilityid, numberofmonthsinperiod, "
-      + "processingperiodid, programid, status, supervisorynodeid, "
-      + "supplyingfacilityid, templateid, datephysicalstockcountcompleted, "
-      + "version, reportonly) \n"
-      + " VALUES \n"
-      + "('460d6554-aac2-11e8-98d0-529269fb1459',"
-      + "'2018-08-28 14:00:00', '2018-08-28 14:06:00',"
-      + "'draft-status', false, "
-      + "'460d68f6-aac2-11e8-98d0-529269fb1459',"
-      + "1, '460d6dd8-aac2-11e8-98d0-529269fb1459',"
-      + "'460d7008-aac2-11e8-98d0-529269fb1459', "
-      + "'status', '460d726a-aac2-11e8-98d0-529269fb1459',"
-      + "'460d7472-aac2-11e8-98d0-529269fb1459', "
-      + templateId
-      + ", '2018-08-23', 7784847621901938732, false)";
+  @Autowired
+  private ApplicationContext applicationContext;
 
   @PersistenceContext
   private EntityManager entityManager;
 
-  @Autowired
-  private Javers javers;
+  @Test
+  public void shouldCreateSnapshots() {
+    // given
+    UUID requisitionId = UUID.randomUUID();
 
-  @Before
-  public void createQuery() {
-    addRequisitionTemplate();
-    StringBuilder builder = new StringBuilder(INSERT_REQ_SQL);
+    AvailableRequisitionColumn availableRequisitionColumn = addAvailableRequisitionColumn();
+    RequisitionTemplate requisitionTemplate = addRequisitionTemplate(availableRequisitionColumn);
+    addRequisition(requisitionId, requisitionTemplate.getId());
 
-    entityManager.createNativeQuery(builder.toString()).executeUpdate();
+    // when
+    QueryBuilder jqlQuery = QueryBuilder.byInstanceId(requisitionId, Requisition.class);
+    List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery.build());
+
+    assertThat(snapshots, hasSize(0));
+
+    AuditLogInitializer auditLogInitializer = new AuditLogInitializer(applicationContext, javers);
+    auditLogInitializer.run();
+
+    snapshots = javers.findSnapshots(jqlQuery.build());
+
+    // then
+    assertThat(snapshots, hasSize(1));
+
+    CdoSnapshot snapshot = snapshots.get(0);
+    GlobalId globalId = snapshot.getGlobalId();
+
+    assertThat(globalId, is(notNullValue()));
+    assertThat(globalId, instanceOf(InstanceId.class));
+
+    InstanceId instanceId = (InstanceId) globalId;
+    assertThat(instanceId.getCdoId(), is(requisitionId));
+    assertThat(instanceId.getTypeName(), is("Requisition"));
   }
 
-  @Transactional
-  private RequisitionTemplate addRequisitionTemplate() {
+  private AvailableRequisitionColumn addAvailableRequisitionColumn () {
+    AvailableRequisitionColumn availableRequisitionColumn =
+        new AvailableRequisitionColumnDataBuilder()
+            .withoutId()
+            .withoutOptions()
+            .build();
 
-    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder().withColumnDefinition(getAvailableRequisitionColumn()).build();
-    columns.put(name, column);
+    return availableRequisitionColumnRepository.save(availableRequisitionColumn);
+  }
+
+  private RequisitionTemplate addRequisitionTemplate(AvailableRequisitionColumn columnDefinition) {
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withName("column")
+        .withColumnDefinition(columnDefinition)
+        .withoutOption()
+        .build();
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
-        .withColumns(columns)
+        .withColumns(Maps.newHashMap(column.getName(), column))
         .build();
 
-    requisitionTemplate.setId(fromString(requisitionTemplateId));
-    requisitionTemplateRepository.save(requisitionTemplate);
-    entityManager.flush();
-    return requisitionTemplateRepository.findOne(fromString(requisitionTemplateId));
+    return requisitionTemplateRepository.save(requisitionTemplate);
   }
 
-  @Transactional
-  private AvailableRequisitionColumn getAvailableRequisitionColumn () {
-    AvailableRequisitionColumn availableRequisitionColumn = new AvailableRequisitionColumnDataBuilder()
-        .build();
-
-    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOption(availableRequisitionColumn, "default", "Default");
-    options.add(option);
-
-    availableRequisitionColumn.setOptions(options);
-    availableRequisitionColumn.setColumnType(ColumnType.TEXT);
-    availableRequisitionColumnRepository.save(availableRequisitionColumn);
+  private void addRequisition(UUID requisitionId, UUID requisitionTemplateId) {
     entityManager.flush();
-
-    return availableRequisitionColumnRepository.findOne(availableRequisitionColumn.getId());
-  }
-
-  @Test
-  public void shouldCreateSnapshots() throws IOException {
-    snapshots = javers.findSnapshots(QueryBuilder.byClass(CodeDto.class).build());
-    assertNotEquals(0, snapshots.size());
+    entityManager
+        .createNativeQuery(INSERT_SQL)
+        .setParameter(1, requisitionId) // id
+        .setParameter(2, ZonedDateTime.now()) // createdDate
+        .setParameter(3, ZonedDateTime.now()) // modifiedDate
+        .setParameter(4, "") // draftStatusMessage
+        .setParameter(5, false) // emergency
+        .setParameter(6, UUID.randomUUID()) // facilityId
+        .setParameter(7, 1) // numberOfMonthsInPeriod
+        .setParameter(8, UUID.randomUUID()) // processingPeriodId
+        .setParameter(9, UUID.randomUUID()) // programId
+        .setParameter(10, RequisitionStatus.RELEASED.name()) // status
+        .setParameter(11, UUID.randomUUID()) // supervisoryNodeId
+        .setParameter(12, UUID.randomUUID()) // supplyingFacilityId
+        .setParameter(13, requisitionTemplateId) // templateId
+        .setParameter(14, LocalDate.now()) // datePhysicalStockCountCompleted
+        .setParameter(15, 10) // version
+        .setParameter(16, false) // reportOnly
+        .executeUpdate();
   }
 }

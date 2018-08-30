@@ -54,11 +54,14 @@ import org.springframework.stereotype.Component;
 public class AuditLogInitializer implements CommandLineRunner {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(AuditLogInitializer.class);
 
-  @Autowired
   private ApplicationContext applicationContext;
+  private Javers javers;
 
   @Autowired
-  private Javers javers;
+  public AuditLogInitializer(ApplicationContext applicationContext, Javers javers) {
+    this.applicationContext = applicationContext;
+    this.javers = javers;
+  }
 
   /**
    * This method is part of CommandLineRunner and is called automatically by Spring.
