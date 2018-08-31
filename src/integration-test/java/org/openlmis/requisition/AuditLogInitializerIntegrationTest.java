@@ -55,7 +55,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "refresh-db"})
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class AuditLogInitializerIntegrationTest {
@@ -72,11 +72,19 @@ public class AuditLogInitializerIntegrationTest {
       StringUtils.join(REQUISITION_FIELDS, ", "),
       StringUtils.repeat("?", ", ", REQUISITION_FIELDS.length)
   );
+<<<<<<< HEAD
 
   @Autowired
   private RequisitionTemplateRepository requisitionTemplateRepository;
 
   @Autowired
+=======
+
+  @Autowired
+  private RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @Autowired
+>>>>>>> daef4da7fc47fa478af5a86a6326fb58db9a6c2f
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
 
   @Autowired
@@ -100,6 +108,7 @@ public class AuditLogInitializerIntegrationTest {
     // when
     QueryBuilder jqlQuery = QueryBuilder.byInstanceId(requisitionId, Requisition.class);
     List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery.build());
+<<<<<<< HEAD
 
     assertThat(snapshots, hasSize(0));
 
@@ -108,6 +117,16 @@ public class AuditLogInitializerIntegrationTest {
 
     snapshots = javers.findSnapshots(jqlQuery.build());
 
+=======
+
+    assertThat(snapshots, hasSize(0));
+
+    AuditLogInitializer auditLogInitializer = new AuditLogInitializer(applicationContext, javers);
+    auditLogInitializer.run();
+
+    snapshots = javers.findSnapshots(jqlQuery.build());
+
+>>>>>>> daef4da7fc47fa478af5a86a6326fb58db9a6c2f
     // then
     assertThat(snapshots, hasSize(1));
 
