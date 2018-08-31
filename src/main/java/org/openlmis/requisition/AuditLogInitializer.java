@@ -24,10 +24,8 @@ import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.requisition.domain.BaseEntity;
-import org.openlmis.requisition.exception.JaversExistingEntryException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.BaseAuditableRepository;
-import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -49,7 +47,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-@Profile({"refresh-db", "!test"})
+@Profile("refresh-db")
 @Order(20)
 public class AuditLogInitializer implements CommandLineRunner {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(AuditLogInitializer.class);
@@ -122,7 +120,8 @@ public class AuditLogInitializer implements CommandLineRunner {
     if (snapshots.isEmpty()) {
       javers.commit("System: AuditLogInitializer", baseEntity);
     } else {
-      throw new JaversExistingEntryException(new Message(MessageKeys.ERROR_JAVERS_EXISTING_ENTRY));
+      LOGGER.info(MessageKeys.ERROR_JAVERS_EXISTING_ENTRY,
+          baseEntity.getClass(), baseEntity.getId());
     }
   }
 }
