@@ -42,12 +42,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -787,14 +789,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setModifiedDate(getModifiedDate());
     exporter.setStatus(status);
-    Optional<StatusChange.Exporter> statusChangeExporter = exporter.provideStatusChangeExporter();
-    if (statusChangeExporter.isPresent()) {
-      for (StatusChange statusChange : statusChanges) {
-        StatusChange.Exporter providedExporter = statusChangeExporter.get();
-        statusChange.export(providedExporter);
-        exporter.addStatusChange(providedExporter);
-      }
-    }
+    exportStatusChanges(exporter);
     exporter.setEmergency(emergency);
     exporter.setReportOnly(reportOnly);
     exporter.setSupplyingFacility(supplyingFacilityId);
@@ -803,6 +798,24 @@ public class Requisition extends BaseTimestampedEntity {
     if (datePhysicalStockCountCompleted != null) {
       exporter.setDatePhysicalStockCountCompleted(
           datePhysicalStockCountCompleted.getLocalDate());
+    }
+  }
+
+  private void exportStatusChanges(Exporter exporter) {
+    Optional<Supplier<StatusChange.Exporter>> factory = exporter.provideStatusChangeExporter();
+
+    if (factory.isPresent()) {
+      Supplier<StatusChange.Exporter> generator = factory.get();
+      Iterator<StatusChange> iterator = getStatusChanges().iterator();
+
+      while (iterator.hasNext()) {
+        StatusChange statusChange = iterator.next();
+
+        StatusChange.Exporter statusChangeExporter = generator.get();
+        statusChange.export(statusChangeExporter);
+
+        exporter.addStatusChange(statusChangeExporter);
+      }
     }
   }
 
@@ -962,7 +975,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     void setStockAdjustmentReasons(List<ReasonDto> reasonDto);
 
-    Optional<StatusChange.Exporter> provideStatusChangeExporter();
+    Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter();
 
     void addStatusChange(StatusChange.Exporter providedExporter);
   }

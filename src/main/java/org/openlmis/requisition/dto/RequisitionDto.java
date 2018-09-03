@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -131,7 +132,7 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   }
 
   @Override
-  public Optional<StatusChange.Exporter> provideStatusChangeExporter() {
-    return Optional.of(new StatusChangeDto());
+  public Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter() {
+    return Optional.of(StatusChangeDto::new);
   }
 }

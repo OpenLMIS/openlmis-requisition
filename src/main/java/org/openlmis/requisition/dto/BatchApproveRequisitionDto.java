@@ -16,6 +16,7 @@
 package org.openlmis.requisition.dto;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 
 public class BatchApproveRequisitionDto extends RequisitionDto {
@@ -27,7 +28,7 @@ public class BatchApproveRequisitionDto extends RequisitionDto {
   }
 
   @Override
-  public Optional<StatusChange.Exporter> provideStatusChangeExporter() {
+  public Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter() {
     return Optional.empty();
   }
 }
