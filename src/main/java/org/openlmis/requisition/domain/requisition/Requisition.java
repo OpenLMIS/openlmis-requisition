@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -806,11 +805,17 @@ public class Requisition extends BaseTimestampedEntity {
 
     if (factory.isPresent()) {
       Supplier<StatusChange.Exporter> generator = factory.get();
-      Iterator<StatusChange> iterator = getStatusChanges().iterator();
 
-      while (iterator.hasNext()) {
-        StatusChange statusChange = iterator.next();
+      // we use the array here to create a new collection object
+      // that will be resistant to changes that could be
+      // provided by other threads and could cause
+      // the java.util.ConcurrentModificationException exception
+      StatusChange[] statusChangesArray = Optional
+          .ofNullable(statusChanges)
+          .orElse(Collections.emptyList())
+          .toArray(new StatusChange[0]);
 
+      for (StatusChange statusChange : statusChangesArray) {
         StatusChange.Exporter statusChangeExporter = generator.get();
         statusChange.export(statusChangeExporter);
 
