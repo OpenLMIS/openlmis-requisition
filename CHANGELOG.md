@@ -10,6 +10,7 @@ Improvements:
 
 Bug fixes:
 * [OLMIS-5065](https://openlmis.atlassian.net/browse/OLMIS-5065): Brought back requisition timestamps validation
+* [OLMIS-4938](https://openlmis.atlassian.net/browse/OLMIS-4938): Added default definition for skipped column.
 
 7.0.0 / 2018-08-16
 ==================
