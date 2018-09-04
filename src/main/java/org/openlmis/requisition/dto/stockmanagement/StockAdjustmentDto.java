@@ -13,21 +13,20 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
+import java.util.UUID;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.dto.BaseDto;
 
-public class StockAdjustmentDtoTest {
-
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(StockAdjustmentDto.class)
-        .withRedefinedSuperclass()
-        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
-        .verify();
-  }
-
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+public final class StockAdjustmentDto extends BaseDto
+    implements StockAdjustment.Importer, StockAdjustment.Exporter {
+  private UUID reasonId;
+  private Integer quantity;
 }

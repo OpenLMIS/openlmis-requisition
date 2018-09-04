@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 
 public class StockCardRangeSummaryStockManagementSerivceTest

@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
-import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 
 public class StockCardRangeSummaryDtoDataBuilder {
 

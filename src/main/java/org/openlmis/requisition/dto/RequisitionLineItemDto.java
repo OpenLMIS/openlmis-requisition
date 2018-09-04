@@ -31,6 +31,7 @@ import lombok.Setter;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.dto.stockmanagement.StockAdjustmentDto;
 import org.openlmis.requisition.utils.MoneyDeserializer;
 import org.openlmis.requisition.utils.MoneySerializer;
 

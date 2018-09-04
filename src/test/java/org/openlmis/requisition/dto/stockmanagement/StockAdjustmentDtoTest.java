@@ -13,47 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-@EqualsAndHashCode
-public final class StockCardRangeSummaryDto {
+public class StockAdjustmentDtoTest {
 
-  @Getter
-  @Setter
-  private ObjectReferenceDto orderable;
-
-  @Getter
-  @Setter
-  private Integer stockOutDays;
-
-  @Getter
-  @Setter
-  private Map<String, Integer> tags;
-
-  @Getter
-  @Setter
-  private Integer amount;
-
-  /**
-   * Sums amount values from tags map.
-   *
-   * @param tag tag name to get it's value
-   * @return amount value of provided tag
-   */
-  public Integer getTagAmount(String tag) {
-    Integer tagAmount = tags.get(tag);
-    return null == tagAmount ? 0 : tagAmount;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(StockAdjustmentDto.class)
+        .withRedefinedSuperclass()
+        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
+        .verify();
   }
 
 }

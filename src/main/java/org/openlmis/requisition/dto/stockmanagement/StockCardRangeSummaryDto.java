@@ -13,19 +13,48 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.dto.stockmanagement;
 
-import java.util.UUID;
+import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import lombok.ToString;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = true)
-public final class StockAdjustmentDto extends BaseDto
-    implements StockAdjustment.Importer, StockAdjustment.Exporter {
-  private UUID reasonId;
-  private Integer quantity;
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
+public final class StockCardRangeSummaryDto {
+
+  @Getter
+  @Setter
+  private ObjectReferenceDto orderable;
+
+  @Getter
+  @Setter
+  private Integer stockOutDays;
+
+  @Getter
+  @Setter
+  private Map<String, Integer> tags;
+
+  @Getter
+  @Setter
+  private Integer amount;
+
+  /**
+   * Sums amount values from tags map.
+   *
+   * @param tag tag name to get it's value
+   * @return amount value of provided tag
+   */
+  public Integer getTagAmount(String tag) {
+    Integer tagAmount = tags.get(tag);
+    return null == tagAmount ? 0 : tagAmount;
+  }
+
 }

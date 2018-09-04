@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.openlmis.requisition.dto.StockCardRangeSummaryDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 
