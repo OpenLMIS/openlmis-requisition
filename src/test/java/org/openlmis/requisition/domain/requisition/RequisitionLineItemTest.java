@@ -369,6 +369,32 @@ public class RequisitionLineItemTest {
     assertFalse(requisitionLineItem.isLineSkipped());
   }
 
+  @Test
+  public void shouldReturnTrueIfStockOnHandIsNullForTotalConsumedQuantity() {
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder().setStockOnHand(null).build();
+    assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY));
+  }
+
+  @Test
+  public void shouldReturnFalseIfStockOnHandIsNotNullForTotalConsumedQuantity() {
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder().setStockOnHand(0).build();
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY));
+  }
+
+  @Test
+  public void shouldReturnTrueIfTotalConsumedQuantityIsNullForStockOnHand() {
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .setTotalConsumedQuantity(null).build();
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
+  }
+
+  @Test
+  public void shouldReturnFalseIfTotalConsumedQuantityIsNotNullForStockOnHand() {
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .setTotalConsumedQuantity(0).build();
+    assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
+  }
+
   private void checkResultsOfConstruction(RequisitionLineItem item) {
     assertEquals(initiatedRequisition, item.getRequisition());
     assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
