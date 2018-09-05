@@ -385,14 +385,22 @@ public class RequisitionLineItemTest {
   public void shouldReturnTrueIfTotalConsumedQuantityIsNullForStockOnHand() {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
         .setTotalConsumedQuantity(null).build();
-    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
+    assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
   }
 
   @Test
   public void shouldReturnFalseIfTotalConsumedQuantityIsNotNullForStockOnHand() {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
         .setTotalConsumedQuantity(0).build();
-    assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
+  }
+
+  @Test
+  public void shouldReturnFalseForOtherColumns() {
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder().build();
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.ADJUSTED_CONSUMPTION));
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.APPROVED_QUANTITY));
+    assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.REMARKS_COLUMN));
   }
 
   private void checkResultsOfConstruction(RequisitionLineItem item) {
