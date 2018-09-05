@@ -79,8 +79,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
   static final String BEGINNING_BALANCE = "beginningBalance";
   static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  static final String TOTAL = "total";
-  static final String NUMBER_OF_NEW_PATIENTS_ADDED = "numberOfNewPatientsAdded";
   static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
@@ -90,7 +88,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       CALCULATED_ORDER_QUANTITY, AVERAGE_CONSUMPTION);
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
-      TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, TOTAL, NUMBER_OF_NEW_PATIENTS_ADDED);
+      TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS);
 
   private Errors errors;
 
