@@ -21,6 +21,10 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalConsumedQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalLossesAndAdjustments;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalReceivedQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalStockoutDays;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockOnHand;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotal;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
@@ -55,7 +59,6 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
@@ -516,19 +519,8 @@ public class RequisitionLineItem extends BaseEntity {
    */
   void calculateAndSetStockBasedTotalConsumedQuantity(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    RequisitionTemplateColumn column = template.findColumn(TOTAL_CONSUMED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos);
-    int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
-      if (value > 0) {
-        throw new ValidationMessageException(new Message(
-            MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER, TOTAL_CONSUMED_QUANTITY,
-            orderableId.toString()));
-      }
-    }
-    setTotalConsumedQuantity(Math.abs(value));
+    setTotalConsumedQuantity(calculateStockBasedTotalConsumedQuantity(
+            template, stockCardRangeSummaryDtos, this.orderableId));
   }
 
   /**
@@ -536,19 +528,8 @@ public class RequisitionLineItem extends BaseEntity {
    */
   void calculateAndSetStockBasedTotalReceivedQuantity(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos);
-    int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
-      if (value < 0) {
-        throw new ValidationMessageException(new Message(
-            MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER, TOTAL_RECEIVED_QUANTITY,
-            orderableId.toString()));
-      }
-    }
-    setTotalReceivedQuantity(value);
+    setTotalReceivedQuantity(calculateStockBasedTotalReceivedQuantity(
+            template, stockCardRangeSummaryDtos, orderableId));
   }
 
   /**
@@ -556,15 +537,8 @@ public class RequisitionLineItem extends BaseEntity {
    */
   void calculateAndSetStockBasedTotalStockoutDays(
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod) {
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos);
-    int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getStockOutDays();
-    }
-    setTotalStockoutDays(Math.min(
-        value,
-        30 * (null == numberOfMonthsInPeriod ? 1 : numberOfMonthsInPeriod)));
+    setTotalStockoutDays(calculateStockBasedTotalStockoutDays(
+            stockCardRangeSummaryDtos, numberOfMonthsInPeriod, orderableId));
   }
 
   /**
@@ -572,14 +546,8 @@ public class RequisitionLineItem extends BaseEntity {
    */
   void calculateAndSetStockBasedTotalLossesAndAdjustments(RequisitionTemplate template,
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    RequisitionTemplateColumn column = template.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos);
-    int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
-    }
-    setTotalLossesAndAdjustments(value);
+    setTotalLossesAndAdjustments(calculateStockBasedTotalLossesAndAdjustments(
+            template, stockCardRangeSummaryDtos, orderableId));
   }
 
   /**

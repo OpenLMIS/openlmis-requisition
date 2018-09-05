@@ -18,17 +18,25 @@ package org.openlmis.requisition.domain.requisition;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 import static org.openlmis.requisition.domain.AvailableRequisitionColumnOption.DEFAULT;
 import static org.openlmis.requisition.domain.OpenLmisNumberUtils.zeroIfNull;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public final class LineItemFieldsCalculator {
@@ -324,6 +332,84 @@ public final class LineItemFieldsCalculator {
       return true;
     }
     return previousLineItem.getSkipped();
+  }
+
+  /**
+   * Sets value to Total Consumed Quantity column based on stock range summaries.
+   */
+  public static Integer calculateStockBasedTotalConsumedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_CONSUMED_QUANTITY);
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
+    int value = 0;
+    if (summaryDto.isPresent()) {
+      value = summaryDto.get().getTagAmount(column.getTag());
+      if (value > 0) {
+        throw new ValidationMessageException(new Message(
+            MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER, TOTAL_CONSUMED_QUANTITY,
+            orderableId));
+      }
+    }
+    return Math.abs(value);
+  }
+
+  /**
+   * Sets value to Total Received Quantity column based on stock range summaries.
+   */
+  public static Integer calculateStockBasedTotalReceivedQuantity(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
+    int value = 0;
+    if (summaryDto.isPresent()) {
+      value = summaryDto.get().getTagAmount(column.getTag());
+      if (value < 0) {
+        throw new ValidationMessageException(new Message(
+            MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER, TOTAL_RECEIVED_QUANTITY,
+            orderableId.toString()));
+      }
+    }
+    return value;
+  }
+
+  /**
+   * Sets value to Total Stockout Days column based on stock range summaries.
+   */
+  public static Integer calculateStockBasedTotalStockoutDays(
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod,
+      UUID orderableId) {
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
+    int value = 0;
+    if (summaryDto.isPresent()) {
+      value = summaryDto.get().getStockOutDays();
+    }
+    return Math.min(value, 30 * (null == numberOfMonthsInPeriod ? 1 : numberOfMonthsInPeriod));
+  }
+
+  /**
+   * Sets value to Total Losses and Adjustments column based on stock range summaries.
+   */
+  public static Integer calculateStockBasedTotalLossesAndAdjustments(RequisitionTemplate template,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+    RequisitionTemplateColumn column = template.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS);
+    Optional<StockCardRangeSummaryDto> summaryDto =
+        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
+    int value = 0;
+    if (summaryDto.isPresent()) {
+      value = summaryDto.get().getTagAmount(column.getTag());
+    }
+    return value;
+  }
+
+  private static Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+    return stockCardRangeSummaryDtos.stream()
+        .filter(stockCardRangeSummaryDto ->
+            stockCardRangeSummaryDto.getOrderable().getId().equals(orderableId))
+        .findFirst();
   }
 
   private static boolean hasNonZeroStockValue(RequisitionLineItem currentLineItem) {
