@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -24,29 +26,50 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalConsumedQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalLossesAndAdjustments;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalReceivedQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalStockoutDays;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.canSkipLineItem;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class LineItemFieldsCalculatorTest {
 
+  private static final String CONSUMED_TAG = "consumed";
+  private static final String RECEIVED_TAG = "received";
+  private static final String ADJUSTMENT_TAG = "adjustment";
+  private static final String OTHER_TAG = "other";
+  private static final String COLUMN_IDENTIFIER = "I";
+
   private static final int STOCK_ON_HAND = 3789;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void shouldCalculateTotalLossesAndAdjustments() throws Exception {
@@ -233,7 +256,7 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateAverageConsumption() throws Exception {
     int averageConsumption =
-        LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10, 15));
+        LineItemFieldsCalculator.calculateAverageConsumption(asList(5, 10, 15));
 
     assertEquals(10, averageConsumption);
   }
@@ -241,7 +264,7 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldReturnAdjustedConsumptionWhenNoPreviousPeriods() throws Exception {
     int averageConsumption = LineItemFieldsCalculator
-        .calculateAverageConsumption(Collections.singletonList(5));
+        .calculateAverageConsumption(singletonList(5));
 
     assertEquals(5, averageConsumption);
   }
@@ -249,7 +272,7 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateAverageConsumptionWhenOnePreviousPeriod() throws Exception {
     int averageConsumption =
-        LineItemFieldsCalculator.calculateAverageConsumption(Arrays.asList(5, 10));
+        LineItemFieldsCalculator.calculateAverageConsumption(asList(5, 10));
 
     assertEquals(8, averageConsumption);
   }
@@ -370,11 +393,11 @@ public class LineItemFieldsCalculatorTest {
 
   @Test
   public void shouldAllowSkippingIfPreviousRequisitionWasSkipped() {
-    RequisitionLineItem preveious = new RequisitionLineItem();
-    preveious.setSkipped(true);
+    RequisitionLineItem previous = new RequisitionLineItem();
+    previous.setSkipped(true);
     RequisitionLineItem current = new RequisitionLineItem();
 
-    assertThat(canSkipLineItem(current, preveious), is(true));
+    assertThat(canSkipLineItem(current, previous), is(true));
   }
 
   @Test
@@ -386,4 +409,208 @@ public class LineItemFieldsCalculatorTest {
     assertThat(canSkipLineItem(current, preveious), is(false));
   }
 
+  @Test
+  public void shouldCalculateTotalConsumedQuantityFromStockCards() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            CONSUMED_TAG, -2,
+            ADJUSTMENT_TAG, 10,
+            OTHER_TAG, 5
+        )).withOrderableId(orderableId).build(),
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            CONSUMED_TAG, -7,
+            RECEIVED_TAG, 1,
+            OTHER_TAG, 3
+        )).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
+        .build();
+
+    assertEquals(new Integer(2), calculateStockBasedTotalConsumedQuantity(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
+
+  @Test
+  public void shouldReturnZeroConsumedIfThereIsNoSummaryForOrderable() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = singletonList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            CONSUMED_TAG, 10,
+            OTHER_TAG, 5
+        )).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
+        .build();
+
+    assertEquals(new Integer(0), calculateStockBasedTotalConsumedQuantity(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfConsumedQuantityIsAboveZero() {
+    expectedException.expect(ValidationMessageException.class);
+    expectedException.expectMessage(MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER);
+
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = singletonList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            CONSUMED_TAG, 12,
+            ADJUSTMENT_TAG, 10,
+            OTHER_TAG, 5
+        )).withOrderableId(orderableId).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
+        .build();
+
+    calculateStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryDtos, orderableId);
+  }
+
+  @Test
+  public void shouldCalculateTotalReceivedQuantityFromStockCards() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            RECEIVED_TAG, 2,
+            ADJUSTMENT_TAG, 10,
+            OTHER_TAG, 5
+        )).withOrderableId(orderableId).build(),
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            CONSUMED_TAG, -7,
+            RECEIVED_TAG, 1,
+            OTHER_TAG, 3
+        )).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_RECEIVED_QUANTITY, COLUMN_IDENTIFIER, RECEIVED_TAG)
+        .build();
+
+    assertEquals(new Integer(2), calculateStockBasedTotalReceivedQuantity(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
+
+  @Test
+  public void shouldReturnZeroReceivedIfThereIsNoSummaryForOrderable() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = singletonList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            RECEIVED_TAG, 10,
+            OTHER_TAG, 5
+        )).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_RECEIVED_QUANTITY, COLUMN_IDENTIFIER, RECEIVED_TAG)
+        .build();
+
+    assertEquals(new Integer(0), calculateStockBasedTotalReceivedQuantity(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfReceivedQuantityIsBelowZero() {
+    expectedException.expect(ValidationMessageException.class);
+    expectedException.expectMessage(MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER);
+
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = singletonList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            RECEIVED_TAG, -12,
+            ADJUSTMENT_TAG, 10,
+            OTHER_TAG, 5
+        )).withOrderableId(orderableId).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_RECEIVED_QUANTITY, COLUMN_IDENTIFIER, RECEIVED_TAG)
+        .build();
+
+    calculateStockBasedTotalReceivedQuantity(template, stockCardRangeSummaryDtos, orderableId);
+  }
+
+  @Test
+  public void shouldGetStockoutDays() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withStockOutDays(1)
+            .withOrderableId(orderableId)
+            .build(),
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withStockOutDays(10)
+            .build());
+
+    assertEquals(new Integer(1),
+        calculateStockBasedTotalStockoutDays(stockCardRangeSummaryDtos, 3, orderableId));
+  }
+
+  @Test
+  public void stockoutDaysShouldNotExceedDaysInPeriod() {
+    UUID orderableId = UUID.randomUUID();
+    Integer numberOfMonthsInPeriod = 3;
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withStockOutDays(100)
+            .withOrderableId(orderableId)
+            .build());
+
+    assertEquals(new Integer(30 * numberOfMonthsInPeriod), calculateStockBasedTotalStockoutDays(
+        stockCardRangeSummaryDtos, numberOfMonthsInPeriod, orderableId));
+  }
+
+  @Test
+  public void shouldReturnZeroStockoutDaysIfThereIsNoSummaryForOrderable() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withStockOutDays(10)
+            .build());
+
+    assertEquals(new Integer(0),
+        calculateStockBasedTotalStockoutDays(stockCardRangeSummaryDtos, 3, orderableId));
+  }
+
+  @Test
+  public void shouldCalculateTotalLossesAndAdjustmentsQuantityFromStockCards() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = asList(
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withTags(ImmutableMap.of(
+                RECEIVED_TAG, 2,
+                ADJUSTMENT_TAG, 10,
+                OTHER_TAG, 5))
+            .withOrderableId(orderableId)
+            .build(),
+        new StockCardRangeSummaryDtoDataBuilder()
+            .withTags(ImmutableMap.of(
+                CONSUMED_TAG, -7,
+                ADJUSTMENT_TAG, -1,
+                OTHER_TAG, 3))
+            .build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_LOSSES_AND_ADJUSTMENTS, COLUMN_IDENTIFIER, ADJUSTMENT_TAG)
+        .build();
+
+    assertEquals(new Integer(10), calculateStockBasedTotalLossesAndAdjustments(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
+
+  @Test
+  public void shouldReturnZeroAdjustmentsIfThereIsNoSummaryForOrderable() {
+    UUID orderableId = UUID.randomUUID();
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = singletonList(
+        new StockCardRangeSummaryDtoDataBuilder().withTags(ImmutableMap.of(
+            ADJUSTMENT_TAG, 10,
+            OTHER_TAG, 5
+        )).build());
+
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
+        TOTAL_LOSSES_AND_ADJUSTMENTS, COLUMN_IDENTIFIER, ADJUSTMENT_TAG)
+        .build();
+
+    assertEquals(new Integer(0), calculateStockBasedTotalLossesAndAdjustments(
+        template, stockCardRangeSummaryDtos, orderableId));
+  }
 }

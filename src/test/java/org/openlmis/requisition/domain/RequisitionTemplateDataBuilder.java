@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain;
 
+import static org.javers.common.collections.Sets.asSet;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -37,6 +38,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
+import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -239,6 +241,17 @@ public class RequisitionTemplateDataBuilder {
         .withTag(tag)
         .build());
     return this;
+  }
+
+  /**
+   * Adds stock based column to the columns map for new {@link RequisitionTemplate} instance.
+   */
+  public RequisitionTemplateDataBuilder withStockBasedColumn(String columnName,
+      String columnIdentifier, String tag) {
+    return withColumn(
+        columnName, columnIdentifier, SourceType.STOCK_CARDS,
+        new AvailableRequisitionColumnOptionDataBuilder().build(), asSet(SourceType.STOCK_CARDS),
+        tag, true);
   }
 
   public RequisitionTemplateDataBuilder withColumns(
