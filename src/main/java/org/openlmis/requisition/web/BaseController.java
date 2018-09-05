@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,15 +44,15 @@ public abstract class BaseController {
 
   /**
    * Get errors from {@link BindingResult} instance.
-   *
-   * @deprecated temporarily solution, validators should use map of Field (string)
-   *     and Message
    */
   protected Map<String, Message> getErrors(BindingResult bindingResult) {
     Map<String, Message> errors = new HashMap<>();
 
     for (FieldError error : bindingResult.getFieldErrors()) {
-      errors.put(error.getField(), (new Message(error.getCode().split(":")[0])));
+      String[] parts = error.getCode().split(":");
+      String messageKey = parts[0];
+      String[] parameters = Arrays.copyOfRange(parts, 1, parts.length);
+      errors.put(error.getField(), new Message(messageKey, parameters));
     }
 
     return errors;
