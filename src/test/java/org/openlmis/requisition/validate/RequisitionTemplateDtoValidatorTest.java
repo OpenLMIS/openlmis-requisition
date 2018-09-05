@@ -17,28 +17,21 @@ package org.openlmis.requisition.validate;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.RequisitionTemplateColumn.COLUMN_DEFINITION;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.SourceType.STOCK_CARDS;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
@@ -46,7 +39,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILAB
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_CANNOT_BE_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_IS_TOO_LONG;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.ADDITIONAL_QUANTITY_REQUIRED;
@@ -76,7 +71,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -92,7 +86,6 @@ import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
 import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -107,11 +100,7 @@ import org.springframework.validation.Errors;
 public class RequisitionTemplateDtoValidatorTest {
 
   private static final String COLUMN_NAME = "test";
-  private static final String ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED =
-      "only alphanumeric label is accepted";
-
-  @Mock
-  private MessageService messageService;
+  private static final String COLUMN = "Column";
 
   @Mock
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -126,49 +115,6 @@ public class RequisitionTemplateDtoValidatorTest {
   private RequisitionTemplateDtoValidator validator;
 
   private Errors errors = mock(Errors.class);
-  private Message.LocalizedMessage message =
-      new Message("testKey").new LocalizedMessage("testMessage");
-
-  @Before
-  public void prepareMessageServiceMock() {
-    Message message1 = new Message(
-        ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED,
-        REQUESTED_QUANTITY_EXPLANATION);
-    Message message2 = new Message(
-        ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_EXPLANATION_IS_DISPLAYED,
-        REQUESTED_QUANTITY);
-    Message message3 = new Message(
-        ERROR_CANNOT_CALCULATE_AT_THE_SAME_TIME,
-        TOTAL_CONSUMED_QUANTITY,
-        STOCK_ON_HAND);
-    Message message7 = new Message(
-        ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED,
-        STOCK_ON_HAND);
-    Message message8 = new Message(
-        ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED,
-        TOTAL_CONSUMED_QUANTITY);
-    Message message9 = new Message(
-        ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED,
-        CALCULATED_ORDER_QUANTITY);
-
-    when(messageService.localize(message1)).thenReturn(message1.new LocalizedMessage(
-        REQUESTED_QUANTITY_EXPLANATION + " must be displayed when "
-            + "requested quantity is displayed."));
-    when(messageService.localize(message2)).thenReturn(message2.new LocalizedMessage(
-        REQUESTED_QUANTITY + " must be "
-            + "displayed when requested quantity explanation is displayed."));
-    when(messageService.localize(message3)).thenReturn(message3.new LocalizedMessage(
-        TOTAL_CONSUMED_QUANTITY + " and "
-            + STOCK_ON_HAND
-            + " cannot be calculated at the same time."));
-    when(messageService.localize(message7)).thenReturn(message7.new LocalizedMessage(
-        "must be displayed when total consumed quantity is calculated."));
-    when(messageService.localize(message8)).thenReturn(message8.new LocalizedMessage(
-        "must be displayed when stock on hand is calculated."));
-    when(messageService.localize(message9)).thenReturn(message9.new LocalizedMessage(
-        REQUESTED_QUANTITY
-            + " must be displayed when calculated order quantity is not displayed."));
-  }
 
   @Test
   public void shouldRejectIfRequestedQuantityAndExplanationIsDisplayedValuesAreDifferent() {
@@ -180,8 +126,8 @@ public class RequisitionTemplateDtoValidatorTest {
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP),
-        contains(REQUESTED_QUANTITY_EXPLANATION
-            + " must be displayed when requested quantity is displayed."));
+        eq(new Message(ERROR_DISPLAYED_WHEN_REQUESTED_QUANTITY_IS_DISPLAYED,
+            REQUESTED_QUANTITY_EXPLANATION).toString()));
   }
 
   @Test
@@ -193,9 +139,9 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP),
-        contains(REQUESTED_QUANTITY
-            + " must be displayed when calculated order quantity is not displayed."));
+    verify(errors).rejectValue(COLUMNS_MAP, new Message(
+        ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED, REQUESTED_QUANTITY)
+        .toString());
   }
 
   @Test
@@ -206,15 +152,10 @@ public class RequisitionTemplateDtoValidatorTest {
     requisitionTemplate.getColumnsMap()
         .get(COLUMN_NAME).getColumnDefinition().getSources().clear();
 
-    Message message4 = new Message(ERROR_SOURCE_NOT_AVAILABLE, "test");
-    when(messageService.localize(message4)).thenReturn(message4.new LocalizedMessage(
-        "Source " + USER_INPUT + " is not available for this column."));
-
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP),
-        contains(RequisitionTemplate.SOURCE + USER_INPUT
-            + RequisitionTemplate.WARNING_SUFFIX));
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_SOURCE_NOT_AVAILABLE, USER_INPUT).toString());
   }
 
   @Test
@@ -229,15 +170,10 @@ public class RequisitionTemplateDtoValidatorTest {
 
     column.setOption(AvailableRequisitionColumnOptionDto.newInstance(option));
 
-    Message message5 = new Message(ERROR_OPTION_NOT_AVAILABLE, "test");
-    when(messageService.localize(message5)).thenReturn(message5.new LocalizedMessage(
-        "Option " + option.getOptionName() + " is not available for this column."));
-
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP),
-        contains(RequisitionTemplate.OPTION + option.getOptionName()
-            + RequisitionTemplate.WARNING_SUFFIX));
+    verify(errors).rejectValue(COLUMNS_MAP, new Message(ERROR_OPTION_NOT_AVAILABLE, "option")
+        .toString());
   }
 
   @Test
@@ -268,15 +204,13 @@ public class RequisitionTemplateDtoValidatorTest {
 
   @Test
   public void shouldRejectWhenConsumptionsInTemplateAndStockoutDaysNotInTemplate() {
-    when(messageService.localize(
-        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
-        .thenReturn(message);
-
     RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
 
     validator.validate(template, errors);
 
-    verify(errors, times(2)).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors).rejectValue(COLUMNS_MAP, new Message(
+        ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE, TOTAL_STOCKOUT_DAYS, ADJUSTED_CONSUMPTION)
+        .toString());
   }
 
   @Test
@@ -307,15 +241,13 @@ public class RequisitionTemplateDtoValidatorTest {
 
   @Test
   public void shouldRejectWhenConsumptionsInTemplateAnConsumedQuantityNotInTemplate() {
-    when(messageService.localize(
-        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE)))
-        .thenReturn(message);
-
     RequisitionTemplateDto template = addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate();
 
     validator.validate(template, errors);
 
-    verify(errors, times(2)).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_VALIDATION_FIELD_MUST_BE_IN_TEMPLATE, TOTAL_STOCKOUT_DAYS,
+            ADJUSTED_CONSUMPTION).toString());
   }
 
   @Test
@@ -326,7 +258,9 @@ public class RequisitionTemplateDtoValidatorTest {
     requisitionTemplate.getColumnsMap().get(AVERAGE_CONSUMPTION).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED, TOTAL_STOCKOUT_DAYS)
+            .toString());
   }
 
   @Test
@@ -337,7 +271,9 @@ public class RequisitionTemplateDtoValidatorTest {
     requisitionTemplate.getColumnsMap().get(ADJUSTED_CONSUMPTION).setIsDisplayed(false);
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors).rejectValue(COLUMNS_MAP, new Message(
+        ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED, TOTAL_STOCKOUT_DAYS)
+        .toString());
   }
 
   @Test
@@ -419,25 +355,19 @@ public class RequisitionTemplateDtoValidatorTest {
 
   @Test
   public void shouldRejectWhenAverageInTemplateAndNumberOfPreviousPeriodsIsNull() {
-    when(messageService.localize(
-        new Message("requisition.error.validation.fieldCanNotBeNull")))
-        .thenReturn(message);
-
     RequisitionTemplateDto requisitionTemplate
         = getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.setNumberOfPeriodsToAverage(null);
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, message.toString());
+    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE,
+        new Message(ERROR_VALIDATION_FIELD_CANNOT_BE_NULL,
+            NUMBER_OF_PERIODS_TO_AVERAGE, AVERAGE_CONSUMPTION).toString());
   }
 
   @Test
   public void shouldRejectWhenNumberOfPreviousPeriodsLessThanTwo() {
-    when(messageService.localize(
-        new Message("requisition.error.validation.fieldMustBeGreaterOrEqual")))
-        .thenReturn(message);
-
     RequisitionTemplate template = baseTemplateBuilder()
         .withNumberOfPeriodsToAverage(1)
         .build();
@@ -446,7 +376,9 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(dto, errors);
 
-    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, message.toString());
+    verify(errors).rejectValue(NUMBER_OF_PERIODS_TO_AVERAGE, new Message(
+        ERROR_VALIDATION_FIELD_MUST_BE_GREATER_OR_EQUAL, NUMBER_OF_PERIODS_TO_AVERAGE, 2)
+        .toString());
   }
 
   @Test
@@ -465,13 +397,6 @@ public class RequisitionTemplateDtoValidatorTest {
 
   @Test
   public void shouldRejectIfColumnIsNotDisplayedHasUserInputSourceAndSeveralAvailableSources() {
-    Message message = new Message(ERROR_MUST_BE_DISPLAYED, STOCK_ON_HAND);
-    String errorMessage = "stockOnHand must be displayed";
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        errorMessage
-    ));
-
     RequisitionTemplate template = baseTemplateBuilder()
         .withNumberOfPeriodsToAverage(2)
         .build();
@@ -484,19 +409,12 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(dto, errors);
 
-    verify(errors, never()).rejectValue(COLUMNS_MAP, errorMessage);
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_MUST_BE_DISPLAYED, STOCK_ON_HAND).toString());
   }
 
   @Test
   public void shouldRejectIfColumnDefinitionIsTooLong() throws Exception {
-    Message message = new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
-        DEFINITION_KEY, MAX_COLUMN_DEFINITION_LENGTH);
-    String errorMessage = DEFINITION_KEY
-        + " is too long. The maximum length is "
-        + MAX_COLUMN_DEFINITION_LENGTH;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplate template = baseTemplateBuilder()
         .withNumberOfPeriodsToAverage(2)
         .build();
@@ -506,17 +424,12 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(dto, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP), eq(new Message(ERROR_VALIDATION_FIELD_IS_TOO_LONG,
+        DEFINITION_KEY, MAX_COLUMN_DEFINITION_LENGTH).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnDefinitionCannotBeFound() throws Exception {
-    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND,
-        COLUMN_DEFINITION, "mocked");
-    String errorMessage = "Cannot find column definition for column mocked";
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     when(availableRequisitionColumnRepository.findOne(template.getColumnsMap().get(STOCK_ON_HAND)
@@ -524,17 +437,12 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND, COLUMN).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnDefinitionWasModified() throws Exception {
-    Message message = new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED,
-        COLUMN_DEFINITION, "mocked");
-    String errorMessage = "Cannot find column definition for column mocked";
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     when(availableRequisitionColumnRepository
@@ -543,98 +451,75 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED, COLUMN).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnLabelIsInvalid() {
-    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
-    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND)
         .setLabel("New not valid name with wrong signs: !@#$%^&*()");
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnLabelNameHasSpecialCharacters() {
-    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
-    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(")(*&^%$#@!");
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnLabelIsNull() {
-    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
-    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(null);
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnLabelIsEmpty() {
-    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
-    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel("");
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
   public void shouldRejectIfColumnLabelNameHasOnlyWhiteSpace() {
-    Message message = new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED);
-    String errorMessage = ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
-
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(errorMessage));
-
     RequisitionTemplateDto template = generateTemplate();
 
     template.getColumnsMap().get(STOCK_ON_HAND).setLabel(" ");
     validator.validate(template, errors);
 
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(errorMessage));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
   public void shouldRejectIfProgramWithSpecifiedIdDoesNotExist() throws Exception {
-
     RequisitionTemplateDto requisitionTemplate = generateTemplate();
     when(programReferenceDataService.findOne(requisitionTemplate.getProgramId())).thenReturn(null);
 
-    Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
-        PROGRAM, requisitionTemplate.getProgramId());
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     validator.validate(requisitionTemplate, errors);
-    verify(errors).rejectValue(eq(PROGRAM_ID), contains(message.toString()));
+    verify(errors).rejectValue(eq(PROGRAM_ID),
+        eq(new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+            PROGRAM, requisitionTemplate.getProgramId()).toString()));
   }
 
   @Test
@@ -643,13 +528,10 @@ public class RequisitionTemplateDtoValidatorTest {
     UUID facilityTypeId = requisitionTemplate.getFacilityTypeIds().iterator().next();
     when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(null);
 
-    Message message = new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
-        FACILITY_TYPE, facilityTypeId);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     validator.validate(requisitionTemplate, errors);
-    verify(errors).rejectValue(eq(FACILITY_TYPE_ID), contains(message.toString()));
+    verify(errors).rejectValue(eq(FACILITY_TYPE_ID),
+        eq(new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
+            FACILITY_TYPE, facilityTypeId).toString()));
   }
 
   @Test
@@ -657,13 +539,10 @@ public class RequisitionTemplateDtoValidatorTest {
     RequisitionTemplateDto requisitionTemplate = generateTemplate();
     requisitionTemplate.findColumn(REQUESTED_QUANTITY_EXPLANATION).setSource(null);
 
-    Message message = new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
-        REQUESTED_QUANTITY_EXPLANATION);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     validator.validate(requisitionTemplate, errors);
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+    verify(errors).rejectValue(eq(COLUMNS_MAP),
+        eq(new Message(ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL,
+        COLUMN).toString()));
   }
 
   @Test
@@ -672,14 +551,11 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
 
-    Message message = new Message(ERROR_COLUMN_SOURCE_INVALID);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     template.findColumn(STOCK_ON_HAND).setSource(CALCULATED);
 
     validator.validate(template, errors);
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_COLUMN_SOURCE_INVALID, COLUMN, STOCK_CARDS, CALCULATED).toString());
   }
 
   @Test
@@ -688,14 +564,11 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
 
-    Message message = new Message(ERROR_COLUMN_SOURCE_INVALID);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     template.findColumn(TOTAL_RECEIVED_QUANTITY).setSource(CALCULATED);
 
     validator.validate(template, errors);
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_COLUMN_SOURCE_INVALID, COLUMN, STOCK_CARDS, CALCULATED).toString());
   }
 
   @Test
@@ -704,14 +577,11 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(template, errors);
 
-    Message message = new Message(ERROR_COLUMN_SOURCE_INVALID);
-    when(messageService.localize(message)).thenReturn(message.new LocalizedMessage(
-        message.toString()));
-
     template.findColumn(TOTAL_CONSUMED_QUANTITY).setSource(CALCULATED);
 
     validator.validate(template, errors);
-    verify(errors).rejectValue(eq(COLUMNS_MAP), contains(message.toString()));
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_COLUMN_SOURCE_INVALID, COLUMN, STOCK_CARDS, CALCULATED).toString());
   }
 
   @Test
@@ -738,9 +608,6 @@ public class RequisitionTemplateDtoValidatorTest {
 
   @Test
   public void shouldRejectWhenCalcOrderQtyIsaIsDisplayedAndStockFlagIsDisabled() {
-    when(messageService
-        .localize(new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS)))
-        .thenReturn(message);
     RequisitionTemplate template = baseTemplateBuilder()
         .withColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED, ImmutableSet.of(CALCULATED))
         .build();
@@ -752,7 +619,9 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(dto, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, message.toString());
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS,
+            CALCULATED_ORDER_QUANTITY_ISA).toString());
   }
 
   private RequisitionTemplateDataBuilder baseTemplateBuilder() {
@@ -833,8 +702,6 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   private RequisitionTemplateDto mockMessageAndGetRequisitionTemplate(String messageKey) {
-    when(messageService.localize(new Message(messageKey))).thenReturn(message);
-
     RequisitionTemplateDto requisitionTemplate =
         getRequisitionTemplateForTestAdjustedAndAverageConsumptionField();
     requisitionTemplate.setNumberOfPeriodsToAverage(2);

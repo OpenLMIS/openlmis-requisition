@@ -19,18 +19,13 @@ import static org.apache.commons.lang3.StringUtils.length;
 
 import java.util.Collection;
 import java.util.regex.Pattern;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.utils.Message;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 abstract class BaseValidator implements Validator {
   private static final String ALPHANUMERIC_REGEX = "^[a-zA-z0-9/]+[a-zA-Z0-9/ ]+$";
   private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile(ALPHANUMERIC_REGEX);
-  
-  @Autowired
-  private MessageService messageService;
 
   protected <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value,
                                          String field, Message message) {
@@ -54,7 +49,7 @@ abstract class BaseValidator implements Validator {
   }
 
   protected void rejectValue(Errors errors, String field, Message message) {
-    errors.rejectValue(field, messageService.localize(message).toString());
+    errors.rejectValue(field, message.toString());
   }
 
 }

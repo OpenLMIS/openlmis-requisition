@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public abstract class BaseController {
 
   static final String API_URL = "/api";
+  private static final String MESSAGE_SEPARATOR = ":";
+  private static final String PARAMETER_SEPARATOR = ",";
 
   @Autowired
   private Javers javers;
@@ -45,14 +47,15 @@ public abstract class BaseController {
   /**
    * Get errors from {@link BindingResult} instance.
    */
-  protected Map<String, Message> getErrors(BindingResult bindingResult) {
+  Map<String, Message> getErrors(BindingResult bindingResult) {
     Map<String, Message> errors = new HashMap<>();
 
     for (FieldError error : bindingResult.getFieldErrors()) {
-      String[] parts = error.getCode().split(":");
+      String[] parts = error.getCode().split(MESSAGE_SEPARATOR);
       String messageKey = parts[0];
-      String[] parameters = Arrays.copyOfRange(parts, 1, parts.length);
-      errors.put(error.getField(), new Message(messageKey, parameters));
+      String[] parameters = parts[1].split(PARAMETER_SEPARATOR);
+      errors.put(error.getField(), new Message(messageKey.trim(),
+          Arrays.stream(parameters).map(String::trim).toArray()));
     }
 
     return errors;

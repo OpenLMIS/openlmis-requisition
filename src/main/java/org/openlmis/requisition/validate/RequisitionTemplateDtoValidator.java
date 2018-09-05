@@ -224,7 +224,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
           .getOptions();
       Optional.ofNullable(column.getOption())
           .ifPresent(option -> rejectIfNotContains(errors, options, option, COLUMNS_MAP,
-              new Message(ERROR_OPTION_NOT_AVAILABLE, option.toString())));
+              new Message(ERROR_OPTION_NOT_AVAILABLE, option.getOptionName())));
 
       rejectIfLengthTooLong(
           errors, column.getDefinition(), MAX_COLUMN_DEFINITION_LENGTH, COLUMNS_MAP,

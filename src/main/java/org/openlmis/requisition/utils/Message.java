@@ -28,6 +28,7 @@ import org.springframework.context.MessageSource;
 public class Message {
   @Getter
   private String key;
+  @Getter
   private Object[] params;
 
   public Message(String messageKey) {
