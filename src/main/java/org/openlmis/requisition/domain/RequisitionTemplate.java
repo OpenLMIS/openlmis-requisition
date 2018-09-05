@@ -307,12 +307,12 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     if (column.getColumnDefinition().getSources() == null) {
       throw new ValidationMessageException(new Message(ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN,
-          source.toString()));
+          source.toString(), key));
     }
 
     if (!column.getColumnDefinition().getSources().contains(source)) {
       throw new ValidationMessageException(new Message(ERROR_SOURCE_NOT_AVAILABLE_FOR_THIS_COLUMN,
-          source.toString()));
+          source.toString(), key));
     }
     column.setSource(source);
   }
@@ -329,12 +329,12 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     if (column.getColumnDefinition().getOptions() == null) {
       throw new ValidationMessageException(new Message(ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN,
-          option.getOptionName()));
+          option.getOptionName(), key));
     }
 
     if (!column.getColumnDefinition().getOptions().contains(option)) {
       throw new ValidationMessageException(new Message(ERROR_OPTION_NOT_AVAILABLE_FOR_THIS_COLUMN,
-          option.getOptionName()));
+          option.getOptionName(), key));
     }
     column.setOption(option);
   }
