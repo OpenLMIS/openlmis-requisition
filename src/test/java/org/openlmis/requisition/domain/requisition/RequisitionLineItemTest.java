@@ -16,6 +16,7 @@
 package org.openlmis.requisition.domain.requisition;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -230,6 +231,22 @@ public class RequisitionLineItemTest {
     item.updateFrom(updateItem);
 
     assertThat(item.getStockAdjustments(), hasItems(adjustment));
+  }
+
+  @Test
+  public void shouldClearStockAdjustmentsWhileUpdating() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(initiatedRequisition);
+    List<StockAdjustment> adjustments = new ArrayList<>();
+    adjustments.add(new StockAdjustmentDataBuilder().build());
+    item.setStockAdjustments(adjustments);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setStockAdjustments(null);
+
+    item.updateFrom(updateItem);
+
+    assertTrue(isEmpty(item.getStockAdjustments()));
   }
 
   @Test
