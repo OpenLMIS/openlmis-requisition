@@ -34,7 +34,7 @@ public final class CustomSingleColumnMoneyUserType
     extends AbstractSingleColumnUserType<Money, BigDecimal, BigDecimalColumnMoneyMapper>
     implements ParameterizedType, IntegratorConfiguredType {
 
-  private static final String CURRENCY_CODE = System.getenv("currentCode");
+  private static final String CURRENCY_CODE = System.getenv("currencyCode");
 
   private Properties parameterValues;
 

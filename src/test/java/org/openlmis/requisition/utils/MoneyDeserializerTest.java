@@ -39,7 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({ System.class })
 public class MoneyDeserializerTest {
 
-  private static final String CURRENCY_CODE = "currentCode";
+  private static final String CURRENCY_CODE = "currencyCode";
 
   private ObjectMapper mapper;
   private MoneyDeserializer moneyDeserializer;

@@ -241,6 +241,6 @@ public class Application {
    */
   @PostConstruct
   public void setCurrencyCode() {
-    CurrencyConfig.currentCode = currencyCode;
+    CurrencyConfig.currencyCode = currencyCode;
   }
 }

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.CurrencyConfig.currentCode;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
@@ -1611,7 +1611,7 @@ public class RequisitionTest {
   }
 
   private void setUpGetTotalCost(BigDecimal fullSupplyCost, BigDecimal nonFullSupplyCost) {
-    CurrencyUnit currency = CurrencyUnit.of(currentCode);
+    CurrencyUnit currency = CurrencyUnit.of(currencyCode);
 
     RequisitionLineItem fullSupplyItem = getRequisitionLineItem(false, true);
     fullSupplyItem.setTotalCost(Money.of(currency, fullSupplyCost));

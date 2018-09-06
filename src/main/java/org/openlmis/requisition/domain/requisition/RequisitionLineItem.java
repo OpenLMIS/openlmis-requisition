@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.CurrencyConfig.currentCode;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAdjustedConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
@@ -261,7 +261,7 @@ public class RequisitionLineItem extends BaseEntity {
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = Optional
         .ofNullable(priceFromProduct)
-        .orElseGet(() -> Money.of(CurrencyUnit.of(currentCode), PRICE_PER_PACK_IF_NULL));
+        .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
     this.nonFullSupply = false;
   }
 

@@ -29,7 +29,7 @@ import org.joda.money.Money;
  */
 public class MoneyDeserializer extends JsonDeserializer<Money> {
 
-  private static final String CURRENCY_CODE = System.getenv("currentCode");
+  private static final String CURRENCY_CODE = System.getenv("currencyCode");
 
   @Override
   public Money deserialize(JsonParser jsonParser, DeserializationContext ctxt)

@@ -17,7 +17,7 @@ package org.openlmis.requisition;
 
 public final class CurrencyConfig {
 
-  public static String currentCode = "USD";
+  public static String currencyCode = "USD";
 
   private CurrencyConfig() {
   }
