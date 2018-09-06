@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.CurrencyConfig.currentCode;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -78,7 +79,6 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.OpenLmisNumberUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -864,7 +864,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
-    Money defaultValue = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 0);
+    Money defaultValue = Money.of(CurrencyUnit.of(currentCode), 0);
 
     if (requisitionLineItems.isEmpty()) {
       return defaultValue;
@@ -902,7 +902,7 @@ public class Requisition extends BaseTimestampedEntity {
     getNonSkippedRequisitionLineItems().forEach(line -> {
       line.updatePacksToShip(products.get(line.getOrderableId()));
       line.setTotalCost(LineItemFieldsCalculator
-          .calculateTotalCost(line, CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE)));
+          .calculateTotalCost(line, CurrencyUnit.of(currentCode)));
     });
   }
 

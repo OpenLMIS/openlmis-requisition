@@ -27,7 +27,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.PRICE_PER_PACK_IF_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_CHECK_RESULT;
@@ -84,6 +83,7 @@ import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -151,6 +151,9 @@ public abstract class BaseWebIntegrationTest {
 
   @LocalServerPort
   private int serverPort;
+
+  @Value("${currencyCode}")
+  private String currencyCode;
 
   /**
    * Method called to initialize basic resources after the object is created.
@@ -265,8 +268,8 @@ public abstract class BaseWebIntegrationTest {
     lineItem.setOrderableId(LINE_ITEM_PRODUCT_ID);
     lineItem.setRequisition(requisition);
     lineItem.setId(UUID.randomUUID());
-    lineItem.setPricePerPack(Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
-    lineItem.setTotalCost(Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
+    lineItem.setPricePerPack(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
+    lineItem.setTotalCost(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
 
     return Lists.newArrayList(lineItem);
   }

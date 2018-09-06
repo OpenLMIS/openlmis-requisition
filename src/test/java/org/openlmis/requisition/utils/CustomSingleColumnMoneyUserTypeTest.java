@@ -13,12 +13,23 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition;
 
-public final class CurrencyConfig {
+package org.openlmis.requisition.utils;
 
-  public static String currentCode = "USD";
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-  private CurrencyConfig() {
+public class CustomSingleColumnMoneyUserTypeTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(CustomSingleColumnMoneyUserType.class)
+        .withRedefinedSuperclass()
+        .suppress(Warning.NONFINAL_FIELDS)
+        .withIgnoredFields("columnMapper", "sqlTypes")
+        .verify();
   }
+
 }

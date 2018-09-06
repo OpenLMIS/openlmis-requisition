@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
+import static org.openlmis.requisition.CurrencyConfig.currentCode;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -189,7 +189,7 @@ public class RequisitionLineItemDataBuilder {
   }
 
   private Money asMoney(Number value) {
-    return Money.of(CurrencyUnit.of(CURRENCY_CODE), value.doubleValue());
+    return Money.of(CurrencyUnit.of(currentCode), value.doubleValue());
   }
 
   public RequisitionLineItemDataBuilder setRequisition(Requisition requisition) {
@@ -212,7 +212,7 @@ public class RequisitionLineItemDataBuilder {
     if (null != programOrderable) {
       this.pricePerPack = Optional
           .ofNullable(programOrderable.getPricePerPack())
-          .orElseGet(() -> Money.of(CurrencyUnit.of(CURRENCY_CODE), BigDecimal.ZERO));
+          .orElseGet(() -> Money.of(CurrencyUnit.of(currentCode), BigDecimal.ZERO));
     }
 
     return this;

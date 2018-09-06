@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.openlmis.requisition.CurrencyConfig.CURRENCY_CODE;
+import static org.openlmis.requisition.CurrencyConfig.currentCode;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAdjustedConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
@@ -53,7 +53,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -163,14 +162,12 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = CURRENCY_CODE)})
+  @Type(type = "org.openlmis.requisition.utils.CustomSingleColumnMoneyUserType")
   private Money pricePerPack;
 
   @Getter
   @Setter
-  @Type(type = "org.jadira.usertype.moneyandcurrency.joda.PersistentMoneyAmount",
-      parameters = {@Parameter(name = "currencyCode", value = CURRENCY_CODE)})
+  @Type(type = "org.openlmis.requisition.utils.CustomSingleColumnMoneyUserType")
   private Money totalCost;
 
   @Setter
@@ -264,7 +261,7 @@ public class RequisitionLineItem extends BaseEntity {
     Money priceFromProduct = product.getPricePerPack();
     this.pricePerPack = Optional
         .ofNullable(priceFromProduct)
-        .orElseGet(() -> Money.of(CurrencyUnit.of(CURRENCY_CODE), PRICE_PER_PACK_IF_NULL));
+        .orElseGet(() -> Money.of(CurrencyUnit.of(currentCode), PRICE_PER_PACK_IF_NULL));
     this.nonFullSupply = false;
   }
 

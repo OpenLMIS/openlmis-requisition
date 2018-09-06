@@ -46,7 +46,6 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.CurrencyConfig;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
@@ -64,6 +63,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -77,6 +77,9 @@ public class RequisitionRepositoryIntegrationTest
   
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+
+  @Value("${currencyCode}")
+  private String currencyCode;
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -274,7 +277,7 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void shouldPersistWithMoney() {
     UUID programId = UUID.randomUUID();
-    Money pricePerPack = Money.of(CurrencyUnit.of(CurrencyConfig.CURRENCY_CODE), 14.57);
+    Money pricePerPack = Money.of(CurrencyUnit.of(currencyCode), 14.57);
 
     ProgramDto program = new ProgramDto();
     program.setId(programId);

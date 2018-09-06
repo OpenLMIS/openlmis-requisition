@@ -18,6 +18,7 @@ package org.openlmis.requisition;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
+import javax.annotation.PostConstruct;
 import org.flywaydb.core.api.callback.FlywayCallback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
@@ -92,6 +93,9 @@ public class Application {
 
   @Value("${redis.password}")
   private String redisPassword;
+
+  @Value("${currencyCode}")
+  private String currencyCode;
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -230,5 +234,13 @@ public class Application {
           + " USING requisition_line_items_requisitionid_idx;");
       logger.info("Finished clustering requisition_line_items");
     }
+  }
+
+  /**
+   * Sets currency code.
+   */
+  @PostConstruct
+  public void setCurrencyCode() {
+    CurrencyConfig.currentCode = currencyCode;
   }
 }
