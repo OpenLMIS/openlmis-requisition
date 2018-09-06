@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -37,7 +38,9 @@ import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -45,11 +48,16 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockAdjustmentDto;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private Requisition initiatedRequisition;
 
@@ -189,6 +197,42 @@ public class RequisitionLineItemTest {
   }
 
   @Test
+  public void shouldSetSkippedAsFalseByDefault() {
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(initiatedRequisition);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setSkipped(null);
+
+    item.updateFrom(updateItem);
+
+    assertFalse(item.getSkipped());
+  }
+
+  @Test
+  public void shouldClearStockAdjustmentsIfNullWhileUpdating() {
+    StockAdjustment adjustment = new StockAdjustmentDataBuilder().build();
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(initiatedRequisition);
+    item.setStockAdjustments(null);
+
+    RequisitionLineItem updateItem = new RequisitionLineItem();
+    updateItem.setStockAdjustments(singletonList(adjustment));
+
+    item.updateFrom(updateItem);
+
+    assertThat(item.getStockAdjustments(), hasItems(adjustment));
+
+    List<StockAdjustment> adjustments = new ArrayList<>();
+    adjustments.add(new StockAdjustmentDataBuilder().build());
+    item.setStockAdjustments(adjustments);
+    item.updateFrom(updateItem);
+
+    assertThat(item.getStockAdjustments(), hasItems(adjustment));
+  }
+
+  @Test
   public void shouldReturnApprovedQuantityWhenItIsNotNull() {
     // given
     RequisitionLineItem item = new RequisitionLineItem();
@@ -301,6 +345,41 @@ public class RequisitionLineItemTest {
   }
 
   @Test
+  public void shouldReturnZeroIfNotPopulatedFromStockCardsAndCalculatedIsNull() {
+    Requisition requisition = new Requisition();
+    requisition.setTemplate(new RequisitionTemplateDataBuilder()
+        .build());
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.getRequisition().setStatus(RequisitionStatus.SUBMITTED);
+
+    item.setApprovedQuantity(null);
+    item.setRequestedQuantity(null);
+    item.setCalculatedOrderQuantity(null);
+
+    assertEquals(0, item.getOrderQuantity());
+  }
+
+  @Test
+  public void shouldReturnZeroIfPopulatedFromStockCardsAndCalculatedIsaIsNull() {
+    Requisition requisition = new Requisition();
+    requisition.setTemplate(new RequisitionTemplateDataBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .build());
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(requisition);
+    item.getRequisition().setStatus(RequisitionStatus.SUBMITTED);
+
+    item.setApprovedQuantity(null);
+    item.setRequestedQuantity(null);
+    item.setCalculatedOrderQuantityIsa(null);
+
+    assertEquals(0, item.getOrderQuantity());
+  }
+
+  @Test
   public void shouldBuildFromConstructorAndExport() {
     RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
 
@@ -334,7 +413,16 @@ public class RequisitionLineItemTest {
   @Test
   public void shouldNotSetPreviousAdjustedConsumption() {
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
-    requisitionLineItemDto.setPreviousAdjustedConsumptions(Collections.singletonList(1));
+    requisitionLineItemDto.setPreviousAdjustedConsumptions(singletonList(1));
+    RequisitionLineItem requisitionLineItem =
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+    assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
+  }
+
+  @Test
+  public void shouldSetStockAdjustments() {
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    requisitionLineItemDto.setStockAdjustments(singletonList(new StockAdjustmentDto()));
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -401,6 +489,18 @@ public class RequisitionLineItemTest {
     assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.ADJUSTED_CONSUMPTION));
     assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.APPROVED_QUANTITY));
     assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.REMARKS_COLUMN));
+    assertFalse(item.allRequiredCalcFieldsNotFilled(""));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfNoProductWasFound() {
+    expectedException.expect(ValidationMessageException.class);
+    expectedException.expectMessage(MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE);
+
+    UUID programId = UUID.randomUUID();
+    new RequisitionLineItem(
+        new RequisitionDataBuilder().withProgramId(programId).build(),
+        new ApprovedProductDtoDataBuilder().build());
   }
 
   private void checkResultsOfConstruction(RequisitionLineItem item) {
