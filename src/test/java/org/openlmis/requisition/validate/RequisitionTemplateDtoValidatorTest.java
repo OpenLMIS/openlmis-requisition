@@ -155,7 +155,7 @@ public class RequisitionTemplateDtoValidatorTest {
     validator.validate(requisitionTemplate, errors);
 
     verify(errors).rejectValue(COLUMNS_MAP,
-        new Message(ERROR_SOURCE_NOT_AVAILABLE, USER_INPUT).toString());
+        new Message(ERROR_SOURCE_NOT_AVAILABLE, USER_INPUT, COLUMN_NAME).toString());
   }
 
   @Test
@@ -172,8 +172,8 @@ public class RequisitionTemplateDtoValidatorTest {
 
     validator.validate(requisitionTemplate, errors);
 
-    verify(errors).rejectValue(COLUMNS_MAP, new Message(ERROR_OPTION_NOT_AVAILABLE, "option")
-        .toString());
+    verify(errors).rejectValue(COLUMNS_MAP,
+        new Message(ERROR_OPTION_NOT_AVAILABLE, "option", COLUMN_NAME).toString());
   }
 
   @Test
