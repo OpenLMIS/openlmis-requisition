@@ -76,7 +76,6 @@ import org.slf4j.LoggerFactory;
 public class RequisitionLineItem extends BaseEntity {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionLineItem.class);
 
-  public static final String ORDERABLE_ID = "orderableId";
   public static final String REQUESTED_QUANTITY = "requestedQuantity";
   public static final String REQUESTED_QUANTITY_EXPLANATION = "requestedQuantityExplanation";
   public static final String BEGINNING_BALANCE = "beginningBalance";
@@ -704,14 +703,6 @@ public class RequisitionLineItem extends BaseEntity {
       }
       setCalculatedOrderQuantityIsa(calculated);
     }
-  }
-
-  private Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
-    return stockCardRangeSummaryDtos.stream()
-        .filter(stockCardRangeSummaryDto ->
-            stockCardRangeSummaryDto.getOrderable().getId().equals(this.orderableId))
-        .findFirst();
   }
 
   /**
