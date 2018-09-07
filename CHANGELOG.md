@@ -5,11 +5,11 @@ New functionality:
 * [OLMIS-5334](https://openlmis.atlassian.net/browse/OLMIS-5334): Enabled Total and Number of patients added columns for Stock Based Requisitions.
 * [OLMIS-5335](https://openlmis.atlassian.net/browse/OLMIS-5335): Enabled Adjusted Consumption column for Stock Based Requisitions.
 * [OLMIS-5314](https://openlmis.atlassian.net/browse/OLMIS-5314): Enabled Total and Number of patients added columns for Stock Based Requisitions.
-* [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added loading currency, number and date settings from properties on startup.
 
 Improvements:
 * [OLMIS-4295](https://openlmis.atlassian.net/browse/OLMIS-4295): Updated checkstyle to use newest google style.
 * [OLMIS-3078](https://openlmis.atlassian.net/browse/OLMIS-3078): Made Javers log initializer not iterate over all items, only those without logs.
+* [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added loading currency, number and date settings from properties on startup.
 
 Bug fixes:
 * [OLMIS-5065](https://openlmis.atlassian.net/browse/OLMIS-5065): Brought back requisition timestamps validation
