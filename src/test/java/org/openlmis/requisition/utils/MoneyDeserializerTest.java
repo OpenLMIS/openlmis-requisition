@@ -16,8 +16,6 @@
 package org.openlmis.requisition.utils;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -31,20 +29,11 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ System.class })
 public class MoneyDeserializerTest {
-
-  private static final String CURRENCY_CODE = "currencyCode";
 
   private ObjectMapper mapper;
   private MoneyDeserializer moneyDeserializer;
-
-  private String json = String.format("{\"value\":%s}", "\"10\"");
 
   @Before
   public void setup() {
@@ -56,28 +45,6 @@ public class MoneyDeserializerTest {
   public void shouldNotDeserializeMoneyWhenValueEmpty() throws IOException {
     String json = String.format("{\"value\":%s}", "\"\"");
     deserializeMoney(json);
-  }
-
-  @Test
-  public void shouldDeserializeMoneyIfCurrencyCodeIsSetInEnv() throws IOException {
-    mockStatic(System.class);
-    when(System.getenv(CURRENCY_CODE)).thenReturn("USD");
-
-    Money money = deserializeMoney(json);
-
-    assertEquals(new BigDecimal("10.00"), money.getAmount());
-    assertEquals(CurrencyUnit.USD, money.getCurrencyUnit());
-  }
-
-  @Test
-  public void shouldDeserializeMoneyIfCurrencyCodeIsEmptyInEnv() throws IOException {
-    mockStatic(System.class);
-    when(System.getenv(CURRENCY_CODE)).thenReturn(null);
-
-    Money money = deserializeMoney(json);
-
-    assertEquals(new BigDecimal("10.00"), money.getAmount());
-    assertEquals(CurrencyUnit.USD, money.getCurrencyUnit());
   }
 
   @Test

@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.utils;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -34,8 +34,6 @@ public final class CustomSingleColumnMoneyUserType
     extends AbstractSingleColumnUserType<Money, BigDecimal, BigDecimalColumnMoneyMapper>
     implements ParameterizedType, IntegratorConfiguredType {
 
-  private static final String CURRENCY_CODE = System.getenv("currencyCode");
-
   private Properties parameterValues;
 
   @Override
@@ -50,7 +48,7 @@ public final class CustomSingleColumnMoneyUserType
   @Override
   public void applyConfiguration(SessionFactory sessionFactory) {
     CurrencyUnitConfigured columnMapper = getColumnMapper();
-    String currencyString = defaultIfBlank(CURRENCY_CODE, "USD");
+    String currencyString = currencyCode;
     CurrencyUnit currencyUnit = CurrencyUnit.of(currencyString);
     columnMapper.setCurrencyUnit(currencyUnit);
   }

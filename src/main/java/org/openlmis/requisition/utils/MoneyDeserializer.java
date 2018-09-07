@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.utils;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -29,15 +29,12 @@ import org.joda.money.Money;
  */
 public class MoneyDeserializer extends JsonDeserializer<Money> {
 
-  private static final String CURRENCY_CODE = System.getenv("currencyCode");
-
   @Override
   public Money deserialize(JsonParser jsonParser, DeserializationContext ctxt)
       throws IOException {
 
-    String currencyString = defaultIfBlank(CURRENCY_CODE, "USD");
+    String currencyString = currencyCode;
     return Money.parse(
         CurrencyUnit.of(currencyString).getCode() + " " + jsonParser.getText());
   }
 }
-
