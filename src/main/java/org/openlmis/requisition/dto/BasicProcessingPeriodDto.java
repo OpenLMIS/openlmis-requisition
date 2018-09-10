@@ -19,16 +19,33 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @EqualsAndHashCode
+@NoArgsConstructor
 public class BasicProcessingPeriodDto {
   public static final String START_DATE = "startDate";
 
-  protected UUID id;
-  protected String name;
-  protected LocalDate startDate;
-  protected LocalDate endDate;
+  private UUID id;
+  private String name;
+  private LocalDate startDate;
+  private LocalDate endDate;
+
+  /**
+   * Constructor for {@link BasicProcessingPeriodDto} with all parameters.
+   *
+   * @param id period id
+   * @param name period name
+   * @param startDate date when period starts
+   * @param endDate date when period ends
+   */
+  public BasicProcessingPeriodDto(UUID id, String name, LocalDate startDate, LocalDate endDate) {
+    this.id = id;
+    this.name = name;
+    this.startDate = startDate;
+    this.endDate = endDate;
+  }
 }

@@ -53,10 +53,7 @@ public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
   public ProcessingPeriodDto(UUID id, String name, LocalDate startDate, LocalDate endDate,
       ProcessingScheduleDto processingSchedule, String description, Integer durationInMonths,
       Map<String, String> extraData) {
-    this.id = id;
-    this.name = name;
-    this.endDate = endDate;
-    this.startDate = startDate;
+    super(id, name, startDate, endDate);
     this.processingSchedule = processingSchedule;
     this.description = description;
     this.durationInMonths = durationInMonths;
