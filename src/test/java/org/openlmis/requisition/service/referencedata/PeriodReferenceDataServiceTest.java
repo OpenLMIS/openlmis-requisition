@@ -73,7 +73,7 @@ public class PeriodReferenceDataServiceTest
         .hasEmptyBody()
         .hasQueryParameter("processingScheduleId", scheduleId)
         .hasQueryParameter("endDate", date)
-        .hasQueryParameter("size", 2000);
+        .hasQueryParameter("size", Integer.MAX_VALUE);
   }
 
   @Test

@@ -16,16 +16,20 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
   static final String REPORT_ONLY = "reportOnly";
 
@@ -33,6 +37,31 @@ public class ProcessingPeriodDto extends BasicProcessingPeriodDto {
   private String description;
   private Integer durationInMonths;
   private Map<String, String> extraData;
+
+  /**
+   * Constructor for {@link ProcessingPeriodDto} with all parameters.
+   *
+   * @param id period id
+   * @param name period name
+   * @param startDate date when period starts
+   * @param endDate date when period ends
+   * @param processingSchedule schedule for period
+   * @param description period description
+   * @param durationInMonths number of months in period
+   * @param extraData map that hold additional information about period
+   */
+  public ProcessingPeriodDto(UUID id, String name, LocalDate startDate, LocalDate endDate,
+      ProcessingScheduleDto processingSchedule, String description, Integer durationInMonths,
+      Map<String, String> extraData) {
+    this.id = id;
+    this.name = name;
+    this.endDate = endDate;
+    this.startDate = startDate;
+    this.processingSchedule = processingSchedule;
+    this.description = description;
+    this.durationInMonths = durationInMonths;
+    this.extraData = extraData;
+  }
 
   /**
    * Returns the value of {@link #REPORT_ONLY} key from the {@link #extraData} map. If the map does

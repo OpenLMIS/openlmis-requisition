@@ -25,10 +25,8 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode
 public class BasicProcessingPeriodDto {
-
-  private UUID id;
-  private String name;
-  private LocalDate startDate;
-  private LocalDate endDate;
-
+  protected UUID id;
+  protected String name;
+  protected LocalDate startDate;
+  protected LocalDate endDate;
 }

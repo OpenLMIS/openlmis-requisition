@@ -81,6 +81,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -90,6 +91,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
@@ -132,6 +134,8 @@ public class RequisitionTest {
 
   private ApprovedProductDto product1;
   private ApprovedProductDto product2;
+
+  private ProcessingPeriodDto period;
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -183,6 +187,8 @@ public class RequisitionTest {
 
     product1 = mockApprovedProduct(productId1);
     product2 = mockApprovedProduct(productId2);
+
+    period = new ProcessingPeriodDtoDataBuilder().build();
   }
 
   @Test
@@ -691,7 +697,8 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID(),
-        new StockData(), singletonList(stockCardRangeSummaryDto));
+        new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -709,7 +716,8 @@ public class RequisitionTest {
     Requisition req = new Requisition();
     req.setProgramId(programId);
     req.initiate(template, Collections.singleton(product1), Collections.emptyList(), 0, null,
-        emptyMap(), UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto));
+        emptyMap(), UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -740,7 +748,8 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(),
-        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto));
+        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -776,7 +785,8 @@ public class RequisitionTest {
     req.setProgramId(programId);
     req.initiate(template, asList(product1, product2),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
-        new StockData(), singletonList(stockCardRangeSummaryDto));
+        new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1136,7 +1146,8 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
 
     requisition.initiate(template, Collections.emptyList(), Collections.emptyList(), 0, null,
-        emptyMap(), initiatorId, new StockData(), singletonList(stockCardRangeSummaryDto));
+        emptyMap(), initiatorId, new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.INITIATED,
         initiatorId);
@@ -1300,7 +1311,8 @@ public class RequisitionTest {
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.initiate(template, asList(product1, product2), emptyList(), 0, null, idealStockAmounts,
-        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto));
+        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1324,7 +1336,8 @@ public class RequisitionTest {
 
     req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
-        singletonList(stockCardRangeSummaryDto));
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
@@ -1350,7 +1363,8 @@ public class RequisitionTest {
 
     req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
-        singletonList(stockCardRangeSummaryDto));
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
@@ -1374,7 +1388,8 @@ public class RequisitionTest {
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
         asList(product1, product2), emptyList(),
         0, null, emptyMap(), UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
-        singletonList(stockCardRangeSummaryDto)))
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period)))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getNonNegativeNumberErrorMessage(
             TOTAL_CONSUMED_QUANTITY, productId1.toString()));
@@ -1396,7 +1411,8 @@ public class RequisitionTest {
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
         asList(product1, product2), emptyList(),
         0, null, emptyMap(), UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
-        singletonList(stockCardRangeSummaryDto)))
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period)))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getNonPositiveNumberErrorMessage(
             TOTAL_RECEIVED_QUANTITY, productId1.toString()));
@@ -1414,7 +1430,8 @@ public class RequisitionTest {
 
     req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
-        singletonList(stockCardRangeSummaryDto));
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1434,7 +1451,8 @@ public class RequisitionTest {
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(emptyMap(), beginningBalances),
-        singletonList(stockCardRangeSummaryDto));
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
@@ -1466,7 +1484,8 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
     req.initiate(template, asList(product1), asList(previousReq), 0, null,
-        emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto));
+        emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     assertThat(req.findLineByProductId(productId1).getSkipped(), is(true));
   }
@@ -1485,7 +1504,8 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
     req.initiate(template, asList(product1), asList(previousReq), 0, null,
-        emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto));
+        emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
   }
@@ -1499,7 +1519,8 @@ public class RequisitionTest {
     req.setEmergency(false);
 
     req.initiate(template, asList(product1), emptyList(), 0, null, emptyMap(), UUID.randomUUID(),
-        null, singletonList(stockCardRangeSummaryDto));
+        null, singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
   }
@@ -1514,7 +1535,8 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(true);
     req.initiate(template, asList(product1), emptyList(), 0, null, emptyMap(), UUID.randomUUID(),
-        null, singletonList(stockCardRangeSummaryDto));
+        null, singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
 
     assertThat(req.getRequisitionLineItems().size(), is(0));
   }
@@ -1526,7 +1548,8 @@ public class RequisitionTest {
     req.setEmergency(true);
 
     req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
-        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto));
+        UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
+        singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();

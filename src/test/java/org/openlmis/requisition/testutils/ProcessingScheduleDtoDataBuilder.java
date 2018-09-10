@@ -13,23 +13,36 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.testutils;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProcessingScheduleDto {
+public class ProcessingScheduleDtoDataBuilder {
+
+  private static int instanceNumber = 0;
+
   private UUID id;
   private String code;
   private String description;
   private ZonedDateTime modifiedDate;
   private String name;
+
+  /**
+   * Creates builder for creating new instance of {@link ProcessingScheduleDto}.
+   */
+  public ProcessingScheduleDtoDataBuilder() {
+    instanceNumber++;
+
+    id = UUID.randomUUID();
+    code = "PS"  + instanceNumber;
+    description = "Processing Schedule " + instanceNumber;
+    modifiedDate = ZonedDateTime.now();
+    name = "Schedule" + instanceNumber;
+  }
+
+  public ProcessingScheduleDto build() {
+    return new ProcessingScheduleDto(id, code, description, modifiedDate, name);
+  }
 }

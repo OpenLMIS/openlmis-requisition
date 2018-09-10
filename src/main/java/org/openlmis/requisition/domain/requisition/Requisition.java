@@ -367,7 +367,9 @@ public class Requisition extends BaseTimestampedEntity {
       Map<UUID, Integer> idealStockAmounts,
       UUID initiator,
       StockData stockData,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaries) {
+      List<StockCardRangeSummaryDto> stockCardRangeSummaries,
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+      List<ProcessingPeriodDto> periods) {
 
     Profiler profiler = new Profiler("REQUISITION_INITIATE_ENTITY");
     profiler.setLogger(LOGGER);
@@ -376,9 +378,13 @@ public class Requisition extends BaseTimestampedEntity {
 
     profiler.start("SET_LINE_ITEMS");
     if (template.isPopulateStockOnHandFromStockCards()) {
-      initiateLineItems(fullSupplyProducts, idealStockAmounts, stockData, stockCardRangeSummaries);
+      initiateLineItems(fullSupplyProducts, idealStockAmounts, stockData, stockCardRangeSummaries,
+          stockCardRangeSummariesToAverage, periods);
     } else {
       initiateLineItems(fullSupplyProducts, idealStockAmounts, proofOfDelivery, profiler);
+
+      profiler.start("SET_PREV_ADJ_CONSUMPTION");
+      setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
     }
 
     profiler.start("SET_SKIPPED_FROM_PREV_REQUISITION");
@@ -387,9 +393,6 @@ public class Requisition extends BaseTimestampedEntity {
         && template.isColumnFromPreviousRequisition(SKIPPED_COLUMN)) {
       copySkippedValuesFromPreviousRequisition();
     }
-
-    profiler.start("SET_PREV_ADJ_CONSUMPTION");
-    setPreviousAdjustedConsumptions(numberOfPreviousPeriodsToAverage);
 
     status = RequisitionStatus.INITIATED;
 
@@ -417,7 +420,9 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void initiateLineItems(Collection<ApprovedProductDto> fullSupplyProducts,
       Map<UUID, Integer> idealStockAmounts, StockData stockData,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaries) {
+      List<StockCardRangeSummaryDto> stockCardRangeSummaries,
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+      List<ProcessingPeriodDto> periods) {
     this.requisitionLineItems = new ArrayList<>();
 
     if (isNotTrue(emergency)) {
@@ -433,12 +438,16 @@ public class Requisition extends BaseTimestampedEntity {
         lineItem.setStockOnHand(stockData.getStockOnHand(orderableId));
         lineItem.setBeginningBalance(stockData.getBeginningBalance(orderableId));
 
-        lineItem.calculateAndSetStockBasedTotalReceivedQuantity(template, stockCardRangeSummaries);
-        lineItem.calculateAndSetStockBasedTotalStockoutDays(
-            stockCardRangeSummaries, numberOfMonthsInPeriod);
-        lineItem.calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaries);
-        lineItem.calculateAndSetStockBasedTotalLossesAndAdjustments(
-            template, stockCardRangeSummaries);
+        StockCardRangeSummaryDto summary =
+            findStockCardRangeSummary(stockCardRangeSummaries, lineItem.getOrderableId());
+        StockCardRangeSummaryDto summaryToAverage =
+            findStockCardRangeSummary(stockCardRangeSummariesToAverage, lineItem.getOrderableId());
+
+        lineItem.calculateAndSetStockBasedTotalReceivedQuantity(template, summary);
+        lineItem.calculateAndSetStockBasedTotalStockoutDays(summary, numberOfMonthsInPeriod);
+        lineItem.calculateAndSetStockBasedTotalConsumedQuantity(template, summary);
+        lineItem.calculateAndSetStockBasedTotalLossesAndAdjustments(template, summary);
+        lineItem.calculateAndSetStockBasedAverageConsumption(summaryToAverage, template, periods);
 
         this.requisitionLineItems.add(lineItem);
       }
@@ -953,6 +962,15 @@ public class Requisition extends BaseTimestampedEntity {
 
     requisitionLineItems.clear();
     requisitionLineItems.addAll(updatedList);
+  }
+
+  private static StockCardRangeSummaryDto findStockCardRangeSummary(
+      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+    return stockCardRangeSummaryDtos.stream()
+        .filter(stockCardRangeSummaryDto ->
+            stockCardRangeSummaryDto.getOrderable().getId().equals(orderableId))
+        .findFirst()
+        .orElse(null);
   }
 
   public interface Exporter {

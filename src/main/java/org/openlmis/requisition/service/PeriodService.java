@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -41,6 +40,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -148,35 +148,29 @@ public class PeriodService {
    *
    * @param periodId UUID of period
    * @param amount of previous periods
-   * @return previous period or {@code null} if not found.
+   * @return list previous period or {@code null} if not found.
    */
-  public List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
-    // retrieve data from reference-data
+  List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
     ProcessingPeriodDto period = getPeriod(periodId);
-
     if (null == period) {
       return Collections.emptyList();
     }
 
-    Collection<ProcessingPeriodDto> collection = search(
-        period.getProcessingSchedule().getId(), period.getStartDate()
-    );
+    return findPreviousPeriods(period, amount);
+  }
 
-    if (null == collection || collection.isEmpty()) {
-      return Collections.emptyList();
-    }
-
-    // create a list...
-    List<ProcessingPeriodDto> list = new ArrayList<>(collection);
-    // ...remove the latest period from the list...
-    list.removeIf(p -> p.getId().equals(periodId));
-    // .. and sort elements by startDate property DESC.
-    list.sort((one, two) -> ObjectUtils.compare(two.getStartDate(), one.getStartDate()));
-
-    if (amount > list.size()) {
-      return list;
-    }
-    return list.subList(0, amount);
+  /**
+   * Finds recent periods for the given period.
+   *
+   * @param period processing period
+   * @param amount of previous periods
+   * @return previous period or {@code null} if not found.
+   */
+  List<ProcessingPeriodDto> findPreviousPeriods(ProcessingPeriodDto period, int amount) {
+    return new ArrayList<>(periodReferenceDataService.search(
+        period.getProcessingSchedule().getId(),
+        period.getStartDate(),
+        new PageRequest(0, amount)));
   }
 
   /**

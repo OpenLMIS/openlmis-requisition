@@ -33,6 +33,7 @@ import org.joda.money.Money;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -182,32 +183,9 @@ public final class LineItemFieldsCalculator {
   public static int calculateAdjustedConsumption(RequisitionLineItem lineItem,
                                                  int monthsInThePeriod,
                                                  Boolean additionalQuantityColumnPresent) {
-    int consumedQuantity = zeroIfNull(lineItem.getTotalConsumedQuantity());
-
-    if (consumedQuantity == 0) {
-      return 0;
-    }
-
-    int totalDays = 30 * monthsInThePeriod;
-    int stockoutDays = zeroIfNull(lineItem.getTotalStockoutDays());
-    int nonStockoutDays = totalDays - stockoutDays;
-
-    if (nonStockoutDays == 0) {
-      return consumedQuantity;
-    }
-
-    BigDecimal divide = new BigDecimal(totalDays)
-        .divide(new BigDecimal(nonStockoutDays), 1000, BigDecimal.ROUND_HALF_UP);
-
-    BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity)
-        .multiply(divide)
-        .setScale(0, RoundingMode.CEILING);
-
-    if (additionalQuantityColumnPresent
-        && lineItem.getAdditionalQuantityRequired() > 0) {
-      return adjustedConsumption.intValue() + lineItem.getAdditionalQuantityRequired();
-    }
-    return adjustedConsumption.intValue();
+    return calculateAdjustedConsumptionValue(lineItem.getTotalConsumedQuantity(),
+        lineItem.getTotalStockoutDays(), monthsInThePeriod,
+        additionalQuantityColumnPresent ? lineItem.getAdditionalQuantityRequired() : null);
   }
 
   /**
@@ -338,13 +316,11 @@ public final class LineItemFieldsCalculator {
    * Sets value to Total Consumed Quantity column based on stock range summaries.
    */
   public static Integer calculateStockBasedTotalConsumedQuantity(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+      StockCardRangeSummaryDto summaryDto, UUID orderableId) {
     RequisitionTemplateColumn column = template.findColumn(TOTAL_CONSUMED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
     int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
+    if (null != summaryDto) {
+      value = summaryDto.getTagAmount(column.getTag());
       if (value > 0) {
         throw new ValidationMessageException(new Message(
             MessageKeys.ERROR_VALIDATION_NON_NEGATIVE_NUMBER, TOTAL_CONSUMED_QUANTITY,
@@ -358,13 +334,11 @@ public final class LineItemFieldsCalculator {
    * Sets value to Total Received Quantity column based on stock range summaries.
    */
   public static Integer calculateStockBasedTotalReceivedQuantity(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+      StockCardRangeSummaryDto summaryDto, UUID orderableId) {
     RequisitionTemplateColumn column = template.findColumn(TOTAL_RECEIVED_QUANTITY);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
     int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
+    if (null != summaryDto) {
+      value = summaryDto.getTagAmount(column.getTag());
       if (value < 0) {
         throw new ValidationMessageException(new Message(
             MessageKeys.ERROR_VALIDATION_NON_POSITIVE_NUMBER, TOTAL_RECEIVED_QUANTITY,
@@ -378,13 +352,10 @@ public final class LineItemFieldsCalculator {
    * Sets value to Total Stockout Days column based on stock range summaries.
    */
   public static Integer calculateStockBasedTotalStockoutDays(
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod,
-      UUID orderableId) {
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
+      StockCardRangeSummaryDto summaryDto, Integer numberOfMonthsInPeriod) {
     int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getStockOutDays();
+    if (null != summaryDto) {
+      value = summaryDto.getStockOutDays();
     }
     return Math.min(value, 30 * (null == numberOfMonthsInPeriod ? 1 : numberOfMonthsInPeriod));
   }
@@ -393,23 +364,62 @@ public final class LineItemFieldsCalculator {
    * Sets value to Total Losses and Adjustments column based on stock range summaries.
    */
   public static Integer calculateStockBasedTotalLossesAndAdjustments(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
+      StockCardRangeSummaryDto summaryDto) {
     RequisitionTemplateColumn column = template.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS);
-    Optional<StockCardRangeSummaryDto> summaryDto =
-        findStockCardRangeSummary(stockCardRangeSummaryDtos, orderableId);
     int value = 0;
-    if (summaryDto.isPresent()) {
-      value = summaryDto.get().getTagAmount(column.getTag());
+    if (null != summaryDto) {
+      value = summaryDto.getTagAmount(column.getTag());
     }
     return value;
   }
 
-  private static Optional<StockCardRangeSummaryDto> findStockCardRangeSummary(
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
-    return stockCardRangeSummaryDtos.stream()
-        .filter(stockCardRangeSummaryDto ->
-            stockCardRangeSummaryDto.getOrderable().getId().equals(orderableId))
-        .findFirst();
+  /**
+   * Sets value to Total Losses and Adjustments column based on stock range summaries.
+   */
+  public static Integer calculateStockBasedAverageConsumption(
+      StockCardRangeSummaryDto summaryDto, UUID orderableId, RequisitionTemplate template,
+      List<ProcessingPeriodDto> periods, Integer additionalQuantityRequired) {
+    int value = 0;
+    if (null != summaryDto) {
+      Integer totalConsumedQuantity =
+          calculateStockBasedTotalConsumedQuantity(template, summaryDto, orderableId);
+      int adjustedConsumption = calculateAdjustedConsumptionValue(
+          totalConsumedQuantity,
+          summaryDto.getStockOutDays(),
+          periods.stream().mapToInt(ProcessingPeriodDto::getDurationInMonths).sum(),
+          additionalQuantityRequired);
+      value = (int) Math.ceil((double) adjustedConsumption / periods.size());
+    }
+    return value;
+  }
+
+  private static int calculateAdjustedConsumptionValue(Integer totalConsumedQuantity,
+      Integer totalStockoutDays, int monthsInThePeriod, Integer additionalQuantityRequired) {
+    int consumedQuantity = zeroIfNull(totalConsumedQuantity);
+
+    if (consumedQuantity == 0) {
+      return 0;
+    }
+
+    int totalDays = 30 * monthsInThePeriod;
+    int stockoutDays = zeroIfNull(totalStockoutDays);
+    int nonStockoutDays = totalDays - stockoutDays;
+
+    if (nonStockoutDays == 0) {
+      return consumedQuantity;
+    }
+
+    BigDecimal divide = new BigDecimal(totalDays)
+        .divide(new BigDecimal(nonStockoutDays), 1000, BigDecimal.ROUND_HALF_UP);
+
+    BigDecimal adjustedConsumption = new BigDecimal(consumedQuantity)
+        .multiply(divide)
+        .setScale(0, RoundingMode.CEILING);
+
+    if (null != additionalQuantityRequired && additionalQuantityRequired > 0) {
+      return adjustedConsumption.intValue() + additionalQuantityRequired;
+    }
+    return adjustedConsumption.intValue();
   }
 
   private static boolean hasNonZeroStockValue(RequisitionLineItem currentLineItem) {

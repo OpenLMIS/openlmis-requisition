@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,18 +43,36 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
   }
 
   /**
-   * Retrieves periods from the reference data service by schedule ID and start date.
+   * Retrieves periods from the reference data service by schedule ID and end date.
    *
    * @param processingScheduleId UUID of the schedule
-   * @param endDate            the end date (only include periods past this date)
+   * @param endDate              the end date (only include periods previous to this date)
    * @return A list of periods matching search criteria
    */
   public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate endDate) {
+    return search(processingScheduleId, endDate, new PageRequest(0, Integer.MAX_VALUE));
+  }
+
+  /**
+   * Retrieves periods from the reference data service by schedule ID and end date.
+   *
+   * @param processingScheduleId UUID of the schedule
+   * @param endDate              the end date (only include periods previous to this date)
+   * @param pageable             contains pagination parameters
+   * @return A list of periods matching search criteria
+   */
+  public Collection<ProcessingPeriodDto> search(
+      UUID processingScheduleId, LocalDate endDate, Pageable pageable) {
     RequestParameters parameters = RequestParameters
         .init()
         .set("processingScheduleId", processingScheduleId)
         .set("endDate", endDate)
-        .set("size", 2000);
+        .set("page", pageable.getPageNumber())
+        .set("size", pageable.getPageSize());
+
+    if (null != pageable.getSort()) {
+      parameters = parameters.set("", pageable.getSort().toString());
+    }
 
     return getPage(parameters).getContent();
   }

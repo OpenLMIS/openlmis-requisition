@@ -21,6 +21,7 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedAverageConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalLossesAndAdjustments;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateStockBasedTotalReceivedQuantity;
@@ -60,6 +61,7 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -512,36 +514,48 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets value to Total Consumed Quantity column based on stock range summaries.
    */
   void calculateAndSetStockBasedTotalConsumedQuantity(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+      StockCardRangeSummaryDto stockCardRangeSummaryDto) {
     setTotalConsumedQuantity(calculateStockBasedTotalConsumedQuantity(
-            template, stockCardRangeSummaryDtos, this.orderableId));
+            template, stockCardRangeSummaryDto, this.orderableId));
   }
 
   /**
    * Sets value to Total Received Quantity column based on stock range summaries.
    */
   void calculateAndSetStockBasedTotalReceivedQuantity(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+      StockCardRangeSummaryDto stockCardRangeSummaryDto) {
     setTotalReceivedQuantity(calculateStockBasedTotalReceivedQuantity(
-            template, stockCardRangeSummaryDtos, orderableId));
+            template, stockCardRangeSummaryDto, orderableId));
   }
 
   /**
    * Sets value to Total Stockout Days column based on stock range summaries.
    */
   void calculateAndSetStockBasedTotalStockoutDays(
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod) {
+      StockCardRangeSummaryDto stockCardRangeSummaryDtos, Integer numberOfMonthsInPeriod) {
     setTotalStockoutDays(calculateStockBasedTotalStockoutDays(
-            stockCardRangeSummaryDtos, numberOfMonthsInPeriod, orderableId));
+            stockCardRangeSummaryDtos, numberOfMonthsInPeriod));
   }
 
   /**
    * Sets value to Total Losses and Adjustments column based on stock range summaries.
    */
   void calculateAndSetStockBasedTotalLossesAndAdjustments(RequisitionTemplate template,
-      List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos) {
+      StockCardRangeSummaryDto stockCardRangeSummaryDto) {
     setTotalLossesAndAdjustments(calculateStockBasedTotalLossesAndAdjustments(
-            template, stockCardRangeSummaryDtos, orderableId));
+            template, stockCardRangeSummaryDto));
+  }
+
+  /**
+   * Sets value to Average Consumption column based on stock range summaries.
+   */
+  void calculateAndSetStockBasedAverageConsumption(
+      StockCardRangeSummaryDto stockCardRangeSummaryToAverage,
+      RequisitionTemplate template, List<ProcessingPeriodDto> periods) {
+    setAverageConsumption(calculateStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
+        orderableId, template, periods,
+        template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)
+            ? additionalQuantityRequired : null));
   }
 
   /**

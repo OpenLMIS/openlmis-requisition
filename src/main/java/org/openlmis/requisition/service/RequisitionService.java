@@ -189,28 +189,12 @@ public class RequisitionService {
     requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
     requisition.setReportOnly(period.isReportOnly() && !emergency);
 
-    profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
-    int numberOfPreviousPeriodsToAverage;
-    List<Requisition> previousRequisitions;
+    Integer numberOfPreviousPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage();
     // numberOfPeriodsToAverage is always >= 2 or null
-    if (requisitionTemplate.getNumberOfPeriodsToAverage() == null) {
+    if (numberOfPreviousPeriodsToAverage == null) {
       numberOfPreviousPeriodsToAverage = 0;
-      previousRequisitions = getRecentRegularRequisitions(requisition, 1);
     } else {
-      numberOfPreviousPeriodsToAverage = requisitionTemplate.getNumberOfPeriodsToAverage() - 1;
-      previousRequisitions =
-          getRecentRegularRequisitions(requisition, numberOfPreviousPeriodsToAverage);
-    }
-
-    if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
-      numberOfPreviousPeriodsToAverage = previousRequisitions.size();
-    }
-
-    profiler.start("GET_POD");
-    ProofOfDeliveryDto pod = null;
-
-    if (!emergency && !isEmpty(previousRequisitions)) {
-      pod = proofOfDeliveryService.get(previousRequisitions.get(0));
+      numberOfPreviousPeriodsToAverage--;
     }
 
     profiler.start("FIND_APPROVED_PRODUCTS");
@@ -240,25 +224,56 @@ public class RequisitionService {
     final StockData stockData = new StockData(orderableSoh, orderableBeginning);
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
-    Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
+    final Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
         .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
     List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
+    List<Requisition> previousRequisitions;
+    List<ProcessingPeriodDto> previousPeriods = null;
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
-
       stockCardRangeSummaryDtos =
           stockCardRangeSummaryStockManagementService
               .search(program.getId(), facility.getId(),
                   approvedProducts.getOrderableIds(), null,
                   period.getStartDate(), period.getEndDate());
+
+      profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
+      previousRequisitions = getRecentRegularRequisitions(requisition, 1);
+
+      profiler.start("GET_PREVIOUS_PERIODS");
+      previousPeriods = periodService
+          .findPreviousPeriods(period, numberOfPreviousPeriodsToAverage);
+
+      profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
+      stockCardRangeSummariesToAverage =
+          stockCardRangeSummaryStockManagementService
+              .search(program.getId(), facility.getId(),
+                  approvedProducts.getOrderableIds(), null,
+                  previousPeriods.get(0).getStartDate(), period.getEndDate());
+    } else {
+      profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
+      previousRequisitions =
+          getRecentRegularRequisitions(requisition, Math.max(numberOfPreviousPeriodsToAverage, 1));
+      if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
+        numberOfPreviousPeriodsToAverage = previousRequisitions.size();
+      }
+    }
+
+    profiler.start("GET_POD");
+    ProofOfDeliveryDto pod = null;
+
+    if (!emergency && !isEmpty(previousRequisitions)) {
+      pod = proofOfDeliveryService.get(previousRequisitions.get(0));
     }
 
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
         previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
-        authenticationHelper.getCurrentUser().getId(), stockData, stockCardRangeSummaryDtos);
+        authenticationHelper.getCurrentUser().getId(), stockData, stockCardRangeSummaryDtos,
+        stockCardRangeSummariesToAverage, previousPeriods);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
     if (emergency) {

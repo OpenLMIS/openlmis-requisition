@@ -134,6 +134,7 @@ import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -708,7 +709,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiatePreviousAdjustedConsumptions() {
     prepareForTestInitiate(SETTING);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+    when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -725,7 +726,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateReportOnlyRequisition() {
     prepareForTestInitiate(SETTING);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+    when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -742,7 +743,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRegularRequisitionIfItIsEmergencyForReportOnlyPeriod() {
     prepareForTestInitiate(SETTING);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+    when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -820,7 +821,7 @@ public class RequisitionServiceTest {
         this.program, facility, processingPeriod, false,
         stockAdjustmentReasons, requisitionTemplate);
 
-    verify(periodService).findPreviousPeriods(any(), eq(1));
+    verify(periodService).findPreviousPeriods(any(UUID.class), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }
@@ -828,7 +829,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousRequisition() {
     prepareForTestInitiate(SETTING);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+    when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
@@ -899,6 +900,16 @@ public class RequisitionServiceTest {
     prepareForGetStockOnHandTest();
     stockCardSummaryDto.setStockOnHand(10);
 
+    ProcessingPeriodDto previousPeriod = new ProcessingPeriodDtoDataBuilder()
+        .withProcessingSchedule(processingPeriod.getProcessingSchedule())
+        .withStartDate(processingPeriod.getStartDate().plusMonths(1))
+        .withStartDate(processingPeriod.getEndDate().plusMonths(1))
+        .build();
+
+    when(periodService
+        .findPreviousPeriods(processingPeriod, new Integer(4)))
+        .thenReturn(singletonList(previousPeriod));
+
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
@@ -926,6 +937,15 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotIncludeLineItemsIfNoStockCardSummariesFound() {
     prepareForTestInitiate(SETTING);
+    ProcessingPeriodDto previousPeriod = new ProcessingPeriodDtoDataBuilder()
+        .withProcessingSchedule(processingPeriod.getProcessingSchedule())
+        .withStartDate(processingPeriod.getStartDate().plusMonths(1))
+        .withStartDate(processingPeriod.getEndDate().plusMonths(1))
+        .build();
+
+    when(periodService
+        .findPreviousPeriods(processingPeriod, new Integer(4)))
+        .thenReturn(singletonList(previousPeriod));
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
@@ -1806,7 +1826,7 @@ public class RequisitionServiceTest {
   private void stubPreviousPeriod() {
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setId(PERIOD_ID);
-    when(periodService.findPreviousPeriods(any(), eq(SETTING - 1)))
+    when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(periodDto));
   }
 
