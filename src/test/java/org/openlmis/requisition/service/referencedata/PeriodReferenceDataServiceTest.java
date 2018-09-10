@@ -29,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
+import org.springframework.data.domain.PageRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PeriodReferenceDataServiceTest
@@ -77,6 +78,31 @@ public class PeriodReferenceDataServiceTest
   }
 
   @Test
+  public void shouldFindSortedProcessingPeriodsByScheduleIdAndEndDate() {
+    // given
+    UUID scheduleId = UUID.randomUUID();
+    LocalDate date = LocalDate.now();
+
+    // when
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
+    Collection<ProcessingPeriodDto> result = service.search(scheduleId, date,
+        new PageRequest(0, 10));
+
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(period));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("processingScheduleId", scheduleId)
+        .hasQueryParameter("endDate", date)
+        .hasQueryParameter("page", 0)
+        .hasQueryParameter("size", 10);
+  }
+
+  @Test
   public void shouldSearchProcessingPeriodsByFacilityAndProgram() {
     // given
     UUID facilityId = UUID.randomUUID();
@@ -96,7 +122,6 @@ public class PeriodReferenceDataServiceTest
         .hasAuthHeader()
         .hasEmptyBody()
         .hasQueryParameter("facilityId", facilityId)
-        .hasQueryParameter("programId", programId)
-        .hasQueryParameter("size", 2000);
+        .hasQueryParameter("programId", programId);
   }
 }

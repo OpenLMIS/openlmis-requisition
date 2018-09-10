@@ -70,10 +70,6 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
         .set("page", pageable.getPageNumber())
         .set("size", pageable.getPageSize());
 
-    if (null != pageable.getSort()) {
-      parameters = parameters.set("", pageable.getSort().toString());
-    }
-
     return getPage(parameters).getContent();
   }
 
@@ -89,8 +85,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     RequestParameters parameters = RequestParameters
         .init()
         .set("programId", programId)
-        .set("facilityId", facilityId)
-        .set("size", 2000);
+        .set("facilityId", facilityId);
     
     return getPage(parameters).getContent();
   }
