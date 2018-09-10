@@ -15,8 +15,10 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import com.google.common.collect.Lists;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.RequestParameters;
@@ -61,14 +63,23 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    * @param pageable             contains pagination parameters
    * @return A list of periods matching search criteria
    */
-  public Collection<ProcessingPeriodDto> search(
+  public List<ProcessingPeriodDto> search(
       UUID processingScheduleId, LocalDate endDate, Pageable pageable) {
+    List<String> sort = Lists.newArrayList();
+
+    if (null != pageable.getSort()) {
+      pageable
+          .getSort()
+          .forEach(order -> sort.add(order.getProperty() + "," + order.getDirection()));
+    }
+
     RequestParameters parameters = RequestParameters
         .init()
         .set("processingScheduleId", processingScheduleId)
         .set("endDate", endDate)
         .set("page", pageable.getPageNumber())
-        .set("size", pageable.getPageSize());
+        .set("size", pageable.getPageSize())
+        .set("sort", sort);
 
     return getPage(parameters).getContent();
   }

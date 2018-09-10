@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static org.openlmis.requisition.dto.BasicProcessingPeriodDto.START_DATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FINISH_PROVIOUS_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_MUST_BELONG_TO_THE_SAME_SCHEDULE;
@@ -41,6 +42,7 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -167,10 +169,10 @@ public class PeriodService {
    * @return previous period or {@code null} if not found.
    */
   List<ProcessingPeriodDto> findPreviousPeriods(ProcessingPeriodDto period, int amount) {
-    return new ArrayList<>(periodReferenceDataService.search(
+    return periodReferenceDataService.search(
         period.getProcessingSchedule().getId(),
-        period.getStartDate(),
-        new PageRequest(0, amount)));
+        period.getStartDate().minusDays(1),
+        new PageRequest(0, amount, Direction.DESC, START_DATE));
   }
 
   /**

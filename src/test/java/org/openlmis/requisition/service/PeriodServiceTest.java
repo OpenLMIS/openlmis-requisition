@@ -39,6 +39,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INIT
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
+import static org.openlmis.requisition.dto.BasicProcessingPeriodDto.START_DATE;
 
 import com.google.common.collect.Lists;
 import java.time.LocalDate;
@@ -68,6 +69,7 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -368,8 +370,8 @@ public class PeriodServiceTest {
         .findOne(period4.getId());
     doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
-        .search(period4.getProcessingSchedule().getId(), period4.getStartDate(),
-            new PageRequest(0, 2));
+        .search(period4.getProcessingSchedule().getId(), period4.getStartDate().minusDays(1),
+            new PageRequest(0, 2, Direction.DESC, START_DATE));
 
     List<ProcessingPeriodDto> previousPeriods =
         periodService.findPreviousPeriods(period4.getId(), 2);
@@ -381,8 +383,8 @@ public class PeriodServiceTest {
   public void shouldReturnPreviousPeriodsWithoutRetrievingWholePeriod() {
     doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
-        .search(period4.getProcessingSchedule().getId(), period4.getStartDate(),
-            new PageRequest(0, 2));
+        .search(period4.getProcessingSchedule().getId(), period4.getStartDate().minusDays(1),
+            new PageRequest(0, 2, Direction.DESC, START_DATE));
 
     List<ProcessingPeriodDto> previousPeriods =
         periodService.findPreviousPeriods(period4, 2);
@@ -397,8 +399,8 @@ public class PeriodServiceTest {
         .findOne(period4.getId());
     doReturn(singletonList(period3))
         .when(periodReferenceDataService)
-        .search(period4.getProcessingSchedule().getId(), period4.getStartDate(),
-            new PageRequest(0, 1));
+        .search(period4.getProcessingSchedule().getId(), period4.getStartDate().minusDays(1),
+            new PageRequest(0, 1, Direction.DESC, START_DATE));
 
     assertEquals(period3, periodService.findPreviousPeriod(period4.getId()));
   }
@@ -410,8 +412,8 @@ public class PeriodServiceTest {
         .findOne(period4.getId());
     doReturn(Arrays.asList(currentPeriod, period1, period2, period3, period4))
         .when(periodReferenceDataService)
-        .search(period4.getProcessingSchedule().getId(), period4.getStartDate(),
-            new PageRequest(0, 5));
+        .search(period4.getProcessingSchedule().getId(), period4.getStartDate().minusDays(1),
+            new PageRequest(0, 5, Direction.DESC, START_DATE));
 
     List<ProcessingPeriodDto> previousPeriods =
         periodService.findPreviousPeriods(period4.getId(), 5);
