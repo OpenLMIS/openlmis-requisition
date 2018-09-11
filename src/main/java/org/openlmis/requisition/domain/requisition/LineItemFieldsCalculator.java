@@ -374,7 +374,15 @@ public final class LineItemFieldsCalculator {
   }
 
   /**
-   * Sets value to Average Consumption column based on stock range summaries.
+   * Calculates Average Consumption column value based on stock range summaries and returns it.
+   *
+   * @param summaryDto the stock card range summary to calculate Total Consumed Quantity
+   *                   and Adjusted Consumption values
+   * @param orderableId the UUID of orderable to calculate Total Consumed Quantity value for
+   * @param template the requisition template
+   * @param periods the periods to calculate Adjusted Consumption value
+   * @param additionalQuantityRequired the value of Additional Quantity Required
+   * @return a {@link Integer} object representing the Average Consumption value.
    */
   public static Integer calculateStockBasedAverageConsumption(
       StockCardRangeSummaryDto summaryDto, UUID orderableId, RequisitionTemplate template,
