@@ -69,8 +69,6 @@ import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataServi
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -378,24 +376,6 @@ public class PeriodServiceTest {
     List<ProcessingPeriodDto> previousPeriods =
         periodService.findPreviousPeriods(period4.getId(), 2);
 
-    assertThat(previousPeriods, hasItems(period3, period2));
-  }
-
-  @Test
-  public void shouldReturnPreviousPeriodsIfPageableSortIsDefined() {
-    Pageable pageable = new PageRequest(0, 2, new Sort(Direction.DESC, START_DATE));
-    doReturn(period4)
-        .when(periodReferenceDataService)
-        .findOne(period4.getId());
-    doReturn(Arrays.asList(period4, period3, period2, period1, currentPeriod))
-        .when(periodReferenceDataService)
-        .search(period4.getProcessingSchedule().getId(), period4.getStartDate().minusDays(1),
-            pageable);
-
-    List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(period4.getId(), 2);
-
-    assertNotNull(pageable.getSort());
     assertThat(previousPeriods, hasItems(period3, period2));
   }
 
