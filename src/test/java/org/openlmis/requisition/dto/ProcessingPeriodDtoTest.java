@@ -16,13 +16,10 @@
 package org.openlmis.requisition.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.openlmis.requisition.dto.ProcessingPeriodDto.REPORT_ONLY;
 
 import com.google.common.collect.Maps;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
@@ -72,8 +69,7 @@ public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
     assertThat(period.isReportOnly()).isFalse();
   }
 
-  @Test
-  public void shouldCreatePeriodWithAllProperties() {
+  private ProcessingPeriodDto prepareForReportOnlyTest(boolean extraData, String reportOnly) {
     UUID id = UUID.randomUUID();
     String name = "period";
     LocalDate startDate = LocalDate.now();
@@ -81,23 +77,9 @@ public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
     ProcessingScheduleDto schedule = new ProcessingScheduleDtoDataBuilder().build();
     String description = "desc";
     Integer durationInMonths = 3;
-    Map<String, String> extraData = new HashMap<>();
 
     ProcessingPeriodDto period = new ProcessingPeriodDto(id, name, startDate, endDate, schedule,
-        description, durationInMonths, extraData);
-
-    assertEquals(id, period.getId());
-    assertEquals(name, period.getName());
-    assertEquals(startDate, period.getStartDate());
-    assertEquals(endDate, period.getEndDate());
-    assertEquals(schedule, period.getProcessingSchedule());
-    assertEquals(description, period.getDescription());
-    assertEquals(durationInMonths, period.getDurationInMonths());
-    assertEquals(extraData, period.getExtraData());
-  }
-
-  private ProcessingPeriodDto prepareForReportOnlyTest(boolean extraData, String reportOnly) {
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
+        description, durationInMonths, null);
 
     if (extraData) {
       period.setExtraData(Maps.newHashMap());

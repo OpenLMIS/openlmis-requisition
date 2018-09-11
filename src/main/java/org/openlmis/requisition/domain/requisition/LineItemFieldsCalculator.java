@@ -374,7 +374,7 @@ public final class LineItemFieldsCalculator {
   }
 
   /**
-   * Sets value to Total Losses and Adjustments column based on stock range summaries.
+   * Sets value to Average Consumption column based on stock range summaries.
    */
   public static Integer calculateStockBasedAverageConsumption(
       StockCardRangeSummaryDto summaryDto, UUID orderableId, RequisitionTemplate template,
@@ -401,9 +401,9 @@ public final class LineItemFieldsCalculator {
       return 0;
     }
 
-    int totalDays = 30 * monthsInThePeriod;
-    int stockoutDays = zeroIfNull(totalStockoutDays);
-    int nonStockoutDays = totalDays - stockoutDays;
+    final int totalDays = 30 * monthsInThePeriod;
+    final int stockoutDays = zeroIfNull(totalStockoutDays);
+    final int nonStockoutDays = totalDays - stockoutDays;
 
     if (nonStockoutDays == 0) {
       return consumedQuantity;
