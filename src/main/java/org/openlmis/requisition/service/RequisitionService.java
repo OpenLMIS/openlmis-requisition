@@ -248,7 +248,7 @@ public class RequisitionService {
           .findPreviousPeriods(period, numberOfPreviousPeriodsToAverage);
 
       profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
-      if (numberOfPreviousPeriodsToAverage > 1) {
+      if (previousPeriods.size() > 1) {
         stockCardRangeSummariesToAverage =
             stockCardRangeSummaryStockManagementService
                 .search(program.getId(), facility.getId(),
