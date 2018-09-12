@@ -15,6 +15,8 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.hamcrest.Matchers.hasItems;
@@ -28,7 +30,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,20 +47,29 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockAdjustmentDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionLineItemTest {
+
+  private static final String COLUMN_IDENTIFIER = "I";
+  private static final String CONSUMED_TAG = "consumed";
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -518,6 +532,77 @@ public class RequisitionLineItemTest {
     new RequisitionLineItem(
         new RequisitionDataBuilder().withProgramId(programId).build(),
         new ApprovedProductDtoDataBuilder().build());
+  }
+
+  @Test
+  public void shouldCalculateStockBasedAverageConsumptionWithAdditionalQuantities() {
+    UUID orderableId = UUID.randomUUID();
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withOrderableId(orderableId)
+        .withAdditionalQuantityRequired(30)
+        .build();
+    List<Requisition> previousRequisitions = singletonList(
+        new RequisitionDataBuilder()
+            .withLineItems(singletonList(
+                new RequisitionLineItemDataBuilder()
+                    .withAdditionalQuantityRequired(10)
+                    .withOrderableId(orderableId)
+                    .build()))
+            .build());
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAdditionalQuantityRequiredColumnDisplayed()
+        .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
+        .withNumberOfPeriodsToAverage(2)
+        .build();
+    StockCardRangeSummaryDto summary = new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(orderableId)
+        .withStockOutDays(2)
+        .withTags(ImmutableMap.of(CONSUMED_TAG, -100))
+        .build();
+    List<ProcessingPeriodDto> previousPeriods = asList(
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build(),
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build());
+
+    item.calculateAndSetStockBasedAverageConsumption(
+        summary, template, previousPeriods, previousRequisitions);
+
+    assertEquals(new Integer(71), item.getAverageConsumption());
+  }
+
+  @Test
+  public void shouldCalculateStockBasedAverageConsumptionWithoutAdditionalQuantities() {
+    UUID orderableId = UUID.randomUUID();
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withOrderableId(orderableId)
+        .withAdditionalQuantityRequired(30)
+        .build();
+    List<Requisition> previousRequisitions = singletonList(
+        new RequisitionDataBuilder()
+            .withLineItems(singletonList(
+                new RequisitionLineItemDataBuilder()
+                    .withAdditionalQuantityRequired(10)
+                    .withOrderableId(orderableId)
+                    .build()))
+            .build());
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withColumn(ADDITIONAL_QUANTITY_REQUIRED, COLUMN_IDENTIFIER, SourceType.USER_INPUT,
+            singleton(SourceType.USER_INPUT), false)
+        .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
+        .withNumberOfPeriodsToAverage(2)
+        .build();
+    StockCardRangeSummaryDto summary = new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(orderableId)
+        .withStockOutDays(2)
+        .withTags(ImmutableMap.of(CONSUMED_TAG, -100))
+        .build();
+    List<ProcessingPeriodDto> previousPeriods = asList(
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build(),
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build());
+
+    item.calculateAndSetStockBasedAverageConsumption(
+        summary, template, previousPeriods, previousRequisitions);
+
+    assertEquals(new Integer(51), item.getAverageConsumption());
   }
 
   private void checkResultsOfConstruction(RequisitionLineItem item) {

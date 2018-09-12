@@ -229,9 +229,12 @@ public class RequisitionService {
         .stream()
         .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
+    profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
+    List<Requisition> previousRequisitions =
+        getRecentRegularRequisitions(requisition, Math.max(numberOfPreviousPeriodsToAverage, 1));
+
     List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
-    List<Requisition> previousRequisitions;
     List<ProcessingPeriodDto> previousPeriods = null;
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       stockCardRangeSummaryDtos =
@@ -240,26 +243,25 @@ public class RequisitionService {
                   approvedProducts.getOrderableIds(), null,
                   period.getStartDate(), period.getEndDate());
 
-      profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
-      previousRequisitions = getRecentRegularRequisitions(requisition, 1);
-
       profiler.start("GET_PREVIOUS_PERIODS");
       previousPeriods = periodService
           .findPreviousPeriods(period, numberOfPreviousPeriodsToAverage);
 
       profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
-      stockCardRangeSummariesToAverage =
-          stockCardRangeSummaryStockManagementService
-              .search(program.getId(), facility.getId(),
-                  approvedProducts.getOrderableIds(), null,
-                  previousPeriods.get(0).getStartDate(), period.getEndDate());
-    } else {
-      profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
-      previousRequisitions =
-          getRecentRegularRequisitions(requisition, Math.max(numberOfPreviousPeriodsToAverage, 1));
-      if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
-        numberOfPreviousPeriodsToAverage = previousRequisitions.size();
+      if (numberOfPreviousPeriodsToAverage > 1) {
+        stockCardRangeSummariesToAverage =
+            stockCardRangeSummaryStockManagementService
+                .search(program.getId(), facility.getId(),
+                    approvedProducts.getOrderableIds(), null,
+                    previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
+                    period.getEndDate());
+      } else {
+        stockCardRangeSummariesToAverage = stockCardRangeSummaryDtos;
       }
+
+      previousPeriods.add(period);
+    } else if (numberOfPreviousPeriodsToAverage > previousRequisitions.size()) {
+      numberOfPreviousPeriodsToAverage = previousRequisitions.size();
     }
 
     profiler.start("GET_POD");

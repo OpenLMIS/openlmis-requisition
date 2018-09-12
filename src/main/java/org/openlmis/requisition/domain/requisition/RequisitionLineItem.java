@@ -550,12 +550,12 @@ public class RequisitionLineItem extends BaseEntity {
    * Sets value to Average Consumption column based on stock range summaries.
    */
   void calculateAndSetStockBasedAverageConsumption(
-      StockCardRangeSummaryDto stockCardRangeSummaryToAverage,
-      RequisitionTemplate template, List<ProcessingPeriodDto> periods) {
+      StockCardRangeSummaryDto stockCardRangeSummaryToAverage, RequisitionTemplate template,
+      List<ProcessingPeriodDto> periods, List<Requisition> previousRequisitions) {
     setAverageConsumption(calculateStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
         orderableId, template, periods,
         template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)
-            ? additionalQuantityRequired : null));
+            ? getSumOfAdditionalQuantitiesFromPreviousLineItems(previousRequisitions) : null));
   }
 
   /**
@@ -724,6 +724,16 @@ public class RequisitionLineItem extends BaseEntity {
       return false;
     }
     return skipped;
+  }
+
+  private Integer getSumOfAdditionalQuantitiesFromPreviousLineItems(
+      List<Requisition> previousRequisitions) {
+    return previousRequisitions.stream()
+        .map(req -> req.findLineByProductId(orderableId))
+        .filter(Objects::nonNull)
+        .filter(lineItem -> Objects.nonNull(lineItem.getAdditionalQuantityRequired()))
+        .mapToInt(RequisitionLineItem::getAdditionalQuantityRequired)
+        .sum() + (additionalQuantityRequired != null ? additionalQuantityRequired : 0);
   }
 
   public interface Exporter {

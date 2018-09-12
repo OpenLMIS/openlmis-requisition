@@ -260,4 +260,15 @@ public class RequisitionLineItemDataBuilder {
     this.numberOfNewPatientsAdded = numberOfNewPatientsAdded;
     return this;
   }
+
+  public RequisitionLineItemDataBuilder withAdditionalQuantityRequired(
+      Integer additionalQuantityRequired) {
+    this.additionalQuantityRequired = additionalQuantityRequired;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withOrderableId(UUID orderableId) {
+    this.orderableId = orderableId;
+    return this;
+  }
 }

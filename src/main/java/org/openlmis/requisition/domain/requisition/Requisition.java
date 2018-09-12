@@ -447,7 +447,8 @@ public class Requisition extends BaseTimestampedEntity {
         lineItem.calculateAndSetStockBasedTotalStockoutDays(summary, numberOfMonthsInPeriod);
         lineItem.calculateAndSetStockBasedTotalConsumedQuantity(template, summary);
         lineItem.calculateAndSetStockBasedTotalLossesAndAdjustments(template, summary);
-        lineItem.calculateAndSetStockBasedAverageConsumption(summaryToAverage, template, periods);
+        lineItem.calculateAndSetStockBasedAverageConsumption(summaryToAverage, template, periods,
+            previousRequisitions);
 
         this.requisitionLineItems.add(lineItem);
       }

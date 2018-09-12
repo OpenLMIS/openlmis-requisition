@@ -906,9 +906,12 @@ public class RequisitionServiceTest {
         .withStartDate(processingPeriod.getEndDate().plusMonths(1))
         .build();
 
+    List<ProcessingPeriodDto> periods = new ArrayList<>();
+    periods.add(previousPeriod);
+
     when(periodService
         .findPreviousPeriods(processingPeriod, new Integer(4)))
-        .thenReturn(singletonList(previousPeriod));
+        .thenReturn(periods);
 
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
@@ -943,9 +946,12 @@ public class RequisitionServiceTest {
         .withStartDate(processingPeriod.getEndDate().plusMonths(1))
         .build();
 
+    List<ProcessingPeriodDto> periods = new ArrayList<>();
+    periods.add(previousPeriod);
+
     when(periodService
         .findPreviousPeriods(processingPeriod, new Integer(4)))
-        .thenReturn(singletonList(previousPeriod));
+        .thenReturn(periods);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     whenGetStockCardSummaries().thenReturn(Collections.emptyList());
