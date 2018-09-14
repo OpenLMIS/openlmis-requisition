@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.validate;
 
+import static java.util.Collections.singleton;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -60,7 +61,6 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_BASED_COLUMNS;
-import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_DISABLED_COLUMNS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.STOCK_ON_HAND;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_LOSSES_AND_ADJUSTMENTS;
@@ -279,6 +279,8 @@ public class RequisitionTemplateDtoValidatorTest {
   @Test
   public void shouldNotRejectWhenAverageConsumptionIsDisplayedAndStockoutDaysIsDisabled() {
     RequisitionTemplateDto requisitionTemplate = getTemplatePopulatedByStock();
+    AvailableRequisitionColumnOption option = new AvailableRequisitionColumnOptionDataBuilder()
+        .build();
     RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
         .withName(TOTAL_STOCKOUT_DAYS)
         .withIndicator("X")
@@ -286,12 +288,18 @@ public class RequisitionTemplateDtoValidatorTest {
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
             .withSources(Sets.asSet(STOCK_CARDS))
+            .withOptions(singleton(option))
             .build())
         .withSource(STOCK_CARDS)
+        .withOption(option)
         .build();
     requisitionTemplate
         .getColumnsMap()
         .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
+
+    when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
+        .thenReturn(column.getColumnDefinition());
+
     validator.validate(requisitionTemplate, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
@@ -664,11 +672,6 @@ public class RequisitionTemplateDtoValidatorTest {
     dto.findColumn(TOTAL_CONSUMED_QUANTITY).setTag("consumed");
     dto.findColumn(TOTAL_RECEIVED_QUANTITY).setTag("received");
     dto.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS).setTag("adjustment");
-
-    STOCK_DISABLED_COLUMNS
-        .stream()
-        .filter(dto::isColumnInTemplate)
-        .forEach(c -> dto.getColumnsMap().get(c).setIsDisplayed(false));
 
     STOCK_BASED_COLUMNS
         .stream()

@@ -83,8 +83,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
-  static final Set<String> STOCK_DISABLED_COLUMNS = Sets.asSet(MAXIMUM_STOCK_QUANTITY,
-      CALCULATED_ORDER_QUANTITY);
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
       TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, AVERAGE_CONSUMPTION);
@@ -194,9 +192,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     if (template.isColumnInTemplate(field) && template.isColumnCalculated(field)) {
       for (String requiredField : requiredFields) {
         if (template.isColumnInTemplate(requiredField)
-            && template.isColumnUserInput(requiredField)
-            && !(STOCK_DISABLED_COLUMNS.contains(requiredField)
-            && template.isPopulateStockOnHandFromStockCards())) {
+            && template.isColumnUserInput(requiredField)) {
           rejectIfNotDisplayed(errors, template, requiredField, COLUMNS_MAP,
               new Message(suffix, requiredField));
         }
@@ -206,11 +202,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
 
   private void validateColumns(RequisitionTemplateDto template) {
     for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
-      if (template.isPopulateStockOnHandFromStockCards()
-          && STOCK_DISABLED_COLUMNS.contains(column.getName())) {
-        return;
-      }
-
       rejectIfNotAlphanumeric(
           errors, column.getLabel(), COLUMNS_MAP,
           new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, column.getName())
@@ -288,14 +279,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
               new Message(ERROR_COLUMN_SOURCE_INVALID, column.getLabel(), SourceType.STOCK_CARDS,
                   column.getSource()));
         }
-      }
-    }
-
-    for (String columnName : STOCK_DISABLED_COLUMNS) {
-      if (template.isColumnInTemplate(columnName)
-          && template.findColumn(columnName).getIsDisplayed()) {
-        rejectIfDisplayed(errors, template, columnName, COLUMNS_MAP, new Message(
-            ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS, columnName));
       }
     }
 
