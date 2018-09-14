@@ -95,6 +95,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -217,10 +218,11 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private UUID facilityTypeId = UUID.randomUUID();
   private UUID key = UUID.randomUUID();
   private String wrongFormatKey = "some-key";
+  private UserDto user;
 
   @Before
   public void setUp() {
-    mockUserAuthenticated();
+    user = mockUserAuthenticated();
 
     mockRepositorySaveAnswer();
     mockRequisitionDtoBuilderResponses();
@@ -1769,9 +1771,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
     List<Requisition> requisitions = Collections.singletonList(requisition);
 
-    UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(
-        eq(userId), eq(null), any(Pageable.class)))
+        eq(user), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
@@ -1796,9 +1797,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     List<Requisition> requisitions = Collections.singletonList(requisition);
     UUID program = UUID.randomUUID();
 
-    UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(
-        eq(userId), eq(program), any(Pageable.class)))
+        eq(user), eq(program), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
@@ -1973,9 +1973,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     long totalElements = 14L;
     Pageable pageable = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, 1);
 
-    UUID userId = authenticationHelper.getCurrentUser().getId();
     given(requisitionService.getRequisitionsForApproval(
-        eq(userId), eq(null), any(Pageable.class)))
+        eq(user), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, pageable, totalElements));
 
     // when

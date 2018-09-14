@@ -15,14 +15,21 @@
 
 package org.openlmis.requisition.dto;
 
+import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public final class RoleAssignmentDto extends BaseDto {
-  protected RoleDto role;
-  protected UserDto user;
+  private UUID roleId;
+  private UUID programId;
+  private UUID supervisoryNodeId;
+  private UUID warehouseId;
 }

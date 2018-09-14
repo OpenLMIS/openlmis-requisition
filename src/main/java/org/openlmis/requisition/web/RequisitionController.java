@@ -559,7 +559,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     Page<Requisition> approvalRequisitions = requisitionService
-        .getRequisitionsForApproval(user.getId(), programId, pageable);
+        .getRequisitionsForApproval(user, programId, pageable);
 
     profiler.start(BUILD_DTO_LIST);
     Page<BasicRequisitionDto> dtoPage = Pagination.getPage(

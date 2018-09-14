@@ -15,7 +15,7 @@
 
 package org.openlmis.requisition.testutils;
 
-import java.util.Collections;
+import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,7 +30,7 @@ public class UserDtoDataBuilder {
   private String email = username + "@some.where";
   private boolean verified = true;
   private UUID homeFacilityId = UUID.randomUUID();
-  private Set<RoleAssignmentDto> roleAssignments = Collections.emptySet();
+  private Set<RoleAssignmentDto> roleAssignments = Sets.newHashSet();
   private Boolean allowNotify = true;
   private boolean active = true;
 
@@ -56,6 +56,12 @@ public class UserDtoDataBuilder {
 
   public UserDtoDataBuilder withoutEmail() {
     email = null;
+    return this;
+  }
+
+  public UserDtoDataBuilder withRoleAssignment(UUID roleId, UUID supervisoryNodeId,
+      UUID programId) {
+    roleAssignments.add(new RoleAssignmentDto(roleId, programId, supervisoryNodeId, null));
     return this;
   }
 

@@ -90,7 +90,6 @@ import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
-import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
@@ -137,6 +136,7 @@ import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
@@ -254,11 +254,13 @@ public class RequisitionServiceTest {
   private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(0);
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(1);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
-  private UserDto user = DtoGenerator.of(UserDto.class);
   private StockCardSummaryDto stockCardSummaryDto = DtoGenerator.of(StockCardSummaryDto.class);
   private ProgramDto program = DtoGenerator.of(ProgramDto.class, true);
-  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
+  private UserDto user = new UserDtoDataBuilder()
+      .withRoleAssignment(role.getId(), supervisoryNode.getId(), program.getId())
+      .build();
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
   private List<String> permissionStrings = singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
@@ -466,24 +468,13 @@ public class RequisitionServiceTest {
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
     assertEquals(2, requisitions.size());
 
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
-    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
-    roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    UUID userId = UUID.randomUUID();
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(userId))
-        .thenReturn(roleAssignmentDtos);
-
     // when
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(userId, null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
 
     // then
     assertEquals(2, requisitionsForApproval.getTotalElements());
@@ -496,22 +487,12 @@ public class RequisitionServiceTest {
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
     assertEquals(2, requisitions.size());
 
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
-    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
-    roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
-            .thenReturn(roleAssignmentDtos);
-
     Page<Requisition> requisitionsForApproval = requisitionService
-                .getRequisitionsForApproval(user.getId(), program.getId(), pageRequest);
+                .getRequisitionsForApproval(user, program.getId(), pageRequest);
 
     assertEquals(2, requisitionsForApproval.getTotalElements());
     assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
@@ -520,74 +501,47 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldNotGetRequisitionsForApprovalWithoutApproveRight() {
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
     Set<RightDto> rights = new HashSet<>();
     role.setRights(rights);
 
-    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
-    roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
-        .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
         .thenReturn(getPage(Collections.emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user.getId(), null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }
 
   @Test
   public void shouldNotGetRequisitionsForApprovalWithIncorrectSupervisoryNode() {
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(UUID.randomUUID());
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
-    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
-    roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
-        .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
         .thenReturn(getPage(Collections.emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user.getId(), null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }
 
   @Test
   public void shouldNotGetRequisitionsForApprovalWithIncorrectProgram() {
-    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
-    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(UUID.randomUUID());
-    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
-    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
-
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
-    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
-    roleAssignmentDtos.add(detailedRoleAssignmentDto);
-    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
-        .thenReturn(roleAssignmentDtos);
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
         .thenReturn(getPage(Collections.emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user.getId(), null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }

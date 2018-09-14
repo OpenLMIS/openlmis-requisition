@@ -6,6 +6,7 @@ New functionality:
 * [OLMIS-5335](https://openlmis.atlassian.net/browse/OLMIS-5335): Enabled Adjusted Consumption column for Stock Based Requisitions.
 * [OLMIS-5314](https://openlmis.atlassian.net/browse/OLMIS-5314): Enabled Total and Number of patients added columns for Stock Based Requisitions.
 * [OLMIS-5366](https://openlmis.atlassian.net/browse/OLMIS-5366): Enabled Average Consumption column for Stock Based Requisitions.
+* [OLMIS-5226](https://openlmis.atlassian.net/browse/OLMIS-5226): Added sort parameter to the /requisitions/requisitionsForApproval endpoint
 
 Improvements:
 * [OLMIS-4295](https://openlmis.atlassian.net/browse/OLMIS-4295): Updated checkstyle to use newest google style.

@@ -19,7 +19,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,5 +68,26 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
         .hasAuthHeader()
         .hasEmptyBody()
         .hasQueryParameter("name", programName);
+  }
+
+  @Test
+  public void shouldFindProgramsByIds() {
+    // given
+    UUID program1 = UUID.randomUUID();
+    UUID program2 = UUID.randomUUID();
+
+
+    // when
+    ProgramDto dto = mockArrayResponseEntityAndGetDto();
+    List<ProgramDto> result = service.search(Sets.newHashSet(program1, program2));
+
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyArrayRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody();
   }
 }

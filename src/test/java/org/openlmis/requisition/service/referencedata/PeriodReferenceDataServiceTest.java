@@ -19,8 +19,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Sets;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,5 +125,26 @@ public class PeriodReferenceDataServiceTest
         .hasEmptyBody()
         .hasQueryParameter("facilityId", facilityId)
         .hasQueryParameter("programId", programId);
+  }
+
+  @Test
+  public void shouldFindProcessingPeriodsByIds() {
+    // given
+    UUID period1 = UUID.randomUUID();
+    UUID period2 = UUID.randomUUID();
+
+
+    // when
+    ProcessingPeriodDto dto = mockPageResponseEntityAndGetDto();
+    List<ProcessingPeriodDto> result = service.search(Sets.newHashSet(period1, period2));
+
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody();
   }
 }

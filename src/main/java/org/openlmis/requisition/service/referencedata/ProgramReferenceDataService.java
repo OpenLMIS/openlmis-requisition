@@ -16,6 +16,9 @@
 package org.openlmis.requisition.service.referencedata;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
@@ -47,4 +50,19 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
   public Collection<ProgramDto> search(String programName) {
     return findAll("search", RequestParameters.init().set("name", programName));
   }
+
+  /**
+   * This method retrieves program for given ids.
+   *
+   * @param programIds list of program ids.
+   * @return List of ProgramDto.
+   */
+  public List<ProgramDto> search(Set<UUID> programIds) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("id", programIds);
+
+    return findAll("", parameters);
+  }
+
 }

@@ -656,7 +656,7 @@ resourceTypes:
                             schema: localizedMessage
       /requisitionsForApproval:
           get:
-              is: [ secured, paginated ]
+              is: [ secured, paginated, sorted ]
               description: Get requisitions to approve for right supervisor.
               queryParameters:
                   program:

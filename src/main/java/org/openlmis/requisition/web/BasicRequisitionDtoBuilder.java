@@ -15,15 +15,25 @@
 
 package org.openlmis.requisition.web;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -40,6 +50,9 @@ public class BasicRequisitionDtoBuilder {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
   private PeriodService periodService;
 
   @Autowired
@@ -52,7 +65,41 @@ public class BasicRequisitionDtoBuilder {
    * @return a list of {@link BasicRequisitionDto}
    */
   public List<BasicRequisitionDto> build(Collection<Requisition> requisitions) {
-    return requisitions.stream().map(this::build).collect(Collectors.toList());
+    Set<UUID> facilityIds = Sets.newHashSet();
+    Set<UUID> periodIds = Sets.newHashSet();
+    Set<UUID> programIds = Sets.newHashSet();
+
+    for (Requisition requisition : requisitions) {
+      facilityIds.add(requisition.getFacilityId());
+      periodIds.add(requisition.getProcessingPeriodId());
+      programIds.add(requisition.getProgramId());
+    }
+
+    Map<UUID, FacilityDto> facilities = facilityReferenceDataService
+        .search(facilityIds)
+        .stream()
+        .collect(Collectors.toMap(FacilityDto::getId, Function.identity()));
+
+    Map<UUID, ProcessingPeriodDto> periods = periodReferenceDataService
+        .search(periodIds)
+        .stream()
+        .collect(Collectors.toMap(ProcessingPeriodDto::getId, Function.identity()));
+
+    Map<UUID, ProgramDto> programs = programReferenceDataService
+        .search(programIds)
+        .stream()
+        .collect(Collectors.toMap(ProgramDto::getId, Function.identity()));
+
+    List<BasicRequisitionDto> dtos = Lists.newArrayList();
+    for (Requisition requisition : requisitions) {
+      FacilityDto facility = facilities.get(requisition.getFacilityId());
+      ProcessingPeriodDto period = periods.get(requisition.getProcessingPeriodId());
+      ProgramDto program = programs.get(requisition.getProgramId());
+
+      dtos.add(build(requisition, facility, program, period));
+    }
+
+    return dtos;
   }
 
   /**
@@ -78,12 +125,19 @@ public class BasicRequisitionDtoBuilder {
    * null}.
    */
   public BasicRequisitionDto build(Requisition requisition, MinimalFacilityDto facility,
-                                   ProgramDto program) {
+      ProgramDto program) {
+    return build(requisition, facility, program, null);
+  }
+
+  private BasicRequisitionDto build(Requisition requisition, MinimalFacilityDto facility,
+      ProgramDto program, ProcessingPeriodDto period) {
     XLOGGER.entry(requisition);
+
     if (null == requisition) {
       XLOGGER.exit();
       return null;
     }
+
     Profiler profiler = new Profiler("BASIC_REQUISITION_DTO_BUILD");
     profiler.setLogger(XLOGGER);
 
@@ -93,20 +147,21 @@ public class BasicRequisitionDtoBuilder {
     requisition.export(requisitionDto);
 
     profiler.start("SET_SUB_RESOURCES");
-
-    if (facility == null) {
-      facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
-    }
-    requisitionDto.setFacility(facility);
-
-    if (program == null) {
-      program = programReferenceDataService.findOne(requisition.getProgramId());
-    }
-    requisitionDto.setProgram(program);
-
-    requisitionDto.setProcessingPeriod(periodService.getPeriod(
-        requisition.getProcessingPeriodId()
-    ));
+    requisitionDto.setFacility(
+        Optional
+        .ofNullable(facility)
+        .orElseGet(() -> facilityReferenceDataService.findOne(requisition.getFacilityId()))
+    );
+    requisitionDto.setProgram(
+        Optional
+            .ofNullable(program)
+            .orElseGet(() -> programReferenceDataService.findOne(requisition.getProgramId()))
+    );
+    requisitionDto.setProcessingPeriod(
+        Optional
+            .ofNullable(period)
+            .orElseGet(() -> periodService.getPeriod(requisition.getProcessingPeriodId()))
+    );
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);

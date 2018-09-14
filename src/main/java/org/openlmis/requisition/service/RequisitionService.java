@@ -16,7 +16,6 @@
 package org.openlmis.requisition.service;
 
 import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -39,6 +38,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -53,7 +53,6 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
-import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
@@ -376,7 +375,7 @@ public class RequisitionService {
   /**
    * Get requisitions to approve for the specified user.
    */
-  public Page<Requisition> getRequisitionsForApproval(UUID userId, UUID programId,
+  public Page<Requisition> getRequisitionsForApproval(UserDto user, UUID programId,
       Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     profiler.setLogger(LOGGER);
@@ -384,27 +383,17 @@ public class RequisitionService {
     Page<Requisition> requisitionsForApproval = Pagination.getPage(
         Collections.emptyList(), pageable);
 
-    profiler.start("FIND_RIGHT_FROM_NAME");
-    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
-
-    profiler.start("GET_USER_DETAILED_ROLE_ASSIGNMENTS");
-    List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
-        .getRoleAssignments(userId)
-        .stream()
-        .filter(r -> r.getRole().getRights().contains(right))
-        .collect(toList());
-
-    if (roleAssignments != null && !roleAssignments.isEmpty()) {
+    if (!CollectionUtils.isEmpty(user.getRoleAssignments())) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair> programNodePairs = new HashSet<>();
-      for (DetailedRoleAssignmentDto roleAssignment : roleAssignments) {
-        if (roleAssignment.getSupervisoryNodeId() != null
-            && roleAssignment.getProgramId() != null
-                && (programId == null || programId.equals(roleAssignment.getProgramId()))) {
-          programNodePairs.add(new ImmutablePair<>(
-              roleAssignment.getProgramId(), roleAssignment.getSupervisoryNodeId()));
-        }
-      }
+      Set<Pair> programNodePairs = user
+          .getRoleAssignments()
+          .stream()
+          .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+          .filter(item -> Objects.nonNull(item.getProgramId()))
+          .filter(item -> null == programId || programId.equals(item.getProgramId()))
+          .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
+          .collect(toSet());
+
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
           .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageable);

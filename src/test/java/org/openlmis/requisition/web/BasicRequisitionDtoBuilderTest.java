@@ -15,15 +15,20 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +44,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
@@ -53,6 +59,9 @@ public class BasicRequisitionDtoBuilderTest {
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
 
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
@@ -79,13 +88,7 @@ public class BasicRequisitionDtoBuilderTest {
 
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder.build(requisition);
 
-    assertNotNull(basicRequisitionDto);
-    assertEquals(requisition.getId(), basicRequisitionDto.getId());
-    assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
-    assertEquals(facility, basicRequisitionDto.getFacility());
-    assertEquals(program, basicRequisitionDto.getProgram());
-    assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
-    assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
+    assertDto(basicRequisitionDto);
   }
 
   @Test
@@ -111,13 +114,7 @@ public class BasicRequisitionDtoBuilderTest {
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder
         .build(requisition, null, null);
 
-    assertNotNull(basicRequisitionDto);
-    assertEquals(requisition.getId(), basicRequisitionDto.getId());
-    assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
-    assertEquals(facility, basicRequisitionDto.getFacility());
-    assertEquals(program, basicRequisitionDto.getProgram());
-    assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
-    assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
+    assertDto(basicRequisitionDto);
 
     verify(facilityReferenceDataService).findOne(facility.getId());
     verify(programReferenceDataService).findOne(program.getId());
@@ -131,6 +128,36 @@ public class BasicRequisitionDtoBuilderTest {
     BasicRequisitionDto basicRequisitionDto = basicRequisitionDtoBuilder
         .build(requisition, facility, program);
 
+    assertDto(basicRequisitionDto);
+
+    verify(facilityReferenceDataService, never()).findOne(any(UUID.class));
+    verify(programReferenceDataService, never()).findOne(any(UUID.class));
+    verify(periodService).getPeriod(processingPeriod.getId());
+  }
+
+  @Test
+  public void shouldBuildListOfDtos() {
+    when(facilityReferenceDataService.search(anySetOf(UUID.class)))
+        .thenReturn(Lists.newArrayList(facility));
+    when(programReferenceDataService.search(anySetOf(UUID.class)))
+        .thenReturn(Lists.newArrayList(program));
+    when(periodReferenceDataService.search(anySetOf(UUID.class)))
+        .thenReturn(Lists.newArrayList(processingPeriod));
+
+    List<BasicRequisitionDto> list = basicRequisitionDtoBuilder
+        .build(Lists.newArrayList(requisition));
+
+    assertThat(list, hasSize(1));
+    assertDto(list.get(0));
+
+
+    verify(facilityReferenceDataService, never()).findOne(any(UUID.class));
+    verify(programReferenceDataService, never()).findOne(any(UUID.class));
+    verify(periodReferenceDataService, never()).findOne(any(UUID.class));
+    verify(periodService, never()).getPeriod(any(UUID.class));
+  }
+
+  private void assertDto(BasicRequisitionDto basicRequisitionDto) {
     assertNotNull(basicRequisitionDto);
     assertEquals(requisition.getId(), basicRequisitionDto.getId());
     assertEquals(requisition.getEmergency(), basicRequisitionDto.getEmergency());
@@ -138,10 +165,6 @@ public class BasicRequisitionDtoBuilderTest {
     assertEquals(program, basicRequisitionDto.getProgram());
     assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
-
-    verify(facilityReferenceDataService, never()).findOne(any(UUID.class));
-    verify(programReferenceDataService, never()).findOne(any(UUID.class));
-    verify(periodService).getPeriod(processingPeriod.getId());
   }
 
   private Requisition buildRequisition() {

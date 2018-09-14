@@ -18,6 +18,7 @@ package org.openlmis.requisition.service.referencedata;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.RequestParameters;
@@ -69,6 +70,20 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
         .setPage(pageable)
         .set("processingScheduleId", processingScheduleId)
         .set("endDate", endDate);
+
+    return getPage(parameters).getContent();
+  }
+
+  /**
+   * This method retrieves processing periods for given ids.
+   *
+   * @param periodIds list of period ids.
+   * @return List of ProcessingPeriodDto.
+   */
+  public List<ProcessingPeriodDto> search(Set<UUID> periodIds) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("id", periodIds);
 
     return getPage(parameters).getContent();
   }

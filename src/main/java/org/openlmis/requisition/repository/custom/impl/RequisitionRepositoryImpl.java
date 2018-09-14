@@ -35,6 +35,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.tuple.Pair;
@@ -83,6 +84,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String PROGRAM_NAME = "programName";
   private static final String FACILITY_CODE = "facilityCode";
   private static final String FACILITY_NAME = "facilityName";
+  private static final String AUTHORIZED_DATE = "authorizedDate";
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -215,9 +217,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   /**
-   * Get all requisitions that match any of the program/supervisoryNode pairs, that can be 
+   * Get all requisitions that match any of the program/supervisoryNode pairs, that can be
    * approved (AUTHORIZED, IN_APPROVAL). Pairs must not be null.
-   * 
+   *
    * @param programNodePairs program / supervisoryNode pairs
    * @return matching requisitions
    */
@@ -228,12 +230,16 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    query = prepareApprovableQuery(builder, query, programNodePairs, false);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
 
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, pageable);
 
     Long count = entityManager.createQuery(countQuery).getSingleResult();
+
+    if (count == 0) {
+      return Pagination.getPage(Collections.emptyList());
+    }
 
     Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
     List<Requisition> requisitions = entityManager.createQuery(query)
@@ -334,14 +340,14 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     query.distinct(true);
 
     if (!count && pageable != null && pageable.getSort() != null) {
-      query = addSortProperties(query, root, pageable);
+      query = addSortProperties(builder, query, root, pageable);
     }
 
     return query;
   }
 
   private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
-      CriteriaQuery<T> query, Set<Pair> programNodePairs, boolean isCountQuery) {
+      CriteriaQuery<T> query, Set<Pair> programNodePairs, boolean isCountQuery, Pageable pageable) {
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -357,14 +363,21 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       Predicate combinedPredicate = builder.and(programPredicate, nodePredicate);
       combinedPredicates.add(combinedPredicate);
     }
-    Predicate pairPredicate = builder.or(combinedPredicates.toArray(
-        new Predicate[combinedPredicates.size()]));
+    Predicate pairPredicate = builder.or(combinedPredicates.toArray(new Predicate[0]));
 
     Predicate statusPredicate = builder.or(
         builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
         builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
 
-    Predicate predicate = builder.and(pairPredicate, statusPredicate);
+    Join<Requisition, StatusChange> statusChanges = root.join("statusChanges");
+    Predicate statusChangePredicate = builder
+        .equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED);
+
+    Predicate predicate = builder.and(pairPredicate, statusPredicate, statusChangePredicate);
+
+    if (!isCountQuery && pageable != null && pageable.getSort() != null) {
+      query = addSortProperties(builder, query, root, pageable);
+    }
 
     return query.where(predicate);
   }
@@ -386,21 +399,37 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return predicateToUse;
   }
 
-  private <T> CriteriaQuery<T> addSortProperties(CriteriaQuery<T> query,
-                                                 Root root, Pageable pageable) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+  private <T> CriteriaQuery<T> addSortProperties(CriteriaBuilder builder,
+      CriteriaQuery<T> query, Root<Requisition> root, Pageable pageable) {
     List<Order> orders = new ArrayList<>();
     Iterator<Sort.Order> iterator = pageable.getSort().iterator();
-
     Sort.Order order;
+
     while (iterator.hasNext()) {
       order = iterator.next();
-      if (order.isAscending()) {
-        orders.add(builder.asc(root.get(order.getProperty())));
+      String property = order.getProperty();
+
+      Path path;
+
+      if (AUTHORIZED_DATE.equals(property)) {
+        path = root
+            .getJoins()
+            .stream()
+            .filter(item -> "statusChanges".equals(item.getAttribute().getName()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Can't find statusChanges join"))
+            .get("createdDate");
       } else {
-        orders.add(builder.desc(root.get(order.getProperty())));
+        path = root.get(property);
+      }
+
+      if (order.isAscending()) {
+        orders.add(builder.asc(path));
+      } else {
+        orders.add(builder.desc(path));
       }
     }
+
     return query.orderBy(orders);
   }
 
