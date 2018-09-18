@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
@@ -40,7 +39,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -88,9 +86,6 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
-
-  @Autowired
-  private StatusChangeRepository statusChangeRepository;
 
   @Before
   public void setUp() {
@@ -373,20 +368,15 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setProgramId(programId);
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
+    addStatusChanges(matchingRequisition1, 4);
     repository.save(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
     matchingRequisition2.setProgramId(programId);
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
+    addStatusChanges(matchingRequisition2, 3);
     repository.save(matchingRequisition2);
-
-    statusChangeRepository
-        .save(StatusChange.newStatusChange(matchingRequisition1, UUID.randomUUID()));
-    StatusChange statusChange2 = StatusChange
-        .newStatusChange(matchingRequisition2, UUID.randomUUID());
-    statusChange2.setStatus(AUTHORIZED);
-    statusChangeRepository.save(statusChange2);
 
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
@@ -399,7 +389,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void searchByProgramSupervisoryNodePairsShouldSortByRequisitionField() {
+  public void searchByProgramSupervisoryNodePairsShouldSortByEmergencyField() {
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
@@ -409,6 +399,7 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
     matchingRequisition1.setEmergency(false);
+    addStatusChanges(matchingRequisition1, 2);
     repository.save(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
@@ -416,14 +407,8 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
     matchingRequisition2.setEmergency(true);
+    addStatusChanges(matchingRequisition2, 0);
     repository.save(matchingRequisition2);
-
-    statusChangeRepository
-        .save(StatusChange.newStatusChange(matchingRequisition1, UUID.randomUUID()));
-    StatusChange statusChange2 = StatusChange
-        .newStatusChange(matchingRequisition2, UUID.randomUUID());
-    statusChange2.setStatus(AUTHORIZED);
-    statusChangeRepository.save(statusChange2);
 
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
@@ -442,8 +427,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate()
-      throws InterruptedException {
+  public void searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate() {
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
@@ -453,6 +437,7 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
     matchingRequisition1.setEmergency(false);
+    addStatusChanges(matchingRequisition1, 0);
     repository.save(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
@@ -460,17 +445,16 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
     matchingRequisition2.setEmergency(true);
+    addStatusChanges(matchingRequisition2, 3);
     repository.save(matchingRequisition2);
 
-    statusChangeRepository
-        .save(StatusChange.newStatusChange(matchingRequisition1, UUID.randomUUID()));
-    // we use createdDate which is set automatically before saving into the database
-    // because of that we wait one second between statuses.
-    TimeUnit.SECONDS.sleep(1);
-    StatusChange statusChange2 = StatusChange
-        .newStatusChange(matchingRequisition2, UUID.randomUUID());
-    statusChange2.setStatus(AUTHORIZED);
-    statusChangeRepository.save(statusChange2);
+    Requisition matchingRequisition3 = requisitions.get(2);
+    matchingRequisition3.setProgramId(programId);
+    matchingRequisition3.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition3.setStatus(RequisitionStatus.IN_APPROVAL);
+    matchingRequisition3.setEmergency(true);
+    addStatusChanges(matchingRequisition3, 5);
+    repository.save(matchingRequisition3);
 
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
@@ -483,11 +467,12 @@ public class RequisitionRepositoryIntegrationTest
             programNodePairs, sortPageRequest);
 
     // then
-    assertEquals(2, results.getTotalElements());
-    assertThat(results.getContent().get(0), is(matchingRequisition2));
-    assertThat(results.getContent().get(1), is(matchingRequisition1));
+    assertEquals(3, results.getTotalElements());
+    assertThat(results.getContent().get(0), is(matchingRequisition3));
+    assertThat(results.getContent().get(1), is(matchingRequisition2));
+    assertThat(results.getContent().get(2), is(matchingRequisition1));
   }
-  
+
   @Test
   public void searchByProgramSupervisoryNodePairsShouldNotFindIfIdsDoNotMatch() {
     // given

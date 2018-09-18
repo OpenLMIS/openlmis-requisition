@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -40,6 +41,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
+import org.hibernate.annotations.QueryHints;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.PostgresUUIDType;
 import org.hibernate.type.ZonedDateTimeType;
@@ -229,9 +231,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
-
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
     countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, pageable);
 
@@ -241,8 +240,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       return Pagination.getPage(Collections.emptyList());
     }
 
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
+
+    EntityGraph graph = entityManager.createEntityGraph(Requisition.class);
+    graph.addSubgraph(Requisition.STATUS_CHANGES);
+
     Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
     List<Requisition> requisitions = entityManager.createQuery(query)
+        .setHint(QueryHints.LOADGRAPH, graph)
         .setMaxResults(maxAndFirst.getLeft())
         .setFirstResult(maxAndFirst.getRight())
         .getResultList();
@@ -354,6 +360,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     if (isCountQuery) {
       CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
       query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
+    } else {
+      query.distinct(true);
     }
 
     List<Predicate> combinedPredicates = new ArrayList<>();
@@ -369,11 +377,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
         builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
 
-    Join<Requisition, StatusChange> statusChanges = root.join("statusChanges");
-    Predicate statusChangePredicate = builder
-        .equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED);
+    if (!isCountQuery) {
+      Join<Requisition, StatusChange> statusChanges = root.join(Requisition.STATUS_CHANGES);
+      statusChanges.on(builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED));
+    }
 
-    Predicate predicate = builder.and(pairPredicate, statusPredicate, statusChangePredicate);
+    Predicate predicate = builder.and(pairPredicate, statusPredicate);
 
     if (!isCountQuery && pageable != null && pageable.getSort() != null) {
       query = addSortProperties(builder, query, root, pageable);
@@ -415,7 +424,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         path = root
             .getJoins()
             .stream()
-            .filter(item -> "statusChanges".equals(item.getAttribute().getName()))
+            .filter(item -> Requisition.STATUS_CHANGES.equals(item.getAttribute().getName()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("Can't find statusChanges join"))
             .get("createdDate");

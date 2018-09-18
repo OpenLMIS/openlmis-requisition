@@ -123,6 +123,7 @@ public class Requisition extends BaseTimestampedEntity {
   public static final String EMERGENCY_FIELD = "emergency";
   static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED = "datePhysicalStockCountCompleted";
   public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
+  public static final String STATUS_CHANGES = "statusChanges";
 
   private static final int LINE_ITEMS_BATCH_SIZE = 100;
 
