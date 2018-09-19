@@ -39,6 +39,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
 import org.hibernate.annotations.QueryHints;
@@ -377,12 +378,22 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
         builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
         builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
 
-    if (!isCountQuery) {
-      Join<Requisition, StatusChange> statusChanges = root.join(Requisition.STATUS_CHANGES);
-      statusChanges.on(builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED));
-    }
-
     Predicate predicate = builder.and(pairPredicate, statusPredicate);
+
+    if (!isCountQuery) {
+      Subquery<ZonedDateTime> subquery = query.subquery(ZonedDateTime.class);
+      Root<StatusChange> subRoot = subquery.from(StatusChange.class);
+
+      subquery.select(builder.greatest(subRoot.<ZonedDateTime>get(CREATED_DATE)));
+      subquery.where(builder.and(
+          builder.equal(subRoot.get(STATUS), RequisitionStatus.AUTHORIZED),
+          builder.equal(subRoot.get("requisition"), root)));
+
+      Join<Requisition, StatusChange> statusChanges = root.join(Requisition.STATUS_CHANGES);
+      predicate = builder.and(predicate,
+          builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED),
+          statusChanges.get(CREATED_DATE).in(subquery));
+    }
 
     if (!isCountQuery && pageable != null && pageable.getSort() != null) {
       query = addSortProperties(builder, query, root, pageable);
@@ -427,7 +438,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
             .filter(item -> Requisition.STATUS_CHANGES.equals(item.getAttribute().getName()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("Can't find statusChanges join"))
-            .get("createdDate");
+            .get(CREATED_DATE);
       } else {
         path = root.get(property);
       }

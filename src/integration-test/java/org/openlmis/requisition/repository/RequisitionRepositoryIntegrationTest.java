@@ -428,6 +428,15 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void searchByProgramSupervisoryNodePairsShouldSortByLatestAuthorized() {
+    searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate(Direction.DESC);
+  }
+
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldSortByFirstAuthorized() {
+    searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate(Direction.ASC);
+  }
+
+  private void searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate(Direction direction) {
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
@@ -459,7 +468,7 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
     Pageable sortPageRequest = new PageRequest(
-        Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, Direction.DESC, "authorizedDate");
+        Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, direction, "authorizedDate");
 
     // when
     Page<Requisition> results = repository
@@ -468,9 +477,16 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(3, results.getTotalElements());
-    assertThat(results.getContent().get(0), is(matchingRequisition3));
-    assertThat(results.getContent().get(1), is(matchingRequisition2));
-    assertThat(results.getContent().get(2), is(matchingRequisition1));
+
+    if (direction == Direction.ASC) {
+      assertThat(results.getContent().get(0), is(matchingRequisition1));
+      assertThat(results.getContent().get(1), is(matchingRequisition2));
+      assertThat(results.getContent().get(2), is(matchingRequisition3));
+    } else {
+      assertThat(results.getContent().get(0), is(matchingRequisition3));
+      assertThat(results.getContent().get(1), is(matchingRequisition2));
+      assertThat(results.getContent().get(2), is(matchingRequisition1));
+    }
   }
 
   @Test
