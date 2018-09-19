@@ -389,7 +389,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void searchByProgramSupervisoryNodePairsShouldSortByEmergencyField() {
+  public void searchByProgramSupervisoryNodePairsShouldSortEmergencyRequisitionsFirst() {
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
@@ -427,7 +427,7 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void searchByProgramSupervisoryNodePairsShouldSortByAuthorizedDate() {
+  public void searchByProgramSupervisoryNodePairsShouldSortByLatestAuthorized() {
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
