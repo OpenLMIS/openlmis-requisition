@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +80,7 @@ import org.openlmis.requisition.utils.ReportUtils;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
@@ -116,6 +119,15 @@ public class JasperReportsViewService {
   @Autowired
   private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
 
+  @Value("${dateFormat}")
+  private String dateFormat;
+
+  @Value("${groupingSeparator}")
+  private String groupingSeparator;
+
+  @Value("${groupingSize}")
+  private String groupingSize;
+
   /**
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
@@ -150,7 +162,7 @@ public class JasperReportsViewService {
   public JasperReportsMultiFormatView getReportingRateJasperReportsView(
       JasperTemplate jasperTemplate, HttpServletRequest request, Map<String, Object> params)
       throws JasperReportViewException {
-    JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
+    JasperReportsMultiFormatView jasperView = createJasperMultiFormatView();
     setExportParams(jasperView);
     jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
 
@@ -175,6 +187,8 @@ public class JasperReportsViewService {
     ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone,
         dueDays);
     params.put(DATASOURCE, new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
+    params.put("dateFormat", dateFormat);
+    params.put("decimalFormat", createDecimalFormat());
 
     if (getApplicationContext(request) != null) {
       jasperView.setApplicationContext(getApplicationContext(request));
@@ -270,8 +284,8 @@ public class JasperReportsViewService {
       File reportTempFile = createTempFile("requisitionReport_temp", ".jasper");
       JasperReport report = JasperCompileManager.compileReport(inputStream);
 
-      try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-           ObjectOutputStream out = new ObjectOutputStream(bos)) {
+      ByteArrayOutputStream bos = createByteArrayOutputStream();
+      try (ObjectOutputStream out = createObjectOutputStream(bos)) {
 
         out.writeObject(report);
         writeByteArrayToFile(reportTempFile, bos.toByteArray());
@@ -319,12 +333,11 @@ public class JasperReportsViewService {
       );
     }
 
-    try (ObjectInputStream inputStream =
-             new ObjectInputStream(new ByteArrayInputStream(jasperTemplate.getData()))) {
-      JasperReport jasperReport = (JasperReport) inputStream.readObject();
+    try (ObjectInputStream inputStream = createObjectInputStream(jasperTemplate)) {
+      JasperReport jasperReport = readReportData(inputStream);
 
-      try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-           ObjectOutputStream out = new ObjectOutputStream(bos)) {
+      try (ByteArrayOutputStream bos = createByteArrayOutputStream();
+           ObjectOutputStream out = createObjectOutputStream(bos)) {
 
         out.writeObject(jasperReport);
         writeByteArrayToFile(tmpFile, bos.toByteArray());
@@ -400,5 +413,36 @@ public class JasperReportsViewService {
     } catch (ClassCastException | IllegalArgumentException err) {
       throw new ValidationMessageException(errorMessage, err);
     }
+  }
+
+  private DecimalFormat createDecimalFormat() {
+    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+    decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
+    DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
+    decimalFormat.setGroupingSize(Integer.valueOf(groupingSize));
+    return decimalFormat;
+  }
+
+  protected ByteArrayOutputStream createByteArrayOutputStream() {
+    return new ByteArrayOutputStream();
+  }
+
+  protected ObjectOutputStream createObjectOutputStream(ByteArrayOutputStream bos)
+      throws IOException {
+    return new ObjectOutputStream(bos);
+  }
+
+  protected ObjectInputStream createObjectInputStream(JasperTemplate jasperTemplate)
+      throws IOException {
+    return new ObjectInputStream(new ByteArrayInputStream(jasperTemplate.getData()));
+  }
+
+  protected JasperReportsMultiFormatView createJasperMultiFormatView() {
+    return new JasperReportsMultiFormatView();
+  }
+
+  protected JasperReport readReportData(ObjectInputStream objectInputStream)
+      throws ClassNotFoundException, IOException {
+    return (JasperReport) objectInputStream.readObject();
   }
 }

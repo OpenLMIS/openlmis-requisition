@@ -15,12 +15,21 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.Collections.singletonList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +48,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
@@ -44,20 +58,30 @@ import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReportingRateReportDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.springframework.data.domain.Page;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class JasperReportsViewServiceTest {
 
-  @InjectMocks
-  private JasperReportsViewService service;
+  private static final String DATE_FORMAT = "dd/MM/yyyy";
+  private static final String GROUPING_SEPARATOR = ",";
+  private static final String GROUPING_SIZE = "3";
+  private static final String PERIOD = "period";
+  private static final String PROGRAM = "program";
+  private static final String DISTRICT = "district";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -72,7 +96,25 @@ public class JasperReportsViewServiceTest {
   private GeographicZoneReferenceDataService geographicZoneReferenceDataService;
 
   @Mock
+  private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
+
+  @Mock
   private RequisitionService requisitionService;
+
+  @Mock
+  private ByteArrayOutputStream byteArrayOutputStream;
+
+  @Mock
+  private ObjectInputStream objectInputStream;
+
+  @Mock
+  private JasperReportsMultiFormatView jasperReportsMultiFormatView;
+
+  @Mock
+  private JasperReport jasperReport;
+
+  @InjectMocks
+  private JasperReportsViewService service;
 
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
   private ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
@@ -80,20 +122,43 @@ public class JasperReportsViewServiceTest {
 
   private Map<String, Object> reportParams = new HashMap<>();
 
-  @Before
-  public void setUp() {
-    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
-    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+  private JasperTemplate jasperTemplate;
+  private byte[] reportByteData;
 
-    reportParams.put("program", program.getId().toString());
-    reportParams.put("period", period.getId().toString());
+  @Before
+  public void setUp() throws Exception {
+    service = spy(new JasperReportsViewService());
+
+    ReflectionTestUtils.setField(service, "dateFormat", DATE_FORMAT);
+    ReflectionTestUtils.setField(service, "groupingSeparator", GROUPING_SEPARATOR);
+    ReflectionTestUtils.setField(service, "groupingSize", GROUPING_SIZE);
+
+    jasperTemplate = mock(JasperTemplate.class);
+    when(jasperTemplate.getName()).thenReturn("report1.jrxml");
+    reportByteData = new byte[1];
+    when(jasperTemplate.getData()).thenReturn(reportByteData);
+
+    ObjectOutputStream objectOutputStream = createObjectOutputStream();
+
+    doReturn(objectInputStream).when(service).createObjectInputStream(jasperTemplate);
+    doReturn(byteArrayOutputStream).when(service).createByteArrayOutputStream();
+    doReturn(objectOutputStream).when(service).createObjectOutputStream(byteArrayOutputStream);
+    doReturn(jasperReportsMultiFormatView).when(service).createJasperMultiFormatView();
+    doReturn(jasperReport).when(service).readReportData(objectInputStream);
+    doReturn(new byte[0]).when(byteArrayOutputStream).toByteArray();
+
+    MockitoAnnotations.initMocks(this);
   }
 
   @Test
   public void shouldSetViewParamsForTimelinessReport() {
     //given
     UUID districtId = UUID.randomUUID();
-    reportParams.put("district", districtId.toString());
+    reportParams.put(PROGRAM, program.getId().toString());
+    reportParams.put(PERIOD, period.getId().toString());
+    reportParams.put(DISTRICT, districtId.toString());
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
 
     // when
@@ -103,15 +168,21 @@ public class JasperReportsViewServiceTest {
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
-    Assert.assertEquals(program, outputParams.get("program"));
-    Assert.assertEquals(period, outputParams.get("period"));
-    Assert.assertEquals(district, outputParams.get("district"));
+    Assert.assertEquals(program, outputParams.get(PROGRAM));
+    Assert.assertEquals(period, outputParams.get(PERIOD));
+    Assert.assertEquals(district, outputParams.get(DISTRICT));
     Assert.assertEquals(facilities, Collections.emptyList());
   }
 
   @Test
   public void shouldGetTimelinessReportViewWithActiveFacilitiesMissingRnR() {
     // given
+    reportParams.put(PROGRAM, program.getId().toString());
+    reportParams.put(PERIOD, period.getId().toString());
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+
     List<FacilityDto> facilitiesToReturn = new ArrayList<>();
 
     // active facilities missing RnR
@@ -124,7 +195,7 @@ public class JasperReportsViewServiceTest {
     // "on time" active facility
     facilitiesToReturn.add(mockFacility(true, false));
 
-    // inactive facilitieskurwa
+    // inactive facilities
     facilitiesToReturn.add(mockFacility(false, false));
     facilitiesToReturn.add(mockFacility(false, true));
 
@@ -147,7 +218,12 @@ public class JasperReportsViewServiceTest {
   public void shouldGetTimelinessReportViewWithFacilitiesFromSpecifiedDistrict() {
     //given
     UUID districtId = UUID.randomUUID();
-    reportParams.put("district", districtId.toString());
+    reportParams.put(DISTRICT, districtId.toString());
+    reportParams.put(PROGRAM, program.getId().toString());
+    reportParams.put(PERIOD, period.getId().toString());
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
     // active facilities missing RnR
     MinimalFacilityDto facility = mockBasicFacility(true, true, districtId, "parent-zone", "f1");
@@ -183,6 +259,12 @@ public class JasperReportsViewServiceTest {
   @Test
   public void shouldGetTimelinessReportViewWithFacilitiesFromAllZonesIfDistrictNotSpecified() {
     //given
+    reportParams.put(PROGRAM, program.getId().toString());
+    reportParams.put(PERIOD, period.getId().toString());
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+
     UUID zone1Id = UUID.randomUUID();
     UUID zone2Id = UUID.randomUUID();
 
@@ -213,6 +295,12 @@ public class JasperReportsViewServiceTest {
   @Test
   public void shouldSortFacilitiesReturnedWithTimelinessReportView() {
     //given
+    reportParams.put(PROGRAM, program.getId().toString());
+    reportParams.put(PERIOD, period.getId().toString());
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+
     UUID zone1Id = UUID.randomUUID();
     UUID zone2Id = UUID.randomUUID();
 
@@ -235,6 +323,28 @@ public class JasperReportsViewServiceTest {
     Assert.assertEquals(facility1B.getId(), facilities.get(1).getId());
     Assert.assertEquals(facility2A.getId(), facilities.get(2).getId());
     Assert.assertEquals(facility2B.getId(), facilities.get(3).getId());
+  }
+
+  @Test
+  public void shouldSetParamsForReportingRateReport() throws Exception {
+    UUID districtId = UUID.randomUUID();
+    reportParams.put("Program", program.getId().toString());
+    reportParams.put("Period", period.getId().toString());
+    reportParams.put("GeographicZone", districtId.toString());
+    reportParams.put("DueDays", "10");
+    when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
+
+    ReportingRateReportDto reportingRateReportDto = DtoGenerator.of(ReportingRateReportDto.class);
+    when(reportingRateReportDtoBuilder.build(program, period, district, 10))
+        .thenReturn(reportingRateReportDto);
+
+    ServletContext servletContext = new MockServletContext("");
+    HttpServletRequest httpServletRequest = new MockHttpServletRequest(servletContext);
+
+    service.getReportingRateJasperReportsView(jasperTemplate, httpServletRequest, reportParams);
+
+    Assert.assertEquals(DATE_FORMAT, reportParams.get("dateFormat"));
+    Assert.assertEquals(createDecimalFormat(), reportParams.get("decimalFormat"));
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
@@ -292,12 +402,41 @@ public class JasperReportsViewServiceTest {
     Requisition mockRequisition = mock(Requisition.class);
     Page<Requisition> requisitionPage = mock(Page.class);
     when(requisitionPage.getContent()).thenReturn(
-        (isMissingRnR) ? Collections.emptyList() : Collections.singletonList(mockRequisition));
-    
+        (isMissingRnR) ? Collections.emptyList() : singletonList(mockRequisition));
     when(requisitionService.searchRequisitions(eq(facilityId), eq(program.getId()), any(), any(),
         eq(period.getId()), any(), any(), any(), any()))
         .thenReturn(requisitionPage);
 
     return geographicZoneDto;
+  }
+
+  private DecimalFormat createDecimalFormat() {
+    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+    decimalFormatSymbols.setGroupingSeparator(GROUPING_SEPARATOR.charAt(0));
+    DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
+    decimalFormat.setGroupingSize(Integer.valueOf(GROUPING_SIZE));
+    return decimalFormat;
+  }
+
+  // We use in the service writeObject method which has the final modifier
+  // and we can't mock the method.
+  private ObjectOutputStream createObjectOutputStream() throws IOException {
+    return new ObjectOutputStream() {
+
+      @Override
+      protected final void writeObjectOverride(Object obj) {
+        // nothing to do here
+      }
+
+      @Override
+      public void flush() {
+        // nothing to do here
+      }
+
+      @Override
+      public void close() {
+        // nothing to do here
+      }
+    };
   }
 }

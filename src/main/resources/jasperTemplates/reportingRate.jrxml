@@ -9,6 +9,9 @@
 	<import value="org.openlmis.requisition.dto.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<import value="java.util.stream.*"/>
+	<import value="java.time.LocalDate"/>
+	<import value="java.time.format.DateTimeFormatter"/>
+	<import value="java.text.DecimalFormat"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -38,6 +41,8 @@
 	</style>
 	<subDataset name="ReportingRateByPeriod" uuid="a6da25d7-01b4-4f6b-870d-bbe46b496479">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+		<parameter name="dateFormat" class="java.lang.String" isForPrompting="false"/>
+		<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -60,7 +65,7 @@
 			<fieldDescription><![CDATA[total]]></fieldDescription>
 		</field>
 		<variable name="PercentAndNumberFormat" class="java.lang.String">
-			<variableExpression><![CDATA["%1$.0f%% (%2$d)"]]></variableExpression>
+			<variableExpression><![CDATA["%1$.0f%% (%2$S)"]]></variableExpression>
 			<initialValueExpression><![CDATA["%.0f%%"]]></initialValueExpression>
 		</variable>
 	</subDataset>
@@ -91,6 +96,8 @@
 		<property name="displayName" value="Due date (days)"/>
 		<property name="required" value="false"/>
 	</parameter>
+	<parameter name="dateFormat" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -222,6 +229,12 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="ReportingRateByPeriod" uuid="3f5dceba-45d4-43cf-a6d2-80caf0e6f0b4">
+						<datasetParameter name="dateFormat">
+							<datasetParameterExpression><![CDATA[$P{dateFormat}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="decimalFormat">
+							<datasetParameterExpression><![CDATA[$P{decimalFormat}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByPeriod})]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="83" uuid="bddbac36-e7a6-4e95-81d9-5e416d7dae27">
@@ -256,7 +269,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="c76ce979-1d2c-4b28-af83-7bc5a1626a2d"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $F{completed})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $P{decimalFormat}.format($F{completed}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -274,7 +287,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="533abb65-b858-4042-acba-4c67310920ce"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $F{onTime})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $P{decimalFormat}.format($F{onTime}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -292,7 +305,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="32465b83-c463-4b16-97a4-830b0a074daf"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $F{late})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $P{decimalFormat}.format($F{late}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -312,7 +325,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="49b0377d-e4fc-4d23-82a5-47562053bc71"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $F{missed})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $P{decimalFormat}.format($F{missed}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -389,6 +402,12 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="ReportingRateByPeriod" uuid="98483d6f-f388-40fa-b29e-427f6dc05393">
+						<datasetParameter name="dateFormat">
+							<datasetParameterExpression><![CDATA[$P{dateFormat}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="decimalFormat">
+							<datasetParameterExpression><![CDATA[$P{decimalFormat}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{completionByZone})]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="83" uuid="78d31c95-ced7-4700-a34f-d21fb9758a98">
@@ -423,7 +442,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="99413dd5-0f84-4b07-b36d-2bc60d97b567"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $F{completed})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{completed}/$F{total}*100, $P{decimalFormat}.format($F{completed}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -441,7 +460,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="6098848d-3396-4ec0-9627-51467a43e0b2"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $F{onTime})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{onTime}/$F{total}*100, $P{decimalFormat}.format($F{onTime}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -459,7 +478,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="af00bd95-fa13-4baf-894e-339a41baac57"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $F{late})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{late}/$F{total}*100, $P{decimalFormat}.format($F{late}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -479,7 +498,7 @@
 								<reportElement x="0" y="0" width="118" height="30" uuid="f74f1b72-b6a5-4a54-8772-e6f3fc79c3c9"/>
 								<box padding="2"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $F{missed})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format($V{PercentAndNumberFormat}, (double)$F{missed}/$F{total}*100, $P{decimalFormat}.format($F{missed}).toString())]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

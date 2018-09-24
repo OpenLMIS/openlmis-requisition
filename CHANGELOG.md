@@ -13,6 +13,7 @@ Improvements:
 * [OLMIS-4295](https://openlmis.atlassian.net/browse/OLMIS-4295): Updated checkstyle to use newest google style.
 * [OLMIS-3078](https://openlmis.atlassian.net/browse/OLMIS-3078): Made Javers log initializer not iterate over all items, only those without logs.
 * [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added loading currency, number and date settings from properties on startup.
+* [OLMIS-4943](https://openlmis.atlassian.net/browse/OLMIS-4943): Fixed Jasper reports to use service locale settings.
 
 Bug fixes:
 * [OLMIS-5065](https://openlmis.atlassian.net/browse/OLMIS-5065): Brought back requisition timestamps validation
