@@ -22,6 +22,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 
 import java.io.ByteArrayOutputStream;
@@ -30,6 +32,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,9 +52,13 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
@@ -59,6 +66,9 @@ import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReportingRateReportDto;
+import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionReportDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
@@ -125,12 +135,26 @@ public class JasperReportsViewServiceTest {
   @Mock
   private RequisitionRepository requisitionRepository;
 
+  @Mock
+  private RequisitionLineItem lineItem1;
+
+  @Mock
+  private RequisitionLineItem lineItem2;
+
   @InjectMocks
   private JasperReportsViewService service;
 
+  @Spy
+  private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
+      .withAllColumns().build();
+
+  private Requisition requisition;
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
   private ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
   private GeographicZoneDto district = DtoGenerator.of(GeographicZoneDto.class);
+  private RequisitionDto requisitionDto = DtoGenerator.of(RequisitionDto.class);
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
+  private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
 
   private Map<String, Object> reportParams = new HashMap<>();
 
@@ -139,6 +163,7 @@ public class JasperReportsViewServiceTest {
 
   @Before
   public void setUp() throws Exception {
+    generateRequisition();
     service = spy(new JasperReportsViewService());
 
     ReflectionTestUtils.setField(service, "dateFormat", DATE_FORMAT);
@@ -364,7 +389,21 @@ public class JasperReportsViewServiceTest {
 
   @Test
   public void shouldSetParamsForRequisitionReport() throws Exception {
+    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
+    reportParams.put("Requisition", requisition.getId());
 
+    RequisitionReportDto requisitionReportDto = DtoGenerator.of(RequisitionReportDto.class);
+    when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
+
+    ServletContext servletContext = new MockServletContext("");
+    HttpServletRequest httpServletRequest = new MockHttpServletRequest(servletContext);
+
+    ModelAndView view = service.getRequisitionJasperReportView(requisition, httpServletRequest);
+    Map<String, Object> outputParams = view.getModel();
+
+    Assert.assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
+    Assert.assertEquals(createCurrencyDecimalFormat(), outputParams.get("currencyDecimalFormat"));
+    Assert.assertEquals(CURRENCY_CODE, outputParams.get("currencyCode"));
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
@@ -440,11 +479,30 @@ public class JasperReportsViewServiceTest {
 
   private DecimalFormat createCurrencyDecimalFormat() {
     DecimalFormat currencyDecimalFormat = createDecimalFormat();
-    currencyDecimalFormat.getDecimalFormatSymbols().setDecimalSeparator(DECIMAL_SEPARATOR.charAt(0));
+    currencyDecimalFormat.getDecimalFormatSymbols()
+        .setDecimalSeparator(DECIMAL_SEPARATOR.charAt(0));
     currencyDecimalFormat.setMaximumFractionDigits(CURRENCY_DECIMAL_PLACES);
     currencyDecimalFormat.setMinimumFractionDigits(CURRENCY_DECIMAL_PLACES);
     currencyDecimalFormat.setMinimumIntegerDigits(CURRENCY_MINIMUM_INTEGER_DIGITS);
     return currencyDecimalFormat;
+  }
+
+  private Requisition generateRequisition() {
+    requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+        INITIATED, false);
+    requisition.setId(UUID.randomUUID());
+    requisition.setCreatedDate(ZonedDateTime.now());
+    requisition.setSupplyingFacilityId(facility.getId());
+    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
+    requisitionLineItems.add(lineItem1);
+    requisitionLineItems.add(lineItem2);
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setTemplate(requisitionTemplate);
+    requisition.setFacilityId(facility.getId());
+    requisition.setProgramId(program.getId());
+    requisition.setSupervisoryNodeId(supervisoryNode.getId());
+    requisition.setStatus(AUTHORIZED);
+    return requisition;
   }
 
   // We use in the service writeObject method which has the final modifier
