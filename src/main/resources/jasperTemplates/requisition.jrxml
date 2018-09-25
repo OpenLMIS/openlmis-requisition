@@ -29,11 +29,23 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<import value="java.text.*"/>
 	<import value="java.util.stream.*"/>
+	<import value="java.time.LocalDate"/>
+	<import value="java.time.format.DateTimeFormatter"/>
+	<import value="java.text.DecimalFormat"/>
 	<parameter name="template" class="org.openlmis.requisition.domain.RequisitionTemplate" isForPrompting="false">
 		<property name="displayName" value="template"/>
 	</parameter>
 	<parameter name="subreport" class="net.sf.jasperreports.engine.design.JasperDesign" isForPrompting="false">
 		<property name="displayName" value="subreport directory"/>
+	</parameter>
+	<parameter name="currencyDecimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
+		<property name="displayName" value="CurrencyDecimalFormat"/>
+	</parameter>
+	<parameter name="dateFormat" class="java.lang.String" isForPrompting="false">
+		<property name="displayName" value="DateFormat"/>
+	</parameter>
+	<parameter name="currencyCode" class="java.lang.String" isForPrompting="false">
+		<property name="displayName" value="CurrencyCode"/>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[]]>
@@ -75,19 +87,21 @@
 					<pen lineWidth="0.0"/>
 				</graphicElement>
 			</rectangle>
-			<textField isStretchWithOverflow="true" pattern="">
+			<textField isStretchWithOverflow="true">
 				<reportElement x="480" y="45" width="130" height="10" uuid="d7a846a8-1be2-4c95-b8b6-eb97381c5fd7"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{initiatedDate}.toLocalDate().toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format($F{initiatedDate}.toLocalDate())]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="495" y="65" width="115" height="10" uuid="a32b06c8-fec6-4c4e-b229-7e98a0f51657"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{requisition}.getProcessingPeriod().getStartDate().toString() + " - " + $F{requisition}.getProcessingPeriod().getEndDate().toString()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format($F{requisition}.getProcessingPeriod().getStartDate())
+           + " - " + DateTimeFormatter.ofPattern($P{dateFormat}).format($F{requisition}.getProcessingPeriod().getEndDate())]]>
+				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="665" y="45" width="135" height="10" uuid="dc6a243b-b839-45f3-a08d-fe49ee03f8cc"/>
@@ -259,7 +273,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="10" y="10" width="80" height="10" uuid="2dd094dc-e4b5-43c0-89ab-02f2dda79bb5">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -268,7 +282,7 @@
 					<font fontName="SansSerif" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.now())]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
@@ -308,21 +322,27 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{fullSupplyTotalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA)]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{fullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="250" y="60" width="240" height="10" uuid="a6e8c1b3-5480-4e60-a44a-0c1c29e21473"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{nonFullSupplyTotalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA)]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{nonFullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="250" y="80" width="240" height="10" uuid="526378e0-d374-40c9-a7ec-3a20c4337a25"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MoneyFormat.format($F{totalCost}, LocaleContextHolder.getLocale(), MoneyAmountStyle.ASCII_DECIMAL_POINT_GROUP3_COMMA)]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{totalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+				</textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="20" y="110" width="60" height="10" uuid="c7929aee-d4b2-4b69-86ea-26ffd9ea0be0"/>
@@ -354,7 +374,9 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{initiatedBy}.printName(), $F{initiatedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{initiatedBy}.printName(),
+														DateTimeFormatter.ofPattern($P{dateFormat}).format($F{initiatedDate}.toLocalDate()))]]>
+				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="130" width="350" height="10" uuid="ffd6b808-1a5a-4b04-aa73-cd434c8c1bdf">
@@ -363,7 +385,9 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{submittedBy}.printName(), $F{submittedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{submittedBy}.printName(),
+														DateTimeFormatter.ofPattern($P{dateFormat}).format($F{submittedDate}.toLocalDate()))]]>
+				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
 				<reportElement x="140" y="150" width="350" height="10" uuid="4372bf9c-feff-4449-8944-1726d7d65d43">
@@ -372,7 +396,9 @@
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{authorizedBy}.printName(), $F{authorizedDate}.toLocalDate().toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[MessageFormat.format("{0} on {1}", $F{authorizedBy}.printName(),
+														DateTimeFormatter.ofPattern($P{dateFormat}).format($F{authorizedDate}.toLocalDate()))]]>
+				</textFieldExpression>
 			</textField>
 		</band>
 	</summary>

@@ -59,12 +59,14 @@ import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReportingRateReportDto;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
+import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
@@ -82,6 +84,10 @@ public class JasperReportsViewServiceTest {
   private static final String PERIOD = "period";
   private static final String PROGRAM = "program";
   private static final String DISTRICT = "district";
+  private static final String DECIMAL_SEPARATOR = ".";
+  private static final String CURRENCY_CODE = "USD";
+  private static final Integer CURRENCY_DECIMAL_PLACES = 2;
+  private static final Integer CURRENCY_MINIMUM_INTEGER_DIGITS = 1;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -113,6 +119,12 @@ public class JasperReportsViewServiceTest {
   @Mock
   private JasperReport jasperReport;
 
+  @Mock
+  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
+
+  @Mock
+  private RequisitionRepository requisitionRepository;
+
   @InjectMocks
   private JasperReportsViewService service;
 
@@ -132,6 +144,9 @@ public class JasperReportsViewServiceTest {
     ReflectionTestUtils.setField(service, "dateFormat", DATE_FORMAT);
     ReflectionTestUtils.setField(service, "groupingSeparator", GROUPING_SEPARATOR);
     ReflectionTestUtils.setField(service, "groupingSize", GROUPING_SIZE);
+    ReflectionTestUtils.setField(service, "decimalSeparator", DECIMAL_SEPARATOR);
+    ReflectionTestUtils.setField(service, "currencyCode", CURRENCY_CODE);
+    ReflectionTestUtils.setField(service, "currencyDecimalPlaces", CURRENCY_DECIMAL_PLACES);
 
     jasperTemplate = mock(JasperTemplate.class);
     when(jasperTemplate.getName()).thenReturn("report1.jrxml");
@@ -347,6 +362,11 @@ public class JasperReportsViewServiceTest {
     Assert.assertEquals(createDecimalFormat(), reportParams.get("decimalFormat"));
   }
 
+  @Test
+  public void shouldSetParamsForRequisitionReport() throws Exception {
+
+  }
+
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
     JRBeanCollectionDataSource datasource =
         (JRBeanCollectionDataSource) outputParams.get("datasource");
@@ -416,6 +436,15 @@ public class JasperReportsViewServiceTest {
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
     decimalFormat.setGroupingSize(Integer.valueOf(GROUPING_SIZE));
     return decimalFormat;
+  }
+
+  private DecimalFormat createCurrencyDecimalFormat() {
+    DecimalFormat currencyDecimalFormat = createDecimalFormat();
+    currencyDecimalFormat.getDecimalFormatSymbols().setDecimalSeparator(DECIMAL_SEPARATOR.charAt(0));
+    currencyDecimalFormat.setMaximumFractionDigits(CURRENCY_DECIMAL_PLACES);
+    currencyDecimalFormat.setMinimumFractionDigits(CURRENCY_DECIMAL_PLACES);
+    currencyDecimalFormat.setMinimumIntegerDigits(CURRENCY_MINIMUM_INTEGER_DIGITS);
+    return currencyDecimalFormat;
   }
 
   // We use in the service writeObject method which has the final modifier

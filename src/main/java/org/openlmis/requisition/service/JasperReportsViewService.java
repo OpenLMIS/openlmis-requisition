@@ -95,6 +95,8 @@ public class JasperReportsViewService {
   private static final String REQUISITION_LINE_REPORT_DIR =
       "/jasperTemplates/requisitionLines.jrxml";
 
+  private static final Integer CURRENCY_MINIMUM_INTEGER_DIGITS = 1;
+
   @Autowired
   private DataSource replicationDataSource;
 
@@ -127,6 +129,15 @@ public class JasperReportsViewService {
 
   @Value("${groupingSize}")
   private String groupingSize;
+
+  @Value("${decimalSeparator}")
+  private String decimalSeparator;
+
+  @Value("${currencyDecimalPlaces}")
+  private Integer currencyDecimalPlaces;
+
+  @Value("${currencyCode}")
+  private String currencyCode;
 
   /**
    * Create Jasper Report View.
@@ -214,6 +225,9 @@ public class JasperReportsViewService {
         requisition.getStatus()));
     params.put(DATASOURCE, Collections.singletonList(reportDto));
     params.put("template", template);
+    params.put("dateFormat", dateFormat);
+    params.put("currencyDecimalFormat", createCurrencyDecimalFormat());
+    params.put("currencyCode", currencyCode);
 
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);
@@ -421,6 +435,15 @@ public class JasperReportsViewService {
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
     decimalFormat.setGroupingSize(Integer.valueOf(groupingSize));
     return decimalFormat;
+  }
+
+  private DecimalFormat createCurrencyDecimalFormat() {
+    DecimalFormat currencyDecimalFormat = createDecimalFormat();
+    currencyDecimalFormat.getDecimalFormatSymbols().setDecimalSeparator(decimalSeparator.charAt(0));
+    currencyDecimalFormat.setMaximumFractionDigits(currencyDecimalPlaces);
+    currencyDecimalFormat.setMinimumFractionDigits(currencyDecimalPlaces);
+    currencyDecimalFormat.setMinimumIntegerDigits(CURRENCY_MINIMUM_INTEGER_DIGITS);
+    return currencyDecimalFormat;
   }
 
   protected ByteArrayOutputStream createByteArrayOutputStream() {
