@@ -17,6 +17,7 @@
     <import value="java.util.*"/>
     <import value="org.joda.money.format.*"/>
     <import value="org.openlmis.requisition.dto.*"/>
+    <import value="java.text.DecimalFormat"/>
     <parameter name="template" class="org.openlmis.requisition.domain.RequisitionTemplate" isForPrompting="false">
         <property name="displayName" value="template"/>
     </parameter>
@@ -25,6 +26,8 @@
     </parameter>
     <parameter name="requisitionStatus" class="org.openlmis.requisition.domain.requisition.RequisitionStatus" isForPrompting="false"/>
     <parameter name="programId" class="java.util.UUID"/>
+    <parameter name="dateFormat" class="java.lang.String" isForPrompting="false"/>
+    <parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false"/>
     <queryString>
         <![CDATA[]]>
     </queryString>
@@ -483,7 +486,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("beginningBalance").getIsDisplayed() ? $F{beginningBalance} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("beginningBalance").getIsDisplayed() ? $P{decimalFormat}.format($F{beginningBalance}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalReceivedQuantity" x="171" y="0" width="32" height="20" uuid="547fa08c-24e6-4617-aa94-09384a952a19"/>
@@ -496,7 +499,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalReceivedQuantity").getIsDisplayed() ? $F{totalReceivedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalReceivedQuantity").getIsDisplayed() ? $P{decimalFormat}.format($F{totalReceivedQuantity}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalConsumedQuantity" x="203" y="0" width="32" height="20" uuid="a2c8fc54-7cdc-442a-9ced-608a01ef270b"/>
@@ -509,7 +512,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalConsumedQuantity").getIsDisplayed() ? $F{totalConsumedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalConsumedQuantity").getIsDisplayed() ? $P{decimalFormat}.format($F{totalConsumedQuantity}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalLossesAndAdjustments" x="235" y="0" width="38" height="20" uuid="86886d4d-e188-4bbf-bfc7-113325f40773"/>
@@ -522,7 +525,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getIsDisplayed() ? $F{totalLossesAndAdjustments} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getIsDisplayed() ? $P{decimalFormat}.format($F{totalLossesAndAdjustments}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="stockOnHand" x="273" y="0" width="32" height="20" uuid="0185ea38-1d83-4eed-929f-508e1ffe010c"/>
@@ -563,7 +566,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED)) ? $F{approvedQuantity} : ""]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{template}.viewColumns().get("approvedQuantity").getIsDisplayed() && !($P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED || $P{requisitionStatus} == org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED)) ? $P{decimalFormat}.format($F{approvedQuantity}).toString() : ""]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalStockoutDays" x="509" y="0" width="30" height="20" uuid="0b535dc6-aa7d-41e4-bf5f-092d578c0ced">
@@ -578,7 +581,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalStockoutDays").getIsDisplayed() ? $F{totalStockoutDays} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalStockoutDays").getIsDisplayed() ? $P{decimalFormat}.format($F{totalStockoutDays}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="total" x="539" y="0" width="30" height="20" uuid="2aef1b8a-a7cb-4972-9506-22d1ccc2a945">
@@ -593,7 +596,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getIsDisplayed() ? $F{total} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getIsDisplayed() ? $P{decimalFormat}.format($F{total}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="dispensingUnit" x="99" y="0" width="40" height="20" uuid="0e217f2e-f7ca-4c05-b9d2-f13ec6cf38db">
@@ -608,7 +611,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getIsDisplayed() ? $P{decimalFormat}.format($F{orderable}.getDispensable().getDispensingUnit()).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="packsToShip" x="569" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
@@ -623,7 +626,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("packsToShip").getIsDisplayed() ? $F{packsToShip} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("packsToShip").getIsDisplayed() ? $P{decimalFormat}.format($F{packsToShip}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="pricePerPack" x="599" y="0" width="45" height="20" uuid="8a78859d-6649-4ac8-9538-48ce2f44ad67">
@@ -653,7 +656,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("numberOfNewPatientsAdded").getIsDisplayed() ? $F{numberOfNewPatientsAdded} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("numberOfNewPatientsAdded").getIsDisplayed() ? $P{decimalFormat}.format($F{numberOfNewPatientsAdded}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="totalCost" x="674" y="0" width="45" height="20" uuid="09db620a-d11c-40e3-9981-bb0aed1b3ad9"/>
@@ -726,7 +729,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantity").getIsDisplayed() ? $F{requestedQuantity} : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("requestedQuantity").getIsDisplayed() ? $P{decimalFormat}.format($F{requestedQuantity}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="calculatedOrderQuantity" x="799" y="0" width="34" height="20" uuid="f4aa1080-4960-4760-a3f8-ad8a1fb5de81">

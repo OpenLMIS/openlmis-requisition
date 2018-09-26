@@ -228,6 +228,7 @@ public class JasperReportsViewService {
     params.put("dateFormat", dateFormat);
     params.put("currencyDecimalFormat", createCurrencyDecimalFormat());
     params.put("currencyCode", currencyCode);
+    params.put("decimalFormat", createDecimalFormat());
 
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);

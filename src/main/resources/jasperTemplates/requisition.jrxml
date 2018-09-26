@@ -42,10 +42,13 @@
 		<property name="displayName" value="CurrencyDecimalFormat"/>
 	</parameter>
 	<parameter name="dateFormat" class="java.lang.String" isForPrompting="false">
-		<property name="displayName" value="DateFormat"/>
+		<property name="displayName" value="dateFormat"/>
 	</parameter>
 	<parameter name="currencyCode" class="java.lang.String" isForPrompting="false">
 		<property name="displayName" value="CurrencyCode"/>
+	</parameter>
+	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
+		<property name="displayName" value="decimalFormat"/>
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[]]>
@@ -229,6 +232,12 @@
 				<subreportParameter name="programId">
 					<subreportParameterExpression><![CDATA[$F{requisition}.getProgram().getId()]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="dateFormat">
+					<subreportParameterExpression><![CDATA[$P{dateFormat}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="decimalFormat">
+					<subreportParameterExpression><![CDATA[$P{decimalFormat}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{fullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>
 			</subreport>
@@ -248,6 +257,12 @@
 				</subreportParameter>
 				<subreportParameter name="programId">
 					<subreportParameterExpression><![CDATA[$F{requisition}.getProgram().getId()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="dateFormat">
+					<subreportParameterExpression><![CDATA[$P{dateFormat}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="decimalFormat">
+					<subreportParameterExpression><![CDATA[$P{decimalFormat}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{nonFullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>

@@ -159,7 +159,6 @@ public class JasperReportsViewServiceTest {
   private Map<String, Object> reportParams = new HashMap<>();
 
   private JasperTemplate jasperTemplate;
-  private byte[] reportByteData;
 
   @Before
   public void setUp() throws Exception {
@@ -175,7 +174,7 @@ public class JasperReportsViewServiceTest {
 
     jasperTemplate = mock(JasperTemplate.class);
     when(jasperTemplate.getName()).thenReturn("report1.jrxml");
-    reportByteData = new byte[1];
+    byte[] reportByteData = new byte[1];
     when(jasperTemplate.getData()).thenReturn(reportByteData);
 
     ObjectOutputStream objectOutputStream = createObjectOutputStream();
@@ -404,6 +403,7 @@ public class JasperReportsViewServiceTest {
     Assert.assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
     Assert.assertEquals(createCurrencyDecimalFormat(), outputParams.get("currencyDecimalFormat"));
     Assert.assertEquals(CURRENCY_CODE, outputParams.get("currencyCode"));
+    Assert.assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
