@@ -20,14 +20,11 @@
 	<import value="net.sf.jasperreports.engine.design.*"/>
 	<import value="java.lang.*"/>
 	<import value="net.sf.jasperreports.engine.*"/>
-	<import value="org.openlmis.util.money.*"/>
 	<import value="org.springframework.context.i18n.*"/>
 	<import value="java.util.*"/>
 	<import value="org.openlmis.requisition.dto.*"/>
-	<import value="org.joda.money.format.*"/>
 	<import value="org.joda.money.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<import value="java.text.*"/>
 	<import value="java.util.stream.*"/>
 	<import value="java.time.LocalDate"/>
 	<import value="java.time.format.DateTimeFormatter"/>
@@ -237,6 +234,9 @@
 				<subreportParameter name="decimalFormat">
 					<subreportParameterExpression><![CDATA[$P{decimalFormat}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="currencyDecimalFormat">
+					<subreportParameterExpression><![CDATA[$P{currencyDecimalFormat}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{fullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>
 			</subreport>
@@ -262,6 +262,9 @@
 				</subreportParameter>
 				<subreportParameter name="decimalFormat">
 					<subreportParameterExpression><![CDATA[$P{decimalFormat}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="currencyDecimalFormat">
+					<subreportParameterExpression><![CDATA[$P{currencyDecimalFormat}]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{nonFullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>
