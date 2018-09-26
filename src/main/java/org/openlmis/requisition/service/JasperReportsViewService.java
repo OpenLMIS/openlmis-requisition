@@ -34,12 +34,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -95,8 +97,6 @@ public class JasperReportsViewService {
   private static final String REQUISITION_LINE_REPORT_DIR =
       "/jasperTemplates/requisitionLines.jrxml";
 
-  private static final Integer CURRENCY_MINIMUM_INTEGER_DIGITS = 1;
-
   @Autowired
   private DataSource replicationDataSource;
 
@@ -130,14 +130,11 @@ public class JasperReportsViewService {
   @Value("${groupingSize}")
   private String groupingSize;
 
-  @Value("${decimalSeparator}")
-  private String decimalSeparator;
+  @Value("${defaultLocale}")
+  private String defaultLocale;
 
-  @Value("${currencyDecimalPlaces}")
-  private Integer currencyDecimalPlaces;
-
-  @Value("${currencyCode}")
-  private String currencyCode;
+  @Value("${currencyLocale}")
+  private String currencyLocale;
 
   /**
    * Create Jasper Report View.
@@ -226,9 +223,9 @@ public class JasperReportsViewService {
     params.put(DATASOURCE, Collections.singletonList(reportDto));
     params.put("template", template);
     params.put("dateFormat", dateFormat);
-    params.put("currencyDecimalFormat", createCurrencyDecimalFormat());
-    params.put("currencyCode", currencyCode);
     params.put("decimalFormat", createDecimalFormat());
+    params.put("currencyDecimalFormat",
+        NumberFormat.getCurrencyInstance(getLocaleFromService()));
 
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);
@@ -438,15 +435,6 @@ public class JasperReportsViewService {
     return decimalFormat;
   }
 
-  private DecimalFormat createCurrencyDecimalFormat() {
-    DecimalFormat currencyDecimalFormat = createDecimalFormat();
-    currencyDecimalFormat.getDecimalFormatSymbols().setDecimalSeparator(decimalSeparator.charAt(0));
-    currencyDecimalFormat.setMaximumFractionDigits(currencyDecimalPlaces);
-    currencyDecimalFormat.setMinimumFractionDigits(currencyDecimalPlaces);
-    currencyDecimalFormat.setMinimumIntegerDigits(CURRENCY_MINIMUM_INTEGER_DIGITS);
-    return currencyDecimalFormat;
-  }
-
   protected ByteArrayOutputStream createByteArrayOutputStream() {
     return new ByteArrayOutputStream();
   }
@@ -468,5 +456,9 @@ public class JasperReportsViewService {
   protected JasperReport readReportData(ObjectInputStream objectInputStream)
       throws ClassNotFoundException, IOException {
     return (JasperReport) objectInputStream.readObject();
+  }
+
+  protected Locale getLocaleFromService() {
+    return new Locale(defaultLocale, currencyLocale);
   }
 }

@@ -32,12 +32,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -94,10 +96,8 @@ public class JasperReportsViewServiceTest {
   private static final String PERIOD = "period";
   private static final String PROGRAM = "program";
   private static final String DISTRICT = "district";
-  private static final String DECIMAL_SEPARATOR = ".";
-  private static final String CURRENCY_CODE = "USD";
-  private static final Integer CURRENCY_DECIMAL_PLACES = 2;
-  private static final Integer CURRENCY_MINIMUM_INTEGER_DIGITS = 1;
+  private static final String DEFAULT_LOCALE = "en";
+  private static final String CURRENCY_LOCALE = "US";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -155,6 +155,7 @@ public class JasperReportsViewServiceTest {
   private RequisitionDto requisitionDto = DtoGenerator.of(RequisitionDto.class);
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
+  private Locale locale = new Locale(DEFAULT_LOCALE, CURRENCY_LOCALE);
 
   private Map<String, Object> reportParams = new HashMap<>();
 
@@ -168,9 +169,8 @@ public class JasperReportsViewServiceTest {
     ReflectionTestUtils.setField(service, "dateFormat", DATE_FORMAT);
     ReflectionTestUtils.setField(service, "groupingSeparator", GROUPING_SEPARATOR);
     ReflectionTestUtils.setField(service, "groupingSize", GROUPING_SIZE);
-    ReflectionTestUtils.setField(service, "decimalSeparator", DECIMAL_SEPARATOR);
-    ReflectionTestUtils.setField(service, "currencyCode", CURRENCY_CODE);
-    ReflectionTestUtils.setField(service, "currencyDecimalPlaces", CURRENCY_DECIMAL_PLACES);
+    ReflectionTestUtils.setField(service, "defaultLocale", DEFAULT_LOCALE);
+    ReflectionTestUtils.setField(service, "currencyLocale", CURRENCY_LOCALE);
 
     jasperTemplate = mock(JasperTemplate.class);
     when(jasperTemplate.getName()).thenReturn("report1.jrxml");
@@ -388,6 +388,7 @@ public class JasperReportsViewServiceTest {
 
   @Test
   public void shouldSetParamsForRequisitionReport() throws Exception {
+    doReturn(locale).when(service).getLocaleFromService();
     when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
     reportParams.put("Requisition", requisition.getId());
 
@@ -401,9 +402,9 @@ public class JasperReportsViewServiceTest {
     Map<String, Object> outputParams = view.getModel();
 
     Assert.assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
-    Assert.assertEquals(createCurrencyDecimalFormat(), outputParams.get("currencyDecimalFormat"));
-    Assert.assertEquals(CURRENCY_CODE, outputParams.get("currencyCode"));
     Assert.assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
+    Assert.assertEquals(NumberFormat.getCurrencyInstance(locale),
+        outputParams.get("currencyDecimalFormat"));
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
@@ -475,16 +476,6 @@ public class JasperReportsViewServiceTest {
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
     decimalFormat.setGroupingSize(Integer.valueOf(GROUPING_SIZE));
     return decimalFormat;
-  }
-
-  private DecimalFormat createCurrencyDecimalFormat() {
-    DecimalFormat currencyDecimalFormat = createDecimalFormat();
-    currencyDecimalFormat.getDecimalFormatSymbols()
-        .setDecimalSeparator(DECIMAL_SEPARATOR.charAt(0));
-    currencyDecimalFormat.setMaximumFractionDigits(CURRENCY_DECIMAL_PLACES);
-    currencyDecimalFormat.setMinimumFractionDigits(CURRENCY_DECIMAL_PLACES);
-    currencyDecimalFormat.setMinimumIntegerDigits(CURRENCY_MINIMUM_INTEGER_DIGITS);
-    return currencyDecimalFormat;
   }
 
   private Requisition generateRequisition() {

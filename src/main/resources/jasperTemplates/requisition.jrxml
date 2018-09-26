@@ -32,20 +32,19 @@
 	<import value="java.time.LocalDate"/>
 	<import value="java.time.format.DateTimeFormatter"/>
 	<import value="java.text.DecimalFormat"/>
+	<import value="java.text.NumberFormat"/>
+	<import value="java.math.BigDecimal"/>
 	<parameter name="template" class="org.openlmis.requisition.domain.RequisitionTemplate" isForPrompting="false">
 		<property name="displayName" value="template"/>
 	</parameter>
 	<parameter name="subreport" class="net.sf.jasperreports.engine.design.JasperDesign" isForPrompting="false">
 		<property name="displayName" value="subreport directory"/>
 	</parameter>
-	<parameter name="currencyDecimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
+	<parameter name="currencyDecimalFormat" class="java.text.NumberFormat" isForPrompting="false">
 		<property name="displayName" value="CurrencyDecimalFormat"/>
 	</parameter>
 	<parameter name="dateFormat" class="java.lang.String" isForPrompting="false">
 		<property name="displayName" value="dateFormat"/>
-	</parameter>
-	<parameter name="currencyCode" class="java.lang.String" isForPrompting="false">
-		<property name="displayName" value="CurrencyCode"/>
 	</parameter>
 	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
 		<property name="displayName" value="decimalFormat"/>
@@ -338,7 +337,7 @@
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression>
-					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{fullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+					<![CDATA[$P{currencyDecimalFormat}.format(new BigDecimal($F{fullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
 				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
@@ -347,7 +346,7 @@
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression>
-					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{nonFullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+					<![CDATA[$P{currencyDecimalFormat}.format(new BigDecimal($F{nonFullSupplyTotalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
 				</textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
@@ -356,7 +355,7 @@
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression>
-					<![CDATA[$P{currencyCode} + " " + $P{currencyDecimalFormat}.format(Double.valueOf($F{totalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
+					<![CDATA[$P{currencyDecimalFormat}.format(new BigDecimal($F{totalCost}.toString().replaceAll("[^0-9?!\\.]+", ""))).toString()]]>
 				</textFieldExpression>
 			</textField>
 			<staticText>
