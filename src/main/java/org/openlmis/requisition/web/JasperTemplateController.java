@@ -31,6 +31,7 @@ import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +68,12 @@ public class JasperTemplateController extends BaseController {
 
   @Autowired
   private PermissionService permissionService;
+
+  @Value("${dateTimeFormat}")
+  private String dateTimeFormat;
+
+  @Value("${time.zoneId}")
+  private String timeZoneId;
 
   /**
    * Adding report templates with ".jrxml" format to database.
@@ -178,6 +185,8 @@ public class JasperTemplateController extends BaseController {
     Map<String, Object> map = jasperTemplateService
         .mapRequestParametersToTemplate(request, template);
     map.put("format", format);
+    map.put("dateTimeFormat", dateTimeFormat);
+    map.put("timeZoneId", timeZoneId);
 
     if (TIMELINESS_REPORT.equals(template.getType())) {
       return jasperReportsViewService.getTimelinessJasperReportView(jasperView, map);
