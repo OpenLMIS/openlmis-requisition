@@ -53,6 +53,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
@@ -539,6 +540,33 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(0, results.getTotalElements());
+  }
+
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldReturnRequisitionWithAllStatusChanges() {
+    // given
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .withSupervisoryNodeId(supervisoryNodeId)
+        .withProgramId(programId)
+        .withTemplate(testTemplate)
+        .buildAuthorizedRequisition();
+    repository.save(requisition);
+
+    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    // when
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+
+    // then
+    assertEquals(1, results.getNumberOfElements());
+    assertEquals(
+        requisition.getStatusChanges().size(),
+        results.getContent().get(0).getStatusChanges().size()
+    );
   }
 
   @Test

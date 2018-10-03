@@ -389,10 +389,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(subRoot.get(STATUS), RequisitionStatus.AUTHORIZED),
           builder.equal(subRoot.get("requisition"), root)));
 
-      Join<Requisition, StatusChange> statusChanges = root.join(Requisition.STATUS_CHANGES);
-      predicate = builder.and(predicate,
-          builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED),
-          statusChanges.get(CREATED_DATE).in(subquery));
+      root.join(Requisition.STATUS_CHANGES);
     }
 
     if (!isCountQuery && pageable != null && pageable.getSort() != null) {

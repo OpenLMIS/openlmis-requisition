@@ -24,7 +24,9 @@ import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionDataBuilder {
   private UUID id = UUID.randomUUID();
   private List<RequisitionLineItem> requisitionLineItems = Lists.newArrayList();
@@ -70,7 +72,7 @@ public class RequisitionDataBuilder {
   public Requisition build() {
     return buildInitiatedRegularRequisition();
   }
-  
+
   /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
@@ -153,6 +155,29 @@ public class RequisitionDataBuilder {
 
   public RequisitionDataBuilder withTemplate(RequisitionTemplate template) {
     this.template = template;
+    return this;
+  }
+
+  /**
+   * Builds a requisition in authorized status.
+   *
+   * @return the requisition in authorized status
+   */
+  public Requisition buildAuthorizedRequisition() {
+    Requisition requisition = withStatus(RequisitionStatus.AUTHORIZED)
+        .build();
+
+    List<StatusChange> statusChanges = new ArrayList<>();
+    statusChanges.add(new StatusChangeDataBuilder().forInitiatedRequisition(requisition).build());
+    statusChanges.add(new StatusChangeDataBuilder().forSubmittedRequisition(requisition).build());
+    statusChanges.add(new StatusChangeDataBuilder().forAuthorizedRequisition(requisition).build());
+
+    requisition.setStatusChanges(statusChanges);
+    return requisition;
+  }
+
+  private RequisitionDataBuilder withStatus(RequisitionStatus status) {
+    this.status = status;
     return this;
   }
 }
