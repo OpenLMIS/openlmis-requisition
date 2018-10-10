@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.testutils;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
@@ -29,6 +30,7 @@ public class StatusChangeDataBuilder {
   private UUID authorId = UUID.randomUUID();
   private UUID supervisoryNodeId = requisition.getSupervisoryNodeId();
   private RequisitionStatus status = requisition.getStatus();
+  private ZonedDateTime createdDate = ZonedDateTime.now();
 
   /**
    * Build an instance of the {@link StatusChange} class.
@@ -42,16 +44,27 @@ public class StatusChangeDataBuilder {
     statusChange.setAuthorId(authorId);
     statusChange.setSupervisoryNodeId(supervisoryNodeId);
     statusChange.setStatus(status);
+    statusChange.setCreatedDate(createdDate);
     return statusChange;
   }
 
-  private StatusChangeDataBuilder withRequisition(Requisition requisition) {
+  public StatusChangeDataBuilder withRequisition(Requisition requisition) {
     this.requisition = requisition;
     return this;
   }
 
-  private StatusChangeDataBuilder withStatus(RequisitionStatus status) {
+  public StatusChangeDataBuilder withStatus(RequisitionStatus status) {
     this.status = status;
+    return this;
+  }
+
+  public StatusChangeDataBuilder withCreatedDate(ZonedDateTime createdDate) {
+    this.createdDate = createdDate;
+    return this;
+  }
+
+  public StatusChangeDataBuilder withAuthorId(UUID authorId) {
+    this.authorId = authorId;
     return this;
   }
 

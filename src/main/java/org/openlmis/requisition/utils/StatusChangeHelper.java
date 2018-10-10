@@ -21,13 +21,17 @@ import org.openlmis.requisition.dto.StatusChangeDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatusChangeHelper {
+public final class StatusChangeHelper {
 
   private static final Logger logger = LoggerFactory.getLogger(StatusChangeHelper.class);
 
+  private StatusChangeHelper() {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Adds or updates the given status change to the given maps status log entries. It will only
-   * update the entry if the existing on has later date.
+   * update the entry if the existing one has later date.
    *
    * @param statusLogEntries  the map of status go entries.
    * @param statusChange  the status change
@@ -38,16 +42,18 @@ public class StatusChangeHelper {
     logger.debug("statusLogEntries {}", statusLogEntries);
     logger.debug("statusChange {}", statusChange);
 
-    if (statusChange != null
-        && statusChange.getStatus() != null
-        && statusChange.getCreatedDate() != null) {
-      StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
-      // Only add entry if none exists or existing one has later date
-      if (existing == null || existing.getChangeDate().isAfter(statusChange.getCreatedDate())) {
-        StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
-            statusChange.getCreatedDate());
-        statusLogEntries.put(statusChange.getStatus().toString(), entry);
-      }
+    if (null == statusChange
+        || null == statusChange.getStatus()
+        || null == statusChange.getCreatedDate()) {
+      return;
+    }
+
+    StatusLogEntry existing = statusLogEntries.get(statusChange.getStatus().toString());
+
+    if (null == existing || existing.getChangeDate().isBefore(statusChange.getCreatedDate())) {
+      StatusLogEntry entry = new StatusLogEntry(statusChange.getAuthorId(),
+          statusChange.getCreatedDate());
+      statusLogEntries.put(statusChange.getStatus().toString(), entry);
     }
   }
 
