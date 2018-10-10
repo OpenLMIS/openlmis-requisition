@@ -19,6 +19,7 @@ Bug fixes:
 * [OLMIS-5065](https://openlmis.atlassian.net/browse/OLMIS-5065): Brought back requisition timestamps validation
 * [OLMIS-4938](https://openlmis.atlassian.net/browse/OLMIS-4938): Added default definition for skipped column.
 * [OLMIS-4968](https://openlmis.atlassian.net/browse/OLMIS-4968): Added column options for Packs To Ship so that the column can be seen only on approval or on all requisition screens
+* [OLMIS-5456](https://openlmis.atlassian.net/browse/OLMIS-5456): the `statusChanges` field in the requisition dto will contains the latest entries 
 
 7.0.0 / 2018-08-16
 ==================
