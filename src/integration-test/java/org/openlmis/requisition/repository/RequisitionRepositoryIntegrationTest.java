@@ -19,6 +19,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,8 +40,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -53,7 +58,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
@@ -441,30 +445,68 @@ public class RequisitionRepositoryIntegrationTest
     // given
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
+    final UUID user = UUID.randomUUID();
+    final Map<UUID, OrderableDto> products = emptyMap();
 
     Requisition matchingRequisition1 = requisitions.get(0);
     matchingRequisition1.setProgramId(programId);
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
-    matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
     matchingRequisition1.setEmergency(false);
-    addStatusChanges(matchingRequisition1, 0);
-    repository.save(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
     matchingRequisition2.setProgramId(programId);
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
-    matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
     matchingRequisition2.setEmergency(true);
-    addStatusChanges(matchingRequisition2, 3);
-    repository.save(matchingRequisition2);
 
     Requisition matchingRequisition3 = requisitions.get(2);
     matchingRequisition3.setProgramId(programId);
     matchingRequisition3.setSupervisoryNodeId(supervisoryNodeId);
-    matchingRequisition3.setStatus(RequisitionStatus.IN_APPROVAL);
     matchingRequisition3.setEmergency(true);
-    addStatusChanges(matchingRequisition3, 5);
+
+    repository.save(matchingRequisition1);
+    repository.save(matchingRequisition2);
     repository.save(matchingRequisition3);
+
+    // 1) first authorize for matchingRequisition2 have to be before matchingRequisition3
+    //    but second authorize for matchingRequisition2 have to be after matchingRequisition3
+    //    to verify that the latest authorized status change is used for comparison
+    // 2) we have to save requisitions after each status change because the createdDate field
+    //    is set by hibernate - because of @PrePersist annotation in the BaseTimestampedEntity
+    matchingRequisition1.submit(products, user, false);
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition2.submit(products, user, false);
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition3.submit(products, user, false);
+    saveAndFlushWithDelay(matchingRequisition3);
+
+    matchingRequisition1.authorize(products, user);
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition2.authorize(products, user);
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition3.authorize(products, user);
+    saveAndFlushWithDelay(matchingRequisition3);
+
+    matchingRequisition2.reject(products, user);
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition3.reject(products, user);
+    saveAndFlushWithDelay(matchingRequisition3);
+
+    matchingRequisition3.submit(products, user, false);
+    saveAndFlushWithDelay(matchingRequisition3);
+
+    matchingRequisition2.submit(products, user, false);
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition3.authorize(products, user);
+    saveAndFlushWithDelay(matchingRequisition3);
+
+    matchingRequisition2.authorize(products, user);
+    saveAndFlushWithDelay(matchingRequisition2);
 
     Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
 
@@ -480,13 +522,32 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(3, results.getTotalElements());
 
     if (direction == Direction.ASC) {
-      assertThat(results.getContent().get(0), is(matchingRequisition1));
-      assertThat(results.getContent().get(1), is(matchingRequisition2));
-      assertThat(results.getContent().get(2), is(matchingRequisition3));
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(0), matchingRequisition1);
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(1), matchingRequisition3);
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(2), matchingRequisition2);
     } else {
-      assertThat(results.getContent().get(0), is(matchingRequisition3));
-      assertThat(results.getContent().get(1), is(matchingRequisition2));
-      assertThat(results.getContent().get(2), is(matchingRequisition1));
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(0), matchingRequisition2);
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(1), matchingRequisition3);
+      assertRequisitionAfterSortByAuthorizedDate(results.getContent().get(2), matchingRequisition1);
+    }
+  }
+
+  private void assertRequisitionAfterSortByAuthorizedDate(Requisition actual,
+      Requisition expected) {
+
+    assertThat(actual, allOf(
+        hasProperty("id", is(expected.getId())),
+        hasProperty("statusChanges", hasSize(expected.getStatusChanges().size()))));
+  }
+
+  private void saveAndFlushWithDelay(Requisition requisition) {
+    repository.saveAndFlush(requisition);
+
+    try {
+      TimeUnit.MILLISECONDS.sleep(10);
+    } catch (InterruptedException exp) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(exp);
     }
   }
 
@@ -540,33 +601,6 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(0, results.getTotalElements());
-  }
-
-  @Test
-  public void searchByProgramSupervisoryNodePairsShouldReturnRequisitionWithAllStatusChanges() {
-    // given
-    UUID programId = UUID.randomUUID();
-    UUID supervisoryNodeId = UUID.randomUUID();
-
-    Requisition requisition = new RequisitionDataBuilder()
-        .withSupervisoryNodeId(supervisoryNodeId)
-        .withProgramId(programId)
-        .withTemplate(testTemplate)
-        .buildAuthorizedRequisition();
-    repository.save(requisition);
-
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
-
-    // when
-    Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
-
-    // then
-    assertEquals(1, results.getNumberOfElements());
-    assertEquals(
-        requisition.getStatusChanges().size(),
-        results.getContent().get(0).getStatusChanges().size()
-    );
   }
 
   @Test
