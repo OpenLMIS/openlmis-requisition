@@ -513,6 +513,9 @@ public class RequisitionRepositoryIntegrationTest
     Pageable sortPageRequest = new PageRequest(
         Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, direction, "authorizedDate");
 
+    // make sure that data have been retrieved from the database
+    entityManager.clear();
+
     // when
     Page<Requisition> results = repository
         .searchApprovableRequisitionsByProgramSupervisoryNodePairs(

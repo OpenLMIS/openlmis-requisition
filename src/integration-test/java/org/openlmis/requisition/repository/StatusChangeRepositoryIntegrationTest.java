@@ -15,13 +15,19 @@
 
 package org.openlmis.requisition.repository;
 
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,17 +67,7 @@ public class StatusChangeRepositoryIntegrationTest
     requisitionTemplate = new RequisitionTemplateDataBuilder().build();
     requisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
 
-    requisition = new Requisition(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        RequisitionStatus.INITIATED,
-        false);
-    requisition.setNumberOfMonthsInPeriod(3);
-    requisition.setTemplate(requisitionTemplate);
-    requisition.setStatusChanges(Collections.singletonList(
-        StatusChange.newStatusChange(requisition, userId)));
-
+    requisition = generateRequisition();
     requisitionRepository.save(requisition);
   }
 
@@ -91,4 +87,37 @@ public class StatusChangeRepositoryIntegrationTest
     assertEquals(RequisitionStatus.INITIATED, foundStatusChanges.get(0).getStatus());
     assertEquals(userId, foundStatusChanges.get(0).getAuthorId());
   }
+
+  @Test
+  public void shouldFindByRequisitionIds() {
+    // given
+    Requisition requisition1 = generateRequisition();
+    requisitionRepository.save(requisition1);
+
+    Set<UUID> ids = Sets.newHashSet(requisition.getId(), requisition1.getId());
+
+    //when
+    Map<UUID, List<StatusChange>> groupByRequisitionId = repository
+        .findByRequisitionIdIn(ids)
+        .stream()
+        .collect(Collectors.groupingBy(status -> status.getRequisition().getId()));
+
+    //then
+    assertThat(groupByRequisitionId,
+        hasEntry(is(requisition.getId()), hasSize(requisition.getStatusChanges().size())));
+    assertThat(groupByRequisitionId,
+        hasEntry(is(requisition1.getId()), hasSize(requisition1.getStatusChanges().size())));
+  }
+
+  private Requisition generateRequisition() {
+    Requisition instance = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
+    instance.setNumberOfMonthsInPeriod(3);
+    instance.setTemplate(requisitionTemplate);
+    instance.setStatusChanges(Collections.singletonList(
+        StatusChange.newStatusChange(instance, userId)));
+
+    return instance;
+  }
+
 }

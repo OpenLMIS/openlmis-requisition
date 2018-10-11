@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.domain.requisition.StatusChange;
@@ -23,4 +24,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface StatusChangeRepository extends PagingAndSortingRepository<StatusChange, UUID> {
 
   List<StatusChange> findByRequisitionId(UUID requisitionId);
+
+  List<StatusChange> findByRequisitionIdIn(Collection<UUID> requisitionIds);
+
 }

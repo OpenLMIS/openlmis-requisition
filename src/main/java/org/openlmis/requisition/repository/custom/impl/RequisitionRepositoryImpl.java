@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,15 +47,18 @@ import org.hibernate.annotations.QueryHints;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.PostgresUUIDType;
 import org.hibernate.type.ZonedDateTimeType;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.repository.StatusChangeRepository;
 import org.openlmis.requisition.repository.custom.RequisitionRepositoryCustom;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -94,6 +98,9 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   @Autowired
   private DateHelper dateHelper;
+
+  @Autowired
+  private StatusChangeRepository statusChangeRepository;
 
   /**
    * Method returns all Requisitions with matched parameters. User permission strings must not be
@@ -229,32 +236,75 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   @Override
   public Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair> programNodePairs, Pageable pageable) {
+    XLOGGER.entry(programNodePairs, pageable);
 
+    Profiler profiler = new Profiler("SEARCH_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CREATE_BUILDER");
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
+    profiler.start("PREPARE_COUNT_QUERY");
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
     countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, pageable);
 
+    profiler.start("EXECUTE_COUNT_QUERY");
     Long count = entityManager.createQuery(countQuery).getSingleResult();
 
     if (count == 0) {
-      return Pagination.getPage(Collections.emptyList());
+      profiler.start("CREATE_RESULT_PAGE");
+      Page<Requisition> page = Pagination.getPage(Collections.emptyList());
+
+      XLOGGER.exit(page);
+      profiler.stop().log();
+
+      return page;
     }
 
-    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
-
+    profiler.start("CREATE_ENTITY_GRAPH");
     EntityGraph graph = entityManager.createEntityGraph(Requisition.class);
     graph.addSubgraph(Requisition.STATUS_CHANGES);
 
-    Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
+    profiler.start("GET_MAX_AND_FIRST");
+    final Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
+
+    profiler.start("PREPARE_MAIN_QUERY");
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
+
+    profiler.start("EXECUTE_MAIN_QUERY");
     List<Requisition> requisitions = entityManager.createQuery(query)
         .setHint(QueryHints.LOADGRAPH, graph)
         .setMaxResults(maxAndFirst.getLeft())
         .setFirstResult(maxAndFirst.getRight())
         .getResultList();
 
-    return Pagination.getPage(requisitions, pageable, count);
+    profiler.start("GET_REQUISITIONS_IDS");
+    Set<UUID> requisitionIds = requisitions
+        .stream()
+        .map(BaseEntity::getId)
+        .collect(Collectors.toSet());
+
+    profiler.start("GET_STATUS_CHANGES_BY_REQ_IDS");
+    Map<UUID, List<StatusChange>> allStatusChanges = statusChangeRepository
+        .findByRequisitionIdIn(requisitionIds)
+        .stream()
+        .collect(Collectors.groupingBy(status -> status.getRequisition().getId()));
+
+    profiler.start("MATCH_REQ_WITH_STATUS_CHANGES");
+    requisitions
+        .forEach(requisition -> {
+          List<StatusChange> statusChanges = allStatusChanges.get(requisition.getId());
+          requisition.setStatusChanges(statusChanges);
+        });
+
+    profiler.start("CREATE_RESULT_PAGE");
+    Page<Requisition> page = Pagination.getPage(requisitions, pageable, count);
+
+    XLOGGER.exit(page);
+    profiler.stop().log();
+
+    return page;
   }
 
   /**
