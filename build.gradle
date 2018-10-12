@@ -66,6 +66,11 @@ dependencies {
     compile 'org.apache.commons:commons-collections4:4.1'
     compile 'org.springframework.boot:spring-boot-starter-data-redis:1.5.14.RELEASE'
 
+    compile 'org.togglz:togglz-legacy-spring-boot-starter:2.6.1.Final'
+    compile 'org.togglz:togglz-console:2.6.1.Final'
+    compile 'org.togglz:togglz-spring-security:2.6.1.Final'
+    compile 'org.togglz:togglz-redis:2.6.1.Final'
+
     testCompile "com.jayway.restassured:rest-assured:2.7.0"
 
     testCompile "org.springframework.boot:spring-boot-starter-test"

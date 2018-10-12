@@ -19,6 +19,7 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
 import javax.annotation.PostConstruct;
+
 import org.flywaydb.core.api.callback.FlywayCallback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
@@ -54,6 +55,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.togglz.core.manager.EnumBasedFeatureProvider;
+import org.togglz.core.repository.StateRepository;
+import org.togglz.core.spi.FeatureProvider;
+import org.togglz.redis.RedisStateRepository;
+import redis.clients.jedis.JedisPool;
 
 @SpringBootApplication
 @ImportResource("applicationContext.xml")
@@ -219,6 +225,19 @@ public class Application {
     RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(factory);
     return redisTemplate;
+  }
+
+  @Bean
+  public FeatureProvider featureProvider() {
+    return new EnumBasedFeatureProvider(AvailableFeatures.class);
+  }
+
+  @Bean
+  StateRepository getStateRepository() {
+    return new RedisStateRepository.Builder()
+        .keyPrefix("togglz:")
+        .jedisPool(new JedisPool(redisUrl))
+        .build();
   }
 
   /**
