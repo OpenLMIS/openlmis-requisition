@@ -1024,6 +1024,8 @@ public class RequisitionServiceTest {
         requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2).toLocalDate(),
         requisition.getCreatedDate().plusDays(2).toLocalDate(),
+        requisition.getModifiedDate().minusDays(2),
+        requisition.getModifiedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()),
@@ -1037,6 +1039,8 @@ public class RequisitionServiceTest {
         requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2).toLocalDate(),
         requisition.getCreatedDate().plusDays(2).toLocalDate(),
+        requisition.getModifiedDate().minusDays(2),
+        requisition.getModifiedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()),
@@ -1055,6 +1059,12 @@ public class RequisitionServiceTest {
             requisition.getCreatedDate().minusDays(2)));
     assertTrue(
         receivedRequisitions.get(0).getCreatedDate().isBefore(
+            requisition.getCreatedDate().plusDays(2)));
+    assertTrue(
+        receivedRequisitions.get(0).getModifiedDate().isAfter(
+            requisition.getCreatedDate().minusDays(2)));
+    assertTrue(
+        receivedRequisitions.get(0).getModifiedDate().isBefore(
             requisition.getCreatedDate().plusDays(2)));
     assertEquals(
         receivedRequisitions.get(0).getProcessingPeriodId(),
@@ -1078,6 +1088,8 @@ public class RequisitionServiceTest {
         requisition.getProgramId(),
         requisition.getCreatedDate().minusDays(2).toLocalDate(),
         requisition.getCreatedDate().plusDays(2).toLocalDate(),
+        requisition.getModifiedDate().minusDays(2),
+        requisition.getModifiedDate().plusDays(2),
         requisition.getProcessingPeriodId(),
         requisition.getSupervisoryNodeId(),
         EnumSet.of(requisition.getStatus()),
@@ -1527,6 +1539,7 @@ public class RequisitionServiceTest {
         INITIATED, false);
     requisition.setId(UUID.randomUUID());
     requisition.setCreatedDate(ZonedDateTime.now());
+    requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setSupplyingFacilityId(facility.getId());
     List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
     requisitionLineItems.add(lineItem1);

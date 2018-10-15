@@ -464,7 +464,7 @@ public class JasperReportsViewServiceTest {
     when(requisitionPage.getContent()).thenReturn(
         (isMissingRnR) ? Collections.emptyList() : singletonList(mockRequisition));
     when(requisitionService.searchRequisitions(eq(facilityId), eq(program.getId()), any(), any(),
-        eq(period.getId()), any(), any(), any(), any()))
+        any(), any(), eq(period.getId()), any(), any(), any(), any()))
         .thenReturn(requisitionPage);
 
     return geographicZoneDto;

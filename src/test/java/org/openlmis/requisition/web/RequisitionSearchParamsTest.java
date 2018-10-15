@@ -26,6 +26,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INVALID_REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SEARCH_INVALID_PARAMS;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -52,11 +54,15 @@ public class RequisitionSearchParamsTest {
   private static final String SUPERVISORY_NODE = "supervisoryNode";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String EMERGENCY = "emergency";
+  private static final String START_MODIFIED_DATE = "startModifiedDate";
+  private static final String END_MODIFIED_DATE = "endModifiedDate";
 
   private LinkedMultiValueMap<String, String> queryMap;
   private UUID id = UUID.randomUUID();
   private String dateString = "2018-06-28";
   private LocalDate date = LocalDate.of(2018, 6, 28);
+  private String dateTimeString = "2018-06-28T17:25:46Z";
+  private ZonedDateTime dateTime = ZonedDateTime.of(2018,6,28,17,25,46,0, ZoneId.of("Z"));
 
   @Before
   public void setUp() {
@@ -202,6 +208,35 @@ public class RequisitionSearchParamsTest {
     assertNull(params.isEmergency());
   }
 
+  @Test
+  public void shouldGetStartModifiedDateValueFromParameters() {
+    queryMap.add(START_MODIFIED_DATE, dateTimeString);
+    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+
+    assertEquals(dateTime, params.getStartModifiedDate());
+  }
+
+  @Test
+  public void shouldGetNullIfMapHasNoStartModifiedDateProperty() {
+    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+
+    assertNull(params.getStartModifiedDate());
+  }
+
+  @Test
+  public void shouldGetEndModifiedDateValueFromParameters() {
+    queryMap.add(END_MODIFIED_DATE, dateTimeString);
+    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+
+    assertEquals(dateTime, params.getEndModifiedDate());
+  }
+
+  @Test
+  public void shouldGetNullIfMapHasNoEndModifiedDateToProperty() {
+    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+
+    assertNull(params.getEndModifiedDate());
+  }
 
   @Test
   public void shouldThrowExceptionIfThereIsUnknownParameterInParameters() {
@@ -226,7 +261,8 @@ public class RequisitionSearchParamsTest {
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
     ToStringTestUtils.verify(RequisitionSearchParams.class, params,
-        "FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO", "PROCESSING_PERIOD",
+        "FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
+        "START_MODIFIED_DATE", "END_MODIFIED_DATE", "PROCESSING_PERIOD",
         "SUPERVISORY_NODE", "REQUISITION_STATUS", "EMERGENCY", "ALL_PARAMETERS");
   }
 }
