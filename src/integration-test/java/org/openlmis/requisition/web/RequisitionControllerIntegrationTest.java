@@ -165,6 +165,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private static final String INITIATED_DATE_FROM = "initiatedDateFrom";
   private static final String INITIATED_DATE_TO = "initiatedDateTo";
   private static final String FACILITY_CODE_ASC = "facilityCode,asc";
+  private static final String START_MODIFIED_DATE = "startModifiedDate";
+  private static final String END_MODIFIED_DATE = "endModifiedDate";
 
   @MockBean
   private StatusMessageRepository statusMessageRepository;
@@ -447,12 +449,15 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     UUID supervisoryNodeId = UUID.randomUUID();
     LocalDate dateTo = LocalDate.now().plusDays(10);
     LocalDate dateFrom = LocalDate.now().minusDays(10);
+    ZonedDateTime startDateTime = ZonedDateTime.now().plusDays(10);
+    ZonedDateTime endDateTime = ZonedDateTime.now().minusDays(10);
     Set<RequisitionStatus> statuses = EnumSet.of(RequisitionStatus.INITIATED);
 
     Requisition requisition = generateRequisition();
 
     given(requisitionService.searchRequisitions(
-        eq(facilityId), eq(programId), any(LocalDate.class), any(LocalDate.class), eq(periodId),
+        eq(facilityId), eq(programId), any(LocalDate.class), any(LocalDate.class),
+        any(ZonedDateTime.class), any(ZonedDateTime.class), eq(periodId),
         eq(supervisoryNodeId), eq(statuses), eq(false), any(Pageable.class))
     ).willReturn(Pagination.getPage(singletonList(requisition), FIRST_PAGE));
 
@@ -466,6 +471,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .queryParam(REQUISITION_STATUS, RequisitionStatus.INITIATED)
         .queryParam(INITIATED_DATE_FROM, dateFrom.toString())
         .queryParam(INITIATED_DATE_TO, dateTo.toString())
+        .queryParam(START_MODIFIED_DATE, startDateTime.toString())
+        .queryParam(END_MODIFIED_DATE, endDateTime.toString())
         .queryParam(EMERGENCY, Boolean.FALSE.toString())
         .when()
         .get(SEARCH_URL)
@@ -489,8 +496,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         generateRequisitions(submittedStatus, authorizedStatus);
 
     given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(statusSet), eq(null), any(Pageable.class))
+        eq(null), eq(null), eq(null), eq(null), eq(null), eq(null),
+        eq(null), eq(null), eq(statusSet), eq(null), any(Pageable.class))
     ).willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when

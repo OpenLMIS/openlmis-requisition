@@ -75,6 +75,7 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
     Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
         INITIATED, getNextInstanceNumber() % 2 == 0);
     requisition.setCreatedDate(ZonedDateTime.now());
+    requisition.setModifiedDate(ZonedDateTime.now());
     requisition.setSupervisoryNodeId(UUID.randomUUID());
     requisition.setNumberOfMonthsInPeriod(1);
     requisition.setTemplate(testTemplate);

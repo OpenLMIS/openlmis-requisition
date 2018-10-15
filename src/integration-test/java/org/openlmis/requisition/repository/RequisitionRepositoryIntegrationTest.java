@@ -110,6 +110,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition = new Requisition(requisitionToCopy.getFacilityId(),
         requisitionToCopy.getProgramId(), requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getStatus(), requisitionToCopy.getEmergency());
+    requisition.setModifiedDate(requisitionToCopy.getModifiedDate());
     requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
     requisition.setTemplate(testTemplate);
     requisition.setNumberOfMonthsInPeriod(1);
@@ -123,6 +124,8 @@ public class RequisitionRepositoryIntegrationTest
         requisitionToCopy.getProgramId(),
         requisitionToCopy.getCreatedDate().toLocalDate(),
         requisitionToCopy.getCreatedDate().toLocalDate(),
+        requisitionToCopy.getModifiedDate(),
+        requisitionToCopy.getModifiedDate(),
         requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getSupervisoryNodeId(),
         EnumSet.of(requisitionToCopy.getStatus()),
@@ -153,6 +156,12 @@ public class RequisitionRepositoryIntegrationTest
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(
               requisitionToCopy.getCreatedDate().minusDays(1)));
+      assertTrue(
+          receivedRequisition.getModifiedDate().isBefore(
+              requisitionToCopy.getModifiedDate().plusDays(2)));
+      assertTrue(
+          receivedRequisition.getModifiedDate().isAfter(
+              requisitionToCopy.getModifiedDate().minusDays(1)));
       assertEquals(receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
       assertEquals(receivedRequisition.getEmergency(), requisitionToCopy.getEmergency());
     }
@@ -173,7 +182,9 @@ public class RequisitionRepositoryIntegrationTest
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         requisitions.get(0).getFacilityId(),
         requisitions.get(0).getProgramId(),
-        null, null, null, null, null, null, userPermissionStrings, pageRequest).getContent();
+        null, null, null, null,
+        null, null, null, null,
+        userPermissionStrings, pageRequest).getContent();
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -191,7 +202,9 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null, null, null, null, null, userPermissionStrings, pageRequest)
+        null, null, null, null, null,
+        null, null, null, null,
+        null, userPermissionStrings, pageRequest)
         .getContent();
 
     assertEquals(5, receivedRequisitions.size());
@@ -200,7 +213,9 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchEmergencyRequsitions() {
     List<Requisition> emergency = repository.searchRequisitions(
-        null, null, null, null, null, null, null, true, userPermissionStrings, pageRequest)
+        null, null, null, null, null,
+        null, null, null, null, true,
+        userPermissionStrings, pageRequest)
         .getContent();
 
     assertEquals(2, emergency.size());
@@ -210,7 +225,9 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchStandardRequisitions() {
     List<Requisition> standard = repository.searchRequisitions(
-        null, null, null, null, null, null, null, false, userPermissionStrings, pageRequest)
+        null, null, null, null, null, null,
+        null, null, null, false,
+        userPermissionStrings, pageRequest)
         .getContent();
 
     assertEquals(3, standard.size());
@@ -241,7 +258,9 @@ public class RequisitionRepositoryIntegrationTest
 
     // when
     List<Requisition> requisitions = repository.searchRequisitions(
-        null, null, null, null, null, null, null, false, userPermissionStringSubset, pageRequest)
+        null, null, null, null, null,
+        null, null, null, null, false,
+        userPermissionStringSubset, pageRequest)
         .getContent();
 
     // then
@@ -629,6 +648,8 @@ public class RequisitionRepositoryIntegrationTest
         requisitionToCopy.getProgramId(),
         null,
         null,
+        null,
+        null,
         requisitionToCopy.getProcessingPeriodId(),
         requisitionToCopy.getSupervisoryNodeId(),
         EnumSet.of(requisitionToCopy.getStatus()),
@@ -646,6 +667,8 @@ public class RequisitionRepositoryIntegrationTest
     receivedRequisitions = repository.searchRequisitions(
         requisitionToCopy.getFacilityId(),
         requisitionToCopy.getProgramId(),
+        null,
+        null,
         null,
         null,
         requisitionToCopy.getProcessingPeriodId(),
