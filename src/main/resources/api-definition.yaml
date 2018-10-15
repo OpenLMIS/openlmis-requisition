@@ -600,6 +600,16 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
+                  startModifiedDate:
+                      displayName: startModifiedDate
+                      type: string
+                      required: false
+                      repeat: false
+                  endModifiedDate:
+                      displayName: endModifiedDate
+                      type: string
+                      required: false
+                      repeat: false
                   processingPeriod:
                       displayName: processingPeriod
                       type: string

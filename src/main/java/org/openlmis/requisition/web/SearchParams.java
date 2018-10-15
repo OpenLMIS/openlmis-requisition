@@ -21,6 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INVALID_DATE_FORMA
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INVALID_UUID_FORMAT;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Set;
@@ -98,6 +99,24 @@ public final class SearchParams {
 
     try {
       return LocalDate.parse(value);
+    } catch (DateTimeParseException cause) {
+      throw new ValidationMessageException(
+          new Message(ERROR_INVALID_DATE_FORMAT, value, key), cause);
+    }
+  }
+
+  /**
+   * Parses String value into {@link ZonedDateTime}.
+   * If format is wrong {@link ValidationMessageException} will be thrown.
+   *
+   * @param key key for value be parsed into ZonedDateTime
+   * @return parsed zoned date time
+   */
+  public ZonedDateTime getZonedDateTime(String key) {
+    String value = getFirst(key);
+
+    try {
+      return ZonedDateTime.parse(value);
     } catch (DateTimeParseException cause) {
       throw new ValidationMessageException(
           new Message(ERROR_INVALID_DATE_FORMAT, value, key), cause);

@@ -21,6 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INVALID_REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SEARCH_INVALID_PARAMS;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +46,12 @@ public final class RequisitionSearchParams {
   private static final String SUPERVISORY_NODE = "supervisoryNode";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String EMERGENCY = "emergency";
+  private static final String START_MODIFIED_DATE = "startModifiedDate";
+  private static final String END_MODIFIED_DATE = "endModifiedDate";
 
   private static final List<String> ALL_PARAMETERS = asList(FACILITY, PROGRAM, INITIATED_DATE_FROM,
-      INITIATED_DATE_TO, PROCESSING_PERIOD, SUPERVISORY_NODE, REQUISITION_STATUS, EMERGENCY);
+      INITIATED_DATE_TO, START_MODIFIED_DATE, END_MODIFIED_DATE, PROCESSING_PERIOD,
+      SUPERVISORY_NODE, REQUISITION_STATUS, EMERGENCY);
 
   private SearchParams queryParams;
 
@@ -176,5 +180,31 @@ public final class RequisitionSearchParams {
     if (!ALL_PARAMETERS.containsAll(queryParams.keySet())) {
       throw new ValidationMessageException(new Message(ERROR_SEARCH_INVALID_PARAMS));
     }
+  }
+
+  /**
+   * Gets {@link ZonedDateTime} for "startModifiedDate" key from params.
+   *
+   * @return ZonedDateTime value of startModifiedDate
+   *          or null if params doesn't contain "startModifiedDate" key.
+   */
+  public ZonedDateTime getStartModifiedDate() {
+    if (!queryParams.containsKey(START_MODIFIED_DATE)) {
+      return null;
+    }
+    return queryParams.getZonedDateTime(START_MODIFIED_DATE);
+  }
+
+  /**
+   * Gets {@link ZonedDateTime} for "endModifiedDate" key from params.
+   *
+   * @return ZonedDateTime value of endModifiedDate
+   *          or null if params doesn't contain "endModifiedDate" key.
+   */
+  public ZonedDateTime getEndModifiedDate() {
+    if (!queryParams.containsKey(END_MODIFIED_DATE)) {
+      return null;
+    }
+    return queryParams.getZonedDateTime(END_MODIFIED_DATE);
   }
 }

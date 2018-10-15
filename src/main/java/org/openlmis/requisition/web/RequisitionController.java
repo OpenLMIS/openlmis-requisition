@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -400,6 +401,8 @@ public class RequisitionController extends BaseRequisitionController {
     final UUID supervisoryNode = params.getSupervisoryNode();
     final Set<RequisitionStatus> requisitionStatuses = params.getRequisitionStatuses();
     final Boolean emergency = params.isEmergency();
+    final ZonedDateTime startModifiedDate = params.getStartModifiedDate();
+    final ZonedDateTime endModifiedDate = params.getEndModifiedDate();
 
     Profiler profiler = getProfiler(
         "REQUISITIONS_SEARCH",
@@ -409,8 +412,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("REQUISITION_SERVICE_SEARCH");
     Page<Requisition> requisitionPage = requisitionService.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode, requisitionStatuses,
-        emergency, pageable);
+        initiatedDateFrom, initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriod,
+        supervisoryNode, requisitionStatuses, emergency, pageable);
 
     profiler.start("REQUISITION_DTO_BUILD");
     assert requisitionPage != null;

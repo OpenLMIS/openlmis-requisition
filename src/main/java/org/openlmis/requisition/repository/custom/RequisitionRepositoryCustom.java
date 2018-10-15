@@ -16,6 +16,7 @@
 package org.openlmis.requisition.repository.custom;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,8 @@ public interface RequisitionRepositoryCustom {
   Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                        LocalDate initiatedDateFrom,
                                        LocalDate initiatedDateTo,
+                                       ZonedDateTime startModifiedDate,
+                                       ZonedDateTime endModifiedDate,
                                        UUID processingPeriod,
                                        UUID supervisoryNode,
                                        Set<RequisitionStatus> requisitionStatuses,

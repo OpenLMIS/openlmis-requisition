@@ -32,6 +32,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -339,6 +340,8 @@ public class RequisitionService {
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDate initiatedDateFrom,
                                               LocalDate initiatedDateTo,
+                                              ZonedDateTime startModifiedDate,
+                                              ZonedDateTime endModifiedDate,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
@@ -356,8 +359,8 @@ public class RequisitionService {
 
     profiler.start("REPOSITORY_SEARCH");
     Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode,
-        requisitionStatuses, emergency, permissionStrings, pageable);
+        initiatedDateFrom, initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriod,
+        supervisoryNode, requisitionStatuses, emergency, permissionStrings, pageable);
 
     profiler.stop().log();
     return results;
@@ -368,8 +371,9 @@ public class RequisitionService {
    */
   public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
                                               Pageable pageable) {
-    return requisitionRepository.searchRequisitions(null, null, null, null, null,
-        null, requisitionStatuses, null, permissionService.getPermissionStrings(), pageable);
+    return requisitionRepository.searchRequisitions(null, null, null, null,
+        null, null, null, null, requisitionStatuses,
+        null, permissionService.getPermissionStrings(), pageable);
   }
 
   /**

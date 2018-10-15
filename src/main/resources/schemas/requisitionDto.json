@@ -12,6 +12,10 @@
       "type": "string",
       "title": "createdDate"
     },
+    "modifiedDate": {
+      "type": "string",
+      "title": "modifiedDate"
+    },
     "facility": {
       "type": "object",
       "$ref": "facilityDto.json",

@@ -381,7 +381,7 @@ public class JasperReportsViewService {
     for (MinimalFacilityDto facility : facilities) {
       if (facility.getActive()) {
         List<Requisition> requisitions = requisitionService.searchRequisitions(
-            facility.getId(), program.getId(), null, null, processingPeriod.getId(),
+            facility.getId(), program.getId(), null, null, null, null, processingPeriod.getId(),
             null, validStatuses, null,
             new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
             .getContent();
