@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import lombok.Getter;
-import org.openlmis.requisition.AvailableFeatures;
 import org.openlmis.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,22 +37,6 @@ public class VersionController {
   @RequestMapping("/requisition")
   public Version display() {
     LOGGER.debug("Returning version");
-    if (!AvailableFeatures.SECRET_MESSAGE.isActive()) {
-      return new Version();
-    } else {
-      return new CrazyVersion();
-    }
-  }
-
-  private class CrazyVersion extends Version {
-    @Getter
-    private String specialMessage;
-
-    public CrazyVersion() {
-      super();
-      if (AvailableFeatures.SECRET_MESSAGE.isActive()) {
-        this.specialMessage = "This secret message is also unlocked";
-      }
-    }
+    return new Version();
   }
 }
