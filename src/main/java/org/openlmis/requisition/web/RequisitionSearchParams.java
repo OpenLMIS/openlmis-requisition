@@ -46,11 +46,11 @@ public final class RequisitionSearchParams {
   private static final String SUPERVISORY_NODE = "supervisoryNode";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String EMERGENCY = "emergency";
-  private static final String START_MODIFIED_DATE = "startModifiedDate";
-  private static final String END_MODIFIED_DATE = "endModifiedDate";
+  private static final String MODIFIED_DATE_FROM = "modifiedDateFrom";
+  private static final String MODIFIED_DATE_TO = "modifiedDateTo";
 
   private static final List<String> ALL_PARAMETERS = asList(FACILITY, PROGRAM, INITIATED_DATE_FROM,
-      INITIATED_DATE_TO, START_MODIFIED_DATE, END_MODIFIED_DATE, PROCESSING_PERIOD,
+      INITIATED_DATE_TO, MODIFIED_DATE_FROM, MODIFIED_DATE_TO, PROCESSING_PERIOD,
       SUPERVISORY_NODE, REQUISITION_STATUS, EMERGENCY);
 
   private SearchParams queryParams;
@@ -183,28 +183,28 @@ public final class RequisitionSearchParams {
   }
 
   /**
-   * Gets {@link ZonedDateTime} for "startModifiedDate" key from params.
+   * Gets {@link ZonedDateTime} for "modifiedDateFrom" key from params.
    *
-   * @return ZonedDateTime value of startModifiedDate
-   *          or null if params doesn't contain "startModifiedDate" key.
+   * @return ZonedDateTime value of modifiedDateFrom
+   *          or null if params doesn't contain "modifiedDateFrom" key.
    */
-  public ZonedDateTime getStartModifiedDate() {
-    if (!queryParams.containsKey(START_MODIFIED_DATE)) {
+  public ZonedDateTime getModifiedDateFrom() {
+    if (!queryParams.containsKey(MODIFIED_DATE_FROM)) {
       return null;
     }
-    return queryParams.getZonedDateTime(START_MODIFIED_DATE);
+    return queryParams.getZonedDateTime(MODIFIED_DATE_FROM);
   }
 
   /**
-   * Gets {@link ZonedDateTime} for "endModifiedDate" key from params.
+   * Gets {@link ZonedDateTime} for "modifiedDateTo" key from params.
    *
-   * @return ZonedDateTime value of endModifiedDate
-   *          or null if params doesn't contain "endModifiedDate" key.
+   * @return ZonedDateTime value of modifiedDateTo
+   *          or null if params doesn't contain "modifiedDateTo" key.
    */
-  public ZonedDateTime getEndModifiedDate() {
-    if (!queryParams.containsKey(END_MODIFIED_DATE)) {
+  public ZonedDateTime getModifiedDateTo() {
+    if (!queryParams.containsKey(MODIFIED_DATE_TO)) {
       return null;
     }
-    return queryParams.getZonedDateTime(END_MODIFIED_DATE);
+    return queryParams.getZonedDateTime(MODIFIED_DATE_TO);
   }
 }

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -163,6 +164,17 @@ public class SearchParamsTest {
   }
 
   @Test
+  public void shouldGetZonedDateTimeFromString() {
+    String key = "dateTime";
+    ZonedDateTime dateTime = ZonedDateTime.now();
+    map.add(key, dateTime.toString());
+
+    SearchParams searchParams = new SearchParams(map);
+
+    assertEquals(dateTime, searchParams.getZonedDateTime(key));
+  }
+
+  @Test
   public void shouldThrowExceptionIfDateHasWrongFormat() {
     exception.expect(ValidationMessageException.class);
 
@@ -171,6 +183,18 @@ public class SearchParamsTest {
 
     SearchParams searchParams = new SearchParams(map);
     searchParams.getLocalDate(key);
+    searchParams.getZonedDateTime(key);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfZonedDateTimeHasWrongFormat() {
+    exception.expect(ValidationMessageException.class);
+
+    String key = "dateTime";
+    map.add(key, "wrong-format");
+
+    SearchParams searchParams = new SearchParams(map);
+    searchParams.getZonedDateTime(key);
   }
 
   @Test
