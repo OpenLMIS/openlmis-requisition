@@ -600,13 +600,13 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
-                  modifiedDateFrom:
-                      displayName: modifiedDateFrom
+                  startModifiedDate:
+                      displayName: startModifiedDate
                       type: string
                       required: false
                       repeat: false
-                  modifiedDateTo:
-                      displayName: modifiedDateTo
+                  endModifiedDate:
+                      displayName: endModifiedDate
                       type: string
                       required: false
                       repeat: false

@@ -401,18 +401,18 @@ public class RequisitionController extends BaseRequisitionController {
     final UUID supervisoryNode = params.getSupervisoryNode();
     final Set<RequisitionStatus> requisitionStatuses = params.getRequisitionStatuses();
     final Boolean emergency = params.isEmergency();
-    final ZonedDateTime modifiedDateFrom = params.getModifiedDateFrom();
-    final ZonedDateTime modifiedDateTo = params.getModifiedDateTo();
+    final ZonedDateTime startModifiedDate = params.getStartModifiedDate();
+    final ZonedDateTime endModifiedDate = params.getEndModifiedDate();
 
     Profiler profiler = getProfiler(
         "REQUISITIONS_SEARCH",
-        facility, program, initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo,
-        processingPeriod, supervisoryNode, requisitionStatuses, pageable
+        facility, program, initiatedDateFrom, initiatedDateTo, processingPeriod, supervisoryNode,
+        requisitionStatuses, pageable
     );
 
     profiler.start("REQUISITION_SERVICE_SEARCH");
     Page<Requisition> requisitionPage = requisitionService.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriod,
+        initiatedDateFrom, initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriod,
         supervisoryNode, requisitionStatuses, emergency, pageable);
 
     profiler.start("REQUISITION_DTO_BUILD");

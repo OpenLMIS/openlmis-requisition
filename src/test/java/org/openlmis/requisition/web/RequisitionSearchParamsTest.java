@@ -54,8 +54,8 @@ public class RequisitionSearchParamsTest {
   private static final String SUPERVISORY_NODE = "supervisoryNode";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String EMERGENCY = "emergency";
-  private static final String MODIFIED_DATE_FROM = "modifiedDateFrom";
-  private static final String MODIFIED_DATE_TO = "modifiedDateTo";
+  private static final String START_MODIFIED_DATE = "startModifiedDate";
+  private static final String END_MODIFIED_DATE = "endModifiedDate";
 
   private LinkedMultiValueMap<String, String> queryMap;
   private UUID id = UUID.randomUUID();
@@ -210,32 +210,32 @@ public class RequisitionSearchParamsTest {
 
   @Test
   public void shouldGetStartModifiedDateValueFromParameters() {
-    queryMap.add(MODIFIED_DATE_FROM, dateTimeString);
+    queryMap.add(START_MODIFIED_DATE, dateTimeString);
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
-    assertEquals(dateTime, params.getModifiedDateFrom());
+    assertEquals(dateTime, params.getStartModifiedDate());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoStartModifiedDateProperty() {
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
-    assertNull(params.getModifiedDateFrom());
+    assertNull(params.getStartModifiedDate());
   }
 
   @Test
   public void shouldGetEndModifiedDateValueFromParameters() {
-    queryMap.add(MODIFIED_DATE_TO, dateTimeString);
+    queryMap.add(END_MODIFIED_DATE, dateTimeString);
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
-    assertEquals(dateTime, params.getModifiedDateTo());
+    assertEquals(dateTime, params.getEndModifiedDate());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoEndModifiedDateToProperty() {
     RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
 
-    assertNull(params.getModifiedDateTo());
+    assertNull(params.getEndModifiedDate());
   }
 
   @Test
@@ -262,7 +262,7 @@ public class RequisitionSearchParamsTest {
 
     ToStringTestUtils.verify(RequisitionSearchParams.class, params,
         "FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
-        "MODIFIED_DATE_FROM", "MODIFIED_DATE_TO", "PROCESSING_PERIOD",
+        "START_MODIFIED_DATE", "END_MODIFIED_DATE", "PROCESSING_PERIOD",
         "SUPERVISORY_NODE", "REQUISITION_STATUS", "EMERGENCY", "ALL_PARAMETERS");
   }
 }

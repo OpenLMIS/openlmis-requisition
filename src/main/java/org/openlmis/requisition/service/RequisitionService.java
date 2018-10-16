@@ -340,8 +340,8 @@ public class RequisitionService {
   public Page<Requisition> searchRequisitions(UUID facility, UUID program,
                                               LocalDate initiatedDateFrom,
                                               LocalDate initiatedDateTo,
-                                              ZonedDateTime modifiedDateFrom,
-                                              ZonedDateTime modifiedDateTo,
+                                              ZonedDateTime startModifiedDate,
+                                              ZonedDateTime endModifiedDate,
                                               UUID processingPeriod,
                                               UUID supervisoryNode,
                                               Set<RequisitionStatus> requisitionStatuses,
@@ -359,7 +359,7 @@ public class RequisitionService {
 
     profiler.start("REPOSITORY_SEARCH");
     Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriod,
+        initiatedDateFrom, initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriod,
         supervisoryNode, requisitionStatuses, emergency, permissionStrings, pageable);
 
     profiler.stop().log();
