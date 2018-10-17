@@ -84,6 +84,8 @@ dependencies {
     testCompile "com.github.tomakehurst:wiremock:1.58"
     testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
     testCompile "be.joengenduvel.java.verifiers:to-string:1.0.2"
+    testCompile 'org.togglz:togglz-testing:2.6.1.Final'
+    testCompile 'org.togglz:togglz-junit:2.6.1.Final'
 }
 
 idea {

@@ -46,7 +46,7 @@ public class VersionController {
     }
   }
 
-  private class CrazyVersion extends Version {
+  class CrazyVersion extends Version {
     @Getter
     private String specialMessage;
 
