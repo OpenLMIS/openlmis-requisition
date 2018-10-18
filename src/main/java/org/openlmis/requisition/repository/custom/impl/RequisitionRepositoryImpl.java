@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,6 +112,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @param programId             Program of searched Requisitions.
    * @param initiatedDateFrom     After what date should searched Requisition be created.
    * @param initiatedDateTo       Before what date should searched Requisition be created.
+   * @param modifiedDateFrom      After what date should searched Requisition be modified.
+   * @param modifiedDateTo        Before what date should searched Requisition be modified.
    * @param processingPeriodId    ProcessingPeriod of searched Requisitions.
    * @param supervisoryNodeId     SupervisoryNode of searched Requisitions.
    * @param requisitionStatuses   Statuses of searched Requisitions.
@@ -123,8 +126,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       UUID programId,
       LocalDate initiatedDateFrom,
       LocalDate initiatedDateTo,
-      ZonedDateTime startModifiedDate,
-      ZonedDateTime endModifiedDate,
+      ZonedDateTime modifiedDateFrom,
+      ZonedDateTime modifiedDateTo,
       UUID processingPeriodId,
       UUID supervisoryNodeId,
       Set<RequisitionStatus> requisitionStatuses,
@@ -136,12 +139,12 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
     CriteriaQuery<Requisition> requisitionQuery = builder.createQuery(Requisition.class);
     requisitionQuery = prepareQuery(requisitionQuery, facilityId, programId, initiatedDateFrom,
-        initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriodId, supervisoryNodeId,
+        initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriodId, supervisoryNodeId,
         requisitionStatuses, emergency, userPermissionStrings, false, pageable);
 
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
     countQuery = prepareQuery(countQuery, facilityId, programId, initiatedDateFrom,
-        initiatedDateTo, startModifiedDate, endModifiedDate, processingPeriodId, supervisoryNodeId,
+        initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriodId, supervisoryNodeId,
         requisitionStatuses, emergency, userPermissionStrings, true, pageable);
 
     Long count = entityManager.createQuery(countQuery).getSingleResult();
@@ -329,8 +332,8 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       UUID programId,
       LocalDate initiatedDateFrom,
       LocalDate initiatedDateTo,
-      ZonedDateTime startModifiedDate,
-      ZonedDateTime endModifiedDate,
+      ZonedDateTime modifiedDateFrom,
+      ZonedDateTime modifiedDateTo,
       UUID processingPeriodId,
       UUID supervisoryNodeId,
       Set<RequisitionStatus> requisitionStatuses,
@@ -371,15 +374,17 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
           builder.equal(root.get(EMERGENCY), emergency));
     }
 
-    ZonedDateTime from = setStartDateParam(initiatedDateFrom);
-    ZonedDateTime to = setEndDateParam(initiatedDateTo);
-    predicate = setDateRangeParameters(predicate, builder, root, from, to, CREATED_DATE);
+    ZonedDateTime fromInitiatedDate = setStartDateParam(initiatedDateFrom);
+    ZonedDateTime toInitiatedDate = setEndDateParam(initiatedDateTo);
+    predicate = setDateRangeParameters(predicate, builder, root, fromInitiatedDate,
+        toInitiatedDate, CREATED_DATE);
 
-    ZonedDateTime start = setStartDateParam(startModifiedDate != null
-        ? startModifiedDate.toLocalDate() : null);
-    ZonedDateTime end = setEndDateParam(endModifiedDate != null
-        ? endModifiedDate.toLocalDate() : null);
-    predicate = setDateRangeParameters(predicate, builder, root, start, end, MODIFIED_DATE);
+    ZonedDateTime fromModifiedDate = setStartDateParam(modifiedDateFrom != null
+        ? modifiedDateFrom.toLocalDate() : null);
+    ZonedDateTime toModifiedDate = setEndDateParam(modifiedDateTo != null
+        ? modifiedDateTo.toLocalDate() : null);
+    predicate = setDateRangeParameters(predicate, builder, root, fromModifiedDate,
+        toModifiedDate, MODIFIED_DATE);
 
     Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
         .join("permissionStrings");
@@ -589,19 +594,13 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   private ZonedDateTime setStartDateParam(LocalDate dateFrom) {
-    ZonedDateTime from = null;
-    if (dateFrom != null) {
-      from = dateFrom.atStartOfDay(dateHelper.getZone());
-    }
-    return from;
+    return Optional.ofNullable(dateFrom).isPresent()
+        ? dateFrom.atStartOfDay(dateHelper.getZone()) : null;
   }
 
   private ZonedDateTime setEndDateParam(LocalDate dateTo) {
-    ZonedDateTime to = null;
-    if (dateTo != null) {
-      to = ZonedDateTime.of(dateTo, LocalTime.MAX, dateHelper.getZone());
-    }
-    return to;
+    return Optional.ofNullable(dateTo).isPresent()
+        ? ZonedDateTime.of(dateTo, LocalTime.MAX, dateHelper.getZone()) : null;
   }
 
   private Predicate setDateRangeParameters(Predicate predicate, CriteriaBuilder builder,

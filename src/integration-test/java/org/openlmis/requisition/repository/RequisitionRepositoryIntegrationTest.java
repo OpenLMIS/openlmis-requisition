@@ -156,15 +156,41 @@ public class RequisitionRepositoryIntegrationTest
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(
               requisitionToCopy.getCreatedDate().minusDays(1)));
-      assertTrue(
-          receivedRequisition.getModifiedDate().isBefore(
-              requisitionToCopy.getModifiedDate().plusDays(2)));
-      assertTrue(
-          receivedRequisition.getModifiedDate().isAfter(
-              requisitionToCopy.getModifiedDate().minusDays(1)));
+      assertEquals(receivedRequisition.getModifiedDate(), requisitionToCopy.getModifiedDate());
       assertEquals(receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
       assertEquals(receivedRequisition.getEmergency(), requisitionToCopy.getEmergency());
     }
+  }
+
+  @Test
+  public void testSearchRequisitionsByModifiedDateFrom() {
+    Requisition requisition = requisitions.get(0);
+
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+        null, null, null, null,
+        requisition.getModifiedDate(),
+        null, null, null,
+        null,null,
+        userPermissionStrings,
+        pageRequest).getContent();
+
+    assertEquals(5, receivedRequisitions.size());
+    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition.getModifiedDate());
+  }
+
+  @Test
+  public void testSearchRequisitionsByModifiedDateTo() {
+    Requisition requisition = requisitions.get(0);
+
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+        null, null, null, null, null,
+        requisition.getModifiedDate(),
+        null, null, null,null,
+        userPermissionStrings,
+        pageRequest).getContent();
+
+    assertEquals(5, receivedRequisitions.size());
+    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition.getModifiedDate());
   }
 
   @Test
