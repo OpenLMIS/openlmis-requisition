@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -594,12 +593,11 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   }
 
   private ZonedDateTime setStartDateParam(LocalDate dateFrom) {
-    return Optional.ofNullable(dateFrom).isPresent()
-        ? dateFrom.atStartOfDay(dateHelper.getZone()) : null;
+    return dateFrom != null ? dateFrom.atStartOfDay(dateHelper.getZone()) : null;
   }
 
   private ZonedDateTime setEndDateParam(LocalDate dateTo) {
-    return Optional.ofNullable(dateTo).isPresent()
+    return dateTo != null
         ? ZonedDateTime.of(dateTo, LocalTime.MAX, dateHelper.getZone()) : null;
   }
 
