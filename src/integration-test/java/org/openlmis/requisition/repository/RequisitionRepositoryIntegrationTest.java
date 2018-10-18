@@ -164,33 +164,72 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchRequisitionsByModifiedDateFrom() {
-    Requisition requisition = requisitions.get(0);
+
+    Requisition requisition1 = requisitions.get(0);
+    Requisition requisition2 = requisitions.get(1);
+    Requisition requisition3 = requisitions.get(2);
+    requisition1.setModifiedDate(requisition1.getModifiedDate().plusMonths(1));
+    requisition2.setModifiedDate(requisition2.getModifiedDate().plusMonths(2));
+    requisition3.setModifiedDate(requisition3.getModifiedDate().plusMonths(3));
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         null, null, null, null,
-        requisition.getModifiedDate(),
+        requisition1.getModifiedDate(),
         null, null, null,
         null,null,
         userPermissionStrings,
         pageRequest).getContent();
 
-    assertEquals(5, receivedRequisitions.size());
-    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition.getModifiedDate());
+    assertEquals(3, receivedRequisitions.size());
+    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition1.getModifiedDate());
+    assertEquals(receivedRequisitions.get(1).getModifiedDate(), requisition2.getModifiedDate());
+    assertEquals(receivedRequisitions.get(2).getModifiedDate(), requisition3.getModifiedDate());
   }
 
   @Test
   public void testSearchRequisitionsByModifiedDateTo() {
-    Requisition requisition = requisitions.get(0);
+
+    Requisition requisition1 = requisitions.get(0);
+    Requisition requisition2 = requisitions.get(1);
+    Requisition requisition3 = requisitions.get(2);
+    requisition1.setModifiedDate(requisition1.getModifiedDate().minusMonths(3));
+    requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
+    requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
 
     List<Requisition> receivedRequisitions = repository.searchRequisitions(
         null, null, null, null, null,
-        requisition.getModifiedDate(),
+        requisition3.getModifiedDate(),
         null, null, null,null,
         userPermissionStrings,
         pageRequest).getContent();
 
-    assertEquals(5, receivedRequisitions.size());
-    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition.getModifiedDate());
+    assertEquals(3, receivedRequisitions.size());
+    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition1.getModifiedDate());
+    assertEquals(receivedRequisitions.get(1).getModifiedDate(), requisition2.getModifiedDate());
+    assertEquals(receivedRequisitions.get(2).getModifiedDate(), requisition3.getModifiedDate());
+  }
+
+  @Test
+  public void testSearchRequisitionsByStartAndEndModifiedDate() {
+
+    Requisition requisition1 = requisitions.get(0);
+    Requisition requisition2 = requisitions.get(1);
+    Requisition requisition3 = requisitions.get(2);
+    requisition1.setModifiedDate(requisition1.getModifiedDate().minusMonths(3));
+    requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
+    requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
+
+    List<Requisition> receivedRequisitions = repository.searchRequisitions(
+        null, null, null, null,
+        requisition2.getModifiedDate(),
+        requisition3.getModifiedDate(),
+        null, null, null,null,
+        userPermissionStrings,
+        pageRequest).getContent();
+
+    assertEquals(2, receivedRequisitions.size());
+    assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition2.getModifiedDate());
+    assertEquals(receivedRequisitions.get(1).getModifiedDate(), requisition3.getModifiedDate());
   }
 
   @Test
