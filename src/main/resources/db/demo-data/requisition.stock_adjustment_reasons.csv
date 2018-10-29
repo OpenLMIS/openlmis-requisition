@@ -77,3 +77,29 @@ b347ddd3-3458-48d0-9d43-50f1dcb63f21,84eb13c3-3e54-4687-8a5f-a9f20dcd0dac,Beginn
 bbb99bbb-82d3-4464-b849-fae57735c8db,313f2f5f-0c22-4626-8c49-3554ef763de3,Receipts,Receipts,ADJUSTMENT,CREDIT,false,b235dc46-7f19-4ef7-9240-6f43e6db0513,true
 560bb3c0-9353-49aa-b8cf-189a7c1dad2b,84eb13c3-3e54-4687-8a5f-a9f20dcd0dac,Beginning Balance Excess,Beginning Balance Excess,ADJUSTMENT,CREDIT,false,b235dc46-7f19-4ef7-9240-6f43e6db0513,true
 9ab42536-4f40-4134-8448-431d25a70c59,f8bb41e2-ab43-4781-ae7a-7bf3b5116b82,Beginning Balance Insufficiency,Beginning Balance Insufficiency,ADJUSTMENT,DEBIT,false,b235dc46-7f19-4ef7-9240-6f43e6db0513,true
+036b93fe-471a-42bd-904c-2eb3bd344eb1,e3fc3cf3-da18-44b0-a220-77c985202e06,Transfer In,Transfer In,TRANSFER,CREDIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+33a37416-87fb-44b3-a924-c7594d8e6878,c1fc3cf3-da18-44b0-a220-77c985202e06,Transfer Out,Transfer Out,TRANSFER,DEBIT,true,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+ee593bb9-782a-420b-ab9c-c168f1a32806,279d55bd-42e3-438c-a63d-9c021b185dae,Facility return,Facility return,ADJUSTMENT,CREDIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+4d482252-5fa5-47ba-8f26-5301b404ef3f,5b09202e-b8a7-4f77-9e0e-8156f8efc613,Damage,Damage,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+c4db8f30-768e-4883-a100-538958d34949,3e7940db-49a5-492f-a4eb-75acb981dd2b,Expired,Expired,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+a40d5635-4661-4858-81f1-ce7a3a153261,09e1d05d-f736-4834-9346-c27196a99eae,Stolen,Stolen,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+ab9806f8-7f07-47bd-8cd0-65344d205d1a,b7e99f5b-af04-433d-9c30-d4f90c60c47b,Lost,Lost,ADJUSTMENT,DEBIT,true,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+285ef28d-e66c-4b5f-9d30-60fee5764d25,30f6002d-a78d-44db-b2b9-46e76795a188,Passed open-vial time limit,Passed open-vial time limit,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+44e596cb-046b-42d8-bf6a-99873afd6f55,6f8d0431-6ec5-4280-9019-c6024b168b23,Cold chain failure,Cold chain failure,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,false
+5950edcb-ca4a-4b1a-9bbc-317d79db85f7,b5c27da7-bdda-4790-925a-9484c5dfb594,Consumed,,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,true
+f898dfb1-420d-414f-8121-994f8fcfb728,313f2f5f-0c22-4626-8c49-3554ef763de3,Receipts,,ADJUSTMENT,CREDIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,true
+8af2f29f-0e59-44a0-98ff-b282b158b64a,84eb13c3-3e54-4687-8a5f-a9f20dcd0dac,Beginning Balance Excess,,ADJUSTMENT,CREDIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,true
+0cc63788-47bf-4346-8911-209d35cbddda,f8bb41e2-ab43-4781-ae7a-7bf3b5116b82,Beginning Balance Insufficiency,,ADJUSTMENT,DEBIT,false,790da33b-2f79-4b95-bcf1-587938acc2cf,true
+b2c1e960-8a88-49ba-a73d-e025af78af86,e3fc3cf3-da18-44b0-a220-77c985202e06,Transfer In,Transfer In,TRANSFER,CREDIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+eb86ca1c-2ac0-4852-9886-a9fca5c3b98d,c1fc3cf3-da18-44b0-a220-77c985202e06,Transfer Out,Transfer Out,TRANSFER,DEBIT,true,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+7878d962-4920-454c-8bd8-6be7713d1784,279d55bd-42e3-438c-a63d-9c021b185dae,Facility return,Facility return,ADJUSTMENT,CREDIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+97935a95-e901-48d4-a953-a0d4f225f72a,5b09202e-b8a7-4f77-9e0e-8156f8efc613,Damage,Damage,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+3ca7509a-1db7-46d7-8da8-ca10e8e20575,3e7940db-49a5-492f-a4eb-75acb981dd2b,Expired,Expired,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+6f32bfdf-a370-4f94-995a-fa64c0727985,09e1d05d-f736-4834-9346-c27196a99eae,Stolen,Stolen,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+80333b12-4ff3-4797-aa1d-f7a63d9570a8,b7e99f5b-af04-433d-9c30-d4f90c60c47b,Lost,Lost,ADJUSTMENT,DEBIT,true,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+1748a692-150e-41b0-92db-c6e5fe0c8a3b,30f6002d-a78d-44db-b2b9-46e76795a188,Passed open-vial time limit,Passed open-vial time limit,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+40957e3a-e97e-45bb-9d97-0acb3f85b4dd,6f8d0431-6ec5-4280-9019-c6024b168b23,Cold chain failure,Cold chain failure,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,false
+134ec854-d44a-4159-9aaa-248567d33dc8,b5c27da7-bdda-4790-925a-9484c5dfb594,Consumed,,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,true
+81330f02-cd41-48ef-a5dc-b9eef5d529a8,313f2f5f-0c22-4626-8c49-3554ef763de3,Receipts,,ADJUSTMENT,CREDIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,true
+33f00211-6425-447e-8807-cec74622d87a,84eb13c3-3e54-4687-8a5f-a9f20dcd0dac,Beginning Balance Excess,,ADJUSTMENT,CREDIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,true
+93d8dcb1-b424-4805-9553-e16622830154,f8bb41e2-ab43-4781-ae7a-7bf3b5116b82,Beginning Balance Insufficiency,,ADJUSTMENT,DEBIT,false,725bbb70-1f38-414f-b6db-7a5b68e40053,true

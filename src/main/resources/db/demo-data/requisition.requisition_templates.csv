@@ -3,3 +3,4 @@ id,createdDate,numberOfPeriodsToAverage,populateStockOnHandFromStockCards,name,a
 4b30f6c9-b84b-4f17-8173-852101a5ea29,2016-03-17T12:00:00,3,false,Essential Meds,false
 6c4b004b-b7c9-46f0-bb1b-bd128d36729f,2016-06-14T12:00:00,3,true,EPI,false
 37f29736-f0db-4de3-98ad-f8d85c848711,2018-02-13T07:00:00,3,true,Vaccine Stock-Based R&R Template,false
+6fa1a58c-960b-4835-be22-05be5f7357e2,2018-10-26T16:00:00,3,false,CHAZ,false

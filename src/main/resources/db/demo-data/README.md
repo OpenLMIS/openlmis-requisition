@@ -21,7 +21,7 @@ Defined in requisition.requisition_templates.csv and requisition.columns_maps.cs
   * Beginning Balance
   * Total Received Quantity
   * Total Consumed Quantity
-  * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Losses And Adjustments (with stock adjustment reasons from the stock management service)
   * Total Stockout Days
   * Stock On Hand (calculated)
   * Average Consumption (periods to average from: 3)
@@ -38,7 +38,7 @@ Defined in requisition.requisition_templates.csv and requisition.columns_maps.cs
   * Product Name
   * Beginning Balance
   * Total Received Quantity
-  * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Losses And Adjustments (with stock adjustment reasons from the stock management service)
   * Total Stockout Days
   * Stock On Hand (user input)
   * Total Consumed Quantity (calculated)
@@ -57,7 +57,7 @@ Defined in requisition.requisition_templates.csv and requisition.columns_maps.cs
   * Beginning Balance
   * Total Received Quantity
   * Total Consumed Quantity
-  * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Losses And Adjustments (with stock adjustment reasons from the stock management service)
   * Stock On Hand (calculated)
   * Requested Quantity
   * Requested Quantity Explanation
@@ -79,7 +79,7 @@ Defined in requisition.requisition_templates.csv and requisition.columns_maps.cs
   * Beginning Balance
   * Total Received Quantity
   * Total Consumed Quantity (calculated)
-  * Total Losses And Adjustments (with stock adjustment reasons from Reference Data demo data)
+  * Total Losses And Adjustments (with stock adjustment reasons from the stock management service)
   * Total Stockout Days
   * Stock On Hand
   * Average Consumption (periods to average from: 3)
@@ -93,6 +93,23 @@ Defined in requisition.requisition_templates.csv and requisition.columns_maps.cs
   * Total
   * Total Cost
   * Adjusted Consumption
+5. CHAZ
+  * Product Code
+  * Product Name
+  * Beginning Balance
+  * Total Received Quantity
+  * Total Consumed Quantity
+  * Total Losses And Adjustments (with stock adjustment reasons from the stock management service)
+  * Total Stockout Days
+  * Stock On Hand (calculated)
+  * Average Consumption (periods to average from: 3)
+  * Calculated Order Quantity
+  * Price Per Pack
+  * Dispensing Unit
+  * Requested Quantity
+  * Requested Quantity Explanation
+  * Approved Quantity
+  * Remarks
 
 ## Requisitions
 
@@ -118,6 +135,8 @@ to log in and approve these to clear them out before beginning your demo.
 |Family Planning|Kankao Health Facility  |2017Q3 |APPROVED  | false   |
 |EPI            |Cuamba, Cuamba          |Jan2017|APPROVED  | false   |
 |EPI            |Lurio, Cuamba           |Jan2017|APPROVED  | false   |
+|CHAZ           |Roma, Lusaka            |Jan2017|APPROVED  | false   |
+|CHAZ           |Roma, Lusaka            |Feb2017|AUTHORIZED| false   |
 
 Facilities, Programs, Products, Requisition Groups and User Roles & Rights come from the
 [Reference Data service's demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/src/main/resources/db/demo-data).
