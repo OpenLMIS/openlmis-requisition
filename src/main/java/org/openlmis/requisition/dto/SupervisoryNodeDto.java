@@ -16,6 +16,7 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -31,7 +32,12 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class SupervisoryNodeDto extends SupervisoryNodeBaseDto {
+public final class SupervisoryNodeDto extends BaseDto {
+  private String code;
+  private ObjectReferenceDto facility;
+  private String name;
+  private String description;
+  private Map<String, Object> extraData;
   private ObjectReferenceDto parentNode;
   private ObjectReferenceDto requisitionGroup;
   private Set<ObjectReferenceDto> childNodes;
