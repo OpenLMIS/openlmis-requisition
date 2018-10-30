@@ -15,26 +15,31 @@
 
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.List;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class SupervisoryNodeBaseDto extends BaseDto {
-  private String code;
-  private ObjectReferenceDto facility;
-  private String name;
-  private String description;
-  private Map<String, Object> extraData;
+public class SupervisoryNodeDtoTest {
+
+  @Test
+  public void equalsContract() {
+    List<ObjectReferenceDto> facilities = DtoGenerator.of(ObjectReferenceDto.class, 2);
+
+    EqualsVerifier
+        .forClass(SupervisoryNodeDto.class)
+        .withRedefinedSuperclass()
+        .withPrefabValues(ObjectReferenceDto.class, facilities.get(0), facilities.get(1))
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    SupervisoryNodeDto dto = new SupervisoryNodeDto();
+    ToStringTestUtils.verify(SupervisoryNodeDto.class, dto);
+  }
+
 }

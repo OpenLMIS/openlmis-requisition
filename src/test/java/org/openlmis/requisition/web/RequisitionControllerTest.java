@@ -79,6 +79,7 @@ import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityTypeDto;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -695,9 +696,9 @@ public class RequisitionControllerTest {
   public void shouldApproveRequisitionWithIdempotencyKey() {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     setUpApprover();
@@ -717,9 +718,9 @@ public class RequisitionControllerTest {
 
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
     setUpApprover();
@@ -734,9 +735,9 @@ public class RequisitionControllerTest {
 
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
@@ -750,9 +751,9 @@ public class RequisitionControllerTest {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
     when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
 
     setUpApprover();
@@ -776,9 +777,9 @@ public class RequisitionControllerTest {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
 
     when(supplyLineReferenceDataService.search(authorizedRequsition.getProgramId(),
         authorizedRequsition.getSupervisoryNodeId())).thenReturn(null);
@@ -805,9 +806,9 @@ public class RequisitionControllerTest {
     SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
 
     UUID parentNodeId = UUID.randomUUID();
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
     when(parentNode.getId()).thenReturn(parentNodeId);
-    when(supervisoryNode.getParentNode()).thenReturn(parentNode);
+    supervisoryNode.setParentNode(parentNode);
 
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
 
@@ -1178,8 +1179,8 @@ public class RequisitionControllerTest {
   }
 
   private void mockFindSupervisoryNodeByProgramAndFacility() {
-    supervisoryNode = mock(SupervisoryNodeDto.class);
-    when(supervisoryNode.getId()).thenReturn(UUID.randomUUID());
+    supervisoryNode = new SupervisoryNodeDto();
+    supervisoryNode.setId(UUID.randomUUID());
 
     when(supervisoryNodeReferenceDataService.findSupervisoryNode(any(), any()))
         .thenReturn(supervisoryNode);
@@ -1187,8 +1188,8 @@ public class RequisitionControllerTest {
 
   private SupervisoryNodeDto mockSupervisoryNodeForApprove() {
     UUID supervisoryNodeId = UUID.randomUUID();
-    SupervisoryNodeDto supervisoryNodeDto = mock(SupervisoryNodeDto.class);
-    when(supervisoryNodeDto.getId()).thenReturn(supervisoryNodeId);
+    SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDto();
+    supervisoryNodeDto.setId(supervisoryNodeId);
     when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
         .thenReturn(supervisoryNodeDto);
     when(authorizedRequsition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);

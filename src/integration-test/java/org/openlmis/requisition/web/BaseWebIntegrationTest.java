@@ -24,7 +24,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.PRICE_PER_PACK_IF_NULL;
@@ -323,8 +322,8 @@ public abstract class BaseWebIntegrationTest {
   }
 
   void mockSearchSupervisoryNodeByProgramAndFacility() {
-    SupervisoryNodeDto supervisoryNode = mock(SupervisoryNodeDto.class);
-    given(supervisoryNode.getId()).willReturn(UUID.randomUUID());
+    SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
+    supervisoryNode.setId(UUID.randomUUID());
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(anyUuid(), anyUuid()))
         .willReturn(supervisoryNode);
   }

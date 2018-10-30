@@ -54,8 +54,7 @@ public class RequisitionStatusProcessorTest {
   @Mock
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  @Mock
-  private SupervisoryNodeDto supervisoryNodeDto;
+  private SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDto();
 
   private UUID supervisoryNodeId = UUID.randomUUID();
 
@@ -64,9 +63,10 @@ public class RequisitionStatusProcessorTest {
 
   @Before
   public void setUp() {
+    supervisoryNodeDto.setId(supervisoryNodeId);
+
     doReturn(supervisoryNodeDto).when(supervisoryNodeReferenceDataService)
         .findSupervisoryNode(any(UUID.class), any(UUID.class));
-    doReturn(supervisoryNodeId).when(supervisoryNodeDto).getId();
   }
 
   @Test

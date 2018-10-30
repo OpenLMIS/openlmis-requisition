@@ -48,6 +48,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
@@ -200,7 +201,7 @@ public abstract class BaseRequisitionController extends BaseController {
     Profiler profiler = getProfiler("DO_APPROVE_REQUISITION", requisition, approveParams.user);
     checkIfPeriodIsValid(requisition, approveParams.period, profiler);
 
-    SupervisoryNodeDto parentNode = null;
+    ObjectReferenceDto parentNode = null;
     UUID parentNodeId = null;
 
     profiler.start("SET_PARENT_NODE_ID");

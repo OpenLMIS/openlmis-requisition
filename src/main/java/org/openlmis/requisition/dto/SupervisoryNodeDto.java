@@ -15,19 +15,24 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Set;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
-public class SupervisoryNodeDto {
-  private UUID id;
-  private String code;
-  private String name;
-  private String description;
-  private FacilityDto facility;
-  private SupervisoryNodeDto parentNode;
-  private Set<SupervisoryNodeBaseDto> childNodes;
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public final class SupervisoryNodeDto extends SupervisoryNodeBaseDto {
+  private ObjectReferenceDto parentNode;
+  private ObjectReferenceDto requisitionGroup;
+  private Set<ObjectReferenceDto> childNodes;
 }

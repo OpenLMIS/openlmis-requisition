@@ -1716,8 +1716,8 @@ public class RequisitionTest {
   }
 
   private SupervisoryNodeDto mockSupervisoryParentNode(UUID parentId) {
-    SupervisoryNodeDto parentNode = mock(SupervisoryNodeDto.class);
-    when(parentNode.getId()).thenReturn(parentId);
+    SupervisoryNodeDto parentNode = new SupervisoryNodeDto();
+    parentNode.setId(parentId);
     return parentNode;
   }
 

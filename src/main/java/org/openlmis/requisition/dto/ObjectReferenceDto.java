@@ -37,7 +37,7 @@ public class ObjectReferenceDto {
   @Setter
   private String href;
 
-  protected ObjectReferenceDto() {
+  public ObjectReferenceDto() {
     this(null);
   }
 
