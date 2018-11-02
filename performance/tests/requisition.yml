@@ -1,7 +1,7 @@
 execution:
-#  - concurrency: 1
-#    iterations: 10
-#    scenario: requisition-workflow
+  - concurrency: 1
+    iterations: 10
+    scenario: requisition-workflow
   - concurrency: 1
     hold-for: 2m
     scenario: search-one-page
@@ -195,13 +195,12 @@ scenarios:
 
             def depotId = found.supplyingDepots.first().id;
 
-            def form = "[{ \"requisitionId\": \"" + requisitionId + "\", \"supplyingDepotId\": \"" + depotId + "\"}]";
+            def form = "{\"createOrder\": true, \"requisitionsToRelease\": [{ \"requisitionId\": \"" + requisitionId + "\", \"supplyingDepotId\": \"" + depotId + "\"}]}";
 
-            vars.put("depot_id", depotId);
             vars.put("convert_form", form);
   convert-to-order:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/convertToOrder
+      - url: ${__P(base-uri)}/api/requisitions/batchReleases
         method: POST
         label: ConvertRequisitionToOrder
         headers:
@@ -219,12 +218,12 @@ scenarios:
     variables:
       # Family Planning
       program_id: dce17f2e-af3e-40ad-8e00-3496adef44c3
-      # Kankao Health Facility
-      facility_id: 7938919f-6f61-4d1a-a4dc-923c31e9cd45
-      facility_code: HF01
+      # Nandumbo Health Center
+      facility_id: 176c4276-1fb1-4507-8ad2-cdfba0f47445
+      facility_code: HC02
       emergency: false
-      # SCH002
-      schedule_id: 057921bd-1841-4748-8523-dbe5ebb58368
+      # SCH001
+      schedule_id: 9c15bd6e-3f6b-4b91-b53a-36c199d35eac
     requests:
       - include-scenario: get-user-token
       - include-scenario: get-period-for-initiate
@@ -237,7 +236,6 @@ scenarios:
       - include-scenario: reject-requisition
       - include-scenario: submit-requisition
       - include-scenario: authorize-requisition
-      - include-scenario: approve-requisition
       - include-scenario: approve-requisition
       - include-scenario: get-supplying-depot
       - include-scenario: convert-to-order
@@ -272,5 +270,15 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-#        90% of convert a requisition to an order fail to get in 3000 milliseconds: p90 of ConvertRequisitionToOrder>3000ms
-        90% of get requisition for convert fail to get in 3000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
+        90% of get requisition for convert fail to get in 50000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
+        90% of get periods for initiate fail to get in 5000 milliseconds: p90 of GetPeriodsForInitiate>5000ms
+        90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
+        90% of get requisitio to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
+        90% of update requisition fail to get in 3000 milliseconds: p90 of UpdateRequisition>3000ms
+        90% of submit requisition fail to get in 2000 milliseconds: p90 of SubmitRequisition>2000ms
+        90% of authorize requisition fail to get in 4000 milliseconds: p90 of AuthorizeRequisition>4000ms
+        90% of reject requisition fail to get in 10000 milliseconds: p90 of RejectRequisition>10000ms
+        90% of approve requisition fail to get in 40000 milliseconds: p90 of ApproveRequisition>40000ms
+        90% of get supplying depot for facility fail to get in 8000 milliseconds: p90 of GetSupplyingDepotForFacility>8000ms
+        90% of convert requisition to order fail to get in 15000 milliseconds: p90 of ConvertRequisitionToOrder>15000ms
+        90% of delete requisition fail to get in 5000 milliseconds: p90 of DeleteRequisition>5000ms
