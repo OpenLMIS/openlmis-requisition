@@ -271,14 +271,14 @@ reporting:
     - module: passfail
       criteria:
         90% of get requisition for convert fail to get in 50000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
-        90% of get periods for initiate fail to get in 5000 milliseconds: p90 of GetPeriodsForInitiate>5000ms
+        90% of get periods for initiate fail to get in 7000 milliseconds: p90 of GetPeriodsForInitiate>7000ms
         90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
-        90% of get requisitio to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
+        90% of get requisition to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
         90% of update requisition fail to get in 3000 milliseconds: p90 of UpdateRequisition>3000ms
         90% of submit requisition fail to get in 2000 milliseconds: p90 of SubmitRequisition>2000ms
         90% of authorize requisition fail to get in 4000 milliseconds: p90 of AuthorizeRequisition>4000ms
         90% of reject requisition fail to get in 10000 milliseconds: p90 of RejectRequisition>10000ms
-        90% of approve requisition fail to get in 40000 milliseconds: p90 of ApproveRequisition>40000ms
+        90% of approve requisition fail to get in 50000 milliseconds: p90 of ApproveRequisition>50000ms
         90% of get supplying depot for facility fail to get in 8000 milliseconds: p90 of GetSupplyingDepotForFacility>8000ms
         90% of convert requisition to order fail to get in 15000 milliseconds: p90 of ConvertRequisitionToOrder>15000ms
         90% of delete requisition fail to get in 5000 milliseconds: p90 of DeleteRequisition>5000ms
