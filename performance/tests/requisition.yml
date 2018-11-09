@@ -278,7 +278,7 @@ reporting:
         90% of submit requisition fail to get in 2000 milliseconds: p90 of SubmitRequisition>2000ms
         90% of authorize requisition fail to get in 4000 milliseconds: p90 of AuthorizeRequisition>4000ms
         90% of reject requisition fail to get in 10000 milliseconds: p90 of RejectRequisition>10000ms
-        90% of approve requisition fail to get in 50000 milliseconds: p90 of ApproveRequisition>50000ms
+        90% of approve requisition fail to get in 60000 milliseconds: p90 of ApproveRequisition>60000ms
         90% of get supplying depot for facility fail to get in 8000 milliseconds: p90 of GetSupplyingDepotForFacility>8000ms
         90% of convert requisition to order fail to get in 20000 milliseconds: p90 of ConvertRequisitionToOrder>20000ms
         90% of delete requisition fail to get in 5000 milliseconds: p90 of DeleteRequisition>5000ms
