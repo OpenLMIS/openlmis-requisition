@@ -919,16 +919,16 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void populateApprovedQuantity() {
     for (RequisitionLineItem line : getNonSkippedRequisitionLineItems()) {
-      if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
-        line.setApprovedQuantity(Optional
-            .ofNullable(line.getRequestedQuantity())
-            .orElse(line.getCalculatedOrderQuantity()));
-      } else if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
+      if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
           && template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)) {
         line.setApprovedQuantity(Optional
             .ofNullable(line.getRequestedQuantity())
             .orElse(line.getCalculatedOrderQuantityIsa()));
-      } else {
+      } else if (template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY)) {
+        line.setApprovedQuantity(Optional
+            .ofNullable(line.getRequestedQuantity())
+            .orElse(line.getCalculatedOrderQuantity()));
+      }  else {
         line.setApprovedQuantity(line.getRequestedQuantity());
       }
     }

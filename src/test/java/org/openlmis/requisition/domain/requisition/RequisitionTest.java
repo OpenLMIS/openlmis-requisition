@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
@@ -1605,6 +1606,49 @@ public class RequisitionTest {
     requisition.setEmergency(true);
 
     requisition.skip(true, UUID.randomUUID());
+  }
+
+  @Test
+  public void shouldSetApprovedQuantityAccordingToIsaWhenSubmittingStockBasedRequisition() {
+    RequisitionTemplate template = mockStockBasedRequisitionTemplate();
+
+    when(template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)).thenReturn(true);
+    when(template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)).thenReturn(true);
+
+    requisition.setTemplate(template);
+    requisitionLineItem.setRequestedQuantity(null);
+    requisitionLineItem.setCalculatedOrderQuantityIsa(689);
+
+    //when
+    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), true);
+
+    //then
+    assertEquals(
+        requisitionLineItem.getCalculatedOrderQuantityIsa(),
+        requisitionLineItem.getApprovedQuantity()
+    );
+  }
+
+  @Test
+  public void shouldSetApprovedQuantityAccordingToIsaWhenAuthorizingStockBasedRequisition() {
+    RequisitionTemplate template = mockStockBasedRequisitionTemplate();
+
+    when(template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)).thenReturn(true);
+    when(template.isColumnDisplayed(CALCULATED_ORDER_QUANTITY_ISA)).thenReturn(true);
+
+    requisition.setTemplate(template);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+    requisitionLineItem.setRequestedQuantity(null);
+    requisitionLineItem.setCalculatedOrderQuantityIsa(689);
+
+    //when
+    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+
+    //then
+    assertEquals(
+        requisitionLineItem.getCalculatedOrderQuantityIsa(),
+        requisitionLineItem.getApprovedQuantity()
+    );
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
