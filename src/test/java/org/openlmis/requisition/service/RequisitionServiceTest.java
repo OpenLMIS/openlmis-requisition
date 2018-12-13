@@ -138,6 +138,7 @@ import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.RequisitionForConvertComparator;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
@@ -1126,12 +1127,13 @@ public class RequisitionServiceTest {
             .stream()
             .map(requisitionDto ->
                 new RequisitionWithSupplyingDepotsDto(requisitionDto, supplyingDepots))
+            .sorted(new RequisitionForConvertComparator(pageable))
             .collect(Collectors.toList());
 
     //when
     Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
         requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, pageable, Arrays.asList(supplyingDepotId));
+            filterAndSortBy, pageable, singletonList(supplyingDepotId));
 
     List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
         requisitionDtosRetrieved.getContent();

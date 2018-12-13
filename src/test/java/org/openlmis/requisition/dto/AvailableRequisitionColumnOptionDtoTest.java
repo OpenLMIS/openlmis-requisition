@@ -16,7 +16,7 @@
 package org.openlmis.requisition.dto;
 
 public class AvailableRequisitionColumnOptionDtoTest
-    extends DtoTest<AvailableRequisitionColumnOptionDto> {
+    extends EqualsContractTest<AvailableRequisitionColumnOptionDto> {
 
   @Override
   protected Class<AvailableRequisitionColumnOptionDto> getTestClass() {

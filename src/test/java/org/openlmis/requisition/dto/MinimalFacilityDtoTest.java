@@ -19,7 +19,7 @@ import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
-public class MinimalFacilityDtoTest extends DtoTest<MinimalFacilityDto> {
+public class MinimalFacilityDtoTest extends EqualsContractTest<MinimalFacilityDto> {
 
   @Override
   protected Class<MinimalFacilityDto> getTestClass() {

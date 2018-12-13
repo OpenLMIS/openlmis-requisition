@@ -51,6 +51,8 @@ import org.openlmis.requisition.utils.Message;
 class RequisitionInvariantsValidator
     implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
 
+  static final String EXTRA_DATA_ORIGINAL_REQUISITION = "extraData.originalRequisition";
+
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
 
@@ -87,6 +89,7 @@ class RequisitionInvariantsValidator
       validateRegularLineItemStockFields(errors);
     }
 
+    validateExtraData(errors);
     validateIfOrderableIdChanged(errors);
   }
 
@@ -182,6 +185,13 @@ class RequisitionInvariantsValidator
             );
           }
         });
+  }
+
+  private void validateExtraData(Map<String, Message> errors) {
+    if (requisitionUpdater.hasOriginalRequisitionId()) {
+      rejectIfValueChanged(errors, requisitionUpdater.getOriginalRequisitionId(),
+          requisitionToUpdate.getOriginalRequisitionId(), EXTRA_DATA_ORIGINAL_REQUISITION);
+    }
   }
 
   private Object getColumnValue(RequisitionLineItem lineItem, String columnName) {

@@ -15,17 +15,37 @@
 
 package org.openlmis.requisition.dto;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+import be.joengenduvel.java.verifiers.ToStringVerifier;
+import java.util.Optional;
+import org.junit.Test;
 
-public class BasicProgramDtoTest extends EqualsContractTest<BasicProgramDto> {
+public abstract class ToStringContractTest<T> extends EqualsContractTest<T> {
 
-  @Override
-  protected Class<BasicProgramDto> getTestClass() {
-    return BasicProgramDto.class;
+  @Test
+  public void shouldImplementToString() {
+    Class<T> definition = getTestClass();
+    T instance = getInstance().orElseGet(() -> {
+      try {
+        return definition.newInstance();
+      } catch (ReflectiveOperationException exp) {
+        throw new IllegalStateException(exp);
+      }
+    });
+
+    ToStringVerifier<T> verifier = ToStringVerifier
+        .forClass(definition)
+        .ignore("$jacocoData");// external library is checking for this field, has to be ignored
+
+    prepare(verifier);
+    verifier.containsAllPrivateFields(instance);
   }
 
-  @Override
-  protected void prepare(EqualsVerifier<BasicProgramDto> verifier) {
-    verifier.withRedefinedSubclass(ProgramDto.class);
+  protected Optional<T> getInstance() {
+    return Optional.empty();
   }
+
+  protected void prepare(ToStringVerifier<T> verifier) {
+    // nothing to do here
+  }
+
 }

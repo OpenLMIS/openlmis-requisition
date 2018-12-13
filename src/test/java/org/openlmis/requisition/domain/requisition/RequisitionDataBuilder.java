@@ -15,13 +15,16 @@
 
 package org.openlmis.requisition.domain.requisition;
 
+import com.google.common.collect.Maps;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
+import org.openlmis.requisition.domain.ExtraDataEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
@@ -51,6 +54,7 @@ public class RequisitionDataBuilder {
       new DatePhysicalStockCountCompleted(LocalDate.now().minusMonths(1));
   private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
   private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
+  private Map<String, Object> extraData = Maps.newHashMap();
 
   /**
    * Add a requisition line item. Update available products list only if requisition is
@@ -81,7 +85,8 @@ public class RequisitionDataBuilder {
         requisitionLineItems, version, draftStatusMessage, template, facilityId, programId,
         processingPeriodId, supplyingFacilityId, status, statusChanges, emergency, reportOnly,
         numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
-        datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings
+        datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings,
+        new ExtraDataEntity(extraData)
     );
     requisition.setId(id);
     requisitionLineItems.forEach(line -> line.setRequisition(requisition));
@@ -155,6 +160,11 @@ public class RequisitionDataBuilder {
 
   public RequisitionDataBuilder withTemplate(RequisitionTemplate template) {
     this.template = template;
+    return this;
+  }
+
+  public RequisitionDataBuilder withOriginalRequisition(UUID originalRequisitionId) {
+    this.extraData.put(Requisition.EXTRA_DATA_ORIGINAL_REQUISITION_ID, originalRequisitionId);
     return this;
   }
 

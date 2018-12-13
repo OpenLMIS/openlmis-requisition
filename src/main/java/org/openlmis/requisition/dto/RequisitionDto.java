@@ -27,9 +27,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -39,6 +41,8 @@ import org.openlmis.requisition.utils.StatusChangeHelper;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class RequisitionDto implements Requisition.Importer, Requisition.Exporter {
   @Getter
   @Setter
@@ -116,6 +120,10 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
   @Getter
   @Setter
   private List<ReasonDto> stockAdjustmentReasons;
+
+  @Getter
+  @Setter
+  private Map<String, Object> extraData;
 
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {

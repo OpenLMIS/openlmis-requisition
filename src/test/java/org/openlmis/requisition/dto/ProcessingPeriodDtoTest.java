@@ -25,7 +25,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
 
-public class ProcessingPeriodDtoTest extends DtoTest<ProcessingPeriodDto> {
+public class ProcessingPeriodDtoTest extends EqualsContractTest<ProcessingPeriodDto> {
 
   @Override
   protected Class<ProcessingPeriodDto> getTestClass() {

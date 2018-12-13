@@ -17,15 +17,16 @@ package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class BasicProgramDtoTest extends EqualsContractTest<BasicProgramDto> {
+public class BaseDtoTest extends ToStringContractTest<BaseDto> {
 
   @Override
-  protected Class<BasicProgramDto> getTestClass() {
-    return BasicProgramDto.class;
+  protected Class<BaseDto> getTestClass() {
+    return BaseDto.class;
   }
 
   @Override
-  protected void prepare(EqualsVerifier<BasicProgramDto> verifier) {
-    verifier.withRedefinedSubclass(ProgramDto.class);
+  protected void prepare(EqualsVerifier<BaseDto> verifier) {
+    verifier.withRedefinedSubclass(BasicRequisitionDto.class);
   }
+
 }

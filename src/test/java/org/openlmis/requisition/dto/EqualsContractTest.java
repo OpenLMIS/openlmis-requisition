@@ -19,9 +19,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
-public abstract class DtoTest<T> {
-
-  protected abstract Class<T> getTestClass();
+public abstract class EqualsContractTest<T> {
 
   @Test
   public void equalsContract() {
@@ -32,6 +30,8 @@ public abstract class DtoTest<T> {
     prepare(verifier);
     verifier.verify();
   }
+
+  protected abstract Class<T> getTestClass();
 
   protected void prepare(EqualsVerifier<T> verifier) {
     // nothing to do here

@@ -105,6 +105,10 @@
         "type": "object",
         "$ref": "statusChangeDto.json"
       }
+    },
+    "extraData": {
+      "type": "object",
+      "title": "extraData"
     }
   },
   "required": [

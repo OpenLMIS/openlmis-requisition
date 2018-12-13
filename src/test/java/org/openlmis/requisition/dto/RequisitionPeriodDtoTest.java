@@ -17,10 +17,8 @@ package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
 
-public class RequisitionPeriodDtoTest extends DtoTest<RequisitionPeriodDto> {
+public class RequisitionPeriodDtoTest extends ToStringContractTest<RequisitionPeriodDto> {
 
   @Override
   protected Class<RequisitionPeriodDto> getTestClass() {
@@ -32,10 +30,5 @@ public class RequisitionPeriodDtoTest extends DtoTest<RequisitionPeriodDto> {
     verifier
         .withRedefinedSuperclass()
         .suppress(Warning.STRICT_INHERITANCE); // suppress not final class
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ToStringTestUtils.verify(RequisitionPeriodDto.class, new RequisitionPeriodDto());
   }
 }

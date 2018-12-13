@@ -18,6 +18,7 @@ package org.openlmis.requisition.domain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Maps;
@@ -85,6 +86,8 @@ public class RequisitionBuilderTest {
   private static final String DRAFT_STATUS_MESSAGE = "draft status message";
   private Money pricePerPack;
 
+  private Map<String, Object> extraData = Maps.newHashMap();
+
   @Before
   public void setUp() {
     when(requisitionDto.getId()).thenReturn(requisitionUuid);
@@ -99,6 +102,7 @@ public class RequisitionBuilderTest {
     when(requisitionDto.getDraftStatusMessage()).thenReturn(DRAFT_STATUS_MESSAGE);
     when(requisitionDto.getEmergency()).thenReturn(false);
     when(requisitionDto.getDatePhysicalStockCountCompleted()).thenReturn(LocalDate.now());
+    when(requisitionDto.getExtraData()).thenReturn(extraData);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -143,16 +147,18 @@ public class RequisitionBuilderTest {
     assertEquals(
         new DatePhysicalStockCountCompleted(requisitionDto.getDatePhysicalStockCountCompleted()),
             requisition.getDatePhysicalStockCountCompleted());
-    assertEquals(null, requisition.getId());
-    assertEquals(null, requisition.getFacilityId());
-    assertEquals(null, requisition.getProgramId());
-    assertEquals(null, requisition.getProcessingPeriodId());
-    assertEquals(null, requisition.getSupervisoryNodeId());
-    assertEquals(null, requisition.getStatus());
-    assertEquals(null, requisition.getEmergency());
+    assertNull(requisition.getId());
+    assertNull(requisition.getFacilityId());
+    assertNull(requisition.getProgramId());
+    assertNull(requisition.getProcessingPeriodId());
+    assertNull(requisition.getSupervisoryNodeId());
+    assertNull(requisition.getStatus());
+    assertNull(requisition.getEmergency());
 
     // modified date is required for timestamp checks
     assertEquals(modifiedDate, requisition.getModifiedDate());
+
+    assertEquals(extraData, requisition.getExtraData());
   }
 
   @Test

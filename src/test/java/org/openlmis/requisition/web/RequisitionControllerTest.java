@@ -157,9 +157,6 @@ public class RequisitionControllerTest {
   private Requisition approvedRequsition;
 
   @Mock
-  private BasicRequisitionDto basicRequisitionDto;
-
-  @Mock
   private RequisitionTemplate template;
 
   @Mock
@@ -258,6 +255,7 @@ public class RequisitionControllerTest {
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
   private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
   private FacilityDto facility = mock(FacilityDto.class);
+  private BasicRequisitionDto basicRequisitionDto = new BasicRequisitionDto();
   private ValidationResult fieldErrors = ValidationResult
       .fieldErrors(newHashMap("someField", new Message("some-key", "someParam")));
   private String bindingResultMessage = "{someField=some-key: someParam}";
@@ -315,8 +313,8 @@ public class RequisitionControllerTest {
 
     when(basicRequisitionDtoBuilder.build(any(Requisition.class)))
         .thenReturn(basicRequisitionDto);
-    when(basicRequisitionDto.getId())
-        .thenReturn(uuid1);
+
+    basicRequisitionDto.setId(uuid1);
 
     when(requisitionVersionValidator.validateRequisitionTimestamps(
         any(ZonedDateTime.class), any(Requisition.class)))

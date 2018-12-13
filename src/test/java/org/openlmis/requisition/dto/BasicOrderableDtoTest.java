@@ -17,7 +17,7 @@ package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class BasicOrderableDtoTest extends DtoTest {
+public class BasicOrderableDtoTest extends EqualsContractTest<BasicOrderableDto> {
 
   @Override
   protected Class<BasicOrderableDto> getTestClass() {
@@ -25,7 +25,8 @@ public class BasicOrderableDtoTest extends DtoTest {
   }
 
   @Override
-  protected void prepare(EqualsVerifier verifier) {
+  protected void prepare(EqualsVerifier<BasicOrderableDto> verifier) {
     verifier.withRedefinedSubclass(OrderableDto.class);
   }
+
 }

@@ -17,29 +17,21 @@ package org.openlmis.requisition.dto;
 
 import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
 import org.openlmis.requisition.testutils.DtoGenerator;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
 
-public class SupervisoryNodeDtoTest {
+public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNodeDto> {
 
-  @Test
-  public void equalsContract() {
+  @Override
+  protected Class<SupervisoryNodeDto> getTestClass() {
+    return SupervisoryNodeDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<SupervisoryNodeDto> verifier) {
     List<ObjectReferenceDto> facilities = DtoGenerator.of(ObjectReferenceDto.class, 2);
 
-    EqualsVerifier
-        .forClass(SupervisoryNodeDto.class)
+    verifier
         .withRedefinedSuperclass()
-        .withPrefabValues(ObjectReferenceDto.class, facilities.get(0), facilities.get(1))
-        .suppress(Warning.NONFINAL_FIELDS)
-        .verify();
+        .withPrefabValues(ObjectReferenceDto.class, facilities.get(0), facilities.get(1));
   }
-
-  @Test
-  public void shouldImplementToString() {
-    SupervisoryNodeDto dto = new SupervisoryNodeDto();
-    ToStringTestUtils.verify(SupervisoryNodeDto.class, dto);
-  }
-
 }

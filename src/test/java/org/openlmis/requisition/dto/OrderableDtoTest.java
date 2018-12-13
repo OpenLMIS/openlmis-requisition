@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class OrderableDtoTest extends DtoTest {
+public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   private OrderableDto orderableDto;
   private Set<ProgramOrderableDto> products;

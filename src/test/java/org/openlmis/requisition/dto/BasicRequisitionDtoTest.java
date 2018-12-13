@@ -13,20 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.testutils;
+package org.openlmis.requisition.dto;
 
-import be.joengenduvel.java.verifiers.ToStringVerifier;
+import java.util.List;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.openlmis.requisition.testutils.DtoGenerator;
 
-public class ToStringTestUtils {
+public class BasicRequisitionDtoTest extends ToStringContractTest<BasicRequisitionDto> {
 
-  /**
-   * Checks if given class has proper toString method.
-   */
-  public static <T> void verify(Class<T> clazz, T object, String... ignore) {
-    ToStringVerifier
-        .forClass(clazz)
-        .ignore("$jacocoData") // external library is checking for this field, has to be ignored
-        .ignore(ignore)
-        .containsAllPrivateFields(object);
+  @Override
+  protected Class<BasicRequisitionDto> getTestClass() {
+    return BasicRequisitionDto.class;
   }
+
+  @Override
+  protected void prepare(EqualsVerifier<BasicRequisitionDto> verifier) {
+    List<MinimalFacilityDto> facilities = DtoGenerator.of(MinimalFacilityDto.class, 2);
+    List<GeographicZoneDto> geoZones = DtoGenerator.of(GeographicZoneDto.class, 2);
+
+    verifier
+        .withRedefinedSuperclass()
+        .withPrefabValues(MinimalFacilityDto.class, facilities.get(0), facilities.get(1))
+        .withPrefabValues(GeographicZoneDto.class, geoZones.get(0), geoZones.get(1));
+  }
+
 }

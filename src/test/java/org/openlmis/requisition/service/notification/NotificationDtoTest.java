@@ -15,24 +15,13 @@
 
 package org.openlmis.requisition.service.notification;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
+import org.openlmis.requisition.dto.ToStringContractTest;
 
-public class NotificationDtoTest {
+public class NotificationDtoTest extends ToStringContractTest<NotificationDto> {
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(NotificationDto.class)
-        .suppress(Warning.NONFINAL_FIELDS)
-        .verify();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ToStringTestUtils.verify(NotificationDto.class, new NotificationDto());
+  @Override
+  protected Class<NotificationDto> getTestClass() {
+    return NotificationDto.class;
   }
 
 }

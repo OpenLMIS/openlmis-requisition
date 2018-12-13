@@ -100,6 +100,9 @@ public final class RequisitionBuilder {
       requisition.setDatePhysicalStockCountCompleted(
           new DatePhysicalStockCountCompleted(importer.getDatePhysicalStockCountCompleted()));
     }
+
+    requisition.setExtraData(importer.getExtraData());
+
     return requisition;
   }
 

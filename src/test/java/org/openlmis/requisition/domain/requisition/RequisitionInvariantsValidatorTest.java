@@ -25,6 +25,7 @@ import static org.openlmis.requisition.domain.requisition.Requisition.PROCESSING
 import static org.openlmis.requisition.domain.requisition.Requisition.PROGRAM_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITION_LINE_ITEMS;
 import static org.openlmis.requisition.domain.requisition.Requisition.SUPERVISORY_NODE_ID;
+import static org.openlmis.requisition.domain.requisition.RequisitionInvariantsValidator.EXTRA_DATA_ORIGINAL_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IS_INVARIANT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_ADDED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_LINE_ITEM_REMOVED;
@@ -59,6 +60,7 @@ public class RequisitionInvariantsValidatorTest {
         .addLineItem(new RequisitionLineItemDataBuilder().build())
         .addLineItem(new RequisitionLineItemDataBuilder().buildSkipped())
         .withSupervisoryNodeId(UUID.randomUUID())
+        .withOriginalRequisition(UUID.randomUUID())
         .build();
 
     requisitionUpdater = new RequisitionDataBuilder()
@@ -68,6 +70,7 @@ public class RequisitionInvariantsValidatorTest {
         .withSupervisoryNodeId(requisitionToUpdate.getSupervisoryNodeId())
         .withLineItems(requisitionToUpdate.getRequisitionLineItems())
         .withTemplate(requisitionToUpdate.getTemplate())
+        .withOriginalRequisition(requisitionToUpdate.getOriginalRequisitionId())
         .build();
 
     validator = new RequisitionInvariantsValidator(
@@ -223,5 +226,14 @@ public class RequisitionInvariantsValidatorTest {
     validator.validateCanUpdate(errors);
 
     assertThat(errors, hasEntry(NUMBER_OF_MONTHS_IN_PERIOD, new Message(ERROR_IS_INVARIANT)));
+  }
+
+  @Test
+  public void shouldRejectIfOriginalRequisitionWasChanged() {
+    requisitionUpdater.setOriginalRequisitionId(UUID.randomUUID());
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors, hasEntry(EXTRA_DATA_ORIGINAL_REQUISITION, new Message(ERROR_IS_INVARIANT)));
   }
 }

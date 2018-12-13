@@ -17,7 +17,7 @@ package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class ProgramDtoTest extends DtoTest<ProgramDto> {
+public class ProgramDtoTest extends EqualsContractTest<ProgramDto> {
 
   @Override
   protected Class<ProgramDto> getTestClass() {

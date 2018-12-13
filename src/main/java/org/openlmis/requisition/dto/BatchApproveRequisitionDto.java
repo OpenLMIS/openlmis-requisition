@@ -17,9 +17,13 @@ package org.openlmis.requisition.dto;
 
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 
-public class BatchApproveRequisitionDto extends RequisitionDto {
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public final class BatchApproveRequisitionDto extends RequisitionDto {
 
   @Override
   public void addStatusChange(StatusChange.Exporter statusChangeExporter) {

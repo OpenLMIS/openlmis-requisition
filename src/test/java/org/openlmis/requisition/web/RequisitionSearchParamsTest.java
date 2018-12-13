@@ -25,23 +25,23 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INVALID_REQUISITION_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SEARCH_INVALID_PARAMS;
 
+import be.joengenduvel.java.verifiers.ToStringVerifier;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.dto.ToStringContractTest;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionSearchParamsTest {
+public class RequisitionSearchParamsTest extends ToStringContractTest<RequisitionSearchParams> {
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -247,21 +247,19 @@ public class RequisitionSearchParamsTest {
     new RequisitionSearchParams(queryMap);
   }
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(RequisitionSearchParams.class)
-        .suppress(Warning.NONFINAL_FIELDS)
-        .verify();
+  @Override
+  protected Class<RequisitionSearchParams> getTestClass() {
+    return RequisitionSearchParams.class;
   }
 
-  @Test
-  public void shouldImplementToString() {
-    queryMap.add(FACILITY, id.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+  @Override
+  protected Optional<RequisitionSearchParams> getInstance() {
+    return Optional.of(new RequisitionSearchParams(queryMap));
+  }
 
-    ToStringTestUtils.verify(RequisitionSearchParams.class, params,
-        "FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
+  @Override
+  protected void prepare(ToStringVerifier<RequisitionSearchParams> verifier) {
+    verifier.ignore("FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
         "MODIFIED_DATE_FROM", "MODIFIED_DATE_TO", "PROCESSING_PERIOD",
         "SUPERVISORY_NODE", "REQUISITION_STATUS", "EMERGENCY", "ALL_PARAMETERS");
   }

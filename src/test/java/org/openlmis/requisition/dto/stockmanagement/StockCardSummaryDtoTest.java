@@ -15,9 +15,9 @@
 
 package org.openlmis.requisition.dto.stockmanagement;
 
-import org.openlmis.requisition.dto.DtoTest;
+import org.openlmis.requisition.dto.EqualsContractTest;
 
-public class StockCardSummaryDtoTest extends DtoTest<StockCardSummaryDto> {
+public class StockCardSummaryDtoTest extends EqualsContractTest<StockCardSummaryDto> {
 
   @Override
   protected Class<StockCardSummaryDto> getTestClass() {

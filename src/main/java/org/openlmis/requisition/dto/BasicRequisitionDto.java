@@ -25,9 +25,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.openlmis.requisition.domain.StatusLogEntry;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -38,7 +40,9 @@ import org.openlmis.requisition.utils.StatusChangeHelper;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter {
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public final class BasicRequisitionDto extends BaseDto implements Requisition.Exporter {
 
   private Boolean emergency;
   private Boolean reportOnly;
@@ -96,5 +100,10 @@ public class BasicRequisitionDto extends BaseDto implements Requisition.Exporter
   @Override
   public Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter() {
     return Optional.of(StatusChangeDto::new);
+  }
+
+  @Override
+  public void setExtraData(Map<String, Object> extraData) {
+    // unsupported operation
   }
 }

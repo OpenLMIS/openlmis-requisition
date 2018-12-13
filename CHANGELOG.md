@@ -1,3 +1,9 @@
+7.2.0 / WIP
+==================
+
+New functionality:
+* [OLMIS-5138](https://openlmis.atlassian.net/browse/OLMIS-5138): Added `originalRequisition` extended property to Requisition model
+
 7.1.0 / 2018-12-12
 ==================
 

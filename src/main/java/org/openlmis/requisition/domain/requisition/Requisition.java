@@ -80,6 +80,9 @@ import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
+import org.openlmis.requisition.domain.ExtraDataEntity;
+import org.openlmis.requisition.domain.ExtraDataEntity.ExtraDataExporter;
+import org.openlmis.requisition.domain.ExtraDataEntity.ExtraDataImporter;
 import org.openlmis.requisition.domain.OpenLmisNumberUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -124,6 +127,7 @@ public class Requisition extends BaseTimestampedEntity {
   static final String DATE_PHYSICAL_STOCK_COUNT_COMPLETED = "datePhysicalStockCountCompleted";
   public static final String REQUISITION_LINE_ITEMS = "requisitionLineItems";
   public static final String STATUS_CHANGES = "statusChanges";
+  static final String EXTRA_DATA_ORIGINAL_REQUISITION_ID = "originalRequisition";
 
   private static final int LINE_ITEMS_BATCH_SIZE = 100;
 
@@ -257,6 +261,9 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
 
+  @Embedded
+  private ExtraDataEntity extraData = new ExtraDataEntity();
+
   /**
    * Constructor.
    *
@@ -339,6 +346,9 @@ public class Requisition extends BaseTimestampedEntity {
       profiler.start("SET_DATE_PHYSICAL_STOCK_COUNT_COMPLETED");
       setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
     }
+
+    profiler.start("SET_EXTRA_DATA");
+    extraData = new ExtraDataEntity(requisition.getExtraData());
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     profiler.start("SET_MODIFIED_DATE");
@@ -809,6 +819,9 @@ public class Requisition extends BaseTimestampedEntity {
       exporter.setDatePhysicalStockCountCompleted(
           datePhysicalStockCountCompleted.getLocalDate());
     }
+
+    extraData = ExtraDataEntity.defaultEntity(extraData);
+    extraData.export(exporter);
   }
 
   private void exportStatusChanges(Exporter exporter) {
@@ -975,7 +988,30 @@ public class Requisition extends BaseTimestampedEntity {
         .orElse(null);
   }
 
-  public interface Exporter {
+  public Map<String, Object> getExtraData() {
+    return this.extraData.getExtraData();
+  }
+
+  public void setExtraData(Map<String, Object> extraData) {
+    this.extraData = ExtraDataEntity.defaultEntity(this.extraData);
+    this.extraData.updateFrom(extraData);
+  }
+
+  UUID getOriginalRequisitionId() {
+    Object value = this.extraData.get(EXTRA_DATA_ORIGINAL_REQUISITION_ID);
+    String asString = null == value ? null : value.toString();
+    return null == asString ? null : UUID.fromString(asString);
+  }
+
+  void setOriginalRequisitionId(UUID originalRequisitionId) {
+    this.extraData.put(EXTRA_DATA_ORIGINAL_REQUISITION_ID, originalRequisitionId);
+  }
+
+  boolean hasOriginalRequisitionId() {
+    return this.extraData.containsKey(EXTRA_DATA_ORIGINAL_REQUISITION_ID);
+  }
+
+  public interface Exporter extends ExtraDataExporter {
     void setId(UUID id);
 
     void setCreatedDate(ZonedDateTime createdDate);
@@ -1005,7 +1041,7 @@ public class Requisition extends BaseTimestampedEntity {
     void addStatusChange(StatusChange.Exporter providedExporter);
   }
 
-  public interface Importer {
+  public interface Importer extends ExtraDataImporter {
     UUID getId();
 
     ZonedDateTime getCreatedDate();

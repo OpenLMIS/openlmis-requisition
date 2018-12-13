@@ -20,14 +20,12 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.dto.ToStringContractTest;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
 
-public class StockCardRangeSummaryDtoTest {
+public class StockCardRangeSummaryDtoTest extends ToStringContractTest<StockCardRangeSummaryDto> {
 
   private StockCardRangeSummaryDto dto;
 
@@ -57,16 +55,9 @@ public class StockCardRangeSummaryDtoTest {
     assertEquals(new Integer(0), dto.getTagAmount("tag1"));
   }
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier.forClass(StockCardRangeSummaryDto.class)
-        .suppress(Warning.NONFINAL_FIELDS) // fields cannot be final
-        .verify();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ToStringTestUtils.verify(StockCardRangeSummaryDto.class, dto);
+  @Override
+  protected Class<StockCardRangeSummaryDto> getTestClass() {
+    return StockCardRangeSummaryDto.class;
   }
 
 }

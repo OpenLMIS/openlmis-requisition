@@ -15,7 +15,8 @@
 
 package org.openlmis.requisition.dto;
 
-public class ReleasableRequisitionBatchDtoTest extends DtoTest {
+public class ReleasableRequisitionBatchDtoTest
+    extends EqualsContractTest<ReleasableRequisitionBatchDto> {
 
   @Override
   protected Class<ReleasableRequisitionBatchDto> getTestClass() {

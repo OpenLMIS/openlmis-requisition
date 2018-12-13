@@ -17,7 +17,7 @@ package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class BasicProcessingPeriodDtoTest extends DtoTest<BasicProcessingPeriodDto> {
+public class BasicProcessingPeriodDtoTest extends EqualsContractTest<BasicProcessingPeriodDto> {
 
   @Override
   protected Class<BasicProcessingPeriodDto> getTestClass() {

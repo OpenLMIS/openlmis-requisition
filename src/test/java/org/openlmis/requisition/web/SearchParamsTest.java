@@ -21,22 +21,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import be.joengenduvel.java.verifiers.ToStringVerifier;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.openlmis.requisition.dto.ToStringContractTest;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.testutils.ToStringTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class SearchParamsTest {
+public class SearchParamsTest extends ToStringContractTest<SearchParams> {
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -218,21 +217,14 @@ public class SearchParamsTest {
     searchParams.getBoolean(key);
   }
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(SearchParams.class)
-        .suppress(Warning.NONFINAL_FIELDS)
-        .verify();
+  @Override
+  protected Class<SearchParams> getTestClass() {
+    return SearchParams.class;
   }
 
-  @Test
-  public void shouldImplementToString() {
-    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-    map.add("key", "value");
-    SearchParams params = new SearchParams(map);
-
-    ToStringTestUtils.verify(SearchParams.class, params,
-        "PAGE", "SIZE", "SORT", "ZONE_ID", "ACCESS_TOKEN");
+  @Override
+  protected void prepare(ToStringVerifier<SearchParams> verifier) {
+    verifier.ignore("PAGE", "SIZE", "SORT", "ZONE_ID", "ACCESS_TOKEN");
   }
+
 }
