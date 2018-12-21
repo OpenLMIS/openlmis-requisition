@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -274,6 +277,19 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
     RequisitionTemplate newTemplate = new RequisitionTemplate();
     newTemplate.updateFrom(template);
+
+    repository.saveAndFlush(newTemplate);
+  }
+
+  @Test(expected = DataIntegrityViolationException.class)
+  public void shouldNotAllowDuplicationForNonArchivedTemplateNamesCamelCase() {
+    RequisitionTemplate template = generateInstance();
+    repository.saveAndFlush(template);
+
+    RequisitionTemplate newTemplate = new RequisitionTemplate(
+        null, 3, false, StringUtils.swapCase(template.getName()),
+        Maps.newHashMap(), Sets.newHashSet()
+    );
 
     repository.saveAndFlush(newTemplate);
   }
