@@ -27,11 +27,16 @@ import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
 import org.openlmis.requisition.service.fulfillment.ShipmentFulfillmentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProofOfDeliveryService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryService.class);
 
   @Autowired
   private OrderFulfillmentService orderFulfillmentService;
@@ -44,6 +49,9 @@ public class ProofOfDeliveryService {
 
 
   ProofOfDeliveryDto get(Requisition requisition) {
+    Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
+    profiler.setLogger(LOGGER);
+
     if (RequisitionStatus.SKIPPED == requisition.getStatus()) {
       return null;
     }
@@ -52,6 +60,7 @@ public class ProofOfDeliveryService {
       return null;
     }
 
+    profiler.start("SEARCH_ORDERS");
     List<OrderDto> orders = orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null);
@@ -60,16 +69,21 @@ public class ProofOfDeliveryService {
       return null;
     }
 
+    profiler.start("SEARCH_SHIPMENTS");
     List<ShipmentDto> shipments = shipmentFulfillmentService.getShipments(orders.get(0).getId());
 
     if (isEmpty(shipments)) {
       return null;
     }
 
+    profiler.start("SEARCH_PODS");
     List<ProofOfDeliveryDto> pods = proofOfDeliveryFulfillmentService
         .getProofOfDeliveries(shipments.get(0).getId());
 
-    return isEmpty(pods) ? null : pods.get(0);
-  }
+    ProofOfDeliveryDto pod = isEmpty(pods) ? null : pods.get(0);
 
+    profiler.stop().log();
+
+    return pod;
+  }
 }
