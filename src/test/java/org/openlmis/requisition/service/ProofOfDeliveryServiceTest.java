@@ -30,10 +30,8 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
-import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.fulfillment.ProofOfDeliveryFulfillmentService;
-import org.openlmis.requisition.service.fulfillment.ShipmentFulfillmentService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,9 +39,6 @@ public class ProofOfDeliveryServiceTest {
 
   @Mock
   private OrderFulfillmentService orderFulfillmentService;
-
-  @Mock
-  private ShipmentFulfillmentService shipmentFulfillmentService;
 
   @Mock
   private ProofOfDeliveryFulfillmentService proofOfDeliveryFulfillmentService;
@@ -55,7 +50,6 @@ public class ProofOfDeliveryServiceTest {
   private Requisition requisition;
 
   private OrderDto order = DtoGenerator.of(OrderDto.class);
-  private ShipmentDto shipment = DtoGenerator.of(ShipmentDto.class);
   private ProofOfDeliveryDto proofOfDelivery = DtoGenerator.of(ProofOfDeliveryDto.class);
 
   @Test
@@ -81,29 +75,13 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldReturnNullIfThereIsNoShipment() throws Exception {
-    when(orderFulfillmentService.search(
-        null, requisition.getFacilityId(), requisition.getProgramId(),
-        requisition.getProcessingPeriodId(), null
-    )).thenReturn(Lists.newArrayList(order));
-
-    when(shipmentFulfillmentService.getShipments(order.getId()))
-        .thenReturn(null);
-
-    assertThat(proofOfDeliveryService.get(requisition), is(nullValue()));
-  }
-
-  @Test
   public void shouldReturnNullIfThereIsNoPods() throws Exception {
     when(orderFulfillmentService.search(
         null, requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), null
     )).thenReturn(Lists.newArrayList(order));
 
-    when(shipmentFulfillmentService.getShipments(order.getId()))
-        .thenReturn(Lists.newArrayList(shipment));
-
-    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(shipment.getId()))
+    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(order.getId()))
         .thenReturn(null);
 
     assertThat(proofOfDeliveryService.get(requisition), is(nullValue()));
@@ -116,10 +94,7 @@ public class ProofOfDeliveryServiceTest {
         requisition.getProcessingPeriodId(), null
     )).thenReturn(Lists.newArrayList(order));
 
-    when(shipmentFulfillmentService.getShipments(order.getId()))
-        .thenReturn(Lists.newArrayList(shipment));
-
-    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(shipment.getId()))
+    when(proofOfDeliveryFulfillmentService.getProofOfDeliveries(order.getId()))
         .thenReturn(Lists.newArrayList(proofOfDelivery));
 
     assertThat(proofOfDeliveryService.get(requisition), is(proofOfDelivery));

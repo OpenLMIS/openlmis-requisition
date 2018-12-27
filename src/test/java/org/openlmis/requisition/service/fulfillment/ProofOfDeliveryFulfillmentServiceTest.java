@@ -51,11 +51,11 @@ public class ProofOfDeliveryFulfillmentServiceTest
   @Test
   public void shouldGetProofOfDeliveries() {
     // given
-    UUID shipmentId = UUID.randomUUID();
+    UUID orderId = UUID.randomUUID();
 
     // when
     ProofOfDeliveryDto pod = mockPageResponseEntityAndGetDto();
-    List<ProofOfDeliveryDto> actual = service.getProofOfDeliveries(shipmentId);
+    List<ProofOfDeliveryDto> actual = service.getProofOfDeliveries(orderId);
 
     // then
     assertThat(actual, hasSize(1));
@@ -66,7 +66,7 @@ public class ProofOfDeliveryFulfillmentServiceTest
         .hasAuthHeader()
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl())
-        .hasQueryParameter("shipmentId", shipmentId);
+        .hasQueryParameter("orderId", orderId);
   }
 
 }

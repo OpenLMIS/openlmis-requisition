@@ -40,10 +40,10 @@ public class ProofOfDeliveryFulfillmentService extends BaseFulfillmentService<Pr
   }
 
   /**
-   * Finds proofs of delivery related with the given shipment.
+   * Finds proofs of delivery related with the given order.
    */
-  public List<ProofOfDeliveryDto> getProofOfDeliveries(UUID shipmentId) {
-    return getPage(RequestParameters.init().set("shipmentId", shipmentId)).getContent();
+  public List<ProofOfDeliveryDto> getProofOfDeliveries(UUID orderId) {
+    return getPage(RequestParameters.init().set("orderId", orderId)).getContent();
   }
 
 }
