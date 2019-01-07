@@ -34,7 +34,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
@@ -464,29 +464,6 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfColumnLabelIsInvalid() {
-    RequisitionTemplateDto template = generateTemplate();
-
-    template.getColumnsMap().get(STOCK_ON_HAND)
-        .setLabel("New not valid name with wrong signs: !@#$%^&*()");
-    validator.validate(template, errors);
-
-    verify(errors).rejectValue(eq(COLUMNS_MAP),
-        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
-  }
-
-  @Test
-  public void shouldRejectIfColumnLabelNameHasSpecialCharacters() {
-    RequisitionTemplateDto template = generateTemplate();
-
-    template.getColumnsMap().get(STOCK_ON_HAND).setLabel(")(*&^%$#@!");
-    validator.validate(template, errors);
-
-    verify(errors).rejectValue(eq(COLUMNS_MAP),
-        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
-  }
-
-  @Test
   public void shouldRejectIfColumnLabelIsNull() {
     RequisitionTemplateDto template = generateTemplate();
 
@@ -494,7 +471,7 @@ public class RequisitionTemplateDtoValidatorTest {
     validator.validate(template, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP),
-        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
+        eq(new Message(ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
@@ -505,18 +482,18 @@ public class RequisitionTemplateDtoValidatorTest {
     validator.validate(template, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP),
-        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
+        eq(new Message(ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test
-  public void shouldRejectIfColumnLabelNameHasOnlyWhiteSpace() {
+  public void shouldRejectIfColumnLabelNameStartsWithSpace() {
     RequisitionTemplateDto template = generateTemplate();
 
-    template.getColumnsMap().get(STOCK_ON_HAND).setLabel(" ");
+    template.getColumnsMap().get(STOCK_ON_HAND).setLabel(" abc");
     validator.validate(template, errors);
 
     verify(errors).rejectValue(eq(COLUMNS_MAP),
-        eq(new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
+        eq(new Message(ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED, STOCK_ON_HAND).toString()));
   }
 
   @Test

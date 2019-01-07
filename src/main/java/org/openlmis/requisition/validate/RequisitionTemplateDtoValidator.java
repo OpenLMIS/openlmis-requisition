@@ -29,7 +29,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
@@ -202,9 +202,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
 
   private void validateColumns(RequisitionTemplateDto template) {
     for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
-      rejectIfNotAlphanumeric(
+      rejectIfNotUtf8(
           errors, column.getLabel(), COLUMNS_MAP,
-          new Message(ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED, column.getName())
+          new Message(ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED, column.getName())
       );
 
       validateColumnDefinition(column);

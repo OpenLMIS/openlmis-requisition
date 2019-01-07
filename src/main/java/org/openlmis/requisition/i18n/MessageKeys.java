@@ -243,8 +243,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".validation.column.source.invalid";
   public static final String ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS =
       ERROR_PREFIX + ".validation.column.displayedWhenStockOnHandPopulatedFromStockCards";
-  public static final String ERROR_ONLY_ALPHANUMERIC_LABEL_IS_ACCEPTED =
-      ERROR_PREFIX + ".onlyAlphanumericLabelIsAccepted";
+  public static final String ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED =
+      ERROR_PREFIX + ".onlyUtf8LabelIsAccepted";
   public static final String REQUISITION_TYPE_REGULAR = "requisition.type.regular";
   public static final String REQUISITION_TYPE_EMERGENCY = "requisition.type.emergency";
   public static final String ERROR_CAN_NOT_SKIP = "requisition.error.can-not-skip";

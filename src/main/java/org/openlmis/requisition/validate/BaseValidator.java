@@ -24,8 +24,12 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 abstract class BaseValidator implements Validator {
-  private static final String ALPHANUMERIC_REGEX = "^[a-zA-z0-9/]+[a-zA-Z0-9/ ]+$";
-  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile(ALPHANUMERIC_REGEX);
+  // Regex is: UTF-8 exclude space, then UTF-8 include space
+  // Note the following regex isn't exactly representing UTF-8, as it does not support Unicode code
+  // points outside of the BMP (basic multilingual plane), like emojis. A more complex regex would
+  // need to be found in order to support full UTF-8.
+  private static final String UTF8_REGEX = "^[\\u0021-\\uFFFF][\\u0020-\\uFFFF]+$";
+  private static final Pattern UTF8_PATTERN = Pattern.compile(UTF8_REGEX);
 
   protected <T> void rejectIfNotContains(Errors errors, Collection<T> collection, T value,
                                          String field, Message message) {
@@ -41,9 +45,8 @@ abstract class BaseValidator implements Validator {
     }
   }
 
-  protected void rejectIfNotAlphanumeric(Errors errors, String value, String field,
-                                         Message message) {
-    if (null == value || !ALPHANUMERIC_PATTERN.matcher(value).find()) {
+  protected void rejectIfNotUtf8(Errors errors, String value, String field, Message message) {
+    if (null == value || !UTF8_PATTERN.matcher(value).find()) {
       rejectValue(errors, field, message);
     }
   }

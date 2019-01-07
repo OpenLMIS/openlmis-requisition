@@ -6,6 +6,7 @@ New functionality:
 
 Bug fixes:
 * [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique
+* [OLMIS-5514](https://openlmis.atlassian.net/browse/OLMIS-5514): Validate requisition template column labels support UTF-8, not just alphanumeric.
 
 7.1.0 / 2018-12-12
 ==================
