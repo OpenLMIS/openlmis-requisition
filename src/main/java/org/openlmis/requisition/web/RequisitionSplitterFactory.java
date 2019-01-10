@@ -15,14 +15,13 @@
 
 package org.openlmis.requisition.web;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
+import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,19 +34,19 @@ class RequisitionSplitterFactory implements FactoryBean<RequisitionSplitter> {
   private SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
 
   @Autowired
+  private TogglzReferenceDataService togglzReferenceDataService;
+
+  @Autowired
   private RequisitionRepository requisitionRepository;
 
   @Autowired
   private MessageService messageService;
 
-  @Value("${featureFlags.requisitionSplit}")
-  private String requisitionSplit;
-
   @Override
   public RequisitionSplitter getObject() {
     return new RequisitionSplitter(supervisoryNodeReferenceDataService,
-        supplyPartnerReferenceDataService, requisitionRepository, messageService,
-        BooleanUtils.toBoolean(requisitionSplit));
+        supplyPartnerReferenceDataService, togglzReferenceDataService,
+        requisitionRepository, messageService);
   }
 
   @Override

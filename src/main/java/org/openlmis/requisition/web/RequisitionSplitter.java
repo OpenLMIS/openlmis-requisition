@@ -36,19 +36,23 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
 import org.openlmis.requisition.dto.SupplyPartnerDto;
+import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
+import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 
 @RequiredArgsConstructor
 class RequisitionSplitter {
+  static final String REQUISITION_SPLIT = "REQUISITION_SPLIT";
+
   private final SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
   private final SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
+  private final TogglzReferenceDataService togglzReferenceDataService;
   private final RequisitionRepository requisitionRepository;
   private final MessageService messageService;
-  private final boolean active;
 
   private Requisition requisition;
   private Map<UUID, RequisitionLineItem> requisitionLineItems;
@@ -61,6 +65,8 @@ class RequisitionSplitter {
   private Set<UUID> partnerNodeIds;
 
   private List<SupplyPartnerAssociationDto> associations;
+
+  private boolean active;
 
   /**
    * Checks if the given requisition is splittable. A requisition is splittable when all of the
@@ -80,6 +86,8 @@ class RequisitionSplitter {
    * @throws NullPointerException if a partner node id list was not set.
    */
   boolean isSplittable() {
+    active = isFeatureActive();
+
     if (!active) {
       return false;
     }
@@ -151,6 +159,16 @@ class RequisitionSplitter {
         .stream()
         .map(RequisitionLineItem::getOrderableId)
         .collect(Collectors.toSet());
+  }
+
+  private boolean isFeatureActive() {
+    return togglzReferenceDataService
+        .findAll()
+        .stream()
+        .filter(feature -> REQUISITION_SPLIT.equals(feature.getName()))
+        .findFirst()
+        .map(TogglzFeatureDto::isEnabled)
+        .orElse(false);
   }
 
   private void createPartnerRequisitions(List<Requisition> requisitions) {

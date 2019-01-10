@@ -43,10 +43,12 @@ import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
 import org.openlmis.requisition.dto.SupplyPartnerDto;
+import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
+import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.SupplyPartnerAssociationDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyPartnerDtoDataBuilder;
@@ -69,6 +71,9 @@ public class RequisitionSplitterTest {
   private SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
 
   @Mock
+  private TogglzReferenceDataService togglzReferenceDataService;
+
+  @Mock
   private RequisitionRepository requisitionRepository;
 
   @Mock
@@ -86,6 +91,8 @@ public class RequisitionSplitterTest {
   private SupplyPartnerAssociationDto associationWithDifferentNode;
   private SupplyPartnerAssociationDto associationWithDifferentFacility;
   private SupplyPartnerAssociationDto associationWithDifferentOrderable;
+
+  private TogglzFeatureDto featureFlag;
 
   @Before
   public void setUp() {
@@ -149,9 +156,13 @@ public class RequisitionSplitterTest {
 
     splitter = new RequisitionSplitter(
         supervisoryNodeReferenceDataService, supplyPartnerReferenceDataService,
-        requisitionRepository, messageService, true);
+        togglzReferenceDataService, requisitionRepository, messageService);
     splitter.setRequisition(requisition);
     splitter.setSupervisoryNodeId(supervisoryNode.getId());
+
+    featureFlag = new TogglzFeatureDto();
+    featureFlag.setName(RequisitionSplitter.REQUISITION_SPLIT);
+    featureFlag.setEnabled(true);
 
     Message message = new Message(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER);
     LocalizedMessage localizedMessage = message
@@ -163,6 +174,8 @@ public class RequisitionSplitterTest {
         .willReturn(supervisoryNode);
     given(supplyPartnerReferenceDataService.search(partnerNodeIds))
         .willReturn(Lists.newArrayList(supplyPartner));
+    given(togglzReferenceDataService.findAll())
+        .willReturn(Lists.newArrayList(featureFlag));
     given(messageService.localize(message))
         .willReturn(localizedMessage);
   }
@@ -172,7 +185,7 @@ public class RequisitionSplitterTest {
   @Test
   public void shouldNotBeSplittableIfFeatureIsTurnedOff() {
     // given
-    splitter = new RequisitionSplitter(null, null, null, null, false);
+    featureFlag.setEnabled(false);
 
     // when
     boolean splittable = splitter.isSplittable();
@@ -299,7 +312,8 @@ public class RequisitionSplitterTest {
   @Test(expected = IllegalStateException.class)
   public void shouldNotSplitIfFeatureIsTurnedOff() {
     // given
-    splitter = new RequisitionSplitter(null, null, null, null, false);
+    given(togglzReferenceDataService.findAll()).willReturn(Lists.newArrayList());
+    splitter.isSplittable();
 
     // when
     splitter.split();
