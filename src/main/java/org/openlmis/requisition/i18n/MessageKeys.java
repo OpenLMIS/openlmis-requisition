@@ -292,6 +292,9 @@ public abstract class MessageKeys {
   public static final String ERROR_SERVICE_REQUIRED = ERROR_PREFIX + ".service.required";
   public static final String ERROR_SERVICE_OCCURED = ERROR_PREFIX + ".service.errorOccured";
 
+  public static final String LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER =
+      SERVICE_PREFIX + ".lineItem.suppliedByOtherPartner";
+
   // reasons validation errors
   public static final String ERROR_SPECIAL_REASON_NOT_VALID =
       ERROR_PREFIX + ".specialReason.notValid";

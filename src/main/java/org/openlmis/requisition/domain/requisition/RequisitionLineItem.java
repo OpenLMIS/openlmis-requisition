@@ -268,6 +268,25 @@ public class RequisitionLineItem extends BaseEntity {
   }
 
   /**
+   * Copy constructor.
+   *
+   * @param original an original line item with data that will be placed in a new line item.
+   */
+  public RequisitionLineItem(RequisitionLineItem original) {
+    this(original.orderableId, original.requisition, original.beginningBalance,
+        original.totalReceivedQuantity, original.totalLossesAndAdjustments, original.stockOnHand,
+        original.requestedQuantity, original.totalConsumedQuantity, original.total,
+        original.requestedQuantityExplanation, original.remarks, original.approvedQuantity,
+        original.totalStockoutDays, original.packsToShip, original.skipped, original.pricePerPack,
+        original.totalCost, original.numberOfNewPatientsAdded, original.additionalQuantityRequired,
+        original.adjustedConsumption, original.previousAdjustedConsumptions,
+        original.averageConsumption, original.maximumStockQuantity,
+        original.calculatedOrderQuantity, original.stockAdjustments, original.maxPeriodsOfStock,
+        original.nonFullSupply, original.idealStockAmount, original.calculatedOrderQuantityIsa);
+    setId(original.getId());
+  }
+
+  /**
    * Creates new instance of RequisitionLineItem object based on data from
    * {@link RequisitionLineItem.Importer}.
    *

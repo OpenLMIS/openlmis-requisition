@@ -285,6 +285,22 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Copy constructor.
+   *
+   * @param original an original requisition with data that will be placed in a new requisition.
+   */
+  public Requisition(Requisition original) {
+    this(original.requisitionLineItems, original.version, original.draftStatusMessage,
+        original.template, original.facilityId, original.programId, original.processingPeriodId,
+        original.supplyingFacilityId, original.status, original.statusChanges, original.emergency,
+        original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
+        original.previousRequisitions, original.availableProducts,
+        original.datePhysicalStockCountCompleted, original.stockAdjustmentReasons,
+        original.permissionStrings, original.extraData);
+    setId(original.getId());
+  }
+
+  /**
    * Validates if requisition can be updated.
    */
   public ValidationResult validateCanBeUpdated(
@@ -997,17 +1013,20 @@ public class Requisition extends BaseTimestampedEntity {
     this.extraData.updateFrom(extraData);
   }
 
-  UUID getOriginalRequisitionId() {
+  /**
+   * Gets a value of extra data originalRequisition key.
+   */
+  public UUID getOriginalRequisitionId() {
     Object value = this.extraData.get(EXTRA_DATA_ORIGINAL_REQUISITION_ID);
     String asString = null == value ? null : value.toString();
     return null == asString ? null : UUID.fromString(asString);
   }
 
-  void setOriginalRequisitionId(UUID originalRequisitionId) {
+  public void setOriginalRequisitionId(UUID originalRequisitionId) {
     this.extraData.put(EXTRA_DATA_ORIGINAL_REQUISITION_ID, originalRequisitionId);
   }
 
-  boolean hasOriginalRequisitionId() {
+  public boolean hasOriginalRequisitionId() {
     return this.extraData.containsKey(EXTRA_DATA_ORIGINAL_REQUISITION_ID);
   }
 
