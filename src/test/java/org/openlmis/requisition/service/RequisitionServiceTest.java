@@ -70,7 +70,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -111,6 +113,7 @@ import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
@@ -157,6 +160,9 @@ public class RequisitionServiceTest {
   private static final UUID PERIOD_ID = UUID.randomUUID();
   private Requisition requisition;
   private RequisitionDto requisitionDto;
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Mock
   private Requisition requisitionMock;
@@ -418,6 +424,41 @@ public class RequisitionServiceTest {
     Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionIfRequisitionWasSplit() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(MessageKeys.ERROR_REQUISITION_WAS_SPLIT);
+
+    requisition.setStatus(IN_APPROVAL);
+
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
+    when(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
+        .thenReturn(true);
+
+    requisitionService.reject(requisition, emptyMap());
+  }
+
+  @Test
+  public void shouldNotRejectRequisitionIfRequisitionHasOriginalRequisition() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(MessageKeys.ERROR_REQUISITION_WAS_SPLIT);
+
+    requisition.setStatus(IN_APPROVAL);
+    requisition.setOriginalRequisitionId(UUID.randomUUID());
+
+    when(permissionService.canApproveRequisition(any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
+        any(UUID.class), any(UUID.class), any(UUID.class)))
+        .thenReturn(true);
+
+    requisitionService.reject(requisition, emptyMap());
   }
 
   @Test

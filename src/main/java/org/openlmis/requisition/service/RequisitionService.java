@@ -28,6 +28,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYIN
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SPLIT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -318,20 +319,26 @@ public class RequisitionService {
    * @param requisition Requisition to be rejected.
    */
   public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
-    if (requisition.isApprovable()) {
-      UserDto currentUser = authenticationHelper.getCurrentUser();
-      UUID userId = currentUser.getId();
-      validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
-
-      LOGGER.debug("Requisition rejected: {}", requisition.getId());
-      requisition.reject(orderables, userId);
-      requisition.setSupervisoryNodeId(null);
-      saveStatusMessage(requisition, currentUser);
-      return requisitionRepository.save(requisition);
-    } else {
+    if (!requisition.isApprovable()) {
       throw new ValidationMessageException(new Message(
           ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
     }
+
+    if (requisition.hasOriginalRequisitionId()
+        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
+      throw new ValidationMessageException(new Message(
+          ERROR_REQUISITION_WAS_SPLIT, requisition.getId()));
+    }
+
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    UUID userId = currentUser.getId();
+    validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
+
+    LOGGER.debug("Requisition rejected: {}", requisition.getId());
+    requisition.reject(orderables, userId);
+    requisition.setSupervisoryNodeId(null);
+    saveStatusMessage(requisition, currentUser);
+    return requisitionRepository.save(requisition);
   }
 
   /**

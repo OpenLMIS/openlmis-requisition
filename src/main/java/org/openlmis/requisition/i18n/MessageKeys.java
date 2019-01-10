@@ -58,6 +58,8 @@ public abstract class MessageKeys {
       + ".update.canNotUpdateWithStatus";
   public static final String ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL = ERROR_PREFIX
       + ".reject.requisitionMustBeWaitingForApproval";
+  public static final String ERROR_REQUISITION_WAS_SPLIT = ERROR_PREFIX
+      + ".reject.requisitionWasSplit";
   public static final String ERROR_REQUISITION_MUST_BE_APPROVED = ERROR_PREFIX
       + ".release.requisitionMustBeApproved";
   public static final String ERROR_SKIP_FAILED_EMERGENCY = ERROR_PREFIX
