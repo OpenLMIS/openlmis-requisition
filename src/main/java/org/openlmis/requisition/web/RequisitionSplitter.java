@@ -22,7 +22,6 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -173,18 +172,16 @@ class RequisitionSplitter {
         .localize(new Message(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER))
         .asMessage();
 
-    partnerRequisitions
-        .stream()
-        .map(Requisition::getRequisitionLineItems)
-        .flatMap(Collection::stream)
-        .map(RequisitionLineItem::getOrderableId)
-        .map(requisitionLineItems::get)
-        .forEach(lineItem -> {
-          lineItem.setRequestedQuantity(0);
-          lineItem.setRequestedQuantityExplanation("0");
-          lineItem.setApprovedQuantity(0);
-          lineItem.setRemarks(remarks);
-        });
+    for (Requisition partnerRequisition : partnerRequisitions) {
+      for (RequisitionLineItem lineItem : partnerRequisition.getRequisitionLineItems()) {
+        RequisitionLineItem originalLineItem = requisitionLineItems
+            .get(lineItem.getOrderableId());
+        originalLineItem.setRequestedQuantity(0);
+        originalLineItem.setRequestedQuantityExplanation("0");
+        originalLineItem.setApprovedQuantity(0);
+        originalLineItem.setRemarks(remarks);
+      }
+    }
   }
 
   private Requisition createPartnerRequisition(SupplyPartnerAssociationDto association,
