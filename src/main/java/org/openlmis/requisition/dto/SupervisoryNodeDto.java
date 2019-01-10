@@ -15,9 +15,15 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,4 +47,37 @@ public final class SupervisoryNodeDto extends BaseDto {
   private ObjectReferenceDto parentNode;
   private ObjectReferenceDto requisitionGroup;
   private Set<ObjectReferenceDto> childNodes;
+  private ObjectReferenceDto partnerNodeOf;
+  private Set<ObjectReferenceDto> partnerNodes;
+
+  /**
+   * Retrieves UUID of parent node from object reference. If the object is null, the null value
+   * will be returned.
+   *
+   * @return UUID of parent node or null.
+   */
+  @JsonIgnore
+  public UUID getParentNodeId() {
+    return Optional
+        .ofNullable(parentNode)
+        .map(ObjectReferenceDto::getId)
+        .orElse(null);
+  }
+
+  /**
+   * Retrieves UUID of partner nodes from object reference list. If the list is empty or null,
+   * an empty list will be returned.
+   *
+   * @return UUID of partner nodes or an empty list.
+   */
+  @JsonIgnore
+  public Set<UUID> getPartnerNodeIds() {
+    return Optional
+        .ofNullable(partnerNodes)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(ObjectReferenceDto::getId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
 }

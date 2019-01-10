@@ -15,9 +15,14 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.google.common.collect.Sets;
 import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.ObjectReferenceDtoDataBuilder;
 
 public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNodeDto> {
 
@@ -33,5 +38,39 @@ public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNode
     verifier
         .withRedefinedSuperclass()
         .withPrefabValues(ObjectReferenceDto.class, facilities.get(0), facilities.get(1));
+  }
+
+  SupervisoryNodeDto dto = new SupervisoryNodeDto();
+
+  @Test
+  public void shouldGetParentNodeId() {
+    ObjectReferenceDto parent  = new ObjectReferenceDtoDataBuilder().build();
+
+    dto.setParentNode(parent);
+
+    assertThat(dto.getParentNodeId()).isEqualTo(parent.getId());
+  }
+
+  @Test
+  public void shouldGetNullValueIfParentNodeIsNull() {
+    dto.setParentNode(null);
+
+    assertThat(dto.getParentNodeId()).isNull();
+  }
+
+  @Test
+  public void shouldGetPartnerNodeIds() {
+    ObjectReferenceDto partner = new ObjectReferenceDtoDataBuilder().build();
+
+    dto.setPartnerNodes(Sets.newHashSet(partner));
+
+    assertThat(dto.getPartnerNodeIds()).hasSize(1).contains(partner.getId());
+  }
+
+  @Test
+  public void shouldGetEmptySetIfPartnerNodeSetIsEmpty() {
+    dto.setPartnerNodes(Sets.newHashSet());
+
+    assertThat(dto.getPartnerNodeIds()).hasSize(0).isEmpty();
   }
 }
