@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
+import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
@@ -163,6 +165,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
 
+  @Autowired
+  private RequisitionSplitterFactory requisitionSplitterFactory;
+
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
 
@@ -213,6 +218,64 @@ public abstract class BaseRequisitionController extends BaseController {
       parentNodeId = parentNode.getId();
     }
 
+    RequisitionSplitter splitter = requisitionSplitterFactory.getObject();
+    splitter.setRequisition(requisition);
+    splitter.setSupervisoryNodeId(parentNodeId);
+
+    if (splitter.isSplittable()) {
+      profiler.start("SPLIT_REQUISITION");
+      RequisitionSplitResult split = splitter.split();
+
+      doApprove(split.getPartnerRequisitions(), approveParams,
+          profiler.startNested("APPROVE_PARTNER_REQUISITIONS"));
+      doApprove(split.getOriginalRequisition(), approveParams, parentNodeId,
+          profiler.startNested("APPROVE_ORIGINAL_REQUISITION"));
+    } else {
+      doApprove(requisition, approveParams, parentNodeId, profiler);
+    }
+
+    callStatusChangeProcessor(profiler, requisition);
+
+    logger.debug("Requisition with id {} approved", requisition.getId());
+    stopProfiler(profiler);
+  }
+
+  private void doApprove(List<Requisition> partnerRequisitions, ApproveParams approveParams,
+      Profiler profiler) {
+    profiler.start("GET_PARTNER_SUPERVISORY_NODES");
+    Set<UUID> partnerSupervisoryNodeIds = partnerRequisitions
+        .stream()
+        .map(Requisition::getSupervisoryNodeId)
+        .collect(Collectors.toSet());
+
+    Map<UUID, SupervisoryNodeDto> partnerSupervisoryNodes = supervisoryNodeReferenceDataService
+        .findByIds(partnerSupervisoryNodeIds)
+        .stream()
+        .collect(Collectors.toMap(BaseDto::getId, Function.identity()));
+
+    profiler.start("APPROVE_REQUISITIONS");
+    for (Requisition partnerRequisition : partnerRequisitions) {
+      SupervisoryNodeDto partnerSupervisoryNode = partnerSupervisoryNodes
+          .get(partnerRequisition.getSupervisoryNodeId());
+      UUID parentNodeId = partnerSupervisoryNode.getParentNodeId();
+
+      profiler.start("RETRIEVE_SUPPLY_LINES");
+      List<SupplyLineDto> supplyLines = approveParams.period.isReportOnly()
+          ? Collections.emptyList()
+          : supplyLineReferenceDataService
+              .search(partnerRequisition.getProgramId(),
+                  partnerRequisition.getSupervisoryNodeId());
+
+      ApproveParams partnerApproveParams = new ApproveParams(
+          approveParams.user, partnerSupervisoryNode, approveParams.orderables, supplyLines,
+          approveParams.period);
+
+      doApprove(partnerRequisition, partnerApproveParams, parentNodeId, profiler);
+    }
+  }
+
+  private void doApprove(Requisition requisition, ApproveParams approveParams, UUID parentNodeId,
+      Profiler profiler) {
     profiler.start("DO_APPROVE");
     requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
         requisition, approveParams.supplyLines);
@@ -233,11 +296,6 @@ public abstract class BaseRequisitionController extends BaseController {
         requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user);
       }
     }
-
-    callStatusChangeProcessor(profiler, requisition);
-
-    logger.debug("Requisition with id {} approved", requisition.getId());
-    stopProfiler(profiler);
   }
 
   void submitStockEvent(Requisition requisition, UUID currentUserId) {

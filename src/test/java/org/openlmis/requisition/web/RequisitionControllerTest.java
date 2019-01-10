@@ -52,6 +52,8 @@ import static org.openlmis.requisition.web.BaseRequisitionController.IDEMPOTENCY
 import static org.openlmis.requisition.web.BaseRequisitionController.RESOURCE_URL;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -243,6 +245,12 @@ public class RequisitionControllerTest {
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
 
+  @Mock
+  private RequisitionSplitterFactory requisitionSplitterFactory;
+
+  @Mock
+  private RequisitionSplitter requisitionSplitter;
+
   @InjectMocks
   private RequisitionController requisitionController;
 
@@ -322,6 +330,10 @@ public class RequisitionControllerTest {
 
     ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
         "baseUrl", baseUrl, String.class);
+
+    when(requisitionSplitterFactory.getObject()).thenReturn(requisitionSplitter);
+
+    when(requisitionSplitter.isSplittable()).thenReturn(false);
   }
 
   private void stubValidations(Requisition... requisitions) {
@@ -764,6 +776,48 @@ public class RequisitionControllerTest {
 
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(emptyList()));
+
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
+    verify(authorizedRequsition)
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+  }
+
+  @Test
+  public void shouldApproveSplittableRequisition() {
+    SupervisoryNodeDto supervisoryNode = mockSupervisoryNodeForApprove();
+
+    UUID parentNodeId = UUID.randomUUID();
+    ObjectReferenceDto parentNode = mock(ObjectReferenceDto.class);
+    when(parentNode.getId()).thenReturn(parentNodeId);
+    supervisoryNode.setParentNode(parentNode);
+
+    when(authorizedRequsition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+
+    SupervisoryNodeDto partnerNode = DtoGenerator.of(SupervisoryNodeDto.class);
+    when(supervisoryNodeReferenceDataService.findByIds(Sets.newHashSet(partnerNode.getId())))
+        .thenReturn(Lists.newArrayList(partnerNode));
+
+    Requisition partnerRequisition = mock(Requisition.class);
+    when(partnerRequisition.getSupervisoryNodeId()).thenReturn(partnerNode.getId());
+    when(partnerRequisition.getStatus()).thenReturn(RequisitionStatus.IN_APPROVAL);
+
+    RequisitionSplitResult splitResult = new RequisitionSplitResult(
+        authorizedRequsition, Lists.newArrayList(partnerRequisition));
+
+    when(requisitionSplitter.isSplittable()).thenReturn(true);
+    when(requisitionSplitter.split()).thenReturn(splitResult);
+
+    setUpApprover();
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+
+    verify(requisitionService)
+        .validateCanApproveRequisition(any(Requisition.class), any(UUID.class));
+
+    verify(requisitionService).doApprove(eq(parentNodeId), any(),
+        any(), eq(authorizedRequsition), eq(emptyList()));
+    verify(requisitionService).doApprove(eq(partnerNode.getParentNodeId()), any(),
+        any(), eq(partnerRequisition), eq(emptyList()));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
