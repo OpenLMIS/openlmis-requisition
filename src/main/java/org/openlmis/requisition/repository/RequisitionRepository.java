@@ -55,4 +55,11 @@ public interface RequisitionRepository extends
       + " ORDER BY ?#{#pageable}",
       nativeQuery = true)
   Page<Requisition> findAllWithoutSnapshots(Pageable pageable);
+
+  @Query(value = "SELECT CASE WHEN count(r) > 0 THEN true ELSE false END"
+      + " FROM requisition.requisitions r"
+      + " WHERE (r.extradata ->> 'originalRequisition')\\:\\:uuid = :originalRequisitionId",
+      nativeQuery = true
+  )
+  boolean existsByOriginalRequisitionId(@Param("originalRequisitionId") UUID originalRequisitionId);
 }

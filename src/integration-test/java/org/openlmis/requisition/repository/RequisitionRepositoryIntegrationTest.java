@@ -880,6 +880,42 @@ public class RequisitionRepositoryIntegrationTest
     assertEquals(1, found.size());
   }
 
+  @Test
+  public void shouldReturnTrueIfThereAreRequisitionsWithOriginalRequisitionId() {
+    // given
+    UUID originalRequisitionId = requisitions.get(3).getId();
+
+    for (int i = 0, size = requisitions.size(); i < size; ++i) {
+      if (3 == i) {
+        // because we use this requisition as an original requisition
+        requisitions.get(i).setOriginalRequisitionId(null);
+      } else {
+        requisitions.get(i).setOriginalRequisitionId(originalRequisitionId);
+      }
+    }
+
+    repository.save(requisitions);
+
+    // when
+    boolean result = repository.existsByOriginalRequisitionId(originalRequisitionId);
+
+    // then
+    assertThat(result, is(true));
+  }
+
+  @Test
+  public void shouldReturnFalseIfThereAreNoRequisitionsWithOriginalRequisitionId() {
+    // given
+    requisitions.forEach(requisition -> requisition.setOriginalRequisitionId(null));
+    repository.save(requisitions);
+
+    // when
+    boolean result = repository.existsByOriginalRequisitionId(requisitions.get(3).getId());
+
+    // then
+    assertThat(result, is(false));
+  }
+
   private RequisitionLineItem generateLineItem(Requisition requisition) {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(requisition);
