@@ -224,6 +224,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
   @Before
   public void setUp() {
+    super.setUp();
+
     user = mockUserAuthenticated();
 
     mockRepositorySaveAnswer();

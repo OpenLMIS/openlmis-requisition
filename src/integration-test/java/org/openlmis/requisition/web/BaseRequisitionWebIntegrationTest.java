@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -41,6 +42,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
+import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -55,6 +57,14 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
 
   @MockBean
   private StockEventStockManagementService stockEventStockManagementService;
+
+  @MockBean
+  private TogglzReferenceDataService togglzReferenceDataService;
+
+  @Before
+  public void setUp() {
+    given(togglzReferenceDataService.findAll()).willReturn(emptyList());
+  }
 
   void mockRequisitionDtoBuilderResponses() {
     given(requisitionDtoBuilder.build(any(Requisition.class)))

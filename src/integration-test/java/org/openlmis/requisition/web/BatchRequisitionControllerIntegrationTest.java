@@ -133,6 +133,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
   @Before
   public void setUp() {
+    super.setUp();
+
     user = mockUserAuthenticated();
 
     mockRepositorySaveAnswer();
