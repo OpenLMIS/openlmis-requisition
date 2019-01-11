@@ -46,6 +46,7 @@ import org.openlmis.requisition.dto.SupplyPartnerDto;
 import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
@@ -349,7 +350,8 @@ public class RequisitionSplitterTest {
         .isEqualToIgnoringGivenFields(
             originalRequisition,
             "id", "requisitionLineItems", "version", "draftStatusMessage", "statusChanges",
-            "supervisoryNodeId", "previousRequisitions", "availableProducts", "extraData")
+            "supervisoryNodeId", "previousRequisitions", "availableProducts", "permissionStrings",
+            "extraData")
         .hasFieldOrPropertyWithValue("id", null)
         .hasFieldOrPropertyWithValue("version", 1L)
         .hasFieldOrPropertyWithValue("draftStatusMessage", "")
@@ -359,6 +361,14 @@ public class RequisitionSplitterTest {
         .hasFieldOrPropertyWithValue("availableProducts", Sets.newHashSet());
     assertThat(partnerRequisition.getOriginalRequisitionId())
         .isEqualTo(originalRequisition.getId());
+    assertThat(partnerRequisition.getPermissionStrings())
+        .hasSize(1);
+    assertThat(partnerRequisition.getPermissionStrings().get(0))
+        .hasFieldOrPropertyWithValue("requisition", partnerRequisition)
+        .hasFieldOrPropertyWithValue("permissionString",
+            String.format("%s|%s|%s", PermissionService.REQUISITION_VIEW,
+                partnerRequisition.getFacilityId(),
+                partnerRequisition.getProgramId()));
     assertThat(partnerRequisition.getRequisitionLineItems())
         .hasSize(1);
 
@@ -375,9 +385,10 @@ public class RequisitionSplitterTest {
     assertThat(partnerLineItem)
         .isEqualToIgnoringGivenFields(
             originalLineItem,
-            "id", "requisition", "requestedQuantity", "requestedQuantityExplanation",
+            "id", "skipped", "requisition", "requestedQuantity", "requestedQuantityExplanation",
             "remarks", "approvedQuantity")
         .hasFieldOrPropertyWithValue("id", null)
+        .hasFieldOrPropertyWithValue("skipped", false)
         .hasFieldOrPropertyWithValue("requisition", partnerRequisition);
 
     Set<UUID> keysWithoutHandledOrderable = Sets.newHashSet(originalLineItems.keySet());
@@ -390,6 +401,7 @@ public class RequisitionSplitterTest {
       assertThat(lineItem.getRemarks()).isNullOrEmpty();
     }
 
+    assertThat(originalLineItem.getSkipped()).isTrue();
     assertThat(originalLineItem.getRequestedQuantity()).isEqualTo(0);
     assertThat(originalLineItem.getRequestedQuantityExplanation()).isEqualTo("0");
     assertThat(originalLineItem.getApprovedQuantity()).isEqualTo(0);

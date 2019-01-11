@@ -296,8 +296,23 @@ public class Requisition extends BaseTimestampedEntity {
         original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
         original.previousRequisitions, original.availableProducts,
         original.datePhysicalStockCountCompleted, original.stockAdjustmentReasons,
-        original.permissionStrings, original.extraData);
+        original.permissionStrings, new ExtraDataEntity());
+
     setId(original.getId());
+
+    setCreatedDate(original.getCreatedDate());
+    setModifiedDate(original.getModifiedDate());
+
+    setExtraData(original.getExtraData());
+  }
+
+  /**
+   * Recreates permission strings.
+   */
+  public void recreatePermissionStrings() {
+    permissionStrings.clear();
+    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
+        PermissionService.REQUISITION_VIEW, facilityId, programId));
   }
 
   /**

@@ -218,6 +218,8 @@ class RequisitionSplitter {
     partnerRequisition.setExtraData(this.requisition.getExtraData());
     partnerRequisition.setOriginalRequisitionId(requisition.getId());
 
+    partnerRequisition.recreatePermissionStrings();
+
     partnerLineItems.forEach(lineItem -> lineItem.setRequisition(partnerRequisition));
 
     return partnerRequisition;
