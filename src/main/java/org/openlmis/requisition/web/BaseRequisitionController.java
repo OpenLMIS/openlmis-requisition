@@ -224,11 +224,11 @@ public abstract class BaseRequisitionController extends BaseController {
 
     if (splitter.isSplittable()) {
       profiler.start("SPLIT_REQUISITION");
-      RequisitionSplitResult split = splitter.split();
+      RequisitionSplitResult splitResult = splitter.split();
 
-      doApprove(split.getPartnerRequisitions(), approveParams,
+      doApprove(splitResult.getPartnerRequisitions(), approveParams,
           profiler.startNested("APPROVE_PARTNER_REQUISITIONS"));
-      doApprove(split.getOriginalRequisition(), approveParams, parentNodeId,
+      doApprove(splitResult.getOriginalRequisition(), approveParams, parentNodeId,
           profiler.startNested("APPROVE_ORIGINAL_REQUISITION"));
     } else {
       doApprove(requisition, approveParams, parentNodeId, profiler);
