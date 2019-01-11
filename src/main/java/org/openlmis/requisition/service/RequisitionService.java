@@ -319,16 +319,7 @@ public class RequisitionService {
    * @param requisition Requisition to be rejected.
    */
   public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
-    if (!requisition.isApprovable()) {
-      throw new ValidationMessageException(new Message(
-          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
-    }
-
-    if (requisition.hasOriginalRequisitionId()
-        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
-      throw new ValidationMessageException(new Message(
-          ERROR_REQUISITION_WAS_SPLIT, requisition.getId()));
-    }
+    checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID userId = currentUser.getId();
@@ -339,6 +330,19 @@ public class RequisitionService {
     requisition.setSupervisoryNodeId(null);
     saveStatusMessage(requisition, currentUser);
     return requisitionRepository.save(requisition);
+  }
+
+  private void checkIfRejectable(Requisition requisition) {
+    if (!requisition.isApprovable()) {
+      throw new ValidationMessageException(new Message(
+          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
+    }
+
+    if (requisition.hasOriginalRequisitionId()
+        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
+      throw new ValidationMessageException(new Message(
+          ERROR_REQUISITION_WAS_SPLIT, requisition.getId()));
+    }
   }
 
   /**
