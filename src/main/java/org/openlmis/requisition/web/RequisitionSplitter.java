@@ -101,8 +101,7 @@ class RequisitionSplitter {
       return false;
     }
 
-    if (requisition.hasOriginalRequisitionId()
-        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
+    if (wasSplit()) {
       return false;
     }
 
@@ -169,6 +168,11 @@ class RequisitionSplitter {
         .findFirst()
         .map(TogglzFeatureDto::isEnabled)
         .orElse(false);
+  }
+
+  private boolean wasSplit() {
+    return requisition.hasOriginalRequisitionId()
+        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId());
   }
 
   private void createPartnerRequisitions(List<Requisition> requisitions) {
