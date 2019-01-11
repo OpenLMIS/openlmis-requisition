@@ -194,6 +194,7 @@ class RequisitionSplitter {
       for (RequisitionLineItem lineItem : partnerRequisition.getRequisitionLineItems()) {
         RequisitionLineItem originalLineItem = requisitionLineItems
             .get(lineItem.getOrderableId());
+        originalLineItem.setSkipped(true);
         originalLineItem.setRequestedQuantity(0);
         originalLineItem.setRequestedQuantityExplanation("0");
         originalLineItem.setApprovedQuantity(0);
