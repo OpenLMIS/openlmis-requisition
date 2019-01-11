@@ -413,12 +413,24 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test(expected = PersistenceException.class)
   public void shouldNotAllowMultipleRegularRequisitionForFacilityProgramPeriod() {
+    shouldNotAllowMultipleRegularRequisition(null);
+  }
+
+  @Test(expected = PersistenceException.class)
+  public void shouldNotAllowMultipleRegularRequisitionForFacilityProgramPeriodNode() {
+    shouldNotAllowMultipleRegularRequisition(UUID.randomUUID());
+  }
+
+  private void shouldNotAllowMultipleRegularRequisition(UUID supervisoryNodeId) {
     UUID facilityId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
 
     Requisition requisition1 =  generateInstance(facilityId, programId, periodId);
+    requisition1.setSupervisoryNodeId(supervisoryNodeId);
+
     Requisition requisition2 = generateInstance(facilityId, programId, periodId);
+    requisition2.setSupervisoryNodeId(supervisoryNodeId);
 
     requisition1.setEmergency(false);
     requisition2.setEmergency(false);
