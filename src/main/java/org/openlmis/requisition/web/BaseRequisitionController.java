@@ -234,7 +234,6 @@ public abstract class BaseRequisitionController extends BaseController {
       doApprove(requisition, approveParams, parentNodeId, profiler);
     }
 
-    callStatusChangeProcessor(profiler, requisition);
 
     logger.debug("Requisition with id {} approved", requisition.getId());
     stopProfiler(profiler);
@@ -296,6 +295,8 @@ public abstract class BaseRequisitionController extends BaseController {
         requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user);
       }
     }
+
+    callStatusChangeProcessor(profiler, requisition);
   }
 
   void submitStockEvent(Requisition requisition, UUID currentUserId) {
