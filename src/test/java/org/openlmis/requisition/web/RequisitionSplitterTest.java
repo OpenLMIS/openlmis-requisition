@@ -162,7 +162,7 @@ public class RequisitionSplitterTest {
     splitter.setSupervisoryNodeId(supervisoryNode.getId());
 
     featureFlag = new TogglzFeatureDto();
-    featureFlag.setName(RequisitionSplitter.REQUISITION_SPLIT);
+    featureFlag.setName(RequisitionSplitter.MULTIPLE_SUPPLIERS);
     featureFlag.setEnabled(true);
 
     Message message = new Message(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER);

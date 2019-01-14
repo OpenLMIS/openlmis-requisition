@@ -46,7 +46,7 @@ import org.openlmis.requisition.utils.Message;
 
 @RequiredArgsConstructor
 class RequisitionSplitter {
-  static final String REQUISITION_SPLIT = "REQUISITION_SPLIT";
+  static final String MULTIPLE_SUPPLIERS = "MULTIPLE_SUPPLIERS";
 
   private final SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
   private final SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
@@ -169,7 +169,7 @@ class RequisitionSplitter {
     return togglzReferenceDataService
         .findAll()
         .stream()
-        .filter(feature -> REQUISITION_SPLIT.equals(feature.getName()))
+        .filter(feature -> MULTIPLE_SUPPLIERS.equals(feature.getName()))
         .findFirst()
         .map(TogglzFeatureDto::isEnabled)
         .orElse(false);
