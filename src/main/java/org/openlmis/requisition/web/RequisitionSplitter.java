@@ -145,6 +145,11 @@ class RequisitionSplitter {
     return new RequisitionSplitResult(requisition, partnerRequisitions);
   }
 
+  /**
+   * Sets a requisition for split.
+   *
+   * @param requisition instance of {@link Requisition} which should be split.
+   */
   void setRequisition(Requisition requisition) {
     this.requisition = requisition;
     this.requisitionLineItems = requisition
