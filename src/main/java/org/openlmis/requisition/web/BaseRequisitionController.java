@@ -222,12 +222,12 @@ public abstract class BaseRequisitionController extends BaseController {
     RequisitionSplitResult splitResult = requisitionSplitter.split(requisition, parentNodeId);
 
     if (splitResult.wasSplit()) {
-      doApprove(splitResult.getPartnerRequisitions(), approveParams,
+      approvePartnerRequisitions(splitResult.getPartnerRequisitions(), approveParams,
           profiler.startNested("APPROVE_PARTNER_REQUISITIONS"));
-      doApprove(splitResult.getOriginalRequisition(), approveParams, parentNodeId,
+      approveRequisition(splitResult.getOriginalRequisition(), approveParams, parentNodeId,
           profiler.startNested("APPROVE_ORIGINAL_REQUISITION"));
     } else {
-      doApprove(requisition, approveParams, parentNodeId, profiler);
+      approveRequisition(requisition, approveParams, parentNodeId, profiler);
     }
 
 
@@ -235,8 +235,8 @@ public abstract class BaseRequisitionController extends BaseController {
     stopProfiler(profiler);
   }
 
-  private void doApprove(List<Requisition> partnerRequisitions, ApproveParams approveParams,
-      Profiler profiler) {
+  private void approvePartnerRequisitions(List<Requisition> partnerRequisitions,
+      ApproveParams approveParams, Profiler profiler) {
     profiler.start("GET_PARTNER_SUPERVISORY_NODES");
     Set<UUID> partnerSupervisoryNodeIds = partnerRequisitions
         .stream()
@@ -265,12 +265,12 @@ public abstract class BaseRequisitionController extends BaseController {
           approveParams.user, partnerSupervisoryNode, approveParams.orderables, supplyLines,
           approveParams.period);
 
-      doApprove(partnerRequisition, partnerApproveParams, parentNodeId, profiler);
+      approveRequisition(partnerRequisition, partnerApproveParams, parentNodeId, profiler);
     }
   }
 
-  private void doApprove(Requisition requisition, ApproveParams approveParams, UUID parentNodeId,
-      Profiler profiler) {
+  private void approveRequisition(Requisition requisition, ApproveParams approveParams,
+      UUID parentNodeId, Profiler profiler) {
     profiler.start("DO_APPROVE");
     requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
         requisition, approveParams.supplyLines);
