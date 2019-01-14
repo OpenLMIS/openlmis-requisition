@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -80,9 +81,11 @@ public class RequisitionSplitterTest {
   @Mock
   private MessageService messageService;
 
+  @InjectMocks
   private RequisitionSplitter splitter;
 
   private Set<UUID> partnerNodeIds = Sets.newHashSet(PARTNER_NODE_ID);
+  private UUID supervisoryNodeId;
 
   private Requisition requisition;
   private SupplyPartnerDto supplyPartner;
@@ -155,11 +158,7 @@ public class RequisitionSplitterTest {
             .map(ObjectReferenceDto::new)
             .collect(Collectors.toSet()));
 
-    splitter = new RequisitionSplitter(
-        supervisoryNodeReferenceDataService, supplyPartnerReferenceDataService,
-        togglzReferenceDataService, requisitionRepository, messageService);
-    splitter.setRequisition(requisition);
-    splitter.setSupervisoryNodeId(supervisoryNode.getId());
+    supervisoryNodeId = supervisoryNode.getId();
 
     featureFlag = new TogglzFeatureDto();
     featureFlag.setName(RequisitionSplitter.MULTIPLE_SUPPLIERS);
@@ -181,170 +180,129 @@ public class RequisitionSplitterTest {
         .willReturn(localizedMessage);
   }
 
-  // ~~~ isSplittable ~~~
-
   @Test
-  public void shouldNotBeSplittableIfFeatureIsTurnedOff() {
+  public void shouldNotSplitIfFeatureIsTurnedOff() {
     // given
     featureFlag.setEnabled(false);
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when feature is turned off")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfSupervisoryNodeIdWasNotProvided() {
-    // given
-    splitter.setSupervisoryNodeId(null);
-
+  public void shouldNotSplitIfSupervisoryNodeIdWasNotProvided() {
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, null);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when supervisory node id is null")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfRequisitionHasBeenSplitBefore() {
+  public void shouldNotSplitIfRequisitionHasBeenSplitBefore() {
     // given
     given(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
         .willReturn(true);
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when it has been split before")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfRequisitionIsPartOfAnotherRequisition() {
+  public void shouldNotSplitIfRequisitionIsPartOfAnotherRequisition() {
     // given
     requisition.setOriginalRequisitionId(UUID.randomUUID());
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when it is part of another requisition")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfThereIsNoSupplyPartnerForPartnerNode() {
+  public void shouldNotSplitIfThereIsNoSupplyPartnerForPartnerNode() {
     // given
     given(supplyPartnerReferenceDataService.search(partnerNodeIds))
         .willReturn(Lists.newArrayList());
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when there is no supply partner for partner node")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfThereIsNoSupplyPartnerAssociationForProgram() {
+  public void shouldNotSplitIfThereIsNoSupplyPartnerAssociationForProgram() {
     // given
     supplyPartner.setAssociations(Lists.newArrayList(associationWithDifferentProgram));
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when there is no supply partner for program")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfThereIsNoSupplyPartnerAssociationForFacility() {
+  public void shouldNotSplitIfThereIsNoSupplyPartnerAssociationForFacility() {
     // given
     supplyPartner.setAssociations(Lists.newArrayList(associationWithDifferentFacility));
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when there is no supply partner for facility")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldNotBeSplittableIfThereIsNoSupplyPartnerAssociationForOrderable() {
+  public void shouldNotSplitIfThereIsNoSupplyPartnerAssociationForOrderable() {
     // given
     supplyPartner.setAssociations(Lists.newArrayList(associationWithDifferentOrderable));
 
     // when
-    boolean splittable = splitter.isSplittable();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(splittable)
+    assertThat(result.wasSplit())
         .as("Requisition shouldn't be splittable when there is no supply partner for orderable")
         .isEqualTo(false);
   }
 
   @Test
-  public void shouldBeSplittable() {
-    // when
-    boolean splittable = splitter.isSplittable();
-
-    // then
-    assertThat(splittable)
-        .as("Requisition should be splittable when it matches all rules")
-        .isEqualTo(true);
-  }
-
-  // ~~~ split ~~~
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldNotSplitIfFeatureIsTurnedOff() {
-    // given
-    given(togglzReferenceDataService.findAll()).willReturn(Lists.newArrayList());
-    splitter.isSplittable();
-
-    // when
-    splitter.split();
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldNotSplitNonSplittableRequisition() {
-    // given
-    given(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
-        .willReturn(true);
-    splitter.isSplittable();
-
-    // when
-    splitter.split();
-  }
-
-  @Test
   public void shouldSplitRequisition() {
-    // given
-    splitter.isSplittable();
-
     // when
-    RequisitionSplitResult requisitions = splitter.split();
+    RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
     // then
-    assertThat(requisitions.getOriginalRequisition()).isNotNull();
-    assertThat(requisitions.getPartnerRequisitions()).hasSize(1);
+    assertThat(result.wasSplit()).isTrue();
+    assertThat(result.getOriginalRequisition()).isNotNull();
+    assertThat(result.getPartnerRequisitions()).hasSize(1);
 
-    Requisition partnerRequisition = requisitions.getPartnerRequisitions().get(0);
-    Requisition originalRequisition = requisitions.getOriginalRequisition();
+    Requisition partnerRequisition = result.getPartnerRequisitions().get(0);
+    Requisition originalRequisition = result.getOriginalRequisition();
 
     assertThat(partnerRequisition)
         .isEqualToIgnoringGivenFields(

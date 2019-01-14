@@ -15,14 +15,25 @@
 
 package org.openlmis.requisition.web;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.openlmis.requisition.domain.requisition.Requisition;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 class RequisitionSplitResult {
+
   private final Requisition originalRequisition;
   private final List<Requisition> partnerRequisitions;
+
+  RequisitionSplitResult(Requisition originalRequisition) {
+    this(originalRequisition, Lists.newArrayList());
+  }
+
+  boolean wasSplit() {
+    return !partnerRequisitions.isEmpty();
+  }
+
 }

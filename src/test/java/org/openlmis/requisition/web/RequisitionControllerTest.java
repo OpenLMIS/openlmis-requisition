@@ -246,10 +246,10 @@ public class RequisitionControllerTest {
   private RequisitionTemplateService requisitionTemplateService;
 
   @Mock
-  private RequisitionSplitterFactory requisitionSplitterFactory;
+  private RequisitionSplitter requisitionSplitter;
 
   @Mock
-  private RequisitionSplitter requisitionSplitter;
+  private RequisitionSplitResult requisitionSplitResult;
 
   @InjectMocks
   private RequisitionController requisitionController;
@@ -331,9 +331,8 @@ public class RequisitionControllerTest {
     ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
         "baseUrl", baseUrl, String.class);
 
-    when(requisitionSplitterFactory.getObject()).thenReturn(requisitionSplitter);
-
-    when(requisitionSplitter.isSplittable()).thenReturn(false);
+    when(requisitionSplitter.split(any(), any())).thenReturn(requisitionSplitResult);
+    when(requisitionSplitResult.wasSplit()).thenReturn(false);
   }
 
   private void stubValidations(Requisition... requisitions) {
@@ -804,8 +803,7 @@ public class RequisitionControllerTest {
     RequisitionSplitResult splitResult = new RequisitionSplitResult(
         authorizedRequsition, Lists.newArrayList(partnerRequisition));
 
-    when(requisitionSplitter.isSplittable()).thenReturn(true);
-    when(requisitionSplitter.split()).thenReturn(splitResult);
+    when(requisitionSplitter.split(authorizedRequsition, parentNodeId)).thenReturn(splitResult);
 
     setUpApprover();
 

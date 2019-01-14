@@ -166,7 +166,7 @@ public abstract class BaseRequisitionController extends BaseController {
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
 
   @Autowired
-  private RequisitionSplitterFactory requisitionSplitterFactory;
+  private RequisitionSplitter requisitionSplitter;
 
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
@@ -218,14 +218,10 @@ public abstract class BaseRequisitionController extends BaseController {
       parentNodeId = parentNode.getId();
     }
 
-    RequisitionSplitter splitter = requisitionSplitterFactory.getObject();
-    splitter.setRequisition(requisition);
-    splitter.setSupervisoryNodeId(parentNodeId);
+    profiler.start("SPLIT_REQUISITION");
+    RequisitionSplitResult splitResult = requisitionSplitter.split(requisition, parentNodeId);
 
-    if (splitter.isSplittable()) {
-      profiler.start("SPLIT_REQUISITION");
-      RequisitionSplitResult splitResult = splitter.split();
-
+    if (splitResult.wasSplit()) {
       doApprove(splitResult.getPartnerRequisitions(), approveParams,
           profiler.startNested("APPROVE_PARTNER_REQUISITIONS"));
       doApprove(splitResult.getOriginalRequisition(), approveParams, parentNodeId,

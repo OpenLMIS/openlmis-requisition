@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static org.openlmis.requisition.i18n.MessageKeys.LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -30,8 +28,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
@@ -43,81 +39,27 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.utils.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
+@Service
 class RequisitionSplitter {
   static final String MULTIPLE_SUPPLIERS = "MULTIPLE_SUPPLIERS";
 
-  private final SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-  private final SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
-  private final TogglzReferenceDataService togglzReferenceDataService;
-  private final RequisitionRepository requisitionRepository;
-  private final MessageService messageService;
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  private Requisition requisition;
-  private Map<UUID, RequisitionLineItem> requisitionLineItems;
-  private Set<UUID> programIds;
-  private Set<UUID> facilityIds;
-  private Set<UUID> orderableIds;
+  @Autowired
+  private SupplyPartnerReferenceDataService supplyPartnerReferenceDataService;
 
-  @Setter
-  private UUID supervisoryNodeId;
-  private Set<UUID> partnerNodeIds;
+  @Autowired
+  private TogglzReferenceDataService togglzReferenceDataService;
 
-  private List<SupplyPartnerAssociationDto> associations;
+  @Autowired
+  private RequisitionRepository requisitionRepository;
 
-  private boolean active;
-
-  /**
-   * Checks if the given requisition is splittable. A requisition is splittable when all of the
-   * following rules apply:
-   * <ul>
-   * <li>The requisition was not split before</li>
-   * <li>The requisition is part of another requisition</li>
-   * <li>Parent node has a partner node</li>
-   * <li>There is a supply partner with an entry for that partner node and requisition's
-   * program</li>
-   * <li>That entry has a facility that matches the requisition's facility</li>
-   * <li>That entry has a product that matches any products in the requisition line items</li>
-   * </ul>
-   *
-   * @return true if requisition is splittable; otherwise false.
-   * @throws NullPointerException if the requisition field was not set
-   * @throws NullPointerException if a partner node id list was not set.
-   */
-  boolean isSplittable() {
-    active = isFeatureActive();
-
-    if (!active) {
-      return false;
-    }
-
-    checkNotNull(requisition);
-
-    partnerNodeIds = Sets.newHashSet();
-    associations = Lists.newArrayList();
-
-    if (null == supervisoryNodeId) {
-      return false;
-    }
-
-    if (wasSplit()) {
-      return false;
-    }
-
-    partnerNodeIds = supervisoryNodeReferenceDataService
-        .findOne(supervisoryNodeId)
-        .getPartnerNodeIds();
-
-    associations = supplyPartnerReferenceDataService
-        .search(partnerNodeIds)
-        .stream()
-        .map(this::findAssociation)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-
-    return !associations.isEmpty();
-  }
+  @Autowired
+  private MessageService messageService;
 
   /**
    * Splits the given requisition into parts based on associations from supply partners. After the
@@ -128,41 +70,64 @@ class RequisitionSplitter {
    * changed to zero and in the remarks column, there will be an explanation text.
    * </li>
    * </ul>
+   * A requisition is splittable when all of the following rules apply:
+   * <ul>
+   * <li>The requisition was not split before</li>
+   * <li>The requisition is part of another requisition</li>
+   * <li>Parent node has a partner node</li>
+   * <li>There is a supply partner with an entry for that partner node and requisition's
+   * program</li>
+   * <li>That entry has a facility that matches the requisition's facility</li>
+   * <li>That entry has a product that matches any products in the requisition line items</li>
+   * </ul>
    *
-   * @return a list of requisitions.
-   * @throws IllegalStateException if a requisition is not splittable. To verify if the requisition
-   *                               is splittable please use {@link #isSplittable()}.
+   * @return an instance of {@link RequisitionSplitResult}.
    */
-  RequisitionSplitResult split() {
-    checkState(active, "Split feature is disabled");
-    checkState(!isEmpty(associations), "Requisition is not splittable");
+  RequisitionSplitResult split(Requisition requisition, UUID supervisoryNodeId) {
+    if (null == supervisoryNodeId || !isFeatureActive() || wasSplit(requisition)) {
+      return new RequisitionSplitResult(requisition);
+    }
+
+    Map<UUID, RequisitionLineItem> requisitionLineItems = requisition
+        .getNonSkippedRequisitionLineItems()
+        .stream()
+        .collect(Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity()));
+
+    List<SupplyPartnerAssociationDto> associations = getAssociations(
+        requisition, supervisoryNodeId, requisitionLineItems);
+
+    if (associations.isEmpty()) {
+      return new RequisitionSplitResult(requisition);
+    }
 
     List<Requisition> partnerRequisitions = Lists.newArrayListWithCapacity(associations.size());
-    createPartnerRequisitions(partnerRequisitions);
+    createPartnerRequisitions(requisition, partnerRequisitions, associations, requisitionLineItems);
 
-    adjustOriginalRequisition(partnerRequisitions);
+    adjustOriginalRequisition(partnerRequisitions, requisitionLineItems);
 
     return new RequisitionSplitResult(requisition, partnerRequisitions);
   }
 
-  /**
-   * Sets a requisition for split.
-   *
-   * @param requisition instance of {@link Requisition} which should be split.
-   */
-  void setRequisition(Requisition requisition) {
-    this.requisition = requisition;
-    this.requisitionLineItems = requisition
-        .getNonSkippedRequisitionLineItems()
-        .stream()
-        .collect(Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity()));
-    this.programIds = Sets.newHashSet(requisition.getProgramId());
-    this.facilityIds = Sets.newHashSet(requisition.getFacilityId());
-    this.orderableIds = requisitionLineItems
+  private List<SupplyPartnerAssociationDto> getAssociations(Requisition requisition,
+      UUID supervisoryNodeId, Map<UUID, RequisitionLineItem> requisitionLineItems) {
+    Set<UUID> programIds = Sets.newHashSet(requisition.getProgramId());
+    Set<UUID> partnerNodeIds = supervisoryNodeReferenceDataService
+        .findOne(supervisoryNodeId)
+        .getPartnerNodeIds();
+    Set<UUID> facilityIds = Sets.newHashSet(requisition.getFacilityId());
+    Set<UUID> orderableIds = requisitionLineItems
         .values()
         .stream()
         .map(RequisitionLineItem::getOrderableId)
         .collect(Collectors.toSet());
+
+    return supplyPartnerReferenceDataService
+        .search(partnerNodeIds)
+        .stream()
+        .map(partner -> findAssociation(partner, programIds, partnerNodeIds,
+            facilityIds, orderableIds))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   private boolean isFeatureActive() {
@@ -175,12 +140,14 @@ class RequisitionSplitter {
         .orElse(false);
   }
 
-  private boolean wasSplit() {
+  private boolean wasSplit(Requisition requisition) {
     return requisition.hasOriginalRequisitionId()
         || requisitionRepository.existsByOriginalRequisitionId(requisition.getId());
   }
 
-  private void createPartnerRequisitions(List<Requisition> requisitions) {
+  private void createPartnerRequisitions(Requisition requisition, List<Requisition> list,
+      List<SupplyPartnerAssociationDto> associations,
+      Map<UUID, RequisitionLineItem> requisitionLineItems) {
     for (SupplyPartnerAssociationDto association : associations) {
       List<RequisitionLineItem> partnerLineItems = association
           .getOrderableIds()
@@ -190,11 +157,12 @@ class RequisitionSplitter {
           .map(this::createPartnerLineItem)
           .collect(Collectors.toList());
 
-      requisitions.add(createPartnerRequisition(association, partnerLineItems));
+      list.add(createPartnerRequisition(requisition, association, partnerLineItems));
     }
   }
 
-  private void adjustOriginalRequisition(List<Requisition> partnerRequisitions) {
+  private void adjustOriginalRequisition(List<Requisition> partnerRequisitions,
+      Map<UUID, RequisitionLineItem> requisitionLineItems) {
     String remarks = messageService
         .localize(new Message(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER))
         .asMessage();
@@ -212,9 +180,9 @@ class RequisitionSplitter {
     }
   }
 
-  private Requisition createPartnerRequisition(SupplyPartnerAssociationDto association,
-      List<RequisitionLineItem> partnerLineItems) {
-    Requisition partnerRequisition = new Requisition(this.requisition);
+  private Requisition createPartnerRequisition(Requisition requisition,
+      SupplyPartnerAssociationDto association, List<RequisitionLineItem> partnerLineItems) {
+    Requisition partnerRequisition = new Requisition(requisition);
 
     partnerRequisition.setId(null);
     partnerRequisition.setRequisitionLineItems(partnerLineItems);
@@ -225,7 +193,7 @@ class RequisitionSplitter {
     partnerRequisition.setPreviousRequisitions(Lists.newArrayList());
     partnerRequisition.setAvailableProducts(Sets.newHashSet());
 
-    partnerRequisition.setExtraData(this.requisition.getExtraData());
+    partnerRequisition.setExtraData(requisition.getExtraData());
     partnerRequisition.setOriginalRequisitionId(requisition.getId());
 
     partnerRequisition.recreatePermissionStrings();
@@ -243,23 +211,25 @@ class RequisitionSplitter {
     return partnerLineItem;
   }
 
-  private SupplyPartnerAssociationDto findAssociation(SupplyPartnerDto partner) {
+  private SupplyPartnerAssociationDto findAssociation(SupplyPartnerDto partner,
+      Set<UUID> programIds, Set<UUID> partnerNodeIds, Set<UUID> facilityIds,
+      Set<UUID> orderableIds) {
     return partner
         .getAssociations()
         .stream()
-        .filter(association -> filterSet(programIds, association.getProgramId()))
-        .filter(association -> filterSet(partnerNodeIds, association.getSupervisoryNodeId()))
-        .filter(association -> filterSet(facilityIds, association.getFacilityIds()))
-        .filter(association -> filterSet(orderableIds, association.getOrderableIds()))
+        .filter(association -> containsValue(programIds, association.getProgramId()))
+        .filter(association -> containsValue(partnerNodeIds, association.getSupervisoryNodeId()))
+        .filter(association -> containsAtLeastOne(facilityIds, association.getFacilityIds()))
+        .filter(association -> containsAtLeastOne(orderableIds, association.getOrderableIds()))
         .findFirst()
         .orElse(null);
   }
 
-  private boolean filterSet(Set<UUID> set, UUID value) {
+  private boolean containsValue(Set<UUID> set, UUID value) {
     return isEmpty(set) || set.contains(value);
   }
 
-  private boolean filterSet(Set<UUID> set, Set<UUID> values) {
+  private boolean containsAtLeastOne(Set<UUID> set, Set<UUID> values) {
     // disjoint returns true if collections have no elements in common but we want
     // set that have at least one element from the values set
     // that is why we negate the result of the method.
