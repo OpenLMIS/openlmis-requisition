@@ -73,7 +73,7 @@ class RequisitionSplitter {
    * A requisition is splittable when all of the following rules apply:
    * <ul>
    * <li>The requisition was not split before</li>
-   * <li>The requisition is part of another requisition</li>
+   * <li>The requisition is not part of another requisition</li>
    * <li>Parent node has a partner node</li>
    * <li>There is a supply partner with an entry for that partner node and requisition's
    * program</li>
