@@ -17,6 +17,8 @@ package org.openlmis.requisition.errorhandling;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DUPLICATE_STATUS_CHANGE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_DUPLICATION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_DUPLICATION_WITH_NODE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMENT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_NAME_DUPLICATION;
 import static org.openlmis.requisition.i18n.MessageKeys.VERSION_MISMATCH;
@@ -62,6 +64,8 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
     CONSTRAINT_MAP.put(
         "req_tmpl_asgmt_prog_fac_type_unique_idx", ERROR_PROGRAM_FACILITY_TYPE_ASSIGNMENT_EXISTS
     );
+    CONSTRAINT_MAP.put("req_prod_fac_per", ERROR_REQUISITION_DUPLICATION);
+    CONSTRAINT_MAP.put("req_prod_fac_per_node", ERROR_REQUISITION_DUPLICATION_WITH_NODE);
 
     // https://www.postgresql.org/docs/9.6/static/errcodes-appendix.html
     SQL_STATES.put("23505", ERROR_DUPLICATE_STATUS_CHANGE);
