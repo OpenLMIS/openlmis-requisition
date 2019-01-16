@@ -27,6 +27,7 @@ import org.assertj.core.util.Sets;
 import org.openlmis.requisition.domain.ExtraDataEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -165,6 +166,16 @@ public class RequisitionDataBuilder {
 
   public RequisitionDataBuilder withOriginalRequisition(UUID originalRequisitionId) {
     this.extraData.put(Requisition.EXTRA_DATA_ORIGINAL_REQUISITION_ID, originalRequisitionId);
+    return this;
+  }
+
+  /**
+   * Creates default permission strings.
+   */
+  public RequisitionDataBuilder withPermissionStrings() {
+    permissionStrings.add(new RequisitionPermissionString(null,
+        String.join("|", PermissionService.REQUISITION_VIEW, facilityId.toString(),
+            programId.toString())));
     return this;
   }
 

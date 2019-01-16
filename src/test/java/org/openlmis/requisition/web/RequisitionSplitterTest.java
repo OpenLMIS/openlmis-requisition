@@ -104,6 +104,7 @@ public class RequisitionSplitterTest {
         .addLineItem(new RequisitionLineItemDataBuilder().build())
         .addLineItem(new RequisitionLineItemDataBuilder().build())
         .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .withPermissionStrings()
         .buildAuthorizedRequisition();
 
     List<UUID> orderableIds = Lists.newArrayList(requisition.getAllOrderableIds());

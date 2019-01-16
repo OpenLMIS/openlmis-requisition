@@ -255,7 +255,8 @@ public class Requisition extends BaseTimestampedEntity {
 
   @OneToMany(
       mappedBy = "requisition",
-      cascade = CascadeType.ALL)
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @BatchSize(size = STANDARD_BATCH_SIZE)
   @DiffIgnore
   @Getter
@@ -296,7 +297,7 @@ public class Requisition extends BaseTimestampedEntity {
         original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
         original.previousRequisitions, original.availableProducts,
         original.datePhysicalStockCountCompleted, original.stockAdjustmentReasons,
-        original.permissionStrings, new ExtraDataEntity());
+        null, new ExtraDataEntity());
 
     setId(original.getId());
 
@@ -304,15 +305,12 @@ public class Requisition extends BaseTimestampedEntity {
     setModifiedDate(original.getModifiedDate());
 
     setExtraData(original.getExtraData());
-  }
 
-  /**
-   * Recreates permission strings.
-   */
-  public void recreatePermissionStrings() {
-    permissionStrings.clear();
-    permissionStrings.add(RequisitionPermissionString.newRequisitionPermissionString(this,
-        PermissionService.REQUISITION_VIEW, facilityId, programId));
+    permissionStrings = original
+        .permissionStrings
+        .stream()
+        .map(rps -> new RequisitionPermissionString(this, rps.getPermissionString()))
+        .collect(toList());
   }
 
   /**
