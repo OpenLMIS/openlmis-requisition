@@ -172,9 +172,9 @@ class RequisitionSplitter {
         RequisitionLineItem originalLineItem = requisitionLineItems
             .get(lineItem.getOrderableId());
         originalLineItem.setSkipped(true);
-        originalLineItem.setRequestedQuantity(0);
-        originalLineItem.setRequestedQuantityExplanation("0");
-        originalLineItem.setApprovedQuantity(0);
+        originalLineItem.setRequestedQuantity(null);
+        originalLineItem.setRequestedQuantityExplanation(null);
+        originalLineItem.setApprovedQuantity(null);
         originalLineItem.setRemarks(remarks);
       }
     }

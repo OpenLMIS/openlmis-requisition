@@ -361,9 +361,9 @@ public class RequisitionSplitterTest {
     }
 
     assertThat(originalLineItem.getSkipped()).isTrue();
-    assertThat(originalLineItem.getRequestedQuantity()).isEqualTo(0);
-    assertThat(originalLineItem.getRequestedQuantityExplanation()).isEqualTo("0");
-    assertThat(originalLineItem.getApprovedQuantity()).isEqualTo(0);
+    assertThat(originalLineItem.getRequestedQuantity()).isNull();
+    assertThat(originalLineItem.getRequestedQuantityExplanation()).isNull();
+    assertThat(originalLineItem.getApprovedQuantity()).isNull();
     assertThat(originalLineItem.getRemarks()).isEqualTo(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER);
   }
 
