@@ -44,7 +44,7 @@ public class ProofOfDeliveryService {
 
 
   ProofOfDeliveryDto get(Requisition requisition) {
-    Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
+    Profiler profiler = new Profiler("POD_SERVICE_GET");
     profiler.setLogger(LOGGER);
 
     if (RequisitionStatus.SKIPPED == requisition.getStatus()) {
