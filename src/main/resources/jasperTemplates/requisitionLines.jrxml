@@ -143,7 +143,7 @@
         <band height="25" splitType="Stretch">
             <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
             <textField>
-                <reportElement key="productName" mode="Opaque" x="39" y="0" width="60" height="25" backcolor="#CCCCCC" uuid="fa5f2091-ec02-4004-9546-971806d771f9">
+                <reportElement key="orderable.fullProductName" mode="Opaque" x="39" y="0" width="60" height="25" backcolor="#CCCCCC" uuid="fa5f2091-ec02-4004-9546-971806d771f9">
                     <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
                 </reportElement>
                 <box padding="2">
@@ -155,10 +155,10 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productName").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.fullProductName").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement key="productCode" mode="Opaque" x="9" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="aa050bad-b263-43fa-8d5e-9c9b506f2260"/>
+                <reportElement key="orderable.productCode" mode="Opaque" x="9" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="aa050bad-b263-43fa-8d5e-9c9b506f2260"/>
                 <box padding="2">
                     <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,7 +168,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productCode").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.productCode").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="beginningBalance" mode="Opaque" x="139" y="0" width="32" height="25" backcolor="#CCCCCC" uuid="ba36ed17-bea4-4f3c-9a77-1e1adb90aedb"/>
@@ -327,7 +327,7 @@
                 <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement key="dispensingUnit" mode="Opaque" x="99" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="88b07504-aa0a-4fb4-a4fc-71b3d8b091ef"/>
+                <reportElement key="orderable.dispensable.displayUnit" mode="Opaque" x="99" y="0" width="40" height="25" backcolor="#CCCCCC" uuid="88b07504-aa0a-4fb4-a4fc-71b3d8b091ef"/>
                 <box padding="2">
                     <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
                     <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -337,7 +337,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getLabel()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.dispensable.displayUnit").getLabel()]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement key="packsToShip" mode="Opaque" x="569" y="0" width="30" height="25" backcolor="#CCCCCC" uuid="b7f0ed2c-71bf-47b6-a4cc-f74ab3a5688d"/>
@@ -447,7 +447,7 @@
                 </reportElement>
             </rectangle>
             <textField isBlankWhenNull="true">
-                <reportElement key="productName" x="39" y="0" width="60" height="20" uuid="c649aa2d-900a-4d7f-94f7-0d072c516c0a">
+                <reportElement key="orderable.fullProductName" x="39" y="0" width="60" height="20" uuid="c649aa2d-900a-4d7f-94f7-0d072c516c0a">
                     <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
                 </reportElement>
                 <box padding="2">
@@ -459,10 +459,10 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productName").getIsDisplayed() ? $F{orderable}.getFullProductName() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.fullProductName").getIsDisplayed() ? $F{orderable}.getFullProductName() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement key="productCode" x="9" y="0" width="30" height="20" uuid="364650f2-c5ab-49b6-b74a-89aa733eeda5">
+                <reportElement key="orderable.productCode" x="9" y="0" width="30" height="20" uuid="364650f2-c5ab-49b6-b74a-89aa733eeda5">
                     <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
                 </reportElement>
                 <box padding="2">
@@ -474,7 +474,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("productCode").getIsDisplayed() ? $F{orderable}.getProductCode() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.productCode").getIsDisplayed() ? $F{orderable}.getProductCode() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="beginningBalance" x="139" y="0" width="32" height="20" uuid="a7672f9a-30bd-4bf9-96af-324baa7e2280"/>
@@ -600,7 +600,7 @@
                 <textFieldExpression><![CDATA[$P{template}.viewColumns().get("total").getIsDisplayed() && $F{total} != null ? $P{decimalFormat}.format($F{total}).toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement key="dispensingUnit" x="99" y="0" width="40" height="20" uuid="0e217f2e-f7ca-4c05-b9d2-f13ec6cf38db">
+                <reportElement key="orderable.dispensable.displayUnit" x="99" y="0" width="40" height="20" uuid="0e217f2e-f7ca-4c05-b9d2-f13ec6cf38db">
                     <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
                 </reportElement>
                 <box padding="2">
@@ -612,7 +612,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("dispensingUnit").getIsDisplayed() && $F{orderable}.getDispensable().getDispensingUnit() != null ? $P{decimalFormat}.format($F{orderable}.getDispensable().getDispensingUnit()).toString() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.dispensable.displayUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit().toString() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="packsToShip" x="569" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
