@@ -52,11 +52,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * @return List of FacilityDtos with similar code or name.
    */
   public List<FacilityDto> search(Set<UUID> facilityIds) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("id", facilityIds);
-
-    return findAll("", parameters);
+    return getPage(RequestParameters.init().set("id", facilityIds)).getContent();
   }
 
   /**
