@@ -6,8 +6,11 @@ New functionality:
 * [OLMIS-5142](https://openlmis.atlassian.net/browse/OLMIS-5142): Added ability to split a requisition if there are defined supply partner(s) 
 
 Bug fixes:
-* [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique
+* [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique.
 * [OLMIS-5514](https://openlmis.atlassian.net/browse/OLMIS-5514): Validate requisition template column labels support UTF-8, not just alphanumeric.
+* [OLMIS-5890](https://openlmis.atlassian.net/browse/OLMIS-5890): The product code column is now visible in the requisition print again.
+* [OLMIS-5889](https://openlmis.atlassian.net/browse/OLMIS-5889): The product name column is now visible in the requisition print again.
+* [OLMIS-5887](https://openlmis.atlassian.net/browse/OLMIS-5887): The unit of issue column is now visible in the requisition print again.
 
 7.1.0 / 2018-12-12
 ==================
