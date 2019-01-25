@@ -59,15 +59,14 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
 
 
     // when
-    FacilityDto dto = new FacilityDto();
-    mockPageResponseEntity(dto);
+    FacilityDto dto = mockArrayResponseEntityAndGetDto();
     List<FacilityDto> result = service.search(Sets.newHashSet(facility1, facility2));
 
     // then
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));
 
-    verifyPageRequest()
+    verifyArrayRequest()
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody();
