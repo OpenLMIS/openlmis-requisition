@@ -612,7 +612,7 @@
                 <textElement>
                     <font size="6"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.dispensable.displayUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDispensingUnit().toString() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("orderable.dispensable.displayUnit").getIsDisplayed() ? $F{orderable}.getDispensable().getDisplayUnit() : null]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
                 <reportElement key="packsToShip" x="569" y="0" width="30" height="20" uuid="97268fb4-abce-44f3-9162-3376a5e64000">
