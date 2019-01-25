@@ -5,6 +5,9 @@ New functionality:
 * [OLMIS-5138](https://openlmis.atlassian.net/browse/OLMIS-5138): Added `originalRequisition` extended property to Requisition model
 * [OLMIS-5142](https://openlmis.atlassian.net/browse/OLMIS-5142): Added ability to split a requisition if there are defined supply partner(s) 
 
+Improvements:
+* [OLMIS-3773](https://openlmis.atlassian.net/browse/OLMIS-3773): Adjusted facility search by name after changing return type to page.
+
 Bug fixes:
 * [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique.
 * [OLMIS-5514](https://openlmis.atlassian.net/browse/OLMIS-5514): Validate requisition template column labels support UTF-8, not just alphanumeric.
