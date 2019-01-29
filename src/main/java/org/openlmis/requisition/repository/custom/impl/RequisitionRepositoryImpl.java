@@ -215,67 +215,26 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * - programIds collection is empty and filterBy is programName,
    * - both facilityIds and programIds collections are empty and filterBy is all.
    *
-   * @param filterBy    Field used to filter: programName, facilityCode, facilityName or all.
-   * @param facilityIds Desired facility UUID list.
-   * @param programIds  Desired program UUID list.
+   * @param facilityId Desired facility UUID list.
+   * @param programId  Desired program UUID list.
    * @return List of requisitions with required fields for convert.
    */
   @Override
-  public Page<Requisition> searchApprovedRequisitions(String filterBy,
-        Collection<UUID> facilityIds, Collection<UUID> programIds, Pageable pageable) {
-    XLOGGER.entry(filterBy, facilityIds, programIds);
+  public Page<Requisition> searchApprovedRequisitions(UUID facilityId, UUID programId,
+      Pageable pageable) {
+    XLOGGER.entry(facilityId, programId, pageable);
 
-    if (allFiltersEmpty(filterBy, facilityIds, programIds)) {
-      return Pagination.getPage(Collections.emptyList(), pageable, 0);
-    }
-
-    Query countQuery = createQuery(filterBy, facilityIds, programIds, true);
-    Query searchQuery = createQuery(filterBy, facilityIds, programIds, false);
+    Query countQuery = createQuery(facilityId, programId);
+    Query searchQuery = createQuery(facilityId, programId);
     addScalars(searchQuery);
 
-    long count = (long) countQuery.getSingleResult();
+    Long count = (Long) countQuery.getSingleResult();
 
     if (count == 0) {
       return Pagination.getPage(Collections.emptyList(), pageable, 0);
     }
 
     // hibernate always returns a list of array of objects
-    @SuppressWarnings("unchecked")
-    List<Object[]> list = Collections.checkedList(searchQuery
-            .setFirstResult(pageable.getOffset())
-            .setMaxResults(pageable.getPageSize())
-            .getResultList(),
-            Object[].class);
-
-    List<Requisition> requisitions = list.stream().map(this::toRequisition)
-        .collect(Collectors.toList());
-
-    XLOGGER.exit(requisitions);
-    return Pagination.getPage(requisitions, pageable, count);
-  }
-
-  /**
-   * Get all approved requisitions.
-   * Empty list is returned if:
-   * - there are no approved requisitions.
-   *
-   * @param filterBy    Field used to filter: all (because it is default filter
-   *        when navigating to Convert to Order screen).
-   * @return List of requisitions with required fields for convert.
-   */
-  @Override
-  public Page<Requisition> searchApprovedRequisitions(String filterBy, Pageable pageable) {
-
-    Query countQuery = createQuery(filterBy, true);
-    Query searchQuery = createQuery(filterBy, false);
-    addScalars(searchQuery);
-
-    long count = (long) countQuery.getSingleResult();
-
-    if (count == 0) {
-      return Pagination.getPage(Collections.emptyList(), pageable, 0);
-    }
-
     @SuppressWarnings("unchecked")
     List<Object[]> list = Collections.checkedList(searchQuery
             .setFirstResult(pageable.getOffset())
@@ -561,23 +520,14 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return query.orderBy(orders);
   }
 
-  private Query createQuery(String filterBy, Collection<UUID> facilityIds,
-                            Collection<UUID> programIds) {
+  private Query createQuery(UUID facilityId, UUID programId) {
     StringBuilder builder = new StringBuilder(SEARCH_APPROVED_SQL);
 
-    if (!StringUtils.isEmpty(filterBy)) {
-      String facilities = idsSubquery("r.facilityid in %s", facilityIds);
-      String programs = idsSubquery("r.programid in %s", programIds);
-
-      if (facilities != null && programs != null && "all".equals(filterBy)) {
-        builder.append(String.format(" AND (%s OR %s)", facilities, programs));
-      } else if (facilities != null && programs != null) {
-        builder.append(String.format(" AND %s AND %s", facilities, programs));
-      } else if (facilities != null) {
-        builder.append(String.format(" AND %s", facilities));
-      } else if (programs != null) {
-        builder.append(String.format(" AND %s", programs));
-      }
+    if (null != facilityId) {
+      builder.append(" AND r.facilityid = %s");
+    }
+    if (null != programId) {
+      builder.append(" AND r.programid = %s");
     }
 
     return entityManager.createNativeQuery(builder.toString());

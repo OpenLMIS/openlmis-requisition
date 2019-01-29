@@ -655,26 +655,25 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValue  List of expressions to be used in filters.
-   * @param filterBy     Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                     "all".
-   * @param pageable     Pageable object that allows client to optionally add "page" (page number)
-   *                     and "size" (page size) query parameters to the request.
+   * @param programId  UUID of program to be used as filter
+   * @param facilityId UUID of facility to be used as filter
+   * @param pageable   Pageable object that allows client to optionally add "page" (page number)
+   *                   and "size" (page size) query parameters to the request.
    * @return Page of approved requisitions.
    */
   @GetMapping(RESOURCE_URL + "/requisitionsForConvert")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
-      @RequestParam(required = false) List<String> filterValue,
-      @RequestParam(required = false) String filterBy,
+      @RequestParam(required = false) UUID programId,
+      @RequestParam(required = false) UUID facilityId,
       @PageableDefault() @SortDefault.SortDefaults({
           @SortDefault(sort = {"emergency"}, direction = Direction.DESC),
           @SortDefault(sort = {"programName"}, direction = Direction.ASC)
       }) Pageable pageable) {
     Profiler profiler = getProfiler(
         "GET_REQUISITIONS_FOR_CONVERT",
-        filterBy, filterValue, pageable
+        programId, facilityId, pageable
     );
 
     UserDto user = getCurrentUser(profiler);
@@ -690,10 +689,10 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("SEARCH_FOR_APPROVED_REQUISITIONS");
     Page<RequisitionWithSupplyingDepotsDto> page = requisitionService
         .searchApprovedRequisitionsWithSortAndFilterAndPaging(
-            filterValue,
-            filterBy,
-            pageable,
-            userManagedFacilities);
+            facilityId,
+            programId,
+            userManagedFacilities,
+            pageable);
 
     stopProfiler(profiler, page);
     return page;

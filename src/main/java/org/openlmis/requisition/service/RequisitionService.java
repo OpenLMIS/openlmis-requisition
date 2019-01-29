@@ -577,40 +577,19 @@ public class RequisitionService {
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
-      searchApprovedRequisitionsWithSortAndFilterAndPaging(List<String> filterValues,
-                                                           String filterBy,
-                                                           Pageable pageable,
-                                                           Collection<UUID> userManagedFacilities) {
+  searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId,
+      Collection<UUID> userManagedFacilities, Pageable pageable) {
+
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
 
-    profiler.start("FIND_DESIRED_PROGRAMS");
-    Map<UUID, ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
-
-    profiler.start("FIND_DESIRED_FACILITIES");
-    Map<UUID, MinimalFacilityDto> facilities = new HashMap<>();
-    Page<Requisition> requisitionsPage;
-
-    if (CollectionUtils.isEmpty(filterValues)) {
-      profiler.start("SEARCH_ALL_APPROVED_REQUISITIONS");
-      requisitionsPage = requisitionRepository.searchApprovedRequisitions(filterBy, pageable);
-    } else {
-      facilities = findFacilitiesWithFilter(filterBy, filterValues);
-
-      profiler.start("SEARCH_APPROVED_REQUISITIONS");
-      requisitionsPage = requisitionRepository.searchApprovedRequisitions(filterBy,
-              facilities.keySet(),
-              programs.keySet(),
-              pageable);
-    }
+    profiler.start("SEARCH_APPROVED_REQUISITIONS");
+    Page<Requisition> requisitionsPage = requisitionRepository.searchApprovedRequisitions(
+        facilityId, programId, pageable);
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, userManagedFacilities,
-            facilities, programs);
-
-    //profiler.start("SORT");
-    responseList.sort(new RequisitionForConvertComparator(pageable));
+        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, userManagedFacilities);
 
     profiler.start("PAGINATE");
     Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
@@ -763,55 +742,6 @@ public class RequisitionService {
 
   private boolean approvedQtyColumnEnabled(Requisition requisition) {
     return requisition.getTemplate().isColumnInTemplateAndDisplayed(APPROVED_QUANTITY);
-  }
-
-  private Map<UUID, ProgramDto> findProgramsWithFilter(String filterBy,
-                                                       List<String> filterValues) {
-    Collection<ProgramDto> foundPrograms = new HashSet<>();
-
-    if (CollectionUtils.isEmpty(filterValues)
-        || !isFilterByProgramProperty(filterBy)) {
-      foundPrograms = programReferenceDataService.findAll();
-    } else {
-      for (String expression : filterValues) {
-        foundPrograms.addAll(programReferenceDataService.search(expression));
-      }
-    }
-
-    return foundPrograms.stream().collect(toMap(ProgramDto::getId, Function.identity()));
-  }
-
-  private Map<UUID, MinimalFacilityDto> findFacilitiesWithFilter(String filterBy,
-                                                                  List<String> filterValues) {
-    Collection<MinimalFacilityDto> foundFacilities = new HashSet<>();
-
-    if (!CollectionUtils.isEmpty(filterValues)
-        && isFilterByFacilityProperty(filterBy)) {
-
-      for (String expression : filterValues) {
-        String code = isFilterAll(filterBy) || "facilityCode".equals(filterBy) ? expression : null;
-        String name = isFilterAll(filterBy) || "facilityName".equals(filterBy) ? expression : null;
-
-        foundFacilities.addAll(facilityReferenceDataService.search(code, name, null, false));
-      }
-    }
-
-    return foundFacilities.stream()
-        .collect(toMap(MinimalFacilityDto::getId, Function.identity()));
-  }
-
-  private boolean isFilterAll(String filterBy) {
-    return "all".equalsIgnoreCase(filterBy);
-  }
-
-  private boolean isFilterByFacilityProperty(String filterBy) {
-    return "facilityCode".equalsIgnoreCase(filterBy)
-        || "facilityName".equalsIgnoreCase(filterBy)
-        || isFilterAll(filterBy);
-  }
-
-  private boolean isFilterByProgramProperty(String filterBy) {
-    return isFilterAll(filterBy) || "programName".equalsIgnoreCase(filterBy);
   }
 
   private List<Requisition> getRecentRegularRequisitions(Requisition requisition, int amount) {

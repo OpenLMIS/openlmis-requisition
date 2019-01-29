@@ -28,11 +28,10 @@ import lombok.EqualsAndHashCode;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.MinimalFacilityDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -47,6 +46,9 @@ public class RequisitionForConvertBuilder {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   /**
@@ -55,15 +57,10 @@ public class RequisitionForConvertBuilder {
    *
    * @param requisitions          the list of requisitions to build for
    * @param userManagedFacilities UUIDs of supplying depots the user has rights to
-   * @param minimalFacilities     filtered facilities for creating requisition dto
-   * @param programs              filtered programs for creating requisition dto
    * @return a list of requisition with supplying depots representation
    */
   public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(Page<Requisition> requisitions,
-                                                 Collection<UUID> userManagedFacilities,
-                                                 Map<UUID, MinimalFacilityDto> minimalFacilities,
-                                                 Map<UUID, ProgramDto> programs) {
-
+                                                 Collection<UUID> userManagedFacilities) {
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     Map<RightsFor, List<FacilityDto>> cache = new HashMap<>();
 
@@ -75,8 +72,8 @@ public class RequisitionForConvertBuilder {
 
       if (!facilities.isEmpty()) {
         BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
-            minimalFacilities.get(requisition.getFacilityId()),
-            programs.get(requisition.getProgramId()));
+            facilityReferenceDataService.findOne(requisition.getFacilityId()),
+            programReferenceDataService.findOne(requisition.getProgramId()));
         responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
       }
     }

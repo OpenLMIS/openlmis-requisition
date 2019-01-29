@@ -17,7 +17,6 @@ package org.openlmis.requisition.repository.custom;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -46,12 +45,7 @@ public interface RequisitionRepositoryCustom {
                                        UUID program,
                                        Boolean emergency);
 
-  Page<Requisition> searchApprovedRequisitions(String filterBy,
-                                               Collection<UUID> facilityIds,
-                                               Collection<UUID> programIds,
-                                               Pageable pageable);
-
-  Page<Requisition> searchApprovedRequisitions(String filterBy, Pageable pageable);
+  Page<Requisition> searchApprovedRequisitions(UUID facilityId, UUID programId, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair> programNodePairs, Pageable pageable);
