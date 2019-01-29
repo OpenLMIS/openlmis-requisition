@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -59,17 +60,34 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
 
 
     // when
-    FacilityDto dto = mockArrayResponseEntityAndGetDto();
+    FacilityDto dto = new FacilityDto();
+    mockPageResponseEntity(dto);
     List<FacilityDto> result = service.search(Sets.newHashSet(facility1, facility2));
 
     // then
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));
 
-    verifyArrayRequest()
+    verifyPageRequest()
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody();
+  }
+
+  @Test
+  public void shouldFindAllResources() {
+    // when
+    FacilityDto dto = mockPageResponseEntityAndGetDto();
+    List<FacilityDto> found = service.findAll();
+
+    // then
+    assertThat(found, hasItem(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }
 
   @Test

@@ -45,18 +45,19 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     return FacilityDto[].class;
   }
 
+  @Override
+  public List<FacilityDto> findAll() {
+    return getPage(RequestParameters.init()).getContent();
+  }
+
   /**
    * This method retrieves Facilities for given ids.
    *
    * @param facilityIds list of facility ids.
-   * @return List of FacilityDtos with similar code or name.
+   * @return List of FacilityDtos with similar ids.
    */
   public List<FacilityDto> search(Set<UUID> facilityIds) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("id", facilityIds);
-
-    return findAll("", parameters);
+    return getPage(RequestParameters.init().set("id", facilityIds)).getContent();
   }
 
   /**
