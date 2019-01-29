@@ -36,6 +36,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.springframework.data.domain.PageImpl;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 public class RequisitionForConvertBuilderTest {
@@ -69,10 +70,11 @@ public class RequisitionForConvertBuilderTest {
 
     Requisition requisition = mockRequisition();
     Requisition requisition2 = mockRequisition();
+    List requisitionsList = Lists.newArrayList(requisition, requisition2);
 
     //when
     List<RequisitionWithSupplyingDepotsDto> result = requisitionForConvertBuilder
-        .buildRequisitions(Lists.newArrayList(requisition, requisition2), userManagedDepots,
+        .buildRequisitions(new PageImpl<Requisition>(requisitionsList), userManagedDepots,
             Collections.emptyMap(), Collections.emptyMap());
 
     //then
@@ -94,8 +96,10 @@ public class RequisitionForConvertBuilderTest {
     Requisition requisition3 = mockRequisition(
         requisition1.getProgramId(), requisition1.getSupervisoryNodeId());
 
+    List requisitionsList = Lists.newArrayList(requisition1, requisition2, requisition3);
+
     requisitionForConvertBuilder.buildRequisitions(
-        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
+        new PageImpl<Requisition>(requisitionsList), new ArrayList<>(),
         Collections.emptyMap(), Collections.emptyMap());
 
     // Should hit ref data once and then use cache
@@ -110,8 +114,10 @@ public class RequisitionForConvertBuilderTest {
     Requisition requisition2 = mockRequisition();
     Requisition requisition3 = mockRequisition();
 
+    List requisitionsList = Lists.newArrayList(requisition1, requisition2, requisition3);
+
     requisitionForConvertBuilder.buildRequisitions(
-        Lists.newArrayList(requisition1, requisition2, requisition3), new ArrayList<>(),
+        new PageImpl<Requisition>(requisitionsList), new ArrayList<>(),
         Collections.emptyMap(), Collections.emptyMap());
 
     // Should hit ref data three times - for each requisition

@@ -37,6 +37,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -587,24 +588,33 @@ public class RequisitionService {
     Map<UUID, ProgramDto> programs = findProgramsWithFilter(filterBy, filterValues);
 
     profiler.start("FIND_DESIRED_FACILITIES");
-    Map<UUID, MinimalFacilityDto> facilities = findFacilitiesWithFilter(filterBy, filterValues);
+    Map<UUID, MinimalFacilityDto> facilities = new HashMap<>();
+    Page<Requisition> requisitionsPage;
 
-    profiler.start("SEARCH_APPROVED_REQUISITIONS");
-    List<Requisition> requisitionsList =
-        requisitionRepository.searchApprovedRequisitions(filterBy,
-            facilities.keySet(),
-            programs.keySet());
+    if (CollectionUtils.isEmpty(filterValues)) {
+      profiler.start("SEARCH_ALL_APPROVED_REQUISITIONS");
+      requisitionsPage = requisitionRepository.searchApprovedRequisitions(filterBy, pageable);
+    } else {
+      facilities = findFacilitiesWithFilter(filterBy, filterValues);
+
+      profiler.start("SEARCH_APPROVED_REQUISITIONS");
+      requisitionsPage = requisitionRepository.searchApprovedRequisitions(filterBy,
+              facilities.keySet(),
+              programs.keySet(),
+              pageable);
+    }
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder.buildRequisitions(requisitionsList, userManagedFacilities,
+        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, userManagedFacilities,
             facilities, programs);
 
-    profiler.start("SORT");
+    //profiler.start("SORT");
     responseList.sort(new RequisitionForConvertComparator(pageable));
 
     profiler.start("PAGINATE");
-    Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(responseList, pageable);
+    Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
+        responseList, pageable, requisitionsPage.getNumberOfElements());
 
     profiler.stop().log();
     return page;
@@ -775,10 +785,9 @@ public class RequisitionService {
                                                                   List<String> filterValues) {
     Collection<MinimalFacilityDto> foundFacilities = new HashSet<>();
 
-    if (CollectionUtils.isEmpty(filterValues)
-        || !isFilterByFacilityProperty(filterBy)) {
-      foundFacilities.addAll(facilityReferenceDataService.findAll());
-    } else {
+    if (!CollectionUtils.isEmpty(filterValues)
+        && isFilterByFacilityProperty(filterBy)) {
+
       for (String expression : filterValues) {
         String code = isFilterAll(filterBy) || "facilityCode".equals(filterBy) ? expression : null;
         String name = isFilterAll(filterBy) || "facilityName".equals(filterBy) ? expression : null;

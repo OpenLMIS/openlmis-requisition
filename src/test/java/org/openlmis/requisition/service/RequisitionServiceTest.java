@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -146,6 +147,7 @@ import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -1658,7 +1660,7 @@ public class RequisitionServiceTest {
                                                     int pageNumber) {
     final List<UUID> programs = new ArrayList<>();
     final List<UUID> facilitys = new ArrayList<>();
-    final List<Requisition> requisitions = new ArrayList<>();
+    final Page<Requisition> requisitions = new PageImpl<>(emptyList());
 
     when(programReferenceDataService.search(programName))
         .thenReturn(Collections.emptyList());
@@ -1668,7 +1670,7 @@ public class RequisitionServiceTest {
         eq(null), eq(false))).thenReturn(Collections.emptyList());
     when(facilityReferenceDataService.findAll())
         .thenReturn(Collections.emptyList());
-    when(requisitionRepository.searchApprovedRequisitions(filterBy, programs, facilitys))
+    when(requisitionRepository.searchApprovedRequisitions(filterBy, programs, facilitys, pageable))
         .thenReturn(requisitions);
 
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));

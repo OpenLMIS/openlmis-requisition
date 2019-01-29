@@ -23,6 +23,8 @@ import org.junit.runner.RunWith;
 import org.openlmis.requisition.Application;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -95,5 +97,9 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
 
     repository.delete(id);
     Assert.assertFalse(repository.exists(id));
+  }
+
+  protected Pageable createPageable(int pageSize, int pageNumber) {
+    return new PageRequest(pageNumber, pageSize);
   }
 }

@@ -20,6 +20,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -787,9 +788,10 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
     Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions(null, null, null);
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        null, null, null, createPageable(10, 0));
 
-    assertEquals(2, requisitions.size());
+    assertEquals(2, requisitions.getTotalElements());
     for (Requisition r : requisitions) {
       assertTrue(r.getId().equals(requisition1.getId())
           || r.getId().equals(requisition2.getId()));
@@ -807,12 +809,13 @@ public class RequisitionRepositoryIntegrationTest
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("all",
-        singletonList(requisition1.getFacilityId()),
-        singletonList(requisition1.getProgramId()));
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions("all",
+        Lists.newArrayList(requisition1.getFacilityId()),
+        Lists.newArrayList(requisition1.getProgramId()),
+        createPageable(10, 0));
 
-    assertEquals(1, requisitions.size());
-    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+    assertEquals(1, requisitions.getTotalElements());
+    assertThat(requisitions, hasItem(hasProperty("id", is(requisition1.getId()))));
   }
 
   @Test
@@ -821,11 +824,12 @@ public class RequisitionRepositoryIntegrationTest
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Lists.newArrayList(requisition1.getFacilityId()), null);
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Lists.newArrayList(requisition1.getFacilityId()), null,
+        createPageable(10, 0));
 
-    assertEquals(1, requisitions.size());
-    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+    assertEquals(1, requisitions.getTotalElements());
+    assertThat(requisitions, hasItem(hasProperty("id", is(requisition1.getId()))));
   }
 
   @Test
@@ -834,11 +838,12 @@ public class RequisitionRepositoryIntegrationTest
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("programName",
-        null, Lists.newArrayList(requisition1.getProgramId()));
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions("programName",
+        null, Lists.newArrayList(requisition1.getProgramId()),
+        createPageable(10, 0));
 
-    assertEquals(1, requisitions.size());
-    assertTrue(requisitions.get(0).getId().equals(requisition1.getId()));
+    assertEquals(1, requisitions.getTotalElements());
+    assertThat(requisitions, hasItem(hasProperty("id", is(requisition1.getId()))));
   }
 
   @Test
@@ -847,13 +852,14 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Lists.newArrayList(requisition1.getFacilityId(), requisition2.getFacilityId()), null);
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Lists.newArrayList(requisition1.getFacilityId(), requisition2.getFacilityId()), null,
+        createPageable(10, 0));
 
-    assertEquals(2, requisitions.size());
-    List<UUID> requisitionIds = requisitions.stream()
+    assertEquals(2, requisitions.getTotalElements());
+    List<UUID> requisitionIds = requisitions
         .map(Requisition::getId)
-        .collect(Collectors.toList());
+        .getContent();
     assertTrue(requisitionIds.contains(requisition1.getId()));
     assertTrue(requisitionIds.contains(requisition2.getId()));
   }
@@ -864,11 +870,11 @@ public class RequisitionRepositoryIntegrationTest
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    List<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Collections.emptyList(), Collections.emptyList());
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
+        Collections.emptyList(), Collections.emptyList(), createPageable(10, 0));
 
     assertNotNull(requisitions);
-    assertTrue(requisitions.isEmpty());
+    assertEquals(0, requisitions.getTotalElements());
   }
 
   @Test

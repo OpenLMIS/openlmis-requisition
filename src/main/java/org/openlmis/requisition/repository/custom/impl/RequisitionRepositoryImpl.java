@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
-import com.google.common.collect.Lists;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -45,6 +44,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
 import org.hibernate.annotations.QueryHints;
 import org.hibernate.type.BooleanType;
+import org.hibernate.type.LongType;
 import org.hibernate.type.PostgresUUIDType;
 import org.hibernate.type.ZonedDateTimeType;
 import org.openlmis.requisition.domain.BaseEntity;
@@ -71,15 +71,28 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionRepositoryImpl.class);
 
-  private static final String SEARCH_APPROVED_SQL = "SELECT"
+  private static final String ORDER_BY = " ORDER BY ?#{#pageable}";
+
+  private static final String FROM = " FROM requisition.requisitions r"
+      + " INNER JOIN requisition.status_changes s ON r.id = s.requisitionid"
+      + " WHERE r.status = 'APPROVED'"
+      + " AND s.status = 'APPROVED'";
+
+  private static final String SEARCH_APPROVED_SQL = "SELECT DISTINCT"
       + " r.id AS req_id, r.emergency AS req_emergency,"
       + " r.facilityid AS facility_id, r.programid AS program_id,"
       + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
       + " s.createdDate as approved_date"
-      + " FROM requisition.requisitions r"
-      + " INNER JOIN requisition.status_changes s ON r.id = s.requisitionid"
-      + " WHERE r.status = 'APPROVED'"
-      + " AND s.status = 'APPROVED'";
+      + FROM + ORDER_BY;
+
+  private static final String SEARCH_ALL_APPROVED_SQL = "SELECT DISTINCT"
+      + " r.id AS req_id, r.emergency AS req_emergency,"
+      + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
+      + " s.createdDate as approved_date"
+      + FROM + ORDER_BY;
+
+  private static final String SELECT_COUNT_APPROVED_SQL = "SELECT DISTINCT COUNT(*)"
+      + FROM;
 
   private static final String FACILITY_ID = "facilityId";
   private static final String PROGRAM_ID = "programId";
@@ -208,27 +221,73 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
    * @return List of requisitions with required fields for convert.
    */
   @Override
-  public List<Requisition> searchApprovedRequisitions(String filterBy,
-                                                      Collection<UUID> facilityIds,
-                                                      Collection<UUID> programIds) {
+  public Page<Requisition> searchApprovedRequisitions(String filterBy,
+        Collection<UUID> facilityIds, Collection<UUID> programIds, Pageable pageable) {
     XLOGGER.entry(filterBy, facilityIds, programIds);
 
     if (allFiltersEmpty(filterBy, facilityIds, programIds)) {
-      return Lists.newArrayList();
+      return Pagination.getPage(Collections.emptyList(), pageable, 0);
     }
 
-    Query query = createQuery(filterBy, facilityIds, programIds);
-    addScalars(query);
+    Query countQuery = createQuery(filterBy, facilityIds, programIds, true);
+    Query searchQuery = createQuery(filterBy, facilityIds, programIds, false);
+    addScalars(searchQuery);
+
+    long count = (long) countQuery.getSingleResult();
+
+    if (count == 0) {
+      return Pagination.getPage(Collections.emptyList(), pageable, 0);
+    }
 
     // hibernate always returns a list of array of objects
     @SuppressWarnings("unchecked")
-    List<Object[]> list = Collections.checkedList(query.getResultList(), Object[].class);
+    List<Object[]> list = Collections.checkedList(searchQuery
+            .setFirstResult(pageable.getOffset())
+            .setMaxResults(pageable.getPageSize())
+            .getResultList(),
+            Object[].class);
 
     List<Requisition> requisitions = list.stream().map(this::toRequisition)
         .collect(Collectors.toList());
 
     XLOGGER.exit(requisitions);
-    return requisitions;
+    return Pagination.getPage(requisitions, pageable, count);
+  }
+
+  /**
+   * Get all approved requisitions.
+   * Empty list is returned if:
+   * - there are no approved requisitions.
+   *
+   * @param filterBy    Field used to filter: all (because it is default filter
+   *        when navigating to Convert to Order screen).
+   * @return List of requisitions with required fields for convert.
+   */
+  @Override
+  public Page<Requisition> searchApprovedRequisitions(String filterBy, Pageable pageable) {
+
+    Query countQuery = createQuery(filterBy, true);
+    Query searchQuery = createQuery(filterBy, false);
+    addScalars(searchQuery);
+
+    long count = (long) countQuery.getSingleResult();
+
+    if (count == 0) {
+      return Pagination.getPage(Collections.emptyList(), pageable, 0);
+    }
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> list = Collections.checkedList(searchQuery
+            .setFirstResult(pageable.getOffset())
+            .setMaxResults(pageable.getPageSize())
+            .getResultList(),
+            Object[].class);
+
+    List<Requisition> requisitions = list.stream().map(this::toRequisition)
+        .collect(Collectors.toList());
+
+    XLOGGER.exit(requisitions);
+    return Pagination.getPage(requisitions, pageable, count);
   }
 
   /**
@@ -524,6 +583,32 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return entityManager.createNativeQuery(builder.toString());
   }
 
+  private Query createQuery(String filterBy, Collection<UUID> facilityIds,
+      Collection<UUID> programIds, Boolean count) {
+    StringBuilder builder = new StringBuilder();
+
+    if (count) {
+      builder.append(SELECT_COUNT_APPROVED_SQL);
+    } else {
+      builder.append(SEARCH_APPROVED_SQL);
+      builder.append(builderSubquery(filterBy, facilityIds, programIds));
+    }
+
+    return entityManager.createNativeQuery(builder.toString());
+  }
+
+  private Query createQuery(String filterBy, Boolean count) {
+    StringBuilder builder = new StringBuilder();
+
+    if (count) {
+      builder.append(SELECT_COUNT_APPROVED_SQL);
+    } else if (!StringUtils.isEmpty(filterBy) && "all".equals(filterBy)) {
+      builder.append(SEARCH_ALL_APPROVED_SQL);
+    }
+
+    return entityManager.createNativeQuery(builder.toString());
+  }
+
   private void addScalars(Query query) {
     SQLQuery sql = query.unwrap(SQLQuery.class);
     sql.addScalar("req_id", PostgresUUIDType.INSTANCE);
@@ -533,6 +618,33 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("node_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("approved_date", ZonedDateTimeType.INSTANCE);
+  }
+
+  private void addScalarsForCount(Query query) {
+    SQLQuery sql = query.unwrap(SQLQuery.class);
+    sql.addScalar("count", LongType.INSTANCE);
+  }
+
+  private StringBuilder builderSubquery(String filterBy, Collection<UUID> facilityIds,
+      Collection<UUID> programIds) {
+    StringBuilder builder = new StringBuilder();
+
+    if (!StringUtils.isEmpty(filterBy)) {
+      String facilities = idsSubquery("r.facilityid in %s", facilityIds);
+      String programs = idsSubquery("r.programid in %s", programIds);
+
+      if (facilities != null && programs != null && "all".equals(filterBy)) {
+        builder.append(String.format(" AND (%s OR %s)", facilities, programs));
+      } else if (facilities != null && programs != null) {
+        builder.append(String.format(" AND %s AND %s", facilities, programs));
+      } else if (facilities != null) {
+        builder.append(String.format(" AND %s", facilities));
+      } else if (programs != null) {
+        builder.append(String.format(" AND %s", programs));
+      }
+    }
+
+    return builder;
   }
 
   private String idsSubquery(String base, Collection<UUID> uuids) {

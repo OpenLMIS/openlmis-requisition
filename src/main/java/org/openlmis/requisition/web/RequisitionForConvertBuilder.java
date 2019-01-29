@@ -34,6 +34,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -58,7 +59,7 @@ public class RequisitionForConvertBuilder {
    * @param programs              filtered programs for creating requisition dto
    * @return a list of requisition with supplying depots representation
    */
-  public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(List<Requisition> requisitions,
+  public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(Page<Requisition> requisitions,
                                                  Collection<UUID> userManagedFacilities,
                                                  Map<UUID, MinimalFacilityDto> minimalFacilities,
                                                  Map<UUID, ProgramDto> programs) {

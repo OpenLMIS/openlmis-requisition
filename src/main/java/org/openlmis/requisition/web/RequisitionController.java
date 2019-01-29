@@ -65,6 +65,9 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -665,7 +668,10 @@ public class RequisitionController extends BaseRequisitionController {
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) List<String> filterValue,
       @RequestParam(required = false) String filterBy,
-      Pageable pageable) {
+      @PageableDefault() @SortDefault.SortDefaults({
+          @SortDefault(sort = {"emergency"}, direction = Direction.DESC),
+          @SortDefault(sort = {"programName"}, direction = Direction.ASC)
+      }) Pageable pageable) {
     Profiler profiler = getProfiler(
         "GET_REQUISITIONS_FOR_CONVERT",
         filterBy, filterValue, pageable

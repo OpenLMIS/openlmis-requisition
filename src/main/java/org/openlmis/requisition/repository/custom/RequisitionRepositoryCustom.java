@@ -46,9 +46,12 @@ public interface RequisitionRepositoryCustom {
                                        UUID program,
                                        Boolean emergency);
 
-  List<Requisition> searchApprovedRequisitions(String filterBy,
+  Page<Requisition> searchApprovedRequisitions(String filterBy,
                                                Collection<UUID> facilityIds,
-                                               Collection<UUID> programIds);
+                                               Collection<UUID> programIds,
+                                               Pageable pageable);
+
+  Page<Requisition> searchApprovedRequisitions(String filterBy, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair> programNodePairs, Pageable pageable);
