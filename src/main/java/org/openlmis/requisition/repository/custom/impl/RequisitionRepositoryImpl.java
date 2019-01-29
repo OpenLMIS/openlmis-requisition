@@ -15,11 +15,11 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
+import com.google.common.base.Joiner;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -63,15 +63,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionRepositoryImpl.class);
 
-  private static final String ORDER_BY = " ORDER BY ?#{#pageable}";
+  private static final String ORDER_BY = " ORDER BY ";
 
   private static final String FROM = " FROM requisition.requisitions r"
       + " INNER JOIN requisition.status_changes s ON r.id = s.requisitionid"
@@ -83,13 +81,7 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       + " r.facilityid AS facility_id, r.programid AS program_id,"
       + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
       + " s.createdDate as approved_date"
-      + FROM + ORDER_BY;
-
-  private static final String SEARCH_ALL_APPROVED_SQL = "SELECT DISTINCT"
-      + " r.id AS req_id, r.emergency AS req_emergency,"
-      + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
-      + " s.createdDate as approved_date"
-      + FROM + ORDER_BY;
+      + FROM;
 
   private static final String SELECT_COUNT_APPROVED_SQL = "SELECT DISTINCT COUNT(*)"
       + FROM;
@@ -101,9 +93,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private static final String CREATED_DATE = "createdDate";
   private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
-  private static final String PROGRAM_NAME = "programName";
-  private static final String FACILITY_CODE = "facilityCode";
-  private static final String FACILITY_NAME = "facilityName";
   private static final String AUTHORIZED_DATE = "authorizedDate";
   private static final String MODIFIED_DATE = "modifiedDate";
 
@@ -224,15 +213,15 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
       Pageable pageable) {
     XLOGGER.entry(facilityId, programId, pageable);
 
-    Query countQuery = createQuery(facilityId, programId);
-    Query searchQuery = createQuery(facilityId, programId);
-    addScalars(searchQuery);
-
+    Query countQuery = createQuery(facilityId, programId, true, pageable);
     Long count = (Long) countQuery.getSingleResult();
 
     if (count == 0) {
       return Pagination.getPage(Collections.emptyList(), pageable, 0);
     }
+
+    Query searchQuery = createQuery(facilityId, programId, false, pageable);
+    addScalars(searchQuery);
 
     // hibernate always returns a list of array of objects
     @SuppressWarnings("unchecked")
@@ -520,43 +509,29 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return query.orderBy(orders);
   }
 
-  private Query createQuery(UUID facilityId, UUID programId) {
-    StringBuilder builder = new StringBuilder(SEARCH_APPROVED_SQL);
+  private Query createQuery(UUID facilityId, UUID programId, Boolean count, Pageable pageable) {
+    StringBuilder builder = new StringBuilder(
+        count ? SELECT_COUNT_APPROVED_SQL : SEARCH_APPROVED_SQL);
 
     if (null != facilityId) {
-      builder.append(" AND r.facilityid = %s");
+      builder.append(String.format(" AND r.facilityid = '%s'", facilityId));
     }
     if (null != programId) {
-      builder.append(" AND r.programid = %s");
+      builder.append(String.format(" AND r.programid = '%s'", programId));
     }
 
-    return entityManager.createNativeQuery(builder.toString());
-  }
+    if (!count && pageable.getSort() != null) {
+      builder.append(ORDER_BY);
+      builder.append(getOrderPredicate(pageable));
+    }
 
-  private Query createQuery(String filterBy, Collection<UUID> facilityIds,
-      Collection<UUID> programIds, Boolean count) {
-    StringBuilder builder = new StringBuilder();
+    Query query = entityManager.createNativeQuery(builder.toString());
 
     if (count) {
-      builder.append(SELECT_COUNT_APPROVED_SQL);
-    } else {
-      builder.append(SEARCH_APPROVED_SQL);
-      builder.append(builderSubquery(filterBy, facilityIds, programIds));
+      addScalarsForCount(query);
     }
 
-    return entityManager.createNativeQuery(builder.toString());
-  }
-
-  private Query createQuery(String filterBy, Boolean count) {
-    StringBuilder builder = new StringBuilder();
-
-    if (count) {
-      builder.append(SELECT_COUNT_APPROVED_SQL);
-    } else if (!StringUtils.isEmpty(filterBy) && "all".equals(filterBy)) {
-      builder.append(SEARCH_ALL_APPROVED_SQL);
-    }
-
-    return entityManager.createNativeQuery(builder.toString());
+    return query;
   }
 
   private void addScalars(Query query) {
@@ -573,50 +548,6 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
   private void addScalarsForCount(Query query) {
     SQLQuery sql = query.unwrap(SQLQuery.class);
     sql.addScalar("count", LongType.INSTANCE);
-  }
-
-  private StringBuilder builderSubquery(String filterBy, Collection<UUID> facilityIds,
-      Collection<UUID> programIds) {
-    StringBuilder builder = new StringBuilder();
-
-    if (!StringUtils.isEmpty(filterBy)) {
-      String facilities = idsSubquery("r.facilityid in %s", facilityIds);
-      String programs = idsSubquery("r.programid in %s", programIds);
-
-      if (facilities != null && programs != null && "all".equals(filterBy)) {
-        builder.append(String.format(" AND (%s OR %s)", facilities, programs));
-      } else if (facilities != null && programs != null) {
-        builder.append(String.format(" AND %s AND %s", facilities, programs));
-      } else if (facilities != null) {
-        builder.append(String.format(" AND %s", facilities));
-      } else if (programs != null) {
-        builder.append(String.format(" AND %s", programs));
-      }
-    }
-
-    return builder;
-  }
-
-  private String idsSubquery(String base, Collection<UUID> uuids) {
-    if (CollectionUtils.isEmpty(uuids)) {
-      return null;
-    } else {
-      return String.format(base, mergeIds(uuids));
-    }
-  }
-
-  private String mergeIds(Collection<UUID> ids) {
-    StringBuilder idsBuilder = new StringBuilder("(");
-    String prefix = "";
-
-    for (UUID id : ids) {
-      idsBuilder.append(prefix);
-      idsBuilder.append("'" + id + "'");
-      prefix = ",";
-    }
-    idsBuilder.append(')');
-
-    return idsBuilder.toString();
   }
 
   private Requisition toRequisition(Object[] values) {
@@ -638,20 +569,23 @@ public class RequisitionRepositoryImpl implements RequisitionRepositoryCustom {
     return requisition;
   }
 
-  private boolean allFiltersEmpty(String filterBy, Collection<UUID> facilityIds,
-      Collection<UUID> programIds) {
+  private String getOrderPredicate(Pageable pageable) {
+    List<String> orderPredicate = new ArrayList<>();
+    List<String> sql = new ArrayList<>();
+    Iterator<Sort.Order> iterator = pageable.getSort().iterator();
+    Sort.Order order;
+    Sort.Direction sortDirection = Sort.Direction.ASC;
 
-    boolean byEmptyProgram = PROGRAM_NAME.equals(filterBy)
-        && CollectionUtils.isEmpty(programIds);
+    while (iterator.hasNext()) {
+      order = iterator.next();
+      orderPredicate.add("r.".concat(order.getProperty()));
+      sortDirection = order.getDirection();
+    }
 
-    boolean byEmptyFacility = (FACILITY_CODE.equals(filterBy) || FACILITY_NAME.equals(filterBy))
-        && CollectionUtils.isEmpty(facilityIds);
+    sql.add(Joiner.on(",").join(orderPredicate));
+    sql.add(sortDirection.name());
 
-    boolean byEmptyAll = !StringUtils.isEmpty(filterBy)
-        && CollectionUtils.isEmpty(programIds)
-        && CollectionUtils.isEmpty(facilityIds);
-
-    return byEmptyFacility || byEmptyProgram || byEmptyAll;
+    return Joiner.on(' ').join(sql);
   }
 
   private ZonedDateTime setStartDateParam(LocalDate dateFrom) {

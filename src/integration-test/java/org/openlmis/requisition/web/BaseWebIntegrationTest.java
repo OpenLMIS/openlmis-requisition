@@ -110,9 +110,6 @@ public abstract class BaseWebIntegrationTest {
   static final String SORT = "sort";
   static final String PAGE = "page";
 
-  static final String FILTER_VALUE = "filterValue";
-  static final String FILTER_BY = "filterBy";
-
   static final Pageable FIRST_PAGE =
       new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 

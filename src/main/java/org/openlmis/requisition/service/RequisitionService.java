@@ -37,14 +37,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -58,7 +55,6 @@ import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
-import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -78,9 +74,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
@@ -89,7 +83,6 @@ import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuil
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.utils.RequisitionForConvertComparator;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.slf4j.Logger;
@@ -113,12 +106,6 @@ public class RequisitionService {
 
   @Autowired
   private StatusMessageRepository statusMessageRepository;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private PeriodService periodService;
@@ -568,16 +555,15 @@ public class RequisitionService {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param filterValues Expressions to be used in filters.
-   * @param filterBy     Field used to filter: "programName", "facilityCode", "facilityName" or
-   *                     "all".
-   * @param pageable     Pageable object that allows to optionally add "page" (page number)
-   *                     and "size" (page size) query parameters.
+   * @param facilityId UUID of facility to be used in filters
+   * @param programId  UUID of program to be used in filters
+   * @param pageable   Pageable object that allows to optionally add "page" (page number)
+   *                   and "size" (page size) query parameters.
    * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
-  searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId,
+      searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId,
       Collection<UUID> userManagedFacilities, Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");

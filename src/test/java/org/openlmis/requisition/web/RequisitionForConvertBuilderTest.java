@@ -23,7 +23,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
@@ -33,9 +32,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.springframework.data.domain.PageImpl;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
@@ -45,23 +49,34 @@ public class RequisitionForConvertBuilderTest {
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   @InjectMocks
   private RequisitionForConvertBuilder requisitionForConvertBuilder =
       new RequisitionForConvertBuilder();
 
+  private FacilityDto facility = mockFacility();
+  private ProgramDto program = new ProgramDtoDataBuilder().build();
+
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+
+    when(facilityReferenceDataService.findOne(facility.getId()))
+        .thenReturn(facility);
+    when(programReferenceDataService.findOne(program.getId()))
+        .thenReturn(program);
   }
 
   @Test
   public void shouldBuildRequisitionsWithDepotsRespectingUserAccessibleDepots() {
     //given
-    FacilityDto facility1 = mockSupplyingDepot();
-    FacilityDto facility2 = mockSupplyingDepot();
-    FacilityDto facility3 = mockSupplyingDepot();
+    FacilityDto facility1 = mockFacility();
+    FacilityDto facility2 = mockFacility();
+    FacilityDto facility3 = mockFacility();
 
     List<UUID> userManagedDepots = Lists.newArrayList(facility1.getId(), facility2.getId());
     when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
@@ -74,8 +89,7 @@ public class RequisitionForConvertBuilderTest {
 
     //when
     List<RequisitionWithSupplyingDepotsDto> result = requisitionForConvertBuilder
-        .buildRequisitions(new PageImpl<Requisition>(requisitionsList), userManagedDepots,
-            Collections.emptyMap(), Collections.emptyMap());
+        .buildRequisitions(new PageImpl<Requisition>(requisitionsList), userManagedDepots);
 
     //then
     //we have 2 requisition representations
@@ -96,11 +110,13 @@ public class RequisitionForConvertBuilderTest {
     Requisition requisition3 = mockRequisition(
         requisition1.getProgramId(), requisition1.getSupervisoryNodeId());
 
+    when(programReferenceDataService.findOne(requisition1.getProgramId()))
+        .thenReturn(program);
+
     List requisitionsList = Lists.newArrayList(requisition1, requisition2, requisition3);
 
     requisitionForConvertBuilder.buildRequisitions(
-        new PageImpl<Requisition>(requisitionsList), new ArrayList<>(),
-        Collections.emptyMap(), Collections.emptyMap());
+        new PageImpl<Requisition>(requisitionsList), new ArrayList<>());
 
     // Should hit ref data once and then use cache
     verify(facilityReferenceDataService, times(1))
@@ -117,8 +133,7 @@ public class RequisitionForConvertBuilderTest {
     List requisitionsList = Lists.newArrayList(requisition1, requisition2, requisition3);
 
     requisitionForConvertBuilder.buildRequisitions(
-        new PageImpl<Requisition>(requisitionsList), new ArrayList<>(),
-        Collections.emptyMap(), Collections.emptyMap());
+        new PageImpl<Requisition>(requisitionsList), new ArrayList<>());
 
     // Should hit ref data three times - for each requisition
     verify(facilityReferenceDataService, times(3))
@@ -126,22 +141,19 @@ public class RequisitionForConvertBuilderTest {
     verifyNoMoreInteractions(facilityReferenceDataService);
   }
 
-  private FacilityDto mockSupplyingDepot() {
-    FacilityDto facilityDto = new FacilityDto();
-    facilityDto.setId(UUID.randomUUID());
-    return facilityDto;
+  private FacilityDto mockFacility() {
+    return new FacilityDtoDataBuilder().build();
   }
 
   private Requisition mockRequisition() {
-    return mockRequisition(UUID.randomUUID(), UUID.randomUUID());
+    return mockRequisition(program.getId(), UUID.randomUUID());
   }
 
-  private Requisition mockRequisition(UUID program, UUID supervisoryNode) {
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setProgramId(program);
-    requisition.setSupervisoryNodeId(supervisoryNode);
-    return requisition;
+  private Requisition mockRequisition(UUID programId, UUID supervisoryNodeId) {
+    return new RequisitionDataBuilder()
+        .withProgramId(programId)
+        .withFacilityId(facility.getId())
+        .withSupervisoryNodeId(supervisoryNodeId)
+        .build();
   }
-
 }

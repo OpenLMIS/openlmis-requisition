@@ -789,7 +789,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
-        null, null, null, createPageable(10, 0));
+        null, null, createPageable(10, 0));
 
     assertEquals(2, requisitions.getTotalElements());
     for (Requisition r : requisitions) {
@@ -804,14 +804,14 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFilterApprovedRequisitionsByAnyField() {
+  public void shouldFilterApprovedRequisitionsByFacilityId() {
     Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    Page<Requisition> requisitions = repository.searchApprovedRequisitions("all",
-        Lists.newArrayList(requisition1.getFacilityId()),
-        Lists.newArrayList(requisition1.getProgramId()),
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        requisition1.getFacilityId(),
+        null,
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -819,13 +819,14 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFilterApprovedRequisitionsByFacility() {
+  public void shouldFilterApprovedRequisitionsByProgramId() {
     Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Lists.newArrayList(requisition1.getFacilityId()), null,
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        null,
+        requisition1.getProgramId(),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -833,48 +834,20 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFilterApprovedRequisitionsByProgram() {
+  public void shouldFilterApprovedRequisitionsByFacilityIdAndProgramId() {
     Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
-    generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
 
-    Page<Requisition> requisitions = repository.searchApprovedRequisitions("programName",
-        null, Lists.newArrayList(requisition1.getProgramId()),
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        requisition1.getFacilityId(),
+        requisition1.getProgramId(),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
-    assertThat(requisitions, hasItem(hasProperty("id", is(requisition1.getId()))));
-  }
-
-  @Test
-  public void shouldFilterApprovedRequisitionsByMultipleValues() {
-    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
-    Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
-    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
-
-    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Lists.newArrayList(requisition1.getFacilityId(), requisition2.getFacilityId()), null,
-        createPageable(10, 0));
-
-    assertEquals(2, requisitions.getTotalElements());
     List<UUID> requisitionIds = requisitions
         .map(Requisition::getId)
         .getContent();
     assertTrue(requisitionIds.contains(requisition1.getId()));
-    assertTrue(requisitionIds.contains(requisition2.getId()));
-  }
-
-  @Test
-  public void shouldReturnEmptyListOnEmptyFiltersWhenFilteringByFields() {
-    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
-    generateRequisition(RequisitionStatus.APPROVED);
-    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
-
-    Page<Requisition> requisitions = repository.searchApprovedRequisitions("facilityName",
-        Collections.emptyList(), Collections.emptyList(), createPageable(10, 0));
-
-    assertNotNull(requisitions);
-    assertEquals(0, requisitions.getTotalElements());
   }
 
   @Test

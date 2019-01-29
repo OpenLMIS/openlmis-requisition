@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -39,6 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
@@ -62,7 +62,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -142,12 +141,11 @@ import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
-import org.openlmis.requisition.utils.RequisitionForConvertComparator;
+import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -336,7 +334,7 @@ public class RequisitionServiceTest {
         .thenReturn(singletonList(requisition));
     when(requisitionRepository
         .searchRequisitions(secondPeriod.getId(), facility.getId(), program.getId(), false))
-        .thenReturn(Collections.emptyList());
+        .thenReturn(emptyList());
 
     requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
@@ -550,7 +548,7 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(Collections.emptyList(), pageRequest));
+        .thenReturn(getPage(emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
@@ -566,7 +564,7 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(Collections.emptyList(), pageRequest));
+        .thenReturn(getPage(emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
@@ -582,7 +580,7 @@ public class RequisitionServiceTest {
 
     when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
         any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(Collections.emptyList(), pageRequest));
+        .thenReturn(getPage(emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
@@ -952,7 +950,7 @@ public class RequisitionServiceTest {
         .thenReturn(periods);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
-    whenGetStockCardSummaries().thenReturn(Collections.emptyList());
+    whenGetStockCardSummaries().thenReturn(emptyList());
 
     mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
@@ -1124,7 +1122,7 @@ public class RequisitionServiceTest {
   @Test
   public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
     // given
-    when(permissionService.getPermissionStrings()).thenReturn(Collections.emptyList());
+    when(permissionService.getPermissionStrings()).thenReturn(emptyList());
 
     // when
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
@@ -1145,211 +1143,69 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldFindAndSortAndPageApprovedRequisitions() {
+  public void shouldFilterRequisitionsForConvertFacilityIdAndProgramId() {
     // given
-    List<BasicRequisitionDto> requisitionDtos = getBasicRequisitionDtoList();
-
-    String filterAndSortBy = "programName";
-
     UUID supplyingDepotId = UUID.randomUUID();
     List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
 
-    int pageSize = 3;
-    int pageNumber = 0;
-    Pageable pageable = mockPageable();
-
-
-    setupStubsForTestApprovedRequisition(requisitionDtos, filterAndSortBy, filterAndSortBy,
-        null, null, supplyingDepots, pageable, pageSize, pageNumber);
-
-    List<BasicRequisitionDto> requisitionDtosSubList =
-        requisitionDtos.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
-
-    List<RequisitionWithSupplyingDepotsDto> requisitionWithSupplyingDepotDtos =
-        requisitionDtosSubList
-            .stream()
-            .map(requisitionDto ->
-                new RequisitionWithSupplyingDepotsDto(requisitionDto, supplyingDepots))
-            .sorted(new RequisitionForConvertComparator(pageable))
-            .collect(Collectors.toList());
-
-    //when
-    Page<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrieved =
-        requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null,
-            filterAndSortBy, pageable, singletonList(supplyingDepotId));
-
-    List<RequisitionWithSupplyingDepotsDto> requisitionDtosRetrievedList =
-        requisitionDtosRetrieved.getContent();
-
-    //then
-    for (int i = 0; i < requisitionDtosRetrievedList.size(); i++) {
-      assertEquals(
-          requisitionWithSupplyingDepotDtos.get(i).getRequisition(),
-          requisitionDtosRetrievedList.get(i).getRequisition()
-      );
-      assertEquals(
-          requisitionWithSupplyingDepotDtos.get(i).getSupplyingDepots(),
-          requisitionDtosRetrievedList.get(i).getSupplyingDepots()
-      );
-    }
-    assertEquals(requisitionDtos.size(), requisitionDtosRetrieved.getTotalElements());
-    assertEquals(pageSize, requisitionDtosRetrieved.getNumberOfElements());
-    assertTrue(requisitionDtosRetrieved.isFirst());
-    assertFalse(requisitionDtosRetrieved.isLast());
-  }
-
-  @Test
-  public void shouldFilterRequisitionsForConvertByMultipleProgramValues() {
-    // given
-    final String filterBy = "programName";
-    final String fpProgram = "Family Planning";
-    final String emProgram = "Essential Meds";
-    final String em = "Essential";
-
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
-
-    int pageSize = 20;
-    int pageNumber = 0;
     Pageable pageable = mockPageable();
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
-    List<BasicRequisitionDto> familyPlanningRequisitions = getBasicRequisitionDtoList();
 
-    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, filterBy, emProgram,
-        null, null, supplyingDepots, pageable, pageSize, pageNumber);
-    setupStubsForTestApprovedRequisition(familyPlanningRequisitions, filterBy, fpProgram,
-        null, null, supplyingDepots, pageable, pageSize, pageNumber);
-    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, filterBy, em,
-        null, null, supplyingDepots, pageable, pageSize, pageNumber);
-
-    when(programReferenceDataService.search(emProgram)).thenReturn(Lists.newArrayList(program));
-    when(programReferenceDataService.search(em)).thenReturn(Lists.newArrayList(program));
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
+        program.getId(), supplyingDepots, pageable);
 
     //when
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        Lists.newArrayList(emProgram, em, fpProgram), filterBy, pageable,
-        Arrays.asList(supplyingDepotId));
+        facility.getId(), program.getId(), singletonList(supplyingDepotId), pageable);
 
     // then
-    verify(programReferenceDataService).search(emProgram);
-    verify(programReferenceDataService).search(em);
-    verify(programReferenceDataService).search(fpProgram);
-    verify(facilityReferenceDataService, never())
-        .search(anyString(), anyString(), any(UUID.class), anyBoolean());
+    verifyNoMoreInteractions(programReferenceDataService);
+    verifyNoMoreInteractions(facilityReferenceDataService);
   }
 
   @Test
-  public void shouldFilterRequisitionsForConvertByMultipleFacilityCodeValues() {
+  public void shouldFilterRequisitionsForConvertFacilityId() {
     // given
-    final String filterBy = "facilityCode";
-    final String code1 = "LL001";
-    final String code2 = "LL002";
-
     UUID supplyingDepotId = UUID.randomUUID();
     List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
 
-    int pageSize = 20;
-    int pageNumber = 0;
     Pageable pageable = mockPageable();
 
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
-        code1, null, supplyingDepots, pageable, pageSize, pageNumber);
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
-        code2, null, supplyingDepots, pageable, pageSize, pageNumber);
+    List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
+
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(), null,
+        supplyingDepots, pageable);
 
     //when
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        Lists.newArrayList(code1, code2), filterBy, pageable, Arrays.asList(supplyingDepotId));
+        facility.getId(), null, singletonList(supplyingDepotId), pageable);
 
     // then
-    verify(facilityReferenceDataService).search(code1, null, null, false);
-    verify(facilityReferenceDataService).search(code2, null, null, false);
-    verify(programReferenceDataService).findAll();
+    verifyNoMoreInteractions(programReferenceDataService);
+    verifyNoMoreInteractions(facilityReferenceDataService);
   }
 
   @Test
-  public void shouldFilterRequisitionsForConvertByMultipleFacilityNameValues() {
+  public void shouldFilterRequisitionsForConvertProgramId() {
     // given
-    final String filterBy = "facilityName";
-    final String name1 = "Comfort Health Clinic";
-    final String name2 = "Balaka District Hospital";
-
     UUID supplyingDepotId = UUID.randomUUID();
     List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
 
-    int pageSize = 20;
-    int pageNumber = 0;
     Pageable pageable = mockPageable();
 
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
-        null, name1, supplyingDepots, pageable, pageSize, pageNumber);
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
-        null, name2, supplyingDepots, pageable, pageSize, pageNumber);
+    List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
+
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, null, program.getId(),
+        supplyingDepots, pageable);
 
     //when
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        Lists.newArrayList(name1, name2), filterBy, pageable, Arrays.asList(supplyingDepotId));
+        null, program.getId(), singletonList(supplyingDepotId), pageable);
 
     // then
-    verify(facilityReferenceDataService).search(null, name1, null, false);
-    verify(facilityReferenceDataService).search(null, name2, null, false);
-    verify(programReferenceDataService).findAll();
-  }
-
-  @Test
-  public void shouldFilterRequisitionsForConvertByMultipleValues() {
-    // given
-    final String filterBy = "all";
-    final String expression1 = "Essential";
-    final String expression2 = "Clinic";
-
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
-
-    int pageSize = 20;
-    int pageNumber = 0;
-    Pageable pageable = mockPageable();
-
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, expression1,
-        expression1, expression1, supplyingDepots, pageable, pageSize, pageNumber);
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, expression2,
-        expression2, expression2, supplyingDepots, pageable, pageSize, pageNumber);
-
-    //when
-    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        Lists.newArrayList(expression1, expression2), filterBy, pageable,
-        Arrays.asList(supplyingDepotId));
-
-    // then
-    verify(facilityReferenceDataService).search(expression1, expression1, null, false);
-    verify(facilityReferenceDataService).search(expression2, expression2, null, false);
-    verify(programReferenceDataService).search(expression1);
-    verify(programReferenceDataService).search(expression2);
-  }
-
-  @Test
-  public void shouldNotFilterRequisitionsForConvertIfNoFilterValueProvided() {
-    // given
-    final String filterBy = "all";
-
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
-
-    int pageSize = 20;
-    int pageNumber = 0;
-    Pageable pageable = mockPageable();
-
-    setupStubsForTestApprovedRequisition(getBasicRequisitionDtoList(), filterBy, null,
-        null, null, supplyingDepots, pageable, pageSize, pageNumber);
-
-    //when
-    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(null, filterBy,
-        pageable, Arrays.asList(supplyingDepotId));
-
-    // then
-    verify(facilityReferenceDataService).findAll();
-    verify(programReferenceDataService).findAll();
+    verifyNoMoreInteractions(programReferenceDataService);
+    verifyNoMoreInteractions(facilityReferenceDataService);
   }
 
   @Test
@@ -1527,7 +1383,7 @@ public class RequisitionServiceTest {
   private void validateRequisitionDeleteWithStatus(RequisitionStatus status) {
     requisition.setStatus(status);
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
-        .thenReturn(Collections.emptyList());
+        .thenReturn(emptyList());
     stubRecentRequisition();
 
     requisitionService.delete(requisition);
@@ -1541,10 +1397,11 @@ public class RequisitionServiceTest {
   }
 
   private Pageable mockPageable() {
-    Pageable pageable = mock(Pageable.class);
-    Sort sort = new Sort(Sort.Direction.DESC, "programName");
-    when(pageable.getSort()).thenReturn(sort);
-    return pageable;
+    return mockPageable(0, 10);
+  }
+
+  private Pageable mockPageable(int pageNumber, int pageSize) {
+    return new PageRequest(pageNumber, pageSize, new Sort(Sort.Direction.DESC, "programName"));
   }
 
   private List<ReleasableRequisitionDto> setUpReleaseRequisitionsAsOrder(
@@ -1631,46 +1488,12 @@ public class RequisitionServiceTest {
     return requisitionDtos;
   }
 
-  private void setupStubsForTestFindSupplyItems(
-      Requisition requisition, List<RequisitionLineItem> fullSupply,
-      List<RequisitionLineItem> nonFullSupply) {
-    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
-        .withProgramOrderable(requisition.getProgramId(), true)
-        .build();
-    when(orderableReferenceDataService.findOne(fullSupplyOrderable.getId()))
-        .thenReturn(fullSupplyOrderable);
-
-    OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
-        .withProgramOrderable(requisition.getProgramId(), false)
-        .build();
-    when(orderableReferenceDataService.findOne(nonFullSupplyOrderable.getId()))
-        .thenReturn(nonFullSupplyOrderable);
-
-    fullSupply.forEach(line -> when(line.getOrderableId())
-        .thenReturn(fullSupplyOrderable.getId()));
-    nonFullSupply.forEach(line -> when(line.getOrderableId())
-        .thenReturn(nonFullSupplyOrderable.getId()));
-  }
-
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
-                                                    String filterBy, String programName,
-                                                    String facilityCode, String facilityName,
-                                                    List<FacilityDto> supplyingDepots,
-                                                    Pageable pageable, int pageSize,
-                                                    int pageNumber) {
-    final List<UUID> programs = new ArrayList<>();
-    final List<UUID> facilitys = new ArrayList<>();
-    final Page<Requisition> requisitions = new PageImpl<>(emptyList());
+      UUID facilityId, UUID programId, List<FacilityDto> supplyingDepots, Pageable pageable) {
+    final Page<Requisition> requisitions = Pagination
+        .getPage(emptyList(), pageable, requisitionDtos.size());
 
-    when(programReferenceDataService.search(programName))
-        .thenReturn(Collections.emptyList());
-    when(programReferenceDataService.findAll())
-        .thenReturn(Collections.emptyList());
-    when(facilityReferenceDataService.search(eq(facilityCode), eq(facilityName),
-        eq(null), eq(false))).thenReturn(Collections.emptyList());
-    when(facilityReferenceDataService.findAll())
-        .thenReturn(Collections.emptyList());
-    when(requisitionRepository.searchApprovedRequisitions(filterBy, programs, facilitys, pageable))
+    when(requisitionRepository.searchApprovedRequisitions(facilityId, programId, pageable))
         .thenReturn(requisitions);
 
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
@@ -1679,11 +1502,8 @@ public class RequisitionServiceTest {
     for (BasicRequisitionDto dto : requisitionDtos) {
       requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepots));
     }
-    when(requisitionForConvertBuilder.buildRequisitions(any(), any(), any(), any()))
+    when(requisitionForConvertBuilder.buildRequisitions(any(), any()))
         .thenReturn(requisitionsWithDepots);
-
-    when(pageable.getPageSize()).thenReturn(pageSize);
-    when(pageable.getPageNumber()).thenReturn(pageNumber);
   }
 
   private void mockPreviousRequisition() {
@@ -1703,7 +1523,7 @@ public class RequisitionServiceTest {
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
         .searchRequisitions(any(), any(), any(), any()))
-        .thenReturn(Collections.emptyList());
+        .thenReturn(emptyList());
   }
 
   private void mockApprovedProduct(UUID[] products, boolean[] fullSupply) {

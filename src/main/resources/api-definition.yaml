@@ -686,17 +686,15 @@ resourceTypes:
               is: [ secured, paginated, sorted ]
               description: Get requisitions to approve for right supervisor.
               queryParameters:
-                  filterValue:
-                      displayName: filterValue
-                      description: This parameter contains filter value.
+                  facilityId:
+                      displayName: facilityId
+                      description: This parameter contains facility id filter.
                       type: string
                       required: false
-                      repeat: true
-                  filterBy:
-                      displayName: filterBy
-                      description: This parameter contains field which we are going to filter by.
-                        There are four possibilities - facilityCode, facilityName, programName
-                        and all
+                      repeat: false
+                  programId:
+                      displayName: programId
+                      description: This parameter contains program id filter.
                       type: string
                       required: false
                       repeat: false

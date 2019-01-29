@@ -72,6 +72,7 @@ public class RequisitionForConvertBuilder {
 
       if (!facilities.isEmpty()) {
         BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
+            //TODO: add batch fetch for programs and facilities in service or in this builder
             facilityReferenceDataService.findOne(requisition.getFacilityId()),
             programReferenceDataService.findOne(requisition.getProgramId()));
         responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
