@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 
 public class SupplyLineReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<SupplyLineDto> {
@@ -49,24 +50,45 @@ public class SupplyLineReferenceDataServiceTest
   }
 
   @Test
-  public void shouldSearchSupplyLines() {
-    // givne
+  public void shouldSearchSupplyLinesByProgramIdAndSupervisoryNodeId() {
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
 
-    // when
-    SupplyLineDto dto = mockArrayResponseEntityAndGetDto();
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    mockPageResponseEntity(dto);
     List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
 
-    // then
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));
 
-    verifyArrayRequest()
+    verifyPageRequest()
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
         .hasQueryParameter("programId", programId)
-        .hasQueryParameter("supervisoryNodeId", supervisoryNodeId);
+        .hasQueryParameter("supervisoryNodeId", supervisoryNodeId)
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl());
+  }
+
+  @Test
+  public void shouldSearchSupplyLinesBySupplyingFacilityId() {
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    mockPageResponseEntity(dto);
+    List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
+
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("programId", programId)
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }
 }

@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service.referencedata;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.service.RequestParameters;
@@ -52,6 +53,24 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
         .set("programId", programId)
         .set("supervisoryNodeId", supervisoryNodeId);
 
-    return findAll("searchByUUID", parameters);
+    return search(parameters);
+  }
+
+  /**
+   * Retrieves supply lines from reference data service by supplying facility ids.
+   *
+   * @param supplyingFacilityIds UUIDs of supplying facility
+   * @return A list of supply lines matching search criteria
+   */
+  public List<SupplyLineDto> search(Set<UUID> supplyingFacilityIds) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("supplyingFacilityId", supplyingFacilityIds);
+
+    return search(parameters);
+  }
+
+  private List<SupplyLineDto> search(RequestParameters parameters) {
+    return getPage(parameters).getContent();
   }
 }
