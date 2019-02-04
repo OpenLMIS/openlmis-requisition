@@ -17,6 +17,9 @@ package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -76,12 +79,10 @@ public class RequisitionForConvertBuilderTest {
     //given
     FacilityDto facility1 = mockFacility();
     FacilityDto facility2 = mockFacility();
-    FacilityDto facility3 = mockFacility();
 
     List<UUID> userManagedDepots = Lists.newArrayList(facility1.getId(), facility2.getId());
-    when(facilityReferenceDataService.searchSupplyingDepots(any(), any()))
-        .thenReturn(Lists.newArrayList(facility1, facility2, facility3))
-        .thenReturn(Lists.newArrayList(facility1, facility3));
+    when(facilityReferenceDataService.search(anySet()))
+        .thenReturn(Lists.newArrayList(facility1, facility2));
 
     Requisition requisition = mockRequisition();
     Requisition requisition2 = mockRequisition();
@@ -96,36 +97,14 @@ public class RequisitionForConvertBuilderTest {
     assertEquals(2, result.size());
 
     //first requisition has 2 supplying depots where user has rights
-    assertEquals(2, result.get(0).getSupplyingDepots().size());
+    assertEquals(userManagedDepots.size(), result.get(0).getSupplyingDepots().size());
 
     //second requisition has 1 supplying depot where user has right
-    assertEquals(1, result.get(1).getSupplyingDepots().size());
+    assertEquals(userManagedDepots.size(), result.get(1).getSupplyingDepots().size());
   }
 
   @Test
-  public void shouldGetSupplyingFacilitiesFromCache() {
-    Requisition requisition1 = mockRequisition();
-    Requisition requisition2 = mockRequisition(
-        requisition1.getProgramId(), requisition1.getSupervisoryNodeId());
-    Requisition requisition3 = mockRequisition(
-        requisition1.getProgramId(), requisition1.getSupervisoryNodeId());
-
-    when(programReferenceDataService.findOne(requisition1.getProgramId()))
-        .thenReturn(program);
-
-    List requisitionsList = Lists.newArrayList(requisition1, requisition2, requisition3);
-
-    requisitionForConvertBuilder.buildRequisitions(
-        new PageImpl<Requisition>(requisitionsList), new ArrayList<>());
-
-    // Should hit ref data once and then use cache
-    verify(facilityReferenceDataService, times(1))
-        .searchSupplyingDepots(any(UUID.class), any(UUID.class));
-    verifyNoMoreInteractions(facilityReferenceDataService);
-  }
-
-  @Test
-  public void sholdQueryRefDataForSupplyingFacilitiesWhenNoCacheHits() {
+  public void shouldQueryRefDataForSupplyingFacilitiesWhenNoCacheHits() {
     Requisition requisition1 = mockRequisition();
     Requisition requisition2 = mockRequisition();
     Requisition requisition3 = mockRequisition();
@@ -137,7 +116,8 @@ public class RequisitionForConvertBuilderTest {
 
     // Should hit ref data three times - for each requisition
     verify(facilityReferenceDataService, times(3))
-        .searchSupplyingDepots(any(UUID.class), any(UUID.class));
+        .search(anySetOf(UUID.class));
+
     verifyNoMoreInteractions(facilityReferenceDataService);
   }
 

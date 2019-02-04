@@ -45,7 +45,8 @@ public interface RequisitionRepositoryCustom {
                                        UUID program,
                                        Boolean emergency);
 
-  Page<Requisition> searchApprovedRequisitions(UUID facilityId, UUID programId, Pageable pageable);
+  Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
+      Set<UUID> supervisoryNodeIds, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair> programNodePairs, Pageable pageable);

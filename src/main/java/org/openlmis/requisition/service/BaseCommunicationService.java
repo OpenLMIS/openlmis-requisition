@@ -171,6 +171,27 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
+  protected <P> ServiceResponse<List<P>> tryFindAll(String resourceUrl, Class<P[]> type,
+      String etag) {
+    String url = getServiceUrl() + getUrl() + resourceUrl;
+
+    try {
+      RequestHeaders headers = RequestHeaders.init().setIfNoneMatch(etag);
+      ResponseEntity<P[]> response = restTemplate.exchange(
+          url, HttpMethod.GET, RequestHelper.createEntity(null, addAuthHeader(headers)), type
+      );
+
+      if (response.getStatusCode() == HttpStatus.NOT_MODIFIED) {
+        return new ServiceResponse<>(null, response.getHeaders(), false);
+      } else {
+        List<P> list = Stream.of(response.getBody()).collect(Collectors.toList());
+        return new ServiceResponse<>(list, response.getHeaders(), true);
+      }
+    } catch (HttpStatusCodeException ex) {
+      throw buildDataRetrievalException(ex);
+    }
+  }
+
   public Page<T> getPage(RequestParameters parameters) {
     return getPage("", parameters);
   }
@@ -337,4 +358,9 @@ public abstract class BaseCommunicationService<T> {
     this.restTemplate = template;
   }
 
+  private RequestHeaders addAuthHeader(RequestHeaders headers) {
+    return null == headers
+        ? RequestHeaders.init().setAuth(authService.obtainAccessToken())
+        : headers.setAuth(authService.obtainAccessToken());
+  }
 }

@@ -15,9 +15,12 @@
 
 package org.openlmis.requisition.service;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
@@ -30,13 +33,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_B
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SPLIT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
-import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,7 +79,10 @@ import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PermissionStringDto;
+import org.openlmis.requisition.service.referencedata.PermissionStrings;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
@@ -151,6 +158,9 @@ public class RequisitionService {
 
   @Autowired
   private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
+
+  @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -490,7 +500,7 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
 
     profiler.start("GET_ORDERS_EDIT_RIGHT_DTO");
-    RightDto right = authenticationHelper.getRight(PermissionService.ORDERS_EDIT);
+    RightDto right = authenticationHelper.getRight(ORDERS_EDIT);
     List<Requisition> releasedRequisitions = new ArrayList<>();
 
     profiler.start("GET_USER_FULFILLMENT_FACILITIES");
@@ -559,30 +569,72 @@ public class RequisitionService {
    * @param programId  UUID of program to be used in filters
    * @param pageable   Pageable object that allows to optionally add "page" (page number)
    *                   and "size" (page size) query parameters.
-   * @param userManagedFacilities List of UUIDs of facilities that are managed by logged in user.
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto>
-      searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId,
-      Collection<UUID> userManagedFacilities, Pageable pageable) {
+      searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId, Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
 
+    UserDto user = authenticationHelper.getCurrentUser();
+
+    Set<UUID> programIds;
+    Set<UUID> supervisoryNodeIds = new HashSet<>();
+    Set<UUID> fulfillmentFacilitiesIds = new HashSet<>();
+
+    if (null != user) {
+      profiler.start("GET_PERMISSION_STRINGS");
+      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+      Set<PermissionStringDto> permissionStrings = handler.get();
+
+      fulfillmentFacilitiesIds = permissionStrings.stream()
+          .filter(permission -> ORDERS_EDIT.equals(permission.getRightName()))
+          .map(PermissionStringDto::getFacilityId)
+          .collect(toSet());
+
+      if (isEmpty(fulfillmentFacilitiesIds)) {
+        return Pagination.getPage(emptyList(), pageable, 0);
+      }
+
+      List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
+          .search(fulfillmentFacilitiesIds);
+
+      supervisoryNodeIds = supplyLines.stream()
+          .map(SupplyLineDto::getSupervisoryNode)
+          .collect(toSet());
+
+      programIds = supplyLines.stream()
+          .map(SupplyLineDto::getProgram)
+          .collect(toSet());
+
+      if (null != programId) {
+        programIds = programIds.stream()
+            .filter(id -> id.equals(programId))
+            .collect(toSet());
+      }
+
+      if (isEmpty(supervisoryNodeIds) || isEmpty(programIds)) {
+        return Pagination.getPage(emptyList(), pageable, 0);
+      }
+    } else {
+      programIds = newHashSet(programId);
+    }
+
+    profiler.stop().log();
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     Page<Requisition> requisitionsPage = requisitionRepository.searchApprovedRequisitions(
-        facilityId, programId, pageable);
+        facilityId, programIds, supervisoryNodeIds, pageable);
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, userManagedFacilities);
+        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, fulfillmentFacilitiesIds);
 
     profiler.start("PAGINATE");
     Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
         responseList, pageable, requisitionsPage.getNumberOfElements());
 
-    profiler.stop().log();
-    return page;
+  return page;
   }
 
   /**
@@ -749,5 +801,21 @@ public class RequisitionService {
                                                            ProcessingPeriodDto period) {
     return requisitionRepository.searchRequisitions(
         period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
+  }
+
+  private void populateIdsFromPermissionStrings(Set<PermissionStringDto> permissionStrings,
+      Set<UUID> fulfillmentFacilitiesIds) {
+
+    permissionStrings.stream()
+        .filter(this::isFacilitySearchRight)
+        .forEach(permissionString -> {
+          if (ORDERS_EDIT.equals(permissionString.getRightName())) {
+            fulfillmentFacilitiesIds.add(permissionString.getFacilityId());
+          }
+        });
+  }
+
+  private boolean isFacilitySearchRight(PermissionStringDto permissionString) {
+    return permissionString.getRightName().equals(ORDERS_EDIT);
   }
 }

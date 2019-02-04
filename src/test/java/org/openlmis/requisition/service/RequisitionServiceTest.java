@@ -23,6 +23,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hibernate.validator.internal.util.CollectionHelper.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -51,6 +52,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELE
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED_WITHOUT_ORDER;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
+import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.utils.Pagination.DEFAULT_PAGE_NUMBER;
 import static org.openlmis.requisition.utils.Pagination.NO_PAGINATION;
 import static org.openlmis.requisition.utils.Pagination.getPage;
@@ -122,6 +124,8 @@ import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDa
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PermissionStringDto;
+import org.openlmis.requisition.service.referencedata.PermissionStrings;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
@@ -253,6 +257,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
+
+  @Mock
+  private PermissionStrings.Handler permissionStringsHandler;
 
   @Spy
   private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
@@ -1153,11 +1160,19 @@ public class RequisitionServiceTest {
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        program.getId(), supplyingDepots, pageable);
+        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepots, pageable);
 
     //when
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+    when(permissionStringsHandler.get())
+        .thenReturn(asSet(
+            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
+
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        facility.getId(), program.getId(), singletonList(supplyingDepotId), pageable);
+        facility.getId(),
+        program.getId(),
+        pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1174,12 +1189,18 @@ public class RequisitionServiceTest {
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
-    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(), null,
-        supplyingDepots, pageable);
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
+        null, null, supplyingDepots, pageable);
 
     //when
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+    when(permissionStringsHandler.get())
+        .thenReturn(asSet(
+            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
+
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        facility.getId(), null, singletonList(supplyingDepotId), pageable);
+        facility.getId(), null, pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1196,12 +1217,18 @@ public class RequisitionServiceTest {
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
-    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, null, program.getId(),
-        supplyingDepots, pageable);
+    setupStubsForTestApprovedRequisition(essentialMedsRequisitions, null,
+        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepots, pageable);
 
     //when
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+    when(permissionStringsHandler.get())
+        .thenReturn(asSet(
+            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
+
     requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        null, program.getId(), singletonList(supplyingDepotId), pageable);
+        null, program.getId(), pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1489,11 +1516,13 @@ public class RequisitionServiceTest {
   }
 
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
-      UUID facilityId, UUID programId, List<FacilityDto> supplyingDepots, Pageable pageable) {
+      UUID facilityId, Set<UUID> programIds, Set<UUID> supervisoryNodeIds,
+      List<FacilityDto> supplyingDepots, Pageable pageable) {
     final Page<Requisition> requisitions = Pagination
         .getPage(emptyList(), pageable, requisitionDtos.size());
 
-    when(requisitionRepository.searchApprovedRequisitions(facilityId, programId, pageable))
+    when(requisitionRepository.searchApprovedRequisitions(
+        facilityId, programIds, supervisoryNodeIds, pageable))
         .thenReturn(requisitions);
 
     when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
@@ -1591,7 +1620,7 @@ public class RequisitionServiceTest {
         .findOne(any()))
         .thenReturn(program);
     when(authenticationHelper
-        .getRight(PermissionService.ORDERS_EDIT))
+        .getRight(ORDERS_EDIT))
         .thenReturn(convertToOrderRight);
     when(rightReferenceDataService
         .findRight(PermissionService.REQUISITION_APPROVE))

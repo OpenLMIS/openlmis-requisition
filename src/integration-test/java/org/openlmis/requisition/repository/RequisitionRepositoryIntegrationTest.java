@@ -17,6 +17,7 @@ package org.openlmis.requisition.repository;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
@@ -789,7 +790,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
-        null, null, createPageable(10, 0));
+        null, emptySet(), emptySet(), createPageable(10, 0));
 
     assertEquals(2, requisitions.getTotalElements());
     for (Requisition r : requisitions) {
@@ -811,7 +812,8 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         requisition1.getFacilityId(),
-        null,
+        emptySet(),
+        emptySet(),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -826,7 +828,8 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         null,
-        requisition1.getProgramId(),
+        singleton(requisition1.getProgramId()),
+        emptySet(),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -840,7 +843,8 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         requisition1.getFacilityId(),
-        requisition1.getProgramId(),
+        singleton(requisition1.getProgramId()),
+        singleton(requisition1.getSupervisoryNodeId()),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());

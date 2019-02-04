@@ -45,14 +45,12 @@ import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
-import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -676,22 +674,11 @@ public class RequisitionController extends BaseRequisitionController {
         programId, facilityId, pageable
     );
 
-    UserDto user = getCurrentUser(profiler);
-
-    profiler.start("GET_RIGHT");
-    RightDto right = authenticationHelper.getRight(PermissionService.ORDERS_EDIT);
-
-    profiler.start("GET_USER_MANAGED_FACILITIES");
-    Collection<UUID> userManagedFacilities = fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId(), right.getId())
-        .stream().map(FacilityDto::getId).collect(Collectors.toList());
-
     profiler.start("SEARCH_FOR_APPROVED_REQUISITIONS");
     Page<RequisitionWithSupplyingDepotsDto> page = requisitionService
         .searchApprovedRequisitionsWithSortAndFilterAndPaging(
             facilityId,
             programId,
-            userManagedFacilities,
             pageable);
 
     stopProfiler(profiler, page);

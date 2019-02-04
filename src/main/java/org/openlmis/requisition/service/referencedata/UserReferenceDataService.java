@@ -20,6 +20,7 @@ import java.util.UUID;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.openlmis.requisition.service.ServiceResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -89,5 +90,9 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    */
   public List<String> getPermissionStrings(UUID user) {
     return findAll(user + "/permissionStrings", String[].class);
+  }
+
+  public ServiceResponse<List<String>> getPermissionStrings(UUID user, String etag) {
+    return tryFindAll(user + "/permissionStrings", String[].class, etag);
   }
 }

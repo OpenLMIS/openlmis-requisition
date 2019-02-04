@@ -225,6 +225,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private UserDto user;
   private UUID facilityId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
+  private  Set<UUID> programIds = new HashSet<>();
+  private  Set<UUID> supervisoryNodeIds = new HashSet<>();
 
   @Before
   public void setUp() {
@@ -1851,7 +1853,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int page = 0;
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(facilityId), eq(programId), eq(managedFacilitiesIds), any(Pageable.class)))
+        eq(facilityId), eq(programId), any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
@@ -1895,7 +1897,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     ArgumentCaptor<Pageable> sortByCaptor = ArgumentCaptor.forClass(Pageable.class);
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(facilityId), eq(programId), eq(managedFacilitiesIds), sortByCaptor.capture()))
+        eq(facilityId), eq(programId), sortByCaptor.capture()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when
@@ -1937,7 +1939,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = Collections.singletonList(facility.getId());
 
     RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
     requisition.setRequisition(generateBasicRequisition());
@@ -1949,7 +1950,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int page = 0;
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        eq(null), eq(null), eq(managedFacilitiesIds), any(Pageable.class)))
+        eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
     // when
@@ -2005,7 +2006,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // given
     mockConvertToOrderRightAndFulfillmentFacilities();
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), eq(Collections.emptyList()), any()))
+        any(), any(), any()))
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
 
     // when
@@ -2034,7 +2035,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     requisition.setRequisition(generateBasicRequisition());
 
     given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
-        any(), any(), eq(managedFacilitiesIds), any()))
+        any(), any(), any()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
     // when

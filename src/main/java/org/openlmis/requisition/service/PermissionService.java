@@ -36,6 +36,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.PermissionStrings;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.slf4j.ext.XLogger;
@@ -74,6 +75,9 @@ public class PermissionService {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private PermissionStrings permissionStrings;
 
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
@@ -356,5 +360,9 @@ public class PermissionService {
     }
     UserDto user = authenticationHelper.getCurrentUser();
     return userReferenceDataService.getPermissionStrings(user.getId());
+  }
+
+  public PermissionStrings.Handler getPermissionStrings(UUID userId) {
+    return permissionStrings.forUser(userId);
   }
 }

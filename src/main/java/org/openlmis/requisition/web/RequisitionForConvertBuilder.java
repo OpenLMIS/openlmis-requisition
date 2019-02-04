@@ -15,14 +15,16 @@
 
 package org.openlmis.requisition.web;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -62,21 +64,15 @@ public class RequisitionForConvertBuilder {
   public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(Page<Requisition> requisitions,
                                                  Collection<UUID> userManagedFacilities) {
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-    Map<RightsFor, List<FacilityDto>> cache = new HashMap<>();
 
     for (Requisition requisition : requisitions) {
-      List<FacilityDto> facilities = getAvailableSupplyingDepots(requisition, cache)
-          .stream()
-          .filter(f -> userManagedFacilities.contains(f.getId()))
-          .collect(Collectors.toList());
+      List<FacilityDto> facilities = getSupplyingDepotsByIds(newHashSet(userManagedFacilities));
 
-      if (!facilities.isEmpty()) {
-        BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
-            //TODO: add batch fetch for programs and facilities in service or in this builder
-            facilityReferenceDataService.findOne(requisition.getFacilityId()),
-            programReferenceDataService.findOne(requisition.getProgramId()));
-        responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
-      }
+      BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
+          //TODO: add batch fetch for programs and facilities in service or in this builder
+          facilityReferenceDataService.findOne(requisition.getFacilityId()),
+          programReferenceDataService.findOne(requisition.getProgramId()));
+      responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
     }
 
     return responseList;
@@ -117,6 +113,13 @@ public class RequisitionForConvertBuilder {
   private List<FacilityDto> getAvailableSupplyingDepotsForRequisition(Requisition requisition) {
     Collection<FacilityDto> facilityDtos = facilityReferenceDataService
         .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
+
+    return Lists.newArrayList(facilityDtos);
+  }
+
+  private List<FacilityDto> getSupplyingDepotsByIds(Set<UUID> facilityIds) {
+    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
+        .search(facilityIds);
 
     return Lists.newArrayList(facilityDtos);
   }
