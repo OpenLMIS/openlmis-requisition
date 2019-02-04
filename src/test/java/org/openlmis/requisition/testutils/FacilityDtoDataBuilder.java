@@ -52,7 +52,7 @@ public class FacilityDtoDataBuilder {
     code = "F" + instanceNumber;
     name = "Facility " + instanceNumber;
     active = true;
-    geographicZone = new GeographicZoneDto();
+    geographicZone = new GeographicZoneDtoDataBuilder().build();
     type = new FacilityTypeDto();
     description = "facility desc " + instanceNumber;
     goLiveDate = LocalDate.now();

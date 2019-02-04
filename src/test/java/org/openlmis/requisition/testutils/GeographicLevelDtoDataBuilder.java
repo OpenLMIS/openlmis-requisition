@@ -13,40 +13,37 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.service;
+package org.openlmis.requisition.testutils;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import java.util.UUID;
+import org.openlmis.requisition.dto.GeographicLevelDto;
 
-import com.google.common.collect.Maps;
-import java.util.Map;
-import org.springframework.http.HttpHeaders;
+public class GeographicLevelDtoDataBuilder {
 
-public final class RequestHeaders {
-  private Map<String, String> headers = Maps.newHashMap();
+  private static int instanceNumber = 0;
 
-  private RequestHeaders() {
-  }
+  private UUID id;
+  private String code;
+  private String name;
+  private Integer levelNumber;
 
-  public static RequestHeaders init() {
-    return new RequestHeaders();
-  }
+  /**
+   * Creates builder for creating new instance of {@link GeographicLevelDto}.
+   */
+  public GeographicLevelDtoDataBuilder() {
+    instanceNumber++;
 
-  public RequestHeaders setAuth(String token) {
-    return isNotBlank(token) ? set(HttpHeaders.AUTHORIZATION, "Bearer " + token) : this;
-  }
-
-  RequestHeaders setIfNoneMatch(String value) {
-    return set(HttpHeaders.IF_NONE_MATCH, value);
+    id = UUID.randomUUID();
+    code = "GL" + instanceNumber;
+    name = "geographic level " + instanceNumber;
+    levelNumber = 1;
   }
 
   /**
-   * Set parameter (key argument) with the value only if the value is not null.
+   * Creates new instance of {@link GeographicLevelDto} with properties.
+   * @return created facility.
    */
-  public RequestHeaders set(String key, String value) {
-    if (isNotBlank(value)) {
-      headers.put(key, value);
-    }
-
-    return this;
+  public GeographicLevelDto build() {
+    return new GeographicLevelDto(id, code, name, levelNumber);
   }
 }

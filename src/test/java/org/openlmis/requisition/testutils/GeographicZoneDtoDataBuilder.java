@@ -13,20 +13,40 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.testutils;
 
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.openlmis.requisition.dto.GeographicLevelDto;
+import org.openlmis.requisition.dto.GeographicZoneDto;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class GeographicZoneDto {
+public class GeographicZoneDtoDataBuilder {
+
+  private static int instanceNumber = 0;
+
   private UUID id;
   private String code;
   private String name;
   private GeographicLevelDto level;
   private GeographicZoneDto parent;
+
+  /**
+   * Creates builder for creating new instance of {@link GeographicZoneDto}.
+   */
+  public GeographicZoneDtoDataBuilder() {
+    instanceNumber++;
+
+    id = UUID.randomUUID();
+    code = "Z" + instanceNumber;
+    name = "zone " + instanceNumber;
+    level = new GeographicLevelDtoDataBuilder().build();
+    parent = null;
+  }
+
+  /**
+   * Creates new instance of {@link GeographicZoneDto} with properties.
+   * @return created facility.
+   */
+  public GeographicZoneDto build() {
+    return new GeographicZoneDto(id, code, name, level, parent);
+  }
 }

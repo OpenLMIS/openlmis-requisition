@@ -20,11 +20,22 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.openlmis.requisition.dto.SupplyLineDto;
 
 public class SupplyLineDtoDataBuilder {
+
   private UUID id = UUID.randomUUID();
   private UUID supervisoryNode = UUID.randomUUID();
   private String description = RandomStringUtils.randomAlphanumeric(5);
   private UUID program = UUID.randomUUID();
   private UUID supplyingFacility = UUID.randomUUID();
+
+  public SupplyLineDtoDataBuilder withSupplyingFacility(UUID supplyingFacility) {
+    this.supplyingFacility = supplyingFacility;
+    return this;
+  }
+
+  public SupplyLineDtoDataBuilder withSupervisoryNode(UUID supervisoryNode) {
+    this.supervisoryNode = supervisoryNode;
+    return this;
+  }
 
   /**
    * Creates new instance of {@link SupplyLineDto}.

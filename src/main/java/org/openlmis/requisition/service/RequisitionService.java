@@ -571,23 +571,26 @@ public class RequisitionService {
    *                   and "size" (page size) query parameters.
    * @return List of requisitions.
    */
-  public Page<RequisitionWithSupplyingDepotsDto>
-      searchApprovedRequisitionsWithSortAndFilterAndPaging(UUID facilityId, UUID programId, Pageable pageable) {
+  public Page<RequisitionWithSupplyingDepotsDto> searchApprovedRequisitionsWith(
+      UUID facilityId, UUID programId, Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
 
+    profiler.start("GET_CURRENT_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
     Set<UUID> programIds;
     Set<UUID> supervisoryNodeIds = new HashSet<>();
     Set<UUID> fulfillmentFacilitiesIds = new HashSet<>();
+    List<SupplyLineDto> supplyLines = null;
 
     if (null != user) {
       profiler.start("GET_PERMISSION_STRINGS");
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
       Set<PermissionStringDto> permissionStrings = handler.get();
 
+      profiler.start("FILTER_PERMISSION_STRINGS");
       fulfillmentFacilitiesIds = permissionStrings.stream()
           .filter(permission -> ORDERS_EDIT.equals(permission.getRightName()))
           .map(PermissionStringDto::getFacilityId)
@@ -597,8 +600,8 @@ public class RequisitionService {
         return Pagination.getPage(emptyList(), pageable, 0);
       }
 
-      List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
-          .search(fulfillmentFacilitiesIds);
+      profiler.start("SEARCH_FOR_SUPPLY_LINES");
+      supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds);
 
       supervisoryNodeIds = supplyLines.stream()
           .map(SupplyLineDto::getSupervisoryNode)
@@ -621,20 +624,21 @@ public class RequisitionService {
       programIds = newHashSet(programId);
     }
 
-    profiler.stop().log();
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
-    Page<Requisition> requisitionsPage = requisitionRepository.searchApprovedRequisitions(
+    Page<Requisition> result = requisitionRepository.searchApprovedRequisitions(
         facilityId, programIds, supervisoryNodeIds, pageable);
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder.buildRequisitions(requisitionsPage, fulfillmentFacilitiesIds);
+        requisitionForConvertBuilder
+            .buildRequisitions(result.getContent(), fulfillmentFacilitiesIds, supplyLines);
 
     profiler.start("PAGINATE");
     Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
-        responseList, pageable, requisitionsPage.getNumberOfElements());
+        responseList, pageable, result.getNumberOfElements());
 
-  return page;
+    profiler.stop().log();
+    return page;
   }
 
   /**

@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.dto;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,5 +26,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RequisitionWithSupplyingDepotsDto {
   private BasicRequisitionDto requisition;
-  private List<FacilityDto> supplyingDepots;
+  private FacilityDto supplyingDepot;
 }

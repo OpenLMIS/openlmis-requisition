@@ -69,7 +69,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
@@ -114,6 +113,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -1841,10 +1841,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-    requisition.setRequisition(generateBasicRequisition());
+    RequisitionWithSupplyingDepotsDto requisition =
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1852,7 +1851,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int size = 10;
     int page = 0;
 
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    given(requisitionService.searchApprovedRequisitionsWith(
         eq(facilityId), eq(programId), any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
@@ -1883,10 +1882,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
-    List<UUID> managedFacilitiesIds = singletonList(facility.getId());
 
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-    requisition.setRequisition(generateBasicRequisition());
+    RequisitionWithSupplyingDepotsDto requisition =
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1896,7 +1894,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     ArgumentCaptor<Pageable> sortByCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    given(requisitionService.searchApprovedRequisitionsWith(
         eq(facilityId), eq(programId), sortByCaptor.capture()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
@@ -1940,8 +1938,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     FacilityDto facility = mockFacility();
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
 
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-    requisition.setRequisition(generateBasicRequisition());
+    RequisitionWithSupplyingDepotsDto requisition =
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1949,7 +1947,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int size = 10;
     int page = 0;
 
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    given(requisitionService.searchApprovedRequisitionsWith(
         eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
@@ -2004,8 +2002,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldNotGetApprovedRequisitionsIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    mockConvertToOrderRightAndFulfillmentFacilities();
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    given(requisitionService.searchApprovedRequisitionsWith(
         any(), any(), any()))
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
 
@@ -2027,14 +2024,12 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldGetApprovedRequisitionsWithUserFulfillmentRights() {
     // given
-    FacilityDto facility = new FacilityDto();
-    facility.setId(UUID.randomUUID());
-    List<UUID> managedFacilitiesIds = mockConvertToOrderRightAndFulfillmentFacilities(facility);
+    FacilityDto facility = new FacilityDtoDataBuilder().build();
 
-    RequisitionWithSupplyingDepotsDto requisition = new RequisitionWithSupplyingDepotsDto();
-    requisition.setRequisition(generateBasicRequisition());
+    RequisitionWithSupplyingDepotsDto requisition =
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
 
-    given(requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    given(requisitionService.searchApprovedRequisitionsWith(
         any(), any(), any()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
@@ -2187,21 +2182,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     ValidationMessageException exception = mockValidationException(errorKey);
     doThrow(exception).when(facilitySupportsProgramHelper)
         .checkIfFacilitySupportsProgram(facility, programId);
-  }
-
-  private List<UUID> mockConvertToOrderRightAndFulfillmentFacilities(FacilityDto... facilities) {
-    RightDto right = mockViewOrdersRight();
-
-    Set<FacilityDto> facilitySet = new HashSet<>();
-    Collections.addAll(facilitySet, facilities);
-
-    given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
-        anyUuid(), eq(right.getId()))).willReturn(facilitySet);
-
-    return facilitySet
-        .stream()
-        .map(FacilityDto::getId)
-        .collect(Collectors.toList());
   }
 
   private ValidationMessageException mockValidationException(String key, Object... args) {

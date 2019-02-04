@@ -54,7 +54,6 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -86,9 +85,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
   private static final String BUILD_DTO_LIST = "BUILD_DTO_LIST";
-
-  @Autowired
-  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
@@ -676,7 +672,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("SEARCH_FOR_APPROVED_REQUISITIONS");
     Page<RequisitionWithSupplyingDepotsDto> page = requisitionService
-        .searchApprovedRequisitionsWithSortAndFilterAndPaging(
+        .searchApprovedRequisitionsWith(
             facilityId,
             programId,
             pageable);

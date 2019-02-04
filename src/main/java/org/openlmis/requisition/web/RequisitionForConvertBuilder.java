@@ -15,27 +15,29 @@
 
 package org.openlmis.requisition.web;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
+import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.RequestParameters;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,6 +55,9 @@ public class RequisitionForConvertBuilder {
   @Autowired
   private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
+  @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
   /**
    * Builds representation of the requisitions that are ready for converting to an order,
    * containing supplying facilities that the user has rights to.
@@ -61,23 +66,32 @@ public class RequisitionForConvertBuilder {
    * @param userManagedFacilities UUIDs of supplying depots the user has rights to
    * @return a list of requisition with supplying depots representation
    */
-  public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(Page<Requisition> requisitions,
-                                                 Collection<UUID> userManagedFacilities) {
+  public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(List<Requisition> requisitions,
+      Set<UUID> userManagedFacilities, List<SupplyLineDto> supplyLines) {
+
+    if (supplyLines == null) {
+      supplyLines = supplyLineReferenceDataService.getPage(RequestParameters.init()).getContent();
+    }
+
+    Map<UUID, FacilityDto> facilities = getFacilities(requisitions, userManagedFacilities);
+    Map<UUID, ProgramDto> programs = getPrograms(requisitions);
+    Map<UUID, UUID> supervisoryNodeSupplyingFacilityPairs = supplyLines.stream()
+        .collect(toMap(SupplyLineDto::getSupervisoryNode, SupplyLineDto::getSupplyingFacility));
+
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
-
     for (Requisition requisition : requisitions) {
-      List<FacilityDto> facilities = getSupplyingDepotsByIds(newHashSet(userManagedFacilities));
-
       BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
-          //TODO: add batch fetch for programs and facilities in service or in this builder
-          facilityReferenceDataService.findOne(requisition.getFacilityId()),
-          programReferenceDataService.findOne(requisition.getProgramId()));
-      responseList.add(new RequisitionWithSupplyingDepotsDto(requisitionDto, facilities));
+          facilities.get(requisition.getFacilityId()),
+          programs.get(requisition.getProgramId()));
+
+      responseList.add(new RequisitionWithSupplyingDepotsDto(
+          requisitionDto,
+          facilities.get(
+              supervisoryNodeSupplyingFacilityPairs.get(requisition.getSupervisoryNodeId()))));
     }
 
     return responseList;
   }
-
 
   /**
    * Retrieves available supplying depots for given requisition.
@@ -89,27 +103,6 @@ public class RequisitionForConvertBuilder {
     return getAvailableSupplyingDepotsForRequisition(requisitionRepository.findOne(requisitionId));
   }
 
-  /**
-   * Retrieves available supplying depots for given requisition.
-   *
-   * @param requisition requisition to find facilities for
-   * @param cache a map containing supplying depots for rights that were already processed
-   *
-   * @return list of facilities
-   */
-  public List<FacilityDto> getAvailableSupplyingDepots(Requisition requisition,
-                                                       Map<RightsFor, List<FacilityDto>> cache) {
-    List<FacilityDto> supplyingFacilities = getCached(cache, requisition);
-    if (supplyingFacilities == null) {
-      Collection<FacilityDto> facilityDtos = getAvailableSupplyingDepotsForRequisition(requisition);
-
-      supplyingFacilities = Lists.newArrayList(facilityDtos);
-      addCached(cache, requisition, supplyingFacilities);
-    }
-
-    return supplyingFacilities;
-  }
-
   private List<FacilityDto> getAvailableSupplyingDepotsForRequisition(Requisition requisition) {
     Collection<FacilityDto> facilityDtos = facilityReferenceDataService
         .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
@@ -117,30 +110,23 @@ public class RequisitionForConvertBuilder {
     return Lists.newArrayList(facilityDtos);
   }
 
-  private List<FacilityDto> getSupplyingDepotsByIds(Set<UUID> facilityIds) {
-    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .search(facilityIds);
+  private Map<UUID, FacilityDto> getFacilities(List<Requisition> requisitions,
+      Set<UUID> userManagedFacilities) {
+    Set<UUID> facilityIds = new HashSet<>(userManagedFacilities);
+    requisitions.stream()
+        .map(Requisition::getFacilityId)
+        .forEach(facilityIds::add);
 
-    return Lists.newArrayList(facilityDtos);
+    return facilityReferenceDataService.search(facilityIds).stream()
+        .collect(toMap(FacilityDto::getId, facility -> facility));
   }
 
+  private Map<UUID, ProgramDto> getPrograms(List<Requisition> requisitions) {
+    Set<UUID> programIds = requisitions.stream()
+        .map(Requisition::getProgramId)
+        .collect(toSet());
 
-  private List<FacilityDto> getCached(Map<RightsFor, List<FacilityDto>> cache,
-                                      Requisition requisition) {
-    return cache.get(
-        new RightsFor(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
-  }
-
-  private void addCached(Map<RightsFor, List<FacilityDto>> cache,
-                              Requisition requisition, List<FacilityDto> facilities) {
-    cache.put(
-        new RightsFor(requisition.getProgramId(), requisition.getSupervisoryNodeId()), facilities);
-  }
-
-  @AllArgsConstructor
-  @EqualsAndHashCode
-  private class RightsFor {
-    private UUID program;
-    private UUID supervisoryNode;
+    return programReferenceDataService.search(programIds).stream()
+        .collect(toMap(ProgramDto::getId, program -> program));
   }
 }

@@ -20,6 +20,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -130,6 +131,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
@@ -138,6 +140,7 @@ import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuil
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
@@ -252,6 +255,9 @@ public class RequisitionServiceTest {
   @Mock
   private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
 
+  @Mock
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
   @InjectMocks
   private RequisitionService requisitionService;
 
@@ -280,6 +286,7 @@ public class RequisitionServiceTest {
   private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private Requisition previousRequisition;
+  private SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -294,7 +301,6 @@ public class RequisitionServiceTest {
     generateRequisitionDto();
     generateReasons();
     mockRepositories();
-    when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
     ReflectionTestUtils.setField(
         stockOnHandRetrieverBuilderFactory,
         "stockCardSummariesStockManagementService",
@@ -1067,6 +1073,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFindRequisitionIfItExists() {
+    when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
 
     when(requisitionRepository.searchRequisitions(
         requisition.getFacilityId(),
@@ -1152,24 +1159,17 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertFacilityIdAndProgramId() {
     // given
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
+    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().build();
 
     Pageable pageable = mockPageable();
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepots, pageable);
+        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepot, pageable);
 
     //when
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(user);
-    when(permissionStringsHandler.get())
-        .thenReturn(asSet(
-            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
-
-    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    requisitionService.searchApprovedRequisitionsWith(
         facility.getId(),
         program.getId(),
         pageable);
@@ -1182,24 +1182,16 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertFacilityId() {
     // given
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
-
+    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().build();
     Pageable pageable = mockPageable();
-
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        null, null, supplyingDepots, pageable);
+        asSet(supplyLine.getProgram()), asSet(supplyLine.getSupervisoryNode()),
+        supplyingDepot, pageable);
 
     //when
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(user);
-    when(permissionStringsHandler.get())
-        .thenReturn(asSet(
-            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
-
-    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    requisitionService.searchApprovedRequisitionsWith(
         facility.getId(), null, pageable);
 
     // then
@@ -1210,24 +1202,16 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertProgramId() {
     // given
-    UUID supplyingDepotId = UUID.randomUUID();
-    List<FacilityDto> supplyingDepots = mockSupplyingDepot(supplyingDepotId);
-
+    FacilityDto facilityDto = new FacilityDtoDataBuilder().build();
     Pageable pageable = mockPageable();
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, null,
-        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepots, pageable);
+        singleton(program.getId()), singleton(supervisoryNode.getId()), facilityDto, pageable);
 
     //when
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(user);
-    when(permissionStringsHandler.get())
-        .thenReturn(asSet(
-            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
-
-    requisitionService.searchApprovedRequisitionsWithSortAndFilterAndPaging(
+    requisitionService.searchApprovedRequisitionsWith(
         null, program.getId(), pageable);
 
     // then
@@ -1417,12 +1401,6 @@ public class RequisitionServiceTest {
     verify(requisitionRepository).delete(requisition);
   }
 
-  private List<FacilityDto> mockSupplyingDepot(UUID supplyingDepotId) {
-    FacilityDto supplyingDepot = new FacilityDto();
-    supplyingDepot.setId(supplyingDepotId);
-    return new ArrayList<>(Arrays.asList(supplyingDepot));
-  }
-
   private Pageable mockPageable() {
     return mockPageable(0, 10);
   }
@@ -1517,7 +1495,7 @@ public class RequisitionServiceTest {
 
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
       UUID facilityId, Set<UUID> programIds, Set<UUID> supervisoryNodeIds,
-      List<FacilityDto> supplyingDepots, Pageable pageable) {
+      FacilityDto supplyingDepot, Pageable pageable) {
     final Page<Requisition> requisitions = Pagination
         .getPage(emptyList(), pageable, requisitionDtos.size());
 
@@ -1529,9 +1507,9 @@ public class RequisitionServiceTest {
 
     List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
     for (BasicRequisitionDto dto : requisitionDtos) {
-      requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepots));
+      requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepot));
     }
-    when(requisitionForConvertBuilder.buildRequisitions(any(), any()))
+    when(requisitionForConvertBuilder.buildRequisitions(any(), any(), any()))
         .thenReturn(requisitionsWithDepots);
   }
 
@@ -1676,10 +1654,13 @@ public class RequisitionServiceTest {
           }
         });
 
-    UUID currentUserId = UUID.randomUUID();
-    UserDto currentUser = new UserDto();
-    currentUser.setId(currentUserId);
-    when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
+    when(permissionService.getPermissionStrings(user.getId())).thenReturn(permissionStringsHandler);
+    when(permissionStringsHandler.get())
+        .thenReturn(asSet(
+            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
+    when(supplyLineReferenceDataService.search(singleton(facility.getId())))
+        .thenReturn(asList(supplyLine));
   }
 
   private void stubRecentRequisition() {
