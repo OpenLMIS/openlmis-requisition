@@ -25,7 +25,7 @@ import lombok.Setter;
 @EqualsAndHashCode(callSuper = true)
 public final class RightDto extends BaseDto {
   private String name;
-  private RightType type;
+  private String type;
   private String description;
   private Set<RightDto> attachments;
 }
