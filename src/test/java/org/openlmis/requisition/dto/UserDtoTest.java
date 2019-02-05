@@ -17,22 +17,42 @@ package org.openlmis.requisition.dto;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserDtoTest {
 
-  private UserDto userDto = new UserDto();
+  private UserDto userDto;
+
+  private RoleAssignmentDto homeFacilityRole;
+  private RoleAssignmentDto supervisionRole;
 
   @Before
   public void setUp() {
-    userDto.setUsername("jdoe");
+    homeFacilityRole = new RoleAssignmentDto(
+        UUID.randomUUID(), UUID.randomUUID(), null, null);
+    supervisionRole = new RoleAssignmentDto(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
+    RoleAssignmentDto anotherSupervisionRole = new RoleAssignmentDto(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
+
+    userDto = new UserDtoDataBuilder()
+        .withUsername("jdoe")
+        .withoutFirstName()
+        .withoutLastName()
+        .withRoleAssignment(homeFacilityRole)
+        .withRoleAssignment(supervisionRole)
+        .withRoleAssignment(anotherSupervisionRole)
+        .build();
   }
 
   @Test
@@ -40,26 +60,26 @@ public class UserDtoTest {
     userDto.setFirstName("John");
     userDto.setLastName("Doe");
 
-    assertEquals("John Doe", userDto.printName());
+    assertThat(userDto.printName()).isEqualTo("John Doe");
   }
 
   @Test
   public void shouldPrintNameAsOnlyFirstName() {
     userDto.setFirstName("John");
 
-    assertEquals("John", userDto.printName());
+    assertThat(userDto.printName()).isEqualTo("John");
   }
 
   @Test
   public void shouldPrintNameAsOnlyLastName() {
     userDto.setLastName("Doe");
 
-    assertEquals("Doe", userDto.printName());
+    assertThat(userDto.printName()).isEqualTo("Doe");
   }
 
   @Test
   public void shouldPrintNameAsUsername() {
-    assertEquals("jdoe", userDto.printName());
+    assertThat(userDto.printName()).isEqualTo("jdoe");
   }
 
   @Test
@@ -72,5 +92,49 @@ public class UserDtoTest {
         .withRedefinedSuperclass()
         .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
         .verify();
+  }
+
+  @Test
+  public void shouldHaveSupervisionRole() {
+    assertThat(userDto.hasSupervisorySupervisionRole(supervisionRole.getRoleId(),
+        supervisionRole.getProgramId(), supervisionRole.getSupervisoryNodeId()))
+        .isTrue();
+  }
+
+  @Test
+  public void shouldNotHaveSupervisionRoleIfUserHasNoRole() {
+    assertThat(userDto
+        .hasSupervisorySupervisionRole(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()))
+        .isFalse();
+  }
+
+  @Test
+  public void shouldHaveHomeFacilitySupervisionRole() {
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
+        homeFacilityRole.getProgramId(), userDto.getHomeFacilityId()))
+        .isTrue();
+  }
+
+  @Test
+  public void shouldNotHaveHomeFacilitySupervisionRoleIfUserHasNoHomeFacility() {
+    userDto.setHomeFacilityId(null);
+
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
+        homeFacilityRole.getProgramId(), UUID.randomUUID()))
+        .isFalse();
+  }
+
+  @Test
+  public void shouldNotHaveHomeFacilitySupervisionRoleIfHomeFacilityNotMatch() {
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
+        homeFacilityRole.getProgramId(), UUID.randomUUID()))
+        .isFalse();
+  }
+
+  @Test
+  public void shouldNotHaveHomeFacilitySupervisionRoleIfUserHasNoRole() {
+    assertThat(userDto.hasHomeFacilitySupervisionRole(UUID.randomUUID(),
+        UUID.randomUUID(), UUID.randomUUID()))
+        .isFalse();
   }
 }

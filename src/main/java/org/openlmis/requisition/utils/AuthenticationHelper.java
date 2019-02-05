@@ -18,11 +18,14 @@ package org.openlmis.requisition.utils;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_RIGHT_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
 
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +39,9 @@ public class AuthenticationHelper {
 
   @Autowired
   private RightReferenceDataService rightReferenceDataService;
+
+  @Autowired
+  private RoleReferenceDataService roleReferenceDataService;
 
   /**
    * Method returns current user based on Spring context
@@ -71,4 +77,16 @@ public class AuthenticationHelper {
 
     return right;
   }
+
+  /**
+   * Gets roles for the given right ID value. The method fetches the data from
+   * reference-data service.
+   *
+   * @param rightId UUID of right
+   * @return a collection of roles
+   */
+  public List<RoleDto> getRoles(UUID rightId) {
+    return roleReferenceDataService.search(rightId);
+  }
+
 }

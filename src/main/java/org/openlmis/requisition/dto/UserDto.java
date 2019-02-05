@@ -41,6 +41,37 @@ public final class UserDto extends BaseDto {
   private boolean active;
 
   /**
+   * Checks if user has supervisory supervision role.
+   */
+  public boolean hasSupervisorySupervisionRole(UUID roleId, UUID programId,
+      UUID supervisoryNodeId) {
+    return roleAssignments
+        .stream()
+        .anyMatch(item -> roleId.equals(item.getRoleId())
+            && programId.equals(item.getProgramId())
+            && supervisoryNodeId.equals(item.getSupervisoryNodeId()));
+  }
+
+  /**
+   * Checks if user has home facility supervision role.
+   */
+  public boolean hasHomeFacilitySupervisionRole(UUID roleId, UUID programId, UUID facilityId) {
+    if (null == homeFacilityId) {
+      return false;
+    }
+
+    if (!homeFacilityId.equals(facilityId)) {
+      return false;
+    }
+
+    return roleAssignments
+        .stream()
+        .anyMatch(item -> roleId.equals(item.getRoleId())
+            && programId.equals(item.getProgramId())
+            && null == item.getSupervisoryNodeId());
+  }
+
+  /**
    * Prints the name of the user for display purposes.
    * The format is "firstName lastName". If one of them is missing, it is
    * omitted and the space is trimmed. If they are both missing, the

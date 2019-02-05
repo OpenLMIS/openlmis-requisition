@@ -55,6 +55,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -186,7 +187,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canSubmitRequisition() throws Exception {
+  public void canSubmitRequisition() {
     hasRight(requisitionCreateRight, true);
 
     permissionService.canSubmitRequisition(requisition);
@@ -203,7 +204,9 @@ public class PermissionServiceTest {
 
   @Test
   public void canApproveRequisition() {
-    hasRight(requisitionApproveRight, true);
+    RoleDto role = DtoGenerator.of(RoleDto.class);
+    when(authenticationHelper.getRoles(requisitionApproveRight.getId()))
+        .thenReturn(Lists.newArrayList(role));
 
     permissionService.canApproveRequisition(requisition);
 
@@ -213,6 +216,9 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotApproveRequisition() {
+    when(authenticationHelper.getRoles(requisitionApproveRight.getId()))
+        .thenReturn(Lists.newArrayList());
+
     expectMissingPermission(permissionService.canApproveRequisition(requisition),
         REQUISITION_APPROVE);
   }
@@ -303,7 +309,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewRequisition() throws Exception {
+  public void canViewRequisition() {
     hasRight(requisitionViewRight, true);
 
     permissionService.canViewRequisition(requisitionId);
@@ -313,12 +319,12 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotViewRequisition() throws Exception {
+  public void cannotViewRequisition() {
     expectMissingPermission(permissionService.canViewRequisition(requisitionId), REQUISITION_VIEW);
   }
 
   @Test
-  public void canConvertToOrder() throws Exception {
+  public void canConvertToOrder() {
     hasRight(requisitionConvertRight, true);
 
     permissionService.canConvertToOrder(releasableDtos);
@@ -328,12 +334,12 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotConvertToOrder() throws Exception {
+  public void cannotConvertToOrder() {
     expectMissingPermission(permissionService.canConvertToOrder(releasableDtos), ORDERS_EDIT);
   }
 
   @Test
-  public void canManageRequisitionTemplate() throws Exception {
+  public void canManageRequisitionTemplate() {
     hasRight(manageRequisitionTemplateRight, true);
 
     permissionService.canManageRequisitionTemplate();
@@ -343,7 +349,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotManageRequisitionTemplate() throws Exception {
+  public void cannotManageRequisitionTemplate() {
     expectMissingPermission(permissionService.canManageRequisitionTemplate(),
         REQUISITION_TEMPLATES_MANAGE);
   }
@@ -448,15 +454,16 @@ public class PermissionServiceTest {
   
   private void hasRight(RightDto right, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
+
     when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), programId, facilityId, null)
-    ).thenReturn(resultDto);
+        .hasRight(user.getId(), right.getId(), programId, facilityId, null))
+        .thenReturn(resultDto);
     when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), null, null, facilityId)
-    ).thenReturn(resultDto);
+        .hasRight(user.getId(), right.getId(), null, null, facilityId))
+        .thenReturn(resultDto);
     when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), null, null, null)
-    ).thenReturn(resultDto);
+        .hasRight(user.getId(), right.getId(), null, null, null))
+        .thenReturn(resultDto);
   }
 
   private void expectValidationSucceeds(ValidationResult validationResult) {
@@ -481,8 +488,14 @@ public class PermissionServiceTest {
   private void verifySupervisionRight(InOrder order, String rightName, RightDto right) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService)
-        .hasRight(user.getId(), right.getId(), programId, facilityId, null);
+
+    if (REQUISITION_APPROVE.equalsIgnoreCase(rightName)) {
+      order.verify(authenticationHelper).getRoles(right.getId());
+    } else {
+      order
+          .verify(userReferenceDataService)
+          .hasRight(user.getId(), right.getId(), programId, facilityId, null);
+    }
   }
 
   private void verifyFulfillmentRight(InOrder order, String rightName, RightDto right) {

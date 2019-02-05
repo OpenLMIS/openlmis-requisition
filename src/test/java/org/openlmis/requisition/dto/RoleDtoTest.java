@@ -20,22 +20,21 @@ import static java.util.Collections.singleton;
 
 import java.util.Set;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
-public class RoleDtoTest {
+public class RoleDtoTest extends ToStringContractTest<RoleDto> {
 
-  @Test
-  public void equalsContract() {
-    RightDto right = DtoGenerator.of(RightDto.class);
-
-    EqualsVerifier
-        .forClass(RoleDto.class)
-        .withPrefabValues(Set.class, emptySet(), singleton(right))
-        .withRedefinedSuperclass()
-        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
-        .verify();
+  @Override
+  protected Class<RoleDto> getTestClass() {
+    return RoleDto.class;
   }
 
+  @Override
+  protected void prepare(EqualsVerifier<RoleDto> verifier) {
+    RightDto right = DtoGenerator.of(RightDto.class);
+
+    verifier
+        .withRedefinedSuperclass()
+        .withPrefabValues(Set.class, emptySet(), singleton(right));
+  }
 }

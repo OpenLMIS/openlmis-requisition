@@ -24,6 +24,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FO
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -61,9 +63,9 @@ public class PermissionService {
   public static final String REQUISITION_AUTHORIZE = REQUISITION_BASE + "AUTHORIZE";
   public static final String REQUISITION_DELETE = REQUISITION_BASE + "DELETE";
   public static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
-  public static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
-  public static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
-  public static final String REPORTS_VIEW = "REPORTS_VIEW";
+  static final String REQUISITION_TEMPLATES_MANAGE = "REQUISITION_TEMPLATES_MANAGE";
+  private static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
+  private static final String REPORTS_VIEW = "REPORTS_VIEW";
 
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
 
@@ -91,7 +93,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canInitRequisition(UUID program, UUID facility) {
-    return checkPermission(REQUISITION_CREATE, program, facility, null);
+    return checkPermission(REQUISITION_CREATE, program, facility, null, null, null);
   }
 
   /**
@@ -100,12 +102,16 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canInitOrAuthorizeRequisition(UUID program, UUID facility) {
-    if (!hasPermission(REQUISITION_CREATE, program, facility, null)
-        && !hasPermission(REQUISITION_AUTHORIZE, program, facility, null)) {
-      return ValidationResult.noPermission(
-          ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_CREATE, REQUISITION_AUTHORIZE);
+    if (hasPermission(REQUISITION_CREATE, program, facility, null, null, null)) {
+      return ValidationResult.success();
     }
-    return ValidationResult.success();
+
+    if (hasPermission(REQUISITION_AUTHORIZE, program, facility, null, null, null)) {
+      return ValidationResult.success();
+    }
+
+    return ValidationResult
+        .noPermission(ERROR_NO_FOLLOWING_PERMISSION, REQUISITION_CREATE, REQUISITION_AUTHORIZE);
   }
 
   /**
@@ -167,10 +173,12 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canDeleteRequisition(Requisition requisition) {
-    ValidationResult permissionCheck = checkPermission(REQUISITION_DELETE, requisition);
-    if (permissionCheck.hasErrors()) {
-      return permissionCheck;
+    ValidationResult result = checkPermission(REQUISITION_DELETE, requisition);
+
+    if (result.hasErrors()) {
+      return result;
     }
+
     if (requisition.getStatus().isSubmittable() || requisition.getStatus().isSkipped()) {
       return checkPermission(REQUISITION_CREATE, requisition);
     } else if (requisition.getStatus().equals(RequisitionStatus.SUBMITTED)) {
@@ -205,10 +213,13 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canConvertToOrder(List<ReleasableRequisitionDto> list) {
+    Set<UUID> requisitionIds = list
+        .stream()
+        .map(ReleasableRequisitionDto::getRequisitionId)
+        .collect(Collectors.toSet());
+
     Map<UUID, Requisition> requisitions = requisitionRepository
-        .findAll(list
-            .stream()
-            .map(ReleasableRequisitionDto::getRequisitionId).collect(Collectors.toSet()))
+        .findAll(requisitionIds)
         .stream()
         .collect(Collectors.toMap(BaseEntity::getId, Function.identity()));
 
@@ -216,13 +227,12 @@ public class PermissionService {
       Requisition requisition = requisitions.get(convertToOrder.getRequisitionId());
 
       if (requisition == null) {
-        return ValidationResult.notFound(
-            ERROR_REQUISITION_NOT_FOUND, convertToOrder.getRequisitionId());
+        return ValidationResult
+            .notFound(ERROR_REQUISITION_NOT_FOUND, convertToOrder.getRequisitionId());
       }
 
       ValidationResult validation = checkPermission(
-          ORDERS_EDIT, null, null, convertToOrder.getSupplyingDepotId()
-      );
+          ORDERS_EDIT, null, null, convertToOrder.getSupplyingDepotId(), null, null);
 
       if (validation.hasErrors()) {
         return validation;
@@ -238,7 +248,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canManageRequisitionTemplate() {
-    return checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null);
+    return checkPermission(REQUISITION_TEMPLATES_MANAGE, null, null, null, null, null);
   }
 
   /**
@@ -247,7 +257,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canEditReportTemplates() {
-    return checkPermission(REPORT_TEMPLATES_EDIT, null, null, null);
+    return checkPermission(REPORT_TEMPLATES_EDIT, null, null, null, null, null);
   }
 
   /**
@@ -256,45 +266,45 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canViewReports() {
-    return checkPermission(REPORTS_VIEW, null, null, null);
+    return checkPermission(REPORTS_VIEW, null, null, null, null, null);
   }
 
   private ValidationResult checkPermissionOnUpdate(String rightName, Requisition requisition) {
-    if (!hasPermission(rightName, requisition.getProgramId(), requisition.getFacilityId(), null)) {
-      RequisitionStatus status = requisition.getStatus();
-      if (status.duringApproval()) {
-        status = RequisitionStatus.AUTHORIZED;
-      }
-      return ValidationResult.noPermission(
-          ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE, status.toString(), rightName);
+    ValidationResult result = checkPermission(rightName, requisition);
+
+    if (result.isSuccess()) {
+      return result;
     }
-    return ValidationResult.success();
+
+    RequisitionStatus status = requisition.getStatus();
+
+    if (status.duringApproval()) {
+      status = RequisitionStatus.AUTHORIZED;
+    }
+
+    return ValidationResult
+        .noPermission(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
+            status.toString(), rightName);
   }
 
   private ValidationResult checkPermission(String rightName, Requisition requisition) {
-    return checkPermission(
-        rightName, requisition.getProgramId(), requisition.getFacilityId(), null);
+    return checkPermission(rightName, requisition.getProgramId(),
+        requisition.getFacilityId(), null, requisition.getSupervisoryNodeId(),
+        requisition);
   }
 
   private ValidationResult checkPermission(String rightName, UUID program, UUID facility,
-                                           UUID warehouse) {
-    if (!hasPermission(rightName, program, facility, warehouse)) {
-      return ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, rightName);
+      UUID warehouse, UUID supervisoryNode, Requisition requisition) {
+    if (hasPermission(rightName, program, facility, warehouse, supervisoryNode, requisition)) {
+      return ValidationResult.success();
     }
-    return ValidationResult.success();
+
+    return ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, rightName);
   }
 
-  private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse) {
-    return hasPermission(rightName, program, facility, warehouse, true, true, false);
-  }
-
-  private Boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse,
-                                boolean allowUserTokens, boolean allowServiceTokens,
-                                boolean allowApiKey) {
-    XLOGGER.entry(
-        rightName, program, facility, warehouse,
-        allowUserTokens, allowServiceTokens, allowApiKey
-    );
+  private boolean hasPermission(String rightName, UUID program, UUID facility, UUID warehouse,
+      UUID supervisoryNode, Requisition requisition) {
+    XLOGGER.entry(rightName, program, facility, warehouse, supervisoryNode);
     Profiler profiler = new Profiler("HAS_PERMISSION");
     profiler.setLogger(XLOGGER);
 
@@ -303,9 +313,10 @@ public class PermissionService {
         .getContext()
         .getAuthentication();
 
-    Boolean result = authentication.isClientOnly()
-        ? checkServiceToken(allowServiceTokens, allowApiKey, authentication)
-        : checkUserToken(rightName, program, facility, warehouse, allowUserTokens, profiler);
+    boolean result = authentication.isClientOnly()
+        ? checkServiceToken(authentication)
+        : checkUserToken(rightName, program, facility, warehouse,
+            supervisoryNode, requisition, profiler);
 
     profiler.stop().log();
     XLOGGER.exit(result);
@@ -314,35 +325,63 @@ public class PermissionService {
   }
 
   private boolean checkUserToken(String rightName, UUID program, UUID facility, UUID warehouse,
-                                 boolean allowUserTokens, Profiler profiler) {
-    if (!allowUserTokens) {
-      return false;
-    }
-
+      UUID supervisoryNode, Requisition requisition, Profiler profiler) {
     profiler.start("GET_CURRENT_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("GET_RIGHT");
     RightDto right = authenticationHelper.getRight(rightName);
 
-    profiler.start("CHECK_HAS_RIGHT");
-    ResultDto<Boolean> result = userReferenceDataService.hasRight(
-        user.getId(), right.getId(), program, facility, warehouse
-    );
+    if (REQUISITION_APPROVE.equalsIgnoreCase(rightName)) {
+      return checkUserTokenForApprove(user, right, program, facility,
+          supervisoryNode, requisition, profiler);
+    } else {
+      profiler.start("CHECK_HAS_RIGHT");
+      ResultDto<Boolean> result = userReferenceDataService.hasRight(
+          user.getId(), right.getId(), program, facility, warehouse
+      );
 
-    return null != result && result.getResult();
+      return null != result && result.getResult();
+    }
   }
 
-  private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
-                                    OAuth2Authentication authentication) {
+  private boolean checkUserTokenForApprove(UserDto user, RightDto right, UUID program,
+      UUID facility, UUID supervisoryNode, Requisition requisition, Profiler profiler) {
+    // we can't be sure that a user will have correct rights based on permission strings
+    // that is why we need to verfiy if the user has a correct right by checking user's
+    // roles
+
+    profiler.start("GET_ROLES_FOR_RIGHT");
+    List<RoleDto> roles = authenticationHelper.getRoles(right.getId());
+
+    profiler.start("CHECK_HAS_ROLE");
+    for (int i = 0, length = roles.size(); i < length; ++i) {
+      RoleDto role = roles.get(i);
+
+      if (user.hasSupervisorySupervisionRole(role.getId(), program, supervisoryNode)) {
+        return true;
+      }
+
+      if (!requisition.hasOriginalRequisitionId()
+          && user.hasHomeFacilitySupervisionRole(role.getId(), program, facility)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean checkServiceToken(OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
 
     if (serviceTokenClientId.equals(clientId)) {
-      return allowServiceTokens;
+      // we accept any service's requests
+      return true;
     }
 
     if (startsWith(clientId, apiKeyPrefix)) {
-      return allowApiKey;
+      // we decline any API key's requests
+      return false;
     }
 
     return false;
@@ -353,11 +392,14 @@ public class PermissionService {
    * @return user's permission strings
    */
   public List<String> getPermissionStrings() {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
+        .getContext()
         .getAuthentication();
+
     if (authentication.isClientOnly()) {
       return Collections.emptyList();
     }
+
     UserDto user = authenticationHelper.getCurrentUser();
     return userReferenceDataService.getPermissionStrings(user.getId());
   }

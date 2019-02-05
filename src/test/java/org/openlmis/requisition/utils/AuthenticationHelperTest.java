@@ -15,14 +15,19 @@
 
 package org.openlmis.requisition.utils;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +36,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.springframework.security.core.Authentication;
@@ -48,6 +55,9 @@ public class AuthenticationHelperTest {
 
   @Mock
   private RightReferenceDataService rightReferenceDataService;
+
+  @Mock
+  private RoleReferenceDataService roleReferenceDataService;
 
   @InjectMocks
   private AuthenticationHelper authenticationHelper;
@@ -108,5 +118,21 @@ public class AuthenticationHelperTest {
 
     // when
     authenticationHelper.getRight("rightName");
+  }
+
+  @Test
+  public void shouldReturnRoles() throws Exception {
+    // given
+    RoleDto role = DtoGenerator.of(RoleDto.class);
+    UUID rightId = UUID.randomUUID();
+
+    given(roleReferenceDataService.search(rightId)).willReturn(Lists.newArrayList(role));
+
+    // when
+    List<RoleDto> dto = authenticationHelper.getRoles(rightId);
+
+    // then
+    assertThat(dto, hasSize(1));
+    assertThat(dto, hasItem(role));
   }
 }

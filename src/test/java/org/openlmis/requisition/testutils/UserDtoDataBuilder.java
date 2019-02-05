@@ -59,9 +59,24 @@ public class UserDtoDataBuilder {
     return this;
   }
 
+  public UserDtoDataBuilder withoutFirstName() {
+    firstName = null;
+    return this;
+  }
+
+  public UserDtoDataBuilder withoutLastName() {
+    lastName = null;
+    return this;
+  }
+
   public UserDtoDataBuilder withRoleAssignment(UUID roleId, UUID supervisoryNodeId,
       UUID programId) {
     roleAssignments.add(new RoleAssignmentDto(roleId, programId, supervisoryNodeId, null));
+    return this;
+  }
+
+  public UserDtoDataBuilder withRoleAssignment(RoleAssignmentDto roleAssignment) {
+    roleAssignments.add(roleAssignment);
     return this;
   }
 
