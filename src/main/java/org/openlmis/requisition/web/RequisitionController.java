@@ -663,7 +663,7 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(required = false) UUID facilityId,
       @PageableDefault() @SortDefault.SortDefaults({
           @SortDefault(sort = {"emergency"}, direction = Direction.DESC),
-          @SortDefault(sort = {"programName"}, direction = Direction.ASC)
+          @SortDefault(sort = {"programId"}, direction = Direction.ASC)
       }) Pageable pageable) {
     Profiler profiler = getProfiler(
         "GET_REQUISITIONS_FOR_CONVERT",
