@@ -33,7 +33,7 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PermissionStringDto {
+public final class PermissionStringDto {
   private String rightName;
   private UUID facilityId;
   private UUID programId;

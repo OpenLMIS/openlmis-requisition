@@ -19,6 +19,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
 import org.springframework.http.HttpHeaders;
 
 public final class RequestHeaders {
@@ -35,6 +37,11 @@ public final class RequestHeaders {
     return isNotBlank(token) ? set(HttpHeaders.AUTHORIZATION, "Bearer " + token) : this;
   }
 
+  public RequestHeaders setAll(RequestHeaders headers) {
+    headers.forEach(entry -> set(entry.getKey(), entry.getValue()));
+    return this;
+  }
+
   RequestHeaders setIfNoneMatch(String value) {
     return set(HttpHeaders.IF_NONE_MATCH, value);
   }
@@ -48,5 +55,9 @@ public final class RequestHeaders {
     }
 
     return this;
+  }
+
+  void forEach(Consumer<Entry<String, String>> action) {
+    headers.entrySet().forEach(action);
   }
 }
