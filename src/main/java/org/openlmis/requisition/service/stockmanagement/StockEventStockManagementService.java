@@ -60,7 +60,7 @@ public class StockEventStockManagementService
           restTemplate.exchange(
               createUri(url),
               HttpMethod.POST,
-              RequestHelper.createEntity(authService.obtainAccessToken(), stockEventDto),
+              RequestHelper.createEntity(stockEventDto, authService.obtainAccessToken()),
               UUID.class
           ));
 

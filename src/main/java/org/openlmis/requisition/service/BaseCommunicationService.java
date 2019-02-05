@@ -250,7 +250,7 @@ public abstract class BaseCommunicationService<T> {
                                                 Object payload, HttpMethod method,
                                                 Class<E[]> type) {
     HttpEntity<Object> entity = RequestHelper
-        .createEntity(authService.obtainAccessToken(), payload);
+        .createEntity(payload, authService.obtainAccessToken());
     List<E[]> arrays = new ArrayList<>();
 
     for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
@@ -271,7 +271,7 @@ public abstract class BaseCommunicationService<T> {
                                                        HttpMethod method,
                                                        Class<E> type) {
     HttpEntity<Object> entity = RequestHelper
-        .createEntity(authService.obtainAccessToken(), payload);
+        .createEntity(payload, authService.obtainAccessToken());
     ParameterizedTypeReference<PageDto<E>> parameterizedType =
         new DynamicPageTypeReference<>(type);
     List<PageDto<E>> pages = new ArrayList<>();

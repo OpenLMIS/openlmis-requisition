@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.exception.EncodingException;
+import org.openlmis.requisition.service.RequestHeaders;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -71,7 +72,7 @@ public final class RequestHelper {
    * @param <E> the type of the body for the request
    * @return the {@link HttpEntity} to use
    */
-  public static <E> HttpEntity<E> createEntity(String token, E payload) {
+  public static <E> HttpEntity<E> createEntity(E payload, String token) {
     if (payload == null) {
       return createEntity(token);
     } else {
@@ -79,19 +80,22 @@ public final class RequestHelper {
     }
   }
 
-  /**
-   * Creates an {@link HttpEntity} and adds an authorizatior header with the provided token.
-   * @param token the token to put into the authorization header
-   * @return the {@link HttpEntity} to use
-   */
   public static <E> HttpEntity<E> createEntity(String token) {
     return new HttpEntity<>(createHeadersWithAuth(token));
   }
 
-  private static HttpHeaders createHeadersWithAuth(String token) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-    return headers;
+  /**
+   * Creates an {@link HttpEntity} with the given payload as a body and headers.
+   */
+  public static <E> HttpEntity<E> createEntity(E payload, RequestHeaders headers) {
+    return new HttpEntity<>(payload, headers.toHeaders());
+  }
+
+  /**
+   * Creates an {@link HttpEntity} with the given headers.
+   */
+  public static <E> HttpEntity<E> createEntity(RequestHeaders headers) {
+    return new HttpEntity<>(headers.toHeaders());
   }
 
   /**
@@ -116,6 +120,12 @@ public final class RequestHelper {
     }
 
     return new URI[]{uri};
+  }
+
+  private static HttpHeaders createHeadersWithAuth(String token) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    return headers;
   }
 
 }

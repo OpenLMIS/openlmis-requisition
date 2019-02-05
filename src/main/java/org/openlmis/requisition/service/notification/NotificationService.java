@@ -59,7 +59,7 @@ public class NotificationService {
     try {
       restTemplate.postForObject(
               RequestHelper.createUri(url),
-              RequestHelper.createEntity(authService.obtainAccessToken(), request),
+              RequestHelper.createEntity(request, authService.obtainAccessToken()),
               Object.class);
     } catch (HttpStatusCodeException ex) {
       logger.error(

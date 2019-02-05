@@ -41,8 +41,7 @@ public class OrderFulfillmentService extends BaseFulfillmentService<OrderDto> {
   public void create(List<OrderDto> orders) {
     try {
       String url = getServiceUrl() + getBatchUrl();
-      HttpEntity<List<OrderDto>> body = createEntity(authService.obtainAccessToken(),
-              orders);
+      HttpEntity<List<OrderDto>> body = createEntity(orders, authService.obtainAccessToken());
       postNew(url, body);
     } catch (RestClientException ex) {
       throw new ValidationMessageException(
