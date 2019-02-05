@@ -1220,6 +1220,23 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldReturnEmptyPageWhenNoFacilityIdsFromPermissionStrings() {
+    // given
+    Pageable pageable = mockPageable();
+    when(permissionService.getPermissionStrings()).thenReturn(emptyList());
+
+    // when
+    Page<RequisitionWithSupplyingDepotsDto> receivedRequisitions = requisitionService
+        .searchApprovedRequisitionsWith(
+            facility.getId(),
+            program.getId(),
+            pageable);
+
+    // then
+    assertEquals(0, receivedRequisitions.getTotalElements());
+  }
+
+  @Test
   public void shouldConvertRequisitionsToOrders() {
     // given
     int requisitionsCount = 5;

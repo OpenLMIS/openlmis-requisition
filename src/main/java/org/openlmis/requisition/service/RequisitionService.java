@@ -806,20 +806,4 @@ public class RequisitionService {
     return requisitionRepository.searchRequisitions(
         period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
   }
-
-  private void populateIdsFromPermissionStrings(Set<PermissionStringDto> permissionStrings,
-      Set<UUID> fulfillmentFacilitiesIds) {
-
-    permissionStrings.stream()
-        .filter(this::isFacilitySearchRight)
-        .forEach(permissionString -> {
-          if (ORDERS_EDIT.equals(permissionString.getRightName())) {
-            fulfillmentFacilitiesIds.add(permissionString.getFacilityId());
-          }
-        });
-  }
-
-  private boolean isFacilitySearchRight(PermissionStringDto permissionString) {
-    return permissionString.getRightName().equals(ORDERS_EDIT);
-  }
 }

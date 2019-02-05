@@ -855,6 +855,24 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
+  public void shouldReturnEmptyPageWhenNoRequisitionsWithGivenParametersFound() {
+    Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
+    generateRequisition(INITIATED, requisition1.getFacilityId(), requisition1.getProgramId());
+
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        facilityId,
+        singleton(programId),
+        singleton(supervisoryNodeId),
+        createPageable(10, 0));
+
+    assertEquals(0, requisitions.getTotalElements());
+  }
+
+  @Test
   public void shouldReadById() {
     List<Requisition> requisitions = repository.readDistinctByIdIn(
         Arrays.asList(this.requisitions.get(0).getId(), this.requisitions.get(3).getId()));

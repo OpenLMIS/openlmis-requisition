@@ -19,7 +19,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,12 +75,13 @@ public class SupplyLineReferenceDataServiceTest
 
   @Test
   public void shouldSearchSupplyLinesBySupplyingFacilityId() {
-    UUID programId = UUID.randomUUID();
-    UUID supervisoryNodeId = UUID.randomUUID();
+    UUID supplyingFacilityId = UUID.randomUUID();
+    Set<UUID> supplyingFacilitiesIds = new HashSet<>();
+    supplyingFacilitiesIds.add(supplyingFacilityId);
 
     SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
     mockPageResponseEntity(dto);
-    List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
+    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds);
 
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));
@@ -87,7 +90,7 @@ public class SupplyLineReferenceDataServiceTest
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter("programId", programId)
+        .hasQueryParameter("supplyingFacilityId", supplyingFacilityId)
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }
