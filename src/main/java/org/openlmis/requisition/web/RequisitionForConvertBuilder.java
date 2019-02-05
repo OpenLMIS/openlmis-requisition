@@ -77,7 +77,9 @@ public class RequisitionForConvertBuilder {
     Map<UUID, FacilityDto> facilities = getFacilities(requisitions, userManagedFacilities);
     Map<UUID, ProgramDto> programs = getPrograms(requisitions);
     Map<UUID, UUID> supervisoryNodeSupplyingFacilityPairs = supplyLines.stream()
-        .collect(toMap(SupplyLineDto::getSupervisoryNode, SupplyLineDto::getSupplyingFacility));
+        .collect(toMap(
+            supplyLine -> supplyLine.getSupervisoryNode().getId(),
+            supplyLine -> supplyLine.getSupplyingFacility().getId()));
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (Requisition requisition : requisitions) {

@@ -278,7 +278,7 @@ public abstract class BaseRequisitionController extends BaseController {
     if (requisition.getStatus().isApproved() && !isEmpty(approveParams.supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");
       FacilityDto facility = facilityReferenceDataService
-          .findOne(approveParams.supplyLines.get(0).getSupplyingFacility());
+          .findOne(approveParams.supplyLines.get(0).getSupplyingFacility().getId());
 
       profiler.start("FIND_SUPPORTED_PROGRAM_ENTRY");
       SupportedProgramDto supportedProgram = facilitySupportsProgramHelper

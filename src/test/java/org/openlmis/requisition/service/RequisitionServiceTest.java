@@ -1187,7 +1187,7 @@ public class RequisitionServiceTest {
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        asSet(supplyLine.getProgram()), asSet(supplyLine.getSupervisoryNode()),
+        asSet(supplyLine.getProgram().getId()), asSet(supplyLine.getSupervisoryNode().getId()),
         supplyingDepot, pageable);
 
     //when

@@ -15,17 +15,31 @@
 
 package org.openlmis.requisition.dto;
 
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 
 public class SupplyLineDtoTest {
 
   @Test
   public void equalsContract() {
+    SupervisoryNodeDto supervisoryNodeDto1 = new SupervisoryNodeDto();
+    supervisoryNodeDto1.setId(UUID.randomUUID());
+
+    SupervisoryNodeDto supervisoryNodeDto2 = new SupervisoryNodeDto();
+    supervisoryNodeDto2.setId(UUID.randomUUID());
+
     EqualsVerifier
         .forClass(SupplyLineDto.class)
         .withRedefinedSuperclass()
+        .withPrefabValues(SupervisoryNodeDto.class, supervisoryNodeDto1, supervisoryNodeDto2)
+        .withPrefabValues(ProgramDto.class,
+            new ProgramDtoDataBuilder().build(), new ProgramDtoDataBuilder().build())
+        .withPrefabValues(FacilityDto.class,
+            new FacilityDtoDataBuilder().build(), new FacilityDtoDataBuilder().build())
         .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
         .verify();
   }

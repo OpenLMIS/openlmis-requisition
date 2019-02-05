@@ -957,7 +957,7 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     ReleasableRequisitionDto entry = new ReleasableRequisitionDto(uuid4,
-        supplyLineDto.getSupplyingFacility());
+        supplyLineDto.getSupplyingFacility().getId());
     ImmutableList<ReleasableRequisitionDto> list = ImmutableList.of(entry);
     verify(requisitionService).convertToOrder(eq(list), any(UserDto.class));
   }
@@ -1331,7 +1331,7 @@ public class RequisitionControllerTest {
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
 
     FacilityDto facility = new FacilityDto();
-    facility.setId(supplyLine.getSupplyingFacility());
+    facility.setId(supplyLine.getSupplyingFacility().getId());
 
     SupportedProgramDto supportedProgram = new SupportedProgramDto();
     supportedProgram.setSupportLocallyFulfilled(locallyFulfills);
@@ -1339,7 +1339,7 @@ public class RequisitionControllerTest {
     when(supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId()))
         .thenReturn(Collections.singletonList(supplyLine));
-    when(facilityReferenceDataService.findOne(supplyLine.getSupplyingFacility()))
+    when(facilityReferenceDataService.findOne(supplyLine.getSupplyingFacility().getId()))
         .thenReturn(facility);
     when(facilitySupportsProgramHelper.getSupportedProgram(facility, requisition.getProgramId()))
         .thenReturn(withSupportedProgram ? supportedProgram : null);

@@ -36,6 +36,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -66,34 +67,47 @@ public class RequisitionForConvertBuilderTest {
   private RequisitionForConvertBuilder requisitionForConvertBuilder =
       new RequisitionForConvertBuilder();
 
-  private FacilityDto facility = new FacilityDtoDataBuilder().build();
-  private FacilityDto facility1 = new FacilityDtoDataBuilder().build();
-  private FacilityDto facility2 = new FacilityDtoDataBuilder().build();
-  private UUID supervisoryNodeId1 = UUID.randomUUID();
-  private UUID supervisoryNodeId2 = UUID.randomUUID();
-  private ProgramDto program = new ProgramDtoDataBuilder().build();
-  private Requisition requisition1 = new RequisitionDataBuilder()
-      .withProgramId(program.getId())
-      .withFacilityId(facility.getId())
-      .withSupervisoryNodeId(supervisoryNodeId1)
-      .build();
-  private Requisition requisition2 = new RequisitionDataBuilder()
-      .withProgramId(program.getId())
-      .withFacilityId(facility.getId())
-      .withSupervisoryNodeId(supervisoryNodeId2)
-      .build();
-  private SupplyLineDto supplyLine1 = new SupplyLineDtoDataBuilder()
-      .withSupervisoryNode(supervisoryNodeId1)
-      .withSupplyingFacility(facility1.getId())
-      .build();
-  private SupplyLineDto supplyLine2 = new SupplyLineDtoDataBuilder()
-      .withSupervisoryNode(supervisoryNodeId2)
-      .withSupplyingFacility(facility2.getId())
-      .build();
+  private FacilityDto facility1;
+  private FacilityDto facility2;
+  private Requisition requisition1;
+  private Requisition requisition2;
+  private SupplyLineDto supplyLine1;
+  private SupplyLineDto supplyLine2;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+
+    final FacilityDto facility = new FacilityDtoDataBuilder().build();
+    facility1 = new FacilityDtoDataBuilder().build();
+    facility2 = new FacilityDtoDataBuilder().build();
+
+    SupervisoryNodeDto supervisoryNode1 = new SupervisoryNodeDto();
+    supervisoryNode1.setId(UUID.randomUUID());
+    SupervisoryNodeDto supervisoryNode2 = new SupervisoryNodeDto();
+    supervisoryNode2.setId(UUID.randomUUID());
+
+    ProgramDto program = new ProgramDtoDataBuilder().build();
+
+    requisition1 = new RequisitionDataBuilder()
+        .withProgramId(program.getId())
+        .withFacilityId(facility.getId())
+        .withSupervisoryNodeId(supervisoryNode1.getId())
+        .build();
+    requisition2 = new RequisitionDataBuilder()
+        .withProgramId(program.getId())
+        .withFacilityId(facility.getId())
+        .withSupervisoryNodeId(supervisoryNode2.getId())
+        .build();
+
+    supplyLine1 = new SupplyLineDtoDataBuilder()
+        .withSupervisoryNode(supervisoryNode1)
+        .withSupplyingFacility(facility1)
+        .build();
+    supplyLine2 = new SupplyLineDtoDataBuilder()
+        .withSupervisoryNode(supervisoryNode2)
+        .withSupplyingFacility(facility2)
+        .build();
 
     when(facilityReferenceDataService.search(
         asSet(facility.getId(), facility1.getId(), facility2.getId())))

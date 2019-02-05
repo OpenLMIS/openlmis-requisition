@@ -604,11 +604,11 @@ public class RequisitionService {
       supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds);
 
       supervisoryNodeIds = supplyLines.stream()
-          .map(SupplyLineDto::getSupervisoryNode)
+          .map(supplyLine -> supplyLine.getSupervisoryNode().getId())
           .collect(toSet());
 
       programIds = supplyLines.stream()
-          .map(SupplyLineDto::getProgram)
+          .map(supplyLine -> supplyLine.getProgram().getId())
           .collect(toSet());
 
       if (null != programId) {

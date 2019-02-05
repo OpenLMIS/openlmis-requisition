@@ -17,22 +17,25 @@ package org.openlmis.requisition.testutils;
 
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 
 public class SupplyLineDtoDataBuilder {
 
   private UUID id = UUID.randomUUID();
-  private UUID supervisoryNode = UUID.randomUUID();
+  private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private String description = RandomStringUtils.randomAlphanumeric(5);
-  private UUID program = UUID.randomUUID();
-  private UUID supplyingFacility = UUID.randomUUID();
+  private ProgramDto program = new ProgramDtoDataBuilder().build();
+  private FacilityDto supplyingFacility = new FacilityDtoDataBuilder().build();
 
-  public SupplyLineDtoDataBuilder withSupplyingFacility(UUID supplyingFacility) {
+  public SupplyLineDtoDataBuilder withSupplyingFacility(FacilityDto supplyingFacility) {
     this.supplyingFacility = supplyingFacility;
     return this;
   }
 
-  public SupplyLineDtoDataBuilder withSupervisoryNode(UUID supervisoryNode) {
+  public SupplyLineDtoDataBuilder withSupervisoryNode(SupervisoryNodeDto supervisoryNode) {
     this.supervisoryNode = supervisoryNode;
     return this;
   }
@@ -41,9 +44,7 @@ public class SupplyLineDtoDataBuilder {
    * Creates new instance of {@link SupplyLineDto}.
    */
   public SupplyLineDto build() {
-    SupplyLineDto dto = new SupplyLineDto(
-        supervisoryNode, description, program, supplyingFacility
-    );
+    SupplyLineDto dto = new SupplyLineDto(supervisoryNode, description, program, supplyingFacility);
     dto.setId(id);
     return dto;
   }

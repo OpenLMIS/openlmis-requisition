@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.dto;
 
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -28,8 +27,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class SupplyLineDto extends BaseDto {
-  private UUID supervisoryNode;
+  private SupervisoryNodeDto supervisoryNode;
   private String description;
-  private UUID program;
-  private UUID supplyingFacility;
+  private ProgramDto program;
+  private FacilityDto supplyingFacility;
 }
