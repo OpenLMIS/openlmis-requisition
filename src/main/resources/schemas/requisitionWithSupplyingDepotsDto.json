@@ -9,14 +9,17 @@
       "$ref": "basicRequisitionDto.json",
       "title": "requisition"
     },
-    "supplyingDepot": {
-      "type": "object",
-      "title": "supplyingDepot",
-      "$ref": "basicFacilityDto.json"
+    "supplyingDepots": {
+      "type": ["array", "null"],
+      "title": "supplyingDepots",
+      "items": {
+        "type": "object",
+        "$ref": "basicFacilityDto.json"
+      }
     }
   },
   "required": [
     "requisition",
-    "supplyingDepot"
+    "supplyingDepots"
   ]
 }

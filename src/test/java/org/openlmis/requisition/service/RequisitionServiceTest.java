@@ -1524,7 +1524,8 @@ public class RequisitionServiceTest {
 
     List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
     for (BasicRequisitionDto dto : requisitionDtos) {
-      requisitionsWithDepots.add(new RequisitionWithSupplyingDepotsDto(dto, supplyingDepot));
+      requisitionsWithDepots.add(
+          new RequisitionWithSupplyingDepotsDto(dto, singletonList(supplyingDepot)));
     }
     when(requisitionForConvertBuilder.buildRequisitions(any(), any(), any()))
         .thenReturn(requisitionsWithDepots);

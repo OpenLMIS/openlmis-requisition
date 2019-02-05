@@ -118,10 +118,10 @@ public class RequisitionForConvertBuilderTest {
     assertEquals(2, result.size());
 
     //first requisition has 2 supplying depots where user has rights
-    assertEquals(facility1, result.get(0).getSupplyingDepot());
+    assertEquals(facility1, result.get(0).getSupplyingDepots().get(0));
 
     //second requisition has 1 supplying depot where user has right
-    assertEquals(facility2, result.get(1).getSupplyingDepot());
+    assertEquals(facility2, result.get(1).getSupplyingDepots().get(0));
 
     verifyNoMoreInteractions(supplyLineReferenceDataService);
   }

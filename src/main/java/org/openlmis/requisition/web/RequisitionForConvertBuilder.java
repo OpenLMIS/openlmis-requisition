@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -86,8 +87,8 @@ public class RequisitionForConvertBuilder {
 
       responseList.add(new RequisitionWithSupplyingDepotsDto(
           requisitionDto,
-          facilities.get(
-              supervisoryNodeSupplyingFacilityPairs.get(requisition.getSupervisoryNodeId()))));
+          singletonList(facilities.get(
+              supervisoryNodeSupplyingFacilityPairs.get(requisition.getSupervisoryNodeId())))));
     }
 
     return responseList;

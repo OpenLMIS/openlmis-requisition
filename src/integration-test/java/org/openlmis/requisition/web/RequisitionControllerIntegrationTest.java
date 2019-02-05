@@ -1843,7 +1843,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
 
     RequisitionWithSupplyingDepotsDto requisition =
-        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1884,7 +1884,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
 
     RequisitionWithSupplyingDepotsDto requisition =
-        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -1939,7 +1939,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Set<FacilityDto> managedFacilities = Collections.singleton(facility);
 
     RequisitionWithSupplyingDepotsDto requisition =
-        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
 
     given(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
@@ -2027,7 +2027,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     FacilityDto facility = new FacilityDtoDataBuilder().build();
 
     RequisitionWithSupplyingDepotsDto requisition =
-        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), facility);
+        new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
 
     given(requisitionService.searchApprovedRequisitionsWith(
         any(), any(), any()))
