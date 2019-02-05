@@ -15,14 +15,9 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toSet;
-
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -49,8 +44,6 @@ public class PermissionStrings {
     private Set<PermissionStringDto> permissionStrings;
     private String etag;
 
-    private Map<String, Set<UUID>> facilityIds;
-
     Handler(UUID userId) {
       this.userId = userId;
     }
@@ -69,14 +62,6 @@ public class PermissionStrings {
         if (response.isModified()) {
           permissionStrings = PermissionStringDto.from(response.getBody());
           etag = response.getETag();
-          facilityIds = permissionStrings
-              .stream()
-              .filter(Objects::nonNull)
-              .filter(elem -> Objects.nonNull(elem.getFacilityId()))
-              .collect(groupingBy(
-                  PermissionStringDto::getRightName,
-                  mapping(PermissionStringDto::getFacilityId, toSet())
-              ));
         }
       }
     }
