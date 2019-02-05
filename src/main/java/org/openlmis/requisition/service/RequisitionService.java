@@ -565,8 +565,8 @@ public class RequisitionService {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param facilityId UUID of facility to be used in filters
-   * @param programId  UUID of program to be used in filters
+   * @param facilityId UUID of the facility to be used in filters
+   * @param programId  UUID of the program to be used in filters
    * @param pageable   Pageable object that allows to optionally add "page" (page number)
    *                   and "size" (page size) query parameters.
    * @return List of requisitions.

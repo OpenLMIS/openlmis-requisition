@@ -1,5 +1,8 @@
-7.2.0 / WIP
+8.0.0 / WIP
 ==================
+
+Breaking changes:
+* [OLMIS-4373](https://openlmis.atlassian.net/browse/OLMIS-4373): Changed filterBy and filterValue parameters to programId and facilityId in GET /api/requisitionsForConvert endpoint.
 
 New functionality:
 * [OLMIS-5138](https://openlmis.atlassian.net/browse/OLMIS-5138): Added `originalRequisition` extended property to Requisition model
