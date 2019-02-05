@@ -10,6 +10,7 @@ New functionality:
 
 Improvements:
 * [OLMIS-3773](https://openlmis.atlassian.net/browse/OLMIS-3773): Adjusted facility search by ids and findAll after changing return type to page.
+* [OLMIS-5000](https://openlmis.atlassian.net/browse/OLMIS-5000): Refactored /requisitionsForConvert endpoint to improve its performance.
 
 Bug fixes:
 * [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique.

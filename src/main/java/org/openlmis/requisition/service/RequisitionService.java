@@ -17,7 +17,9 @@ package org.openlmis.requisition.service;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
@@ -601,7 +603,8 @@ public class RequisitionService {
       }
 
       profiler.start("SEARCH_FOR_SUPPLY_LINES");
-      supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds);
+      supplyLines = supplyLineReferenceDataService
+          .searchBySupplyingFacilities(fulfillmentFacilitiesIds);
 
       supervisoryNodeIds = supplyLines.stream()
           .map(supplyLine -> supplyLine.getSupervisoryNode().getId())
@@ -611,10 +614,10 @@ public class RequisitionService {
           .map(supplyLine -> supplyLine.getProgram().getId())
           .collect(toSet());
 
-      if (null != programId) {
-        programIds = programIds.stream()
-            .filter(id -> id.equals(programId))
-            .collect(toSet());
+      if (null != programId && programIds.contains(programId)) {
+        programIds = newHashSet(programId);
+      } else {
+        programIds = emptySet();
       }
 
       if (isEmpty(supervisoryNodeIds) || isEmpty(programIds)) {

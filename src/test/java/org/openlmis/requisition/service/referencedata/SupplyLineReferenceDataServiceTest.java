@@ -81,7 +81,7 @@ public class SupplyLineReferenceDataServiceTest
 
     SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
     mockPageResponseEntity(dto);
-    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds);
+    List<SupplyLineDto> result = service.searchBySupplyingFacilities(supplyingFacilitiesIds);
 
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));

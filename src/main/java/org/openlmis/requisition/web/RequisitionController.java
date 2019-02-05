@@ -649,8 +649,8 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param programId  UUID of program to be used as filter
-   * @param facilityId UUID of facility to be used as filter
+   * @param programId  UUID of the program to be used as filter
+   * @param facilityId UUID of the facility to be used as filter
    * @param pageable   Pageable object that allows client to optionally add "page" (page number)
    *                   and "size" (page size) query parameters to the request.
    * @return Page of approved requisitions.

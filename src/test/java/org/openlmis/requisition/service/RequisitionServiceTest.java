@@ -18,8 +18,10 @@ package org.openlmis.requisition.service;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -127,6 +129,7 @@ import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceD
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
+import org.openlmis.requisition.service.referencedata.PermissionStrings.Handler;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
@@ -980,7 +983,7 @@ public class RequisitionServiceTest {
         APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
@@ -1004,7 +1007,7 @@ public class RequisitionServiceTest {
         APPROVED);
     List<FacilityDto> facilities = requisitions.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
@@ -1246,7 +1249,7 @@ public class RequisitionServiceTest {
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
@@ -1271,7 +1274,7 @@ public class RequisitionServiceTest {
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
@@ -1289,7 +1292,7 @@ public class RequisitionServiceTest {
 
     List<FacilityDto> facilities = list.stream()
         .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
@@ -1663,7 +1666,7 @@ public class RequisitionServiceTest {
                     .getRequisitionLineItems()
                     .stream()
                     .map(line -> OrderLineItemDto.newOrderLineItem(line, null))
-                    .collect(Collectors.toList())
+                    .collect(toList())
             );
 
             order.setCreatedBy((UserDto) invocation.getArguments()[1]);
@@ -1677,7 +1680,7 @@ public class RequisitionServiceTest {
     when(permissionStringsHandler.get())
         .thenReturn(asSet(
             PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
-    when(supplyLineReferenceDataService.search(singleton(facility.getId())))
+    when(supplyLineReferenceDataService.searchBySupplyingFacilities(singleton(facility.getId())))
         .thenReturn(asList(supplyLine));
   }
 

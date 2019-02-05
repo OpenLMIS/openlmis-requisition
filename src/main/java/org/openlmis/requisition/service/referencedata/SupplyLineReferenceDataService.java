@@ -41,6 +41,20 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
   }
 
   /**
+   * Retrieves supply lines from reference data service by supplying facility ids.
+   *
+   * @param supplyingFacilityIds UUIDs of supplying facility
+   * @return A list of supply lines matching search criteria
+   */
+  public List<SupplyLineDto> searchBySupplyingFacilities(Set<UUID> supplyingFacilityIds) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("supplyingFacilityId", supplyingFacilityIds);
+
+    return search(parameters);
+  }
+
+  /**
    * Retrieves supply lines from reference data service by program and supervisory node.
    *
    * @param programId         UUID of the program
@@ -52,20 +66,6 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
         .init()
         .set("programId", programId)
         .set("supervisoryNodeId", supervisoryNodeId);
-
-    return search(parameters);
-  }
-
-  /**
-   * Retrieves supply lines from reference data service by supplying facility ids.
-   *
-   * @param supplyingFacilityIds UUIDs of supplying facility
-   * @return A list of supply lines matching search criteria
-   */
-  public List<SupplyLineDto> search(Set<UUID> supplyingFacilityIds) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("supplyingFacilityId", supplyingFacilityIds);
 
     return search(parameters);
   }
