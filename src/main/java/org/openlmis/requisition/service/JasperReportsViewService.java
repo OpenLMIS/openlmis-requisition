@@ -72,6 +72,8 @@ import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.TimelinessReportFacilityDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -380,11 +382,17 @@ public class JasperReportsViewService {
     // find active facilities that are missing R&R
     for (MinimalFacilityDto facility : facilities) {
       if (facility.getActive()) {
-        List<Requisition> requisitions = requisitionService.searchRequisitions(
-            facility.getId(), program.getId(), null, null, null, null, processingPeriod.getId(),
-            null, validStatuses, null,
-            new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION))
+        RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+            facility.getId(), program.getId(), processingPeriod.getId(),
+            null, null, null, null, null, null, validStatuses);
+
+        PageRequest pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER,
+            Pagination.NO_PAGINATION);
+
+        List<Requisition> requisitions = requisitionService
+            .searchRequisitions(params, pageRequest)
             .getContent();
+
         if (requisitions.isEmpty()) {
           TimelinessReportFacilityDto timelinessFacility = new TimelinessReportFacilityDto();
           facility.export(timelinessFacility);

@@ -32,6 +32,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anySetOf;
@@ -120,6 +121,8 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -131,14 +134,12 @@ import org.openlmis.requisition.service.referencedata.PermissionStrings;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
-import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummaryStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
-import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
@@ -150,7 +151,6 @@ import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.web.BasicRequisitionDtoBuilder;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.data.domain.Page;
@@ -185,16 +185,10 @@ public class RequisitionServiceTest {
   private RequisitionLineItem lineItem2;
 
   @Mock
-  private ConfigurationSettingService configurationSettingService;
-
-  @Mock
   private RequisitionRepository requisitionRepository;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Mock
-  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -261,9 +255,6 @@ public class RequisitionServiceTest {
 
   @InjectMocks
   private RequisitionService requisitionService;
-
-  @Mock
-  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
 
   @Mock
   private PermissionStrings.Handler permissionStringsHandler;
@@ -1074,41 +1065,33 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFindRequisitionIfItExists() {
-    when(permissionService.getPermissionStrings(user.getId())).thenReturn(permissionStringsHandler);
+    // given
+    RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+        requisition.getFacilityId(), requisition.getProgramId(),
+        requisition.getProcessingPeriodId(), requisition.getSupervisoryNodeId(),
+        requisition.getEmergency(), requisition.getCreatedDate().minusDays(2).toLocalDate(),
+        requisition.getCreatedDate().plusDays(2).toLocalDate(),
+        requisition.getModifiedDate().minusDays(2), requisition.getModifiedDate().plusDays(2),
+        EnumSet.of(requisition.getStatus()));
 
-    List<String> permissionStrings = permissionStringsHandler.get()
+    given(permissionService.getPermissionStrings(user.getId()))
+        .willReturn(permissionStringsHandler);
+
+    List<String> permissionStrings = permissionStringsHandler
+        .get()
         .stream()
         .map(PermissionStringDto::toString)
         .collect(toList());
 
-    when(requisitionRepository.searchRequisitions(
-        requisition.getFacilityId(),
-        requisition.getProgramId(),
-        requisition.getCreatedDate().minusDays(2).toLocalDate(),
-        requisition.getCreatedDate().plusDays(2).toLocalDate(),
-        requisition.getModifiedDate().minusDays(2),
-        requisition.getModifiedDate().plusDays(2),
-        requisition.getProcessingPeriodId(),
-        requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()),
-        null,
-        permissionStrings,
-        pageRequest))
-        .thenReturn(getPage(singletonList(requisition), pageRequest));
+    given(requisitionRepository.searchRequisitions(params, permissionStrings, pageRequest))
+        .willReturn(getPage(singletonList(requisition), pageRequest));
 
-    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
-        requisition.getFacilityId(),
-        requisition.getProgramId(),
-        requisition.getCreatedDate().minusDays(2).toLocalDate(),
-        requisition.getCreatedDate().plusDays(2).toLocalDate(),
-        requisition.getModifiedDate().minusDays(2),
-        requisition.getModifiedDate().plusDays(2),
-        requisition.getProcessingPeriodId(),
-        requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()),
-        null,
-        pageRequest).getContent();
+    // when
+    List<Requisition> receivedRequisitions = requisitionService
+        .searchRequisitions(params, pageRequest)
+        .getContent();
 
+    // then
     assertEquals(1, receivedRequisitions.size());
     assertEquals(
         receivedRequisitions.get(0).getFacilityId(),
@@ -1142,24 +1125,21 @@ public class RequisitionServiceTest {
   @Test
   public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
     // given
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(user);
-    when(permissionStringsHandler.get())
-        .thenReturn(emptySet());
+    RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+        requisition.getFacilityId(), requisition.getProgramId(),
+        requisition.getProcessingPeriodId(), requisition.getSupervisoryNodeId(),
+        requisition.getEmergency(), requisition.getCreatedDate().minusDays(2).toLocalDate(),
+        requisition.getCreatedDate().plusDays(2).toLocalDate(),
+        requisition.getModifiedDate().minusDays(2), requisition.getModifiedDate().plusDays(2),
+        EnumSet.of(requisition.getStatus()));
+
+    given(authenticationHelper.getCurrentUser()).willReturn(user);
+    given(permissionStringsHandler.get()).willReturn(emptySet());
 
     // when
-    List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
-        requisition.getFacilityId(),
-        requisition.getProgramId(),
-        requisition.getCreatedDate().minusDays(2).toLocalDate(),
-        requisition.getCreatedDate().plusDays(2).toLocalDate(),
-        requisition.getModifiedDate().minusDays(2),
-        requisition.getModifiedDate().plusDays(2),
-        requisition.getProcessingPeriodId(),
-        requisition.getSupervisoryNodeId(),
-        EnumSet.of(requisition.getStatus()),
-        null,
-        pageRequest).getContent();
+    List<Requisition> receivedRequisitions = requisitionService
+        .searchRequisitions(params, pageRequest)
+        .getContent();
 
     // then
     assertEquals(0, receivedRequisitions.size());

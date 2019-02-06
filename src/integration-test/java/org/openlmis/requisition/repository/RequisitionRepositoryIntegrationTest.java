@@ -69,6 +69,8 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,19 +123,17 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setEmergency(true);
     repository.save(requisition);
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        requisitionToCopy.getFacilityId(),
-        requisitionToCopy.getProgramId(),
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        requisitionToCopy.getFacilityId(), requisitionToCopy.getProgramId(),
+        requisitionToCopy.getProcessingPeriodId(), requisitionToCopy.getSupervisoryNodeId(),
+        requisitionToCopy.getEmergency(), requisitionToCopy.getCreatedDate().toLocalDate(),
         requisitionToCopy.getCreatedDate().toLocalDate(),
-        requisitionToCopy.getCreatedDate().toLocalDate(),
-        requisitionToCopy.getModifiedDate(),
-        requisitionToCopy.getModifiedDate(),
-        requisitionToCopy.getProcessingPeriodId(),
-        requisitionToCopy.getSupervisoryNodeId(),
-        EnumSet.of(requisitionToCopy.getStatus()),
-        requisitionToCopy.getEmergency(),
-        userPermissionStrings,
-        pageRequest).getContent();
+        requisitionToCopy.getModifiedDate(), requisitionToCopy.getModifiedDate(),
+        EnumSet.of(requisitionToCopy.getStatus()));
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -174,13 +174,13 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().plusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().plusMonths(3));
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null,
-        requisition1.getModifiedDate(),
-        null, null, null,
-        null,null,
-        userPermissionStrings,
-        pageRequest).getContent();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        null, null, null, null, null, null, null,
+        requisition1.getModifiedDate(), null, null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(3, receivedRequisitions.size());
     assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition1.getModifiedDate());
@@ -198,12 +198,13 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null, null,
-        requisition3.getModifiedDate(),
-        null, null, null,null,
-        userPermissionStrings,
-        pageRequest).getContent();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        null, null, null, null, null, null, null,
+        null, requisition3.getModifiedDate(), null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(3, receivedRequisitions.size());
     assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition1.getModifiedDate());
@@ -221,13 +222,13 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null,
-        requisition2.getModifiedDate(),
-        requisition3.getModifiedDate(),
-        null, null, null,null,
-        userPermissionStrings,
-        pageRequest).getContent();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        null, null, null, null, null, null, null,
+        requisition2.getModifiedDate(), requisition3.getModifiedDate(), null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, receivedRequisitions.size());
     assertEquals(receivedRequisitions.get(0).getModifiedDate(), requisition2.getModifiedDate());
@@ -246,12 +247,13 @@ public class RequisitionRepositoryIntegrationTest
         StatusChange.newStatusChange(requisition, UUID.randomUUID())));
     repository.save(requisition);
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        requisitions.get(0).getFacilityId(),
-        requisitions.get(0).getProgramId(),
-        null, null, null, null,
-        null, null, null, null,
-        userPermissionStrings, pageRequest).getContent();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        requisitions.get(0).getFacilityId(), requisitions.get(0).getProgramId(), null, null,
+        null, null, null, null, null, null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, receivedRequisitions.size());
     for (Requisition receivedRequisition : receivedRequisitions) {
@@ -268,10 +270,10 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchRequisitionsByAllParametersNull() {
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        null, null, null, null, null,
-        null, null, null, null,
-        null, userPermissionStrings, pageRequest)
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
         .getContent();
 
     assertEquals(5, receivedRequisitions.size());
@@ -279,26 +281,28 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchEmergencyRequsitions() {
-    List<Requisition> emergency = repository.searchRequisitions(
-        null, null, null, null, null,
-        null, null, null, null, true,
-        userPermissionStrings, pageRequest)
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        null, null, null, null, true, null, null, null, null, null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
         .getContent();
 
-    assertEquals(2, emergency.size());
-    emergency.forEach(requisition -> assertTrue(requisition.getEmergency()));
+    assertEquals(2, receivedRequisitions.size());
+    receivedRequisitions.forEach(requisition -> assertTrue(requisition.getEmergency()));
   }
 
   @Test
   public void testSearchStandardRequisitions() {
-    List<Requisition> standard = repository.searchRequisitions(
-        null, null, null, null, null, null,
-        null, null, null, false,
-        userPermissionStrings, pageRequest)
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        null, null, null, null, false, null, null, null, null, null);
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
         .getContent();
 
-    assertEquals(3, standard.size());
-    standard.forEach(requisition -> assertFalse(requisition.getEmergency()));
+    assertEquals(3, receivedRequisitions.size());
+    receivedRequisitions.forEach(requisition -> assertFalse(requisition.getEmergency()));
   }
 
   @Test
@@ -324,14 +328,14 @@ public class RequisitionRepositoryIntegrationTest
         userPermissionStrings.get(0));
 
     // when
-    List<Requisition> requisitions = repository.searchRequisitions(
-        null, null, null, null, null,
-        null, null, null, null, false,
-        userPermissionStringSubset, pageRequest)
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStringSubset, pageRequest)
         .getContent();
 
     // then
-    assertEquals(1, requisitions.size());
+    assertEquals(1, receivedRequisitions.size());
   }
 
   @Test
@@ -722,19 +726,15 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setEmergency(true);
     repository.save(requisition);
 
-    List<Requisition> receivedRequisitions = repository.searchRequisitions(
-        requisitionToCopy.getFacilityId(),
-        requisitionToCopy.getProgramId(),
-        null,
-        null,
-        null,
-        null,
-        requisitionToCopy.getProcessingPeriodId(),
-        requisitionToCopy.getSupervisoryNodeId(),
-        EnumSet.of(requisitionToCopy.getStatus()),
-        requisitionToCopy.getEmergency(),
-        userPermissionStrings,
-        pageRequest).getContent();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
+        requisitionToCopy.getFacilityId(), requisitionToCopy.getProgramId(),
+        requisitionToCopy.getProcessingPeriodId(), requisitionToCopy.getSupervisoryNodeId(),
+        requisitionToCopy.getEmergency(), null, null, null, null,
+        EnumSet.of(requisitionToCopy.getStatus()));
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, receivedRequisitions.size());
     assertTrue(receivedRequisitions.get(0).getCreatedDate()
@@ -743,19 +743,9 @@ public class RequisitionRepositoryIntegrationTest
     pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
         Sort.Direction.DESC, "createdDate");
 
-    receivedRequisitions = repository.searchRequisitions(
-        requisitionToCopy.getFacilityId(),
-        requisitionToCopy.getProgramId(),
-        null,
-        null,
-        null,
-        null,
-        requisitionToCopy.getProcessingPeriodId(),
-        requisitionToCopy.getSupervisoryNodeId(),
-        EnumSet.of(requisitionToCopy.getStatus()),
-        requisitionToCopy.getEmergency(),
-        userPermissionStrings,
-        pageRequest).getContent();
+    receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .getContent();
 
     assertEquals(2, receivedRequisitions.size());
     assertTrue(receivedRequisitions.get(0).getCreatedDate()

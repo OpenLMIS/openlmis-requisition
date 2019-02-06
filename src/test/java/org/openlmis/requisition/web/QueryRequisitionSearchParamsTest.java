@@ -41,7 +41,8 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.springframework.util.LinkedMultiValueMap;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionSearchParamsTest extends ToStringContractTest<RequisitionSearchParams> {
+public class QueryRequisitionSearchParamsTest
+    extends ToStringContractTest<QueryRequisitionSearchParams> {
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -72,14 +73,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetFacilityValueFromParameters() {
     queryMap.add(FACILITY, id.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(id, params.getFacility());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoFacilityProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getFacility());
   }
@@ -87,14 +88,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetProgramValueFromParameters() {
     queryMap.add(PROGRAM, id.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(id, params.getProgram());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoProgramProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getProgram());
   }
@@ -102,14 +103,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetInitiatedDateFromValueFromParameters() {
     queryMap.add(INITIATED_DATE_FROM, dateString);
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(date, params.getInitiatedDateFrom());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoInitiatedDateFromProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getInitiatedDateFrom());
   }
@@ -117,14 +118,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetInitiatedDateToValueFromParameters() {
     queryMap.add(INITIATED_DATE_TO, dateString);
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(date, params.getInitiatedDateTo());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoInitiatedDateToProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getInitiatedDateTo());
   }
@@ -132,14 +133,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetProcessingPeriodValueFromParameters() {
     queryMap.add(PROCESSING_PERIOD, id.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(id, params.getProcessingPeriod());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoProcessingPeriodProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getProcessingPeriod());
   }
@@ -147,14 +148,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetSupervisoryNodeValueFromParameters() {
     queryMap.add(SUPERVISORY_NODE, id.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(id, params.getSupervisoryNode());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoSupervisoryNodeProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getSupervisoryNode());
   }
@@ -163,7 +164,7 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   public void shouldGetRequisitionStatusValueFromParameters() {
     queryMap.add(REQUISITION_STATUS, RequisitionStatus.APPROVED.toString());
     queryMap.add(REQUISITION_STATUS, RequisitionStatus.AUTHORIZED.toString());
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertThat(params.getRequisitionStatuses(),
         hasItems(RequisitionStatus.APPROVED,  RequisitionStatus.AUTHORIZED));
@@ -171,7 +172,7 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
 
   @Test
   public void shouldGetEmptySetIfMapHasNoRequisitionStatusProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(emptySet(), params.getRequisitionStatuses());
   }
@@ -183,7 +184,7 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
 
     queryMap.add(REQUISITION_STATUS, RequisitionStatus.APPROVED.toString());
     queryMap.add(REQUISITION_STATUS, "SOME_STATUS");
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     params.getRequisitionStatuses();
   }
@@ -191,34 +192,34 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetEmergencyValueFromParameters() {
     queryMap.add(EMERGENCY, "true");
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
-    assertTrue(params.isEmergency());
+    assertTrue(params.getEmergency());
 
     queryMap.set(EMERGENCY, "false");
-    params = new RequisitionSearchParams(queryMap);
+    params = new QueryRequisitionSearchParams(queryMap);
 
-    assertFalse(params.isEmergency());
+    assertFalse(params.getEmergency());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoEmergencyProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
-    assertNull(params.isEmergency());
+    assertNull(params.getEmergency());
   }
 
   @Test
   public void shouldGetStartModifiedDateValueFromParameters() {
     queryMap.add(MODIFIED_DATE_FROM, dateTimeString);
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(dateTime, params.getModifiedDateFrom());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoStartModifiedDateProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getModifiedDateFrom());
   }
@@ -226,14 +227,14 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
   @Test
   public void shouldGetEndModifiedDateValueFromParameters() {
     queryMap.add(MODIFIED_DATE_TO, dateTimeString);
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertEquals(dateTime, params.getModifiedDateTo());
   }
 
   @Test
   public void shouldGetNullIfMapHasNoEndModifiedDateToProperty() {
-    RequisitionSearchParams params = new RequisitionSearchParams(queryMap);
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     assertNull(params.getModifiedDateTo());
   }
@@ -244,21 +245,21 @@ public class RequisitionSearchParamsTest extends ToStringContractTest<Requisitio
     exception.expectMessage(ERROR_SEARCH_INVALID_PARAMS);
 
     queryMap.add("some-param", "some-value");
-    new RequisitionSearchParams(queryMap);
+    new QueryRequisitionSearchParams(queryMap);
   }
 
   @Override
-  protected Class<RequisitionSearchParams> getTestClass() {
-    return RequisitionSearchParams.class;
+  protected Class<QueryRequisitionSearchParams> getTestClass() {
+    return QueryRequisitionSearchParams.class;
   }
 
   @Override
-  protected Optional<RequisitionSearchParams> getInstance() {
-    return Optional.of(new RequisitionSearchParams(queryMap));
+  protected Optional<QueryRequisitionSearchParams> getInstance() {
+    return Optional.of(new QueryRequisitionSearchParams(queryMap));
   }
 
   @Override
-  protected void prepare(ToStringVerifier<RequisitionSearchParams> verifier) {
+  protected void prepare(ToStringVerifier<QueryRequisitionSearchParams> verifier) {
     verifier.ignore("FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
         "MODIFIED_DATE_FROM", "MODIFIED_DATE_TO", "PROCESSING_PERIOD",
         "SUPERVISORY_NODE", "REQUISITION_STATUS", "EMERGENCY", "ALL_PARAMETERS");

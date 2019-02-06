@@ -15,26 +15,32 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 
-public interface RequisitionRepositoryCustom {
+public interface RequisitionSearchParams {
 
-  Page<Requisition> searchRequisitions(RequisitionSearchParams params,
-      List<String> userPermissionStrings, Pageable pageable);
+  UUID getFacility();
 
-  List<Requisition> searchRequisitions(UUID processingPeriod,
-      UUID facility, UUID program, Boolean emergency);
+  UUID getProgram();
 
-  Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
-      Set<UUID> supervisoryNodeIds, Pageable pageable);
+  UUID getProcessingPeriod();
 
-  Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs, Pageable pageable);
+  UUID getSupervisoryNode();
+
+  Boolean getEmergency();
+
+  LocalDate getInitiatedDateFrom();
+
+  LocalDate getInitiatedDateTo();
+
+  ZonedDateTime getModifiedDateFrom();
+
+  ZonedDateTime getModifiedDateTo();
+
+  Set<RequisitionStatus> getRequisitionStatuses();
 
 }

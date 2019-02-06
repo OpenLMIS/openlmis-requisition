@@ -15,26 +15,14 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.openlmis.requisition.dto.ToStringContractTest;
 
-public interface RequisitionRepositoryCustom {
+public class DefaultRequisitionSearchParamsTest
+    extends ToStringContractTest<DefaultRequisitionSearchParams> {
 
-  Page<Requisition> searchRequisitions(RequisitionSearchParams params,
-      List<String> userPermissionStrings, Pageable pageable);
-
-  List<Requisition> searchRequisitions(UUID processingPeriod,
-      UUID facility, UUID program, Boolean emergency);
-
-  Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
-      Set<UUID> supervisoryNodeIds, Pageable pageable);
-
-  Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs, Pageable pageable);
+  @Override
+  protected Class<DefaultRequisitionSearchParams> getTestClass() {
+    return DefaultRequisitionSearchParams.class;
+  }
 
 }

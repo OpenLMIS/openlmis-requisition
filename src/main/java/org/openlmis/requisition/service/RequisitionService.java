@@ -36,8 +36,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SP
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +74,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
@@ -347,16 +346,7 @@ public class RequisitionService {
   /**
    * Finds requisitions matching all of the provided parameters.
    */
-  public Page<Requisition> searchRequisitions(UUID facility, UUID program,
-                                              LocalDate initiatedDateFrom,
-                                              LocalDate initiatedDateTo,
-                                              ZonedDateTime modifiedDateFrom,
-                                              ZonedDateTime modifiedDateTo,
-                                              UUID processingPeriod,
-                                              UUID supervisoryNode,
-                                              Set<RequisitionStatus> requisitionStatuses,
-                                              Boolean emergency,
-                                              Pageable pageable) {
+  public Page<Requisition> searchRequisitions(RequisitionSearchParams params, Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_SEARCH");
     profiler.setLogger(LOGGER);
     UserDto user = authenticationHelper.getCurrentUser();
@@ -378,38 +368,11 @@ public class RequisitionService {
     }
 
     profiler.start("REPOSITORY_SEARCH");
-    Page<Requisition> results = requisitionRepository.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriod,
-        supervisoryNode, requisitionStatuses, emergency, permissionStrings, pageable);
+    Page<Requisition> results = requisitionRepository
+        .searchRequisitions(params, permissionStrings, pageable);
 
     profiler.stop().log();
     return results;
-  }
-
-  /**
-   * Finds requisitions matching all of the provided parameters.
-   */
-  public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
-                                              Pageable pageable) {
-    UserDto user = authenticationHelper.getCurrentUser();
-    List<String> permissionStrings = new ArrayList<>();
-
-    if (null != user) {
-      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
-
-      permissionStrings = handler.get()
-          .stream()
-          .map(PermissionStringDto::toString)
-          .collect(toList());
-
-      if (permissionStrings.isEmpty()) {
-        return Pagination.getPage(Collections.emptyList(), pageable);
-      }
-    }
-
-    return requisitionRepository.searchRequisitions(null, null, null, null,
-        null, null, null, null, requisitionStatuses,
-        null, permissionStrings, pageable);
   }
 
   /**

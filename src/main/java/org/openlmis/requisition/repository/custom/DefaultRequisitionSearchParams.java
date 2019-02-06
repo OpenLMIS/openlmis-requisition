@@ -15,26 +15,35 @@
 
 package org.openlmis.requisition.repository.custom;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 
-public interface RequisitionRepositoryCustom {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
+public final class DefaultRequisitionSearchParams implements RequisitionSearchParams {
+  private UUID facility;
+  private UUID program;
+  private UUID processingPeriod;
+  private UUID supervisoryNode;
 
-  Page<Requisition> searchRequisitions(RequisitionSearchParams params,
-      List<String> userPermissionStrings, Pageable pageable);
+  private Boolean emergency;
 
-  List<Requisition> searchRequisitions(UUID processingPeriod,
-      UUID facility, UUID program, Boolean emergency);
+  private LocalDate initiatedDateFrom;
+  private LocalDate initiatedDateTo;
 
-  Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
-      Set<UUID> supervisoryNodeIds, Pageable pageable);
+  private ZonedDateTime modifiedDateFrom;
+  private ZonedDateTime modifiedDateTo;
 
-  Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs, Pageable pageable);
-
+  private Set<RequisitionStatus> requisitionStatuses;
 }

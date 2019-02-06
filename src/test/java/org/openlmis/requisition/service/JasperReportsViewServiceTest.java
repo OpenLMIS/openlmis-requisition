@@ -22,8 +22,11 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED_WITHOUT_ORDER;
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 
 import java.io.ByteArrayOutputStream;
@@ -37,6 +40,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -72,6 +76,8 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
@@ -463,8 +469,12 @@ public class JasperReportsViewServiceTest {
     Page<Requisition> requisitionPage = mock(Page.class);
     when(requisitionPage.getContent()).thenReturn(
         (isMissingRnR) ? Collections.emptyList() : singletonList(mockRequisition));
-    when(requisitionService.searchRequisitions(eq(facilityId), eq(program.getId()), any(), any(),
-        any(), any(), eq(period.getId()), any(), any(), any(), any()))
+
+    RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+        facilityId, program.getId(), period.getId(), null, null, null, null,
+        null, null, EnumSet.of(APPROVED, RELEASED, RELEASED_WITHOUT_ORDER));
+
+    when(requisitionService.searchRequisitions(eq(params), any()))
         .thenReturn(requisitionPage);
 
     return geographicZoneDto;

@@ -64,7 +64,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,6 +132,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerIntegrationTest extends BaseRequisitionWebIntegrationTest {
@@ -459,15 +460,25 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     LocalDate dateFrom = LocalDate.now().minusDays(10);
     ZonedDateTime dateTimeFrom = ZonedDateTime.now().plusDays(10);
     ZonedDateTime dateTimeTo = ZonedDateTime.now().minusDays(10);
-    Set<RequisitionStatus> statuses = EnumSet.of(RequisitionStatus.INITIATED);
+
+    MultiValueMap<String, String> queryMap = new LinkedMultiValueMap<>();
+    queryMap.add(PROGRAM, programId.toString());
+    queryMap.add(PROCESSING_PERIOD, periodId.toString());
+    queryMap.add(FACILITY, facilityId.toString());
+    queryMap.add(SUPERVISORY_NODE, supervisoryNodeId.toString());
+    queryMap.add(REQUISITION_STATUS, RequisitionStatus.INITIATED.toString());
+    queryMap.add(INITIATED_DATE_FROM, dateFrom.toString());
+    queryMap.add(INITIATED_DATE_TO, dateTo.toString());
+    queryMap.add(MODIFIED_DATE_FROM, dateTimeFrom.toString());
+    queryMap.add(MODIFIED_DATE_TO, dateTimeTo.toString());
+    queryMap.add(EMERGENCY, Boolean.FALSE.toString());
+
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
     Requisition requisition = generateRequisition();
 
-    given(requisitionService.searchRequisitions(
-        eq(facilityId), eq(programId), any(LocalDate.class), any(LocalDate.class),
-        any(ZonedDateTime.class), any(ZonedDateTime.class), eq(periodId),
-        eq(supervisoryNodeId), eq(statuses), eq(false), any(Pageable.class))
-    ).willReturn(Pagination.getPage(singletonList(requisition), FIRST_PAGE));
+    given(requisitionService.searchRequisitions(eq(params), any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(requisition), FIRST_PAGE));
 
     // when
     PageDto resultPage = restAssured.given()
@@ -499,14 +510,16 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     RequisitionStatus submittedStatus = RequisitionStatus.SUBMITTED;
     RequisitionStatus authorizedStatus = RequisitionStatus.AUTHORIZED;
 
-    Set<RequisitionStatus> statusSet = EnumSet.of(submittedStatus, authorizedStatus);
-    List<Requisition> requisitions =
-        generateRequisitions(submittedStatus, authorizedStatus);
+    MultiValueMap<String, String> queryMap = new LinkedMultiValueMap<>();
+    queryMap.add(REQUISITION_STATUS, submittedStatus.toString());
+    queryMap.add(REQUISITION_STATUS, authorizedStatus.toString());
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
 
-    given(requisitionService.searchRequisitions(
-        eq(null), eq(null), eq(null), eq(null), eq(null), eq(null),
-        eq(null), eq(null), eq(statusSet), eq(null), any(Pageable.class))
-    ).willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
+    List<Requisition> requisitions = generateRequisitions(submittedStatus, authorizedStatus);
+
+    given(requisitionService
+        .searchRequisitions(eq(params), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
     PageDto resultPage = restAssured.given()
@@ -1732,7 +1745,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // given
     Requisition[] requisitions = {generateRequisition(), generateRequisition()};
     given(requisitionService.searchRequisitions(
-        anySetOf(RequisitionStatus.class), any(Pageable.class)))
+        any(QueryRequisitionSearchParams.class), any(Pageable.class)))
         .willReturn(Pagination.getPage(Arrays.asList(requisitions), FIRST_PAGE));
 
     // when

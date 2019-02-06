@@ -31,12 +31,13 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.util.MultiValueMap;
 
 @EqualsAndHashCode
 @ToString
-public final class RequisitionSearchParams {
+final class QueryRequisitionSearchParams implements RequisitionSearchParams {
 
   private static final String FACILITY = "facility";
   private static final String PROGRAM = "program";
@@ -58,7 +59,7 @@ public final class RequisitionSearchParams {
   /**
    * Wraps map of query params into an object.
    */
-  public RequisitionSearchParams(MultiValueMap<String, String> queryMap) {
+  QueryRequisitionSearchParams(MultiValueMap<String, String> queryMap) {
     queryParams = new SearchParams(queryMap);
     validate();
   }
@@ -68,6 +69,7 @@ public final class RequisitionSearchParams {
    *
    * @return UUID value of facility id or null if params doesn't contain "facility" key.
    */
+  @Override
   public UUID getFacility() {
     if (!queryParams.containsKey(FACILITY)) {
       return null;
@@ -80,6 +82,7 @@ public final class RequisitionSearchParams {
    *
    * @return UUID value of program id or null if params doesn't contain "program" key.
    */
+  @Override
   public UUID getProgram() {
     if (!queryParams.containsKey(PROGRAM)) {
       return null;
@@ -93,6 +96,7 @@ public final class RequisitionSearchParams {
    * @return LocalDate value of initiatedDateFrom
    *          or null if params doesn't contain "initiatedDateFrom" key.
    */
+  @Override
   public LocalDate getInitiatedDateFrom() {
     if (!queryParams.containsKey(INITIATED_DATE_FROM)) {
       return null;
@@ -106,6 +110,7 @@ public final class RequisitionSearchParams {
    * @return LocalDate value of initiatedDateTo
    *          or null if params doesn't contain "initiatedDateTo" key.
    */
+  @Override
   public LocalDate getInitiatedDateTo() {
     if (!queryParams.containsKey(INITIATED_DATE_TO)) {
       return null;
@@ -119,6 +124,7 @@ public final class RequisitionSearchParams {
    * @return UUID value of processingPeriod id
    *          or null if params doesn't contain "processingPeriod" key.
    */
+  @Override
   public UUID getProcessingPeriod() {
     if (!queryParams.containsKey(PROCESSING_PERIOD)) {
       return null;
@@ -132,6 +138,7 @@ public final class RequisitionSearchParams {
    * @return UUID value of supervisoryNode id
    *          or null if params doesn't contain "supervisoryNode" key.
    */
+  @Override
   public UUID getSupervisoryNode() {
     if (!queryParams.containsKey(SUPERVISORY_NODE)) {
       return null;
@@ -145,6 +152,7 @@ public final class RequisitionSearchParams {
    * @return Enum value of Requisition status
    *          or null if params doesn't contain "requisitionStatus" key.
    */
+  @Override
   public Set<RequisitionStatus> getRequisitionStatuses() {
     if (!queryParams.containsKey(REQUISITION_STATUS)) {
       return Collections.emptySet();
@@ -166,7 +174,8 @@ public final class RequisitionSearchParams {
    *
    * @return Boolean value of emergency flag or null if params doesn't contain "emergency" key.
    */
-  public Boolean isEmergency() {
+  @Override
+  public Boolean getEmergency() {
     if (!queryParams.containsKey(EMERGENCY)) {
       return null;
     }

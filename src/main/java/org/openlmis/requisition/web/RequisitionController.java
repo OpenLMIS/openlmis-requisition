@@ -17,15 +17,12 @@ package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +48,8 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -388,29 +387,12 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam MultiValueMap<String, String> queryParams,
       Pageable pageable) {
 
-    RequisitionSearchParams params = new RequisitionSearchParams(queryParams);
+    RequisitionSearchParams params = new QueryRequisitionSearchParams(queryParams);
 
-    final UUID facility = params.getFacility();
-    final UUID program = params.getProgram();
-    final LocalDate initiatedDateFrom = params.getInitiatedDateFrom();
-    final LocalDate initiatedDateTo = params.getInitiatedDateTo();
-    final UUID processingPeriod = params.getProcessingPeriod();
-    final UUID supervisoryNode = params.getSupervisoryNode();
-    final Set<RequisitionStatus> requisitionStatuses = params.getRequisitionStatuses();
-    final Boolean emergency = params.isEmergency();
-    final ZonedDateTime modifiedDateFrom = params.getModifiedDateFrom();
-    final ZonedDateTime modifiedDateTo = params.getModifiedDateTo();
-
-    Profiler profiler = getProfiler(
-        "REQUISITIONS_SEARCH",
-        facility, program, initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo,
-        processingPeriod, supervisoryNode, requisitionStatuses, pageable
-    );
+    Profiler profiler = getProfiler("REQUISITIONS_SEARCH", params);
 
     profiler.start("REQUISITION_SERVICE_SEARCH");
-    Page<Requisition> requisitionPage = requisitionService.searchRequisitions(facility, program,
-        initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo, processingPeriod,
-        supervisoryNode, requisitionStatuses, emergency, pageable);
+    Page<Requisition> requisitionPage = requisitionService.searchRequisitions(params, pageable);
 
     profiler.start("REQUISITION_DTO_BUILD");
     assert requisitionPage != null;
@@ -583,8 +565,12 @@ public class RequisitionController extends BaseRequisitionController {
     Profiler profiler = getProfiler("GET_SUBMITTED_REQUISITIONS", pageable);
 
     profiler.start("SEARCH_REQUISITIONS");
-    Page<Requisition> submittedRequisitions = requisitionService.searchRequisitions(
-        EnumSet.of(RequisitionStatus.SUBMITTED), pageable);
+    RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+        null, null, null, null, null, null, null, null, null,
+        EnumSet.of(RequisitionStatus.SUBMITTED));
+
+    Page<Requisition> submittedRequisitions = requisitionService
+        .searchRequisitions(params, pageable);
 
     profiler.start(BUILD_DTO_LIST);
     Page<RequisitionDto> page = Pagination.getPage(
