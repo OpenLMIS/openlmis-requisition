@@ -35,14 +35,20 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequestParameters;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RequisitionForConvertBuilder {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionService.class);
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -70,12 +76,20 @@ public class RequisitionForConvertBuilder {
   public List<RequisitionWithSupplyingDepotsDto> buildRequisitions(List<Requisition> requisitions,
       Set<UUID> userManagedFacilities, List<SupplyLineDto> supplyLines) {
 
+    Profiler profiler = new Profiler("BUILD_REQUISITION_DTOS");
+    profiler.setLogger(LOGGER);
+
     if (supplyLines == null) {
       supplyLines = supplyLineReferenceDataService.getPage(RequestParameters.init()).getContent();
     }
 
+    profiler.start("GET_FACILITIES");
     Map<UUID, FacilityDto> facilities = getFacilities(requisitions, userManagedFacilities);
+
+    profiler.start("GET_PROGRAMS");
     Map<UUID, ProgramDto> programs = getPrograms(requisitions);
+
+    profiler.start("GET_SUPERVISORY_NODE_SUPPLYING_FACILITY_PAIRS");
     Map<UUID, UUID> supervisoryNodeSupplyingFacilityPairs = supplyLines.stream()
         .collect(toMap(
             supplyLine -> supplyLine.getSupervisoryNode().getId(),
@@ -83,16 +97,19 @@ public class RequisitionForConvertBuilder {
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (Requisition requisition : requisitions) {
+      profiler.start("BUILD_REQUISITION_DTO");
       BasicRequisitionDto requisitionDto = basicRequisitionDtoBuilder.build(requisition,
           facilities.get(requisition.getFacilityId()),
           programs.get(requisition.getProgramId()));
 
+      profiler.start("ADD_DTO_TO_RESPONSE_LIST");
       responseList.add(new RequisitionWithSupplyingDepotsDto(
           requisitionDto,
           singletonList(facilities.get(
               supervisoryNodeSupplyingFacilityPairs.get(requisition.getSupervisoryNodeId())))));
     }
 
+    profiler.stop().log();
     return responseList;
   }
 
