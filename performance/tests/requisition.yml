@@ -174,7 +174,7 @@ scenarios:
           Authorization: Bearer ${access_token}
   get-supplying-depot:
     requests:
-      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?filterBy=all&filterValue=${facility_code}
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?programId={program_id}&facilityId={facility_id}
         method: GET
         label: GetSupplyingDepotForFacility
         headers:
