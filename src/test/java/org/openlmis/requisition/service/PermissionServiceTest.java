@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
-import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asApiKey;
 import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asClient;
@@ -147,7 +146,6 @@ public class PermissionServiceTest {
         .thenReturn(Lists.newArrayList(requisition));
 
     ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
-    ReflectionTestUtils.setField(permissionService, "apiKeyPrefix", API_KEY_PREFIX);
   }
 
   @Test
