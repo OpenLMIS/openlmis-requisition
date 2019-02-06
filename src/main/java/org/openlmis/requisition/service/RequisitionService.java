@@ -18,6 +18,7 @@ package org.openlmis.requisition.service;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
@@ -358,12 +359,22 @@ public class RequisitionService {
                                               Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_SEARCH");
     profiler.setLogger(LOGGER);
+    UserDto user = authenticationHelper.getCurrentUser();
+    List<String> permissionStrings = new ArrayList<>();
 
-    profiler.start("GET_PERM_STRINGS");
-    List<String> permissionStrings = permissionService.getPermissionStrings();
-    if (permissionStrings.isEmpty()) {
-      profiler.stop().log();
-      return Pagination.getPage(Collections.emptyList(), pageable);
+    if (null != user) {
+      profiler.start("GET_PERM_STRINGS");
+      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+
+      permissionStrings = handler.get()
+          .stream()
+          .map(PermissionStringDto::toString)
+          .collect(toList());
+
+      if (permissionStrings.isEmpty()) {
+        profiler.stop().log();
+        return Pagination.getPage(Collections.emptyList(), pageable);
+      }
     }
 
     profiler.start("REPOSITORY_SEARCH");
@@ -380,9 +391,25 @@ public class RequisitionService {
    */
   public Page<Requisition> searchRequisitions(Set<RequisitionStatus> requisitionStatuses,
                                               Pageable pageable) {
+    UserDto user = authenticationHelper.getCurrentUser();
+    List<String> permissionStrings = new ArrayList<>();
+
+    if (null != user) {
+      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+
+      permissionStrings = handler.get()
+          .stream()
+          .map(PermissionStringDto::toString)
+          .collect(toList());
+
+      if (permissionStrings.isEmpty()) {
+        return Pagination.getPage(Collections.emptyList(), pageable);
+      }
+    }
+
     return requisitionRepository.searchRequisitions(null, null, null, null,
         null, null, null, null, requisitionStatuses,
-        null, permissionService.getPermissionStrings(), pageable);
+        null, permissionStrings, pageable);
   }
 
   /**

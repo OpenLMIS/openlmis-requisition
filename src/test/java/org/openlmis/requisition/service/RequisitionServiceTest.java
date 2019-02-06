@@ -18,6 +18,7 @@ package org.openlmis.requisition.service;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -1073,7 +1074,12 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFindRequisitionIfItExists() {
-    when(permissionService.getPermissionStrings()).thenReturn(permissionStrings);
+    when(permissionService.getPermissionStrings(user.getId())).thenReturn(permissionStringsHandler);
+
+    List<String> permissionStrings = permissionStringsHandler.get()
+        .stream()
+        .map(PermissionStringDto::toString)
+        .collect(toList());
 
     when(requisitionRepository.searchRequisitions(
         requisition.getFacilityId(),
@@ -1136,7 +1142,10 @@ public class RequisitionServiceTest {
   @Test
   public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
     // given
-    when(permissionService.getPermissionStrings()).thenReturn(emptyList());
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+    when(permissionStringsHandler.get())
+        .thenReturn(emptySet());
 
     // when
     List<Requisition> receivedRequisitions = requisitionService.searchRequisitions(
@@ -1223,7 +1232,10 @@ public class RequisitionServiceTest {
   public void shouldReturnEmptyPageWhenNoFacilityIdsFromPermissionStrings() {
     // given
     Pageable pageable = mockPageable();
-    when(permissionService.getPermissionStrings()).thenReturn(emptyList());
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+    when(permissionStringsHandler.get())
+        .thenReturn(emptySet());
 
     // when
     Page<RequisitionWithSupplyingDepotsDto> receivedRequisitions = requisitionService

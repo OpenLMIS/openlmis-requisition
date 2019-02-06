@@ -20,7 +20,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -378,19 +377,6 @@ public class PermissionService {
    * Get current user's permission strings.
    * @return user's permission strings
    */
-  public List<String> getPermissionStrings() {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
-        .getContext()
-        .getAuthentication();
-
-    if (authentication.isClientOnly()) {
-      return Collections.emptyList();
-    }
-
-    UserDto user = authenticationHelper.getCurrentUser();
-    return userReferenceDataService.getPermissionStrings(user.getId());
-  }
-
   public PermissionStrings.Handler getPermissionStrings(UUID userId) {
     return permissionStrings.forUser(userId);
   }

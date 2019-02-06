@@ -39,7 +39,6 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
@@ -422,32 +421,6 @@ public class PermissionServiceTest {
     assertThat(permissionService.canViewReports().isSuccess(), is(false));
     assertThat(permissionService.canEditReportTemplates().isSuccess(), is(false));
     assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(false));
-  }
-  
-  @Test
-  public void getPermissionStringsShouldGet() {
-    // given
-    when(userReferenceDataService.getPermissionStrings(user.getId()))
-        .thenReturn(Collections.singletonList("permissionString"));
-    
-    // when
-    List<String> permissionStrings = permissionService.getPermissionStrings();
-    
-    // then
-    assertEquals(1, permissionStrings.size());
-    assertEquals("permissionString", permissionStrings.get(0));
-  }
-  
-  @Test
-  public void getPermissionStringsShouldReturnEmptyListForServiceTokens() {
-    // given
-    when(securityContext.getAuthentication()).thenReturn(trustedClient);
-
-    // when
-    List<String> permissionStrings = permissionService.getPermissionStrings();
-
-    // then
-    assertEquals(0, permissionStrings.size());
   }
   
   private void hasRight(RightDto right, boolean assign) {
