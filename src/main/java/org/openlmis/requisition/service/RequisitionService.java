@@ -626,7 +626,7 @@ public class RequisitionService {
 
     profiler.start("PAGINATE");
     Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
-        responseList, pageable, result.getNumberOfElements());
+        responseList, pageable, result.getTotalElements());
 
     profiler.stop().log();
     return page;
