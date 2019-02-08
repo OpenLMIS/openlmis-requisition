@@ -38,6 +38,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,11 +54,13 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -73,6 +76,9 @@ public class PermissionServiceTest {
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private RoleReferenceDataService roleReferenceDataService;
 
   @Mock
   private AuthenticationHelper authenticationHelper;
@@ -104,6 +110,7 @@ public class PermissionServiceTest {
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
+  private UUID supervisoryNodeId = UUID.randomUUID();
   private ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
   private List<ReleasableRequisitionDto> releasableDtos = new ArrayList<>();
 
@@ -125,6 +132,7 @@ public class PermissionServiceTest {
     when(requisition.getFacilityId()).thenReturn(facilityId);
     when(requisition.getSupplyingFacilityId()).thenReturn(facilityId);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    when(requisition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
 
     when(securityContext.getAuthentication()).thenReturn(userClient);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
@@ -187,7 +195,7 @@ public class PermissionServiceTest {
   public void canSubmitRequisition() {
     hasRight(requisitionCreateRight, true);
 
-    permissionService.canSubmitRequisition(requisition);
+    expectValidationSucceeds(permissionService.canSubmitRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
@@ -200,20 +208,53 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canApproveRequisition() {
+  public void canApproveRequisitionIfUserHasSupervisorySupervisionRole() {
     RoleDto role = DtoGenerator.of(RoleDto.class);
-    when(authenticationHelper.getRoles(requisitionApproveRight.getId()))
+    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
         .thenReturn(Lists.newArrayList(role));
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, supervisoryNodeId, null)));
 
-    permissionService.canApproveRequisition(requisition);
+    expectValidationSucceeds(permissionService.canApproveRequisition(requisition));
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    InOrder order = inOrder(authenticationHelper,
+        userReferenceDataService, roleReferenceDataService);
     verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
   }
 
   @Test
+  public void canApproveNonPartnerRequisitionIfUserHasHomeFacilitySupervisionRole() {
+    RoleDto role = DtoGenerator.of(RoleDto.class);
+    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
+        .thenReturn(Lists.newArrayList(role));
+    user.setHomeFacilityId(facilityId);
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, null, null)));
+
+    expectValidationSucceeds(permissionService.canApproveRequisition(requisition));
+
+    InOrder order = inOrder(authenticationHelper,
+        userReferenceDataService, roleReferenceDataService);
+    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
+  }
+
+  @Test
+  public void cannotApprovePartnerRequisitionIfUserHasHomeFacilitySupervisionRole() {
+    RoleDto role = DtoGenerator.of(RoleDto.class);
+    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
+        .thenReturn(Lists.newArrayList(role));
+    when(requisition.hasOriginalRequisitionId()).thenReturn(true);
+    user.setHomeFacilityId(facilityId);
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, null, null)));
+
+    expectMissingPermission(permissionService.canApproveRequisition(requisition),
+        REQUISITION_APPROVE);
+  }
+
+  @Test
   public void cannotApproveRequisition() {
-    when(authenticationHelper.getRoles(requisitionApproveRight.getId()))
+    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
         .thenReturn(Lists.newArrayList());
 
     expectMissingPermission(permissionService.canApproveRequisition(requisition),
@@ -224,7 +265,7 @@ public class PermissionServiceTest {
   public void canAuthorizeRequisition() {
     hasRight(requisitionAuthorizeRight, true);
 
-    permissionService.canAuthorizeRequisition(requisition);
+    expectValidationSucceeds(permissionService.canAuthorizeRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRight);
@@ -242,7 +283,7 @@ public class PermissionServiceTest {
     hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
 
-    permissionService.canDeleteRequisition(requisition);
+    expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -263,7 +304,7 @@ public class PermissionServiceTest {
     hasRight(requisitionCreateRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
 
-    permissionService.canDeleteRequisition(requisition);
+    expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -284,7 +325,7 @@ public class PermissionServiceTest {
     hasRight(requisitionAuthorizeRight, true);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
 
-    permissionService.canDeleteRequisition(requisition);
+    expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
@@ -309,7 +350,7 @@ public class PermissionServiceTest {
   public void canViewRequisition() {
     hasRight(requisitionViewRight, true);
 
-    permissionService.canViewRequisition(requisitionId);
+    expectValidationSucceeds(permissionService.canViewRequisition(requisitionId));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifySupervisionRight(order, REQUISITION_VIEW, requisitionViewRight);
@@ -324,7 +365,7 @@ public class PermissionServiceTest {
   public void canConvertToOrder() {
     hasRight(requisitionConvertRight, true);
 
-    permissionService.canConvertToOrder(releasableDtos);
+    expectValidationSucceeds(permissionService.canConvertToOrder(releasableDtos));
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRight);
@@ -339,7 +380,7 @@ public class PermissionServiceTest {
   public void canManageRequisitionTemplate() {
     hasRight(manageRequisitionTemplateRight, true);
 
-    permissionService.canManageRequisitionTemplate();
+    expectValidationSucceeds(permissionService.canManageRequisitionTemplate());
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyGeneralAdminRight(order, REQUISITION_TEMPLATES_MANAGE, manageRequisitionTemplateRight);
@@ -461,7 +502,7 @@ public class PermissionServiceTest {
     order.verify(authenticationHelper).getRight(rightName);
 
     if (REQUISITION_APPROVE.equalsIgnoreCase(rightName)) {
-      order.verify(authenticationHelper).getRoles(right.getId());
+      order.verify(roleReferenceDataService).search(right.getId());
     } else {
       order
           .verify(userReferenceDataService)
