@@ -34,7 +34,6 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.exception.AuthenticationMessageException;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
-import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.springframework.security.core.Authentication;
@@ -49,9 +48,6 @@ public class AuthenticationHelperTest {
 
   @Mock
   private RightReferenceDataService rightReferenceDataService;
-
-  @Mock
-  private RoleReferenceDataService roleReferenceDataService;
 
   @InjectMocks
   private AuthenticationHelper authenticationHelper;
@@ -92,7 +88,7 @@ public class AuthenticationHelperTest {
   }
 
   @Test
-  public void shouldReturnRight() throws Exception {
+  public void shouldReturnRight() {
     // given
     RightDto right = DtoGenerator.of(RightDto.class);
     when(rightReferenceDataService.findRight(anyString())).thenReturn(right);
