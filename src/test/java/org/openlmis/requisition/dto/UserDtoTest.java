@@ -33,25 +33,25 @@ public class UserDtoTest {
 
   private UserDto userDto;
 
-  private RoleAssignmentDto homeFacilityRole;
-  private RoleAssignmentDto supervisionRole;
+  private RoleAssignmentDto homeFacilitySupervisionRole;
+  private RoleAssignmentDto supervisorySupervisionRole;
 
   @Before
   public void setUp() {
-    homeFacilityRole = new RoleAssignmentDto(
+    homeFacilitySupervisionRole = new RoleAssignmentDto(
         UUID.randomUUID(), UUID.randomUUID(), null, null);
-    supervisionRole = new RoleAssignmentDto(
+    supervisorySupervisionRole = new RoleAssignmentDto(
         UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
-    RoleAssignmentDto anotherSupervisionRole = new RoleAssignmentDto(
+    RoleAssignmentDto anotherSupervisorySupervisionRole = new RoleAssignmentDto(
         UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
 
     userDto = new UserDtoDataBuilder()
         .withUsername("jdoe")
         .withoutFirstName()
         .withoutLastName()
-        .withRoleAssignment(homeFacilityRole)
-        .withRoleAssignment(supervisionRole)
-        .withRoleAssignment(anotherSupervisionRole)
+        .withRoleAssignment(homeFacilitySupervisionRole)
+        .withRoleAssignment(supervisorySupervisionRole)
+        .withRoleAssignment(anotherSupervisorySupervisionRole)
         .build();
   }
 
@@ -95,44 +95,45 @@ public class UserDtoTest {
   }
 
   @Test
-  public void shouldHaveSupervisionRole() {
-    assertThat(userDto.hasSupervisorySupervisionRole(supervisionRole.getRoleId(),
-        supervisionRole.getProgramId(), supervisionRole.getSupervisoryNodeId()))
+  public void hasSupervisorySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
+    assertThat(userDto.hasSupervisorySupervisionRole(supervisorySupervisionRole.getRoleId(),
+        supervisorySupervisionRole.getProgramId(),
+        supervisorySupervisionRole.getSupervisoryNodeId()))
         .isTrue();
   }
 
   @Test
-  public void shouldNotHaveSupervisionRoleIfUserHasNoRole() {
+  public void hasSupervisorySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
     assertThat(userDto
         .hasSupervisorySupervisionRole(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void shouldHaveHomeFacilitySupervisionRole() {
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
-        homeFacilityRole.getProgramId(), userDto.getHomeFacilityId()))
+  public void hasHomeFacilitySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
+        homeFacilitySupervisionRole.getProgramId(), userDto.getHomeFacilityId()))
         .isTrue();
   }
 
   @Test
-  public void shouldNotHaveHomeFacilitySupervisionRoleIfUserHasNoHomeFacility() {
+  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoHomeFacility() {
     userDto.setHomeFacilityId(null);
 
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
-        homeFacilityRole.getProgramId(), UUID.randomUUID()))
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
+        homeFacilitySupervisionRole.getProgramId(), UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void shouldNotHaveHomeFacilitySupervisionRoleIfHomeFacilityNotMatch() {
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilityRole.getRoleId(),
-        homeFacilityRole.getProgramId(), UUID.randomUUID()))
+  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfHomeFacilityNotMatch() {
+    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
+        homeFacilitySupervisionRole.getProgramId(), UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void shouldNotHaveHomeFacilitySupervisionRoleIfUserHasNoRole() {
+  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
     assertThat(userDto.hasHomeFacilitySupervisionRole(UUID.randomUUID(),
         UUID.randomUUID(), UUID.randomUUID()))
         .isFalse();
