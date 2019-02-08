@@ -40,6 +40,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
+import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.slf4j.ext.XLogger;
@@ -76,6 +77,9 @@ public class PermissionService {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private RoleReferenceDataService roleReferenceDataService;
 
   @Autowired
   private RequisitionRepository requisitionRepository;
@@ -359,7 +363,7 @@ public class PermissionService {
     // roles
 
     profiler.start("GET_ROLES_FOR_RIGHT");
-    List<RoleDto> roles = authenticationHelper.getRoles(right.getId());
+    List<RoleDto> roles = roleReferenceDataService.search(right.getId());
 
     profiler.start("CHECK_HAS_ROLE");
     for (int i = 0, length = roles.size(); i < length; ++i) {
