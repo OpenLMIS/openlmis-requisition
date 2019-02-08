@@ -369,13 +369,13 @@ public class PermissionService {
     for (int i = 0, length = roles.size(); i < length; ++i) {
       RoleDto role = roles.get(i);
 
-      if (user.hasSupervisorySupervisionRole(role.getId(),
+      if (user.hasMatchingSupervisorySupervisionRole(role.getId(),
           details.getProgramId(), details.getSupervisoryNodeId())) {
         return true;
       }
 
       if (!details.containsPartnerRequisition()
-          && user.hasHomeFacilitySupervisionRole(role.getId(),
+          && user.hasMatchingHomeFacilitySupervisionRole(role.getId(),
           details.getProgramId(), details.getFacilityId())) {
         return true;
       }

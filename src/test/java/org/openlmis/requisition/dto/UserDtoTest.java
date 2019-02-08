@@ -95,46 +95,50 @@ public class UserDtoTest {
   }
 
   @Test
-  public void hasSupervisorySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
-    assertThat(userDto.hasSupervisorySupervisionRole(supervisorySupervisionRole.getRoleId(),
+  public void hasMatchingSupervisorySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
+    assertThat(userDto.hasMatchingSupervisorySupervisionRole(supervisorySupervisionRole.getRoleId(),
         supervisorySupervisionRole.getProgramId(),
         supervisorySupervisionRole.getSupervisoryNodeId()))
         .isTrue();
   }
 
   @Test
-  public void hasSupervisorySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
+  public void hasMatchingSupervisorySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
     assertThat(userDto
-        .hasSupervisorySupervisionRole(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()))
+        .hasMatchingSupervisorySupervisionRole(UUID.randomUUID(),
+            UUID.randomUUID(), UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void hasHomeFacilitySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
-        homeFacilitySupervisionRole.getProgramId(), userDto.getHomeFacilityId()))
+  public void hasMatchingHomeFacilitySupervisionRoleShouldReturnTrueIfUserHasCorrectRole() {
+    assertThat(userDto.hasMatchingHomeFacilitySupervisionRole(
+        homeFacilitySupervisionRole.getRoleId(), homeFacilitySupervisionRole.getProgramId(),
+        userDto.getHomeFacilityId()))
         .isTrue();
   }
 
   @Test
-  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoHomeFacility() {
+  public void hasMatchingHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoHomeFacility() {
     userDto.setHomeFacilityId(null);
 
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
-        homeFacilitySupervisionRole.getProgramId(), UUID.randomUUID()))
+    assertThat(userDto.hasMatchingHomeFacilitySupervisionRole(
+        homeFacilitySupervisionRole.getRoleId(), homeFacilitySupervisionRole.getProgramId(),
+        UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfHomeFacilityNotMatch() {
-    assertThat(userDto.hasHomeFacilitySupervisionRole(homeFacilitySupervisionRole.getRoleId(),
-        homeFacilitySupervisionRole.getProgramId(), UUID.randomUUID()))
+  public void hasMatchingHomeFacilitySupervisionRoleShouldReturnFalseIfHomeFacilityNotMatch() {
+    assertThat(userDto.hasMatchingHomeFacilitySupervisionRole(
+        homeFacilitySupervisionRole.getRoleId(), homeFacilitySupervisionRole.getProgramId(),
+        UUID.randomUUID()))
         .isFalse();
   }
 
   @Test
-  public void hasHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
-    assertThat(userDto.hasHomeFacilitySupervisionRole(UUID.randomUUID(),
+  public void hasMatchingHomeFacilitySupervisionRoleShouldReturnFalseIfUserHasNoCorrectRole() {
+    assertThat(userDto.hasMatchingHomeFacilitySupervisionRole(UUID.randomUUID(),
         UUID.randomUUID(), UUID.randomUUID()))
         .isFalse();
   }

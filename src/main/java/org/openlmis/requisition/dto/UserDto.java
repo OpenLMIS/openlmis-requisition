@@ -43,7 +43,7 @@ public final class UserDto extends BaseDto {
   /**
    * Checks if user has supervisory supervision role.
    */
-  public boolean hasSupervisorySupervisionRole(UUID roleId, UUID programId,
+  public boolean hasMatchingSupervisorySupervisionRole(UUID roleId, UUID programId,
       UUID supervisoryNodeId) {
     return roleAssignments
         .stream()
@@ -55,7 +55,8 @@ public final class UserDto extends BaseDto {
   /**
    * Checks if user has home facility supervision role.
    */
-  public boolean hasHomeFacilitySupervisionRole(UUID roleId, UUID programId, UUID facilityId) {
+  public boolean hasMatchingHomeFacilitySupervisionRole(UUID roleId,
+      UUID programId, UUID facilityId) {
     if (null == homeFacilityId) {
       return false;
     }

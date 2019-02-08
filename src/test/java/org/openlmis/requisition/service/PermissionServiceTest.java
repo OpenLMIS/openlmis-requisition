@@ -208,7 +208,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canApproveRequisitionIfUserHasSupervisorySupervisionRole() {
+  public void canApproveRequisitionIfUserHasMatchingSupervisorySupervisionRole() {
     RoleDto role = DtoGenerator.of(RoleDto.class);
     when(roleReferenceDataService.search(requisitionApproveRight.getId()))
         .thenReturn(Lists.newArrayList(role));
@@ -223,7 +223,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canApproveNonPartnerRequisitionIfUserHasHomeFacilitySupervisionRole() {
+  public void canApproveNonPartnerRequisitionIfUserHasMatchingHomeFacilitySupervisionRole() {
     RoleDto role = DtoGenerator.of(RoleDto.class);
     when(roleReferenceDataService.search(requisitionApproveRight.getId()))
         .thenReturn(Lists.newArrayList(role));
@@ -239,7 +239,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotApprovePartnerRequisitionIfUserHasHomeFacilitySupervisionRole() {
+  public void cannotApprovePartnerRequisitionIfUserHasMatchingHomeFacilitySupervisionRole() {
     RoleDto role = DtoGenerator.of(RoleDto.class);
     when(roleReferenceDataService.search(requisitionApproveRight.getId()))
         .thenReturn(Lists.newArrayList(role));
