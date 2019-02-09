@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisitionLines" pageWidth="872" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="8eeca41d-cefe-475b-b89b-f898f69a4087">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisitionLines" pageWidth="902" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="8eeca41d-cefe-475b-b89b-f898f69a4087">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -103,17 +103,20 @@
 	<field name="maximumStockQuantity" class="java.lang.Integer">
 		<fieldDescription><![CDATA[maximumStockQuantity]]></fieldDescription>
 	</field>
+	<field name="calculatedOrderQuantityIsa" class="java.lang.Integer">
+		<fieldDescription><![CDATA[calculatedOrderQuantityIsa]]></fieldDescription>
+	</field>
 	<group name="OrderableDisplayCategory">
 		<groupExpression><![CDATA[$F{orderable}.findProgramOrderableDto($P{programId}).getOrderableCategoryDisplayName()]]></groupExpression>
 		<groupHeader>
 			<band height="10">
 				<rectangle>
-					<reportElement x="9" y="0" width="854" height="10" backcolor="#CCCCCC" uuid="7079c950-9a76-43ee-954f-0349c39803cd">
+					<reportElement x="9" y="0" width="884" height="10" backcolor="#CCCCCC" uuid="7079c950-9a76-43ee-954f-0349c39803cd">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
 				</rectangle>
 				<textField>
-					<reportElement x="9" y="0" width="854" height="10" uuid="29f84432-f48e-467d-b3fb-fc018b725111">
+					<reportElement x="9" y="0" width="884" height="10" uuid="29f84432-f48e-467d-b3fb-fc018b725111">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					</reportElement>
@@ -131,7 +134,7 @@
 	<title>
 		<band height="35">
 			<textField>
-				<reportElement x="10" y="10" width="852" height="20" uuid="aa195ebb-095a-48c3-a5de-18f63527c79a">
+				<reportElement x="10" y="10" width="882" height="20" uuid="aa195ebb-095a-48c3-a5de-18f63527c79a">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -453,12 +456,27 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantity").getLabel()]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement key="calculatedOrderQuantityIsa" mode="Opaque" x="859" y="0" width="34" height="25" backcolor="#CCCCCC" uuid="4f62f690-2c4b-11e9-b210-d663bd873d93">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box padding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantityIsa").getLabel()]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="20" splitType="Stretch">
 			<rectangle>
-				<reportElement x="9" y="0" width="854" height="20" backcolor="#DEDEDE" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
+				<reportElement x="9" y="0" width="884" height="20" backcolor="#DEDEDE" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{PAGE_COUNT}.intValue() % 2 == 0]]></printWhenExpression>
 				</reportElement>
@@ -778,6 +796,21 @@
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantity").getIsDisplayed() && $F{calculatedOrderQuantity} != null ? $P{decimalFormat}.format($F{calculatedOrderQuantity}).toString() : null]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="calculatedOrderQuantityIsa" x="859" y="0" width="34" height="20" uuid="cf07e9e6-2c4b-11e9-b210-d663bd873d93">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box padding="2">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("calculatedOrderQuantityIsa").getIsDisplayed() && $F{calculatedOrderQuantityIsa} != null ? $P{decimalFormat}.format($F{calculatedOrderQuantityIsa}).toString() : null]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

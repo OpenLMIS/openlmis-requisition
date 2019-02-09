@@ -19,6 +19,7 @@ Bug fixes:
 * [OLMIS-5889](https://openlmis.atlassian.net/browse/OLMIS-5889): The product name column is now visible in the requisition print again.
 * [OLMIS-5887](https://openlmis.atlassian.net/browse/OLMIS-5887): The unit of issue column is now visible in the requisition print again.
 * [OLMIS-5884](https://openlmis.atlassian.net/browse/OLMIS-5884): The maximum stock quantity column is now visible in the requisition print again.
+* [OLMIS-5888](https://openlmis.atlassian.net/browse/OLMIS-5888): The calc order qty isa column is now visible in the requisition print again.
 
 7.1.0 / 2018-12-12
 ==================
