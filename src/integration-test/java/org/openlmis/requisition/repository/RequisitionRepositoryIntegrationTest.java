@@ -34,6 +34,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
+import static org.openlmis.requisition.domain.requisition.RequisitionStatus.IN_APPROVAL;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
@@ -789,6 +790,30 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(0, results.getTotalElements());
+  }
+
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldFindPartnerRequisitionsReadyForApproval() {
+    // given
+    Requisition partnerRequisition = requisitions.get(0);
+    partnerRequisition.setStatus(IN_APPROVAL);
+    partnerRequisition.setVersion(1L);
+    partnerRequisition.setDraftStatusMessage("");
+    partnerRequisition.getStatusChanges().clear();
+    partnerRequisition.setSupervisoryNodeId(UUID.randomUUID());
+
+    repository.save(partnerRequisition);
+
+    Set<Pair<UUID, UUID>> programNodePairs = singleton(new ImmutablePair<>(
+        partnerRequisition.getProgramId(), partnerRequisition.getSupervisoryNodeId()));
+
+    // when
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+
+    // then
+    assertThat(results.getContent(), hasSize(1));
+    assertThat(results.getContent().get(0).getId(), is(partnerRequisition.getId()));
   }
 
   @Test

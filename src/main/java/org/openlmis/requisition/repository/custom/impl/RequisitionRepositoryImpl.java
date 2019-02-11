@@ -35,6 +35,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ListJoin;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -403,10 +405,14 @@ public class RequisitionRepositoryImpl
           builder.equal(subRoot.get(STATUS), RequisitionStatus.AUTHORIZED),
           builder.equal(subRoot.get("requisition"), root)));
 
-      Join<Requisition, StatusChange> statusChanges = root.join(Requisition.STATUS_CHANGES);
-      predicate = builder.and(predicate,
-          builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED),
-          statusChanges.get(CREATED_DATE).in(subquery));
+      ListJoin<Object, Object> statusChanges = root
+          .joinList(Requisition.STATUS_CHANGES, JoinType.LEFT);
+
+      statusChanges.on(builder.equal(statusChanges.get(STATUS), RequisitionStatus.AUTHORIZED));
+
+      predicate = builder
+          .and(predicate, builder
+              .or(statusChanges.isNull(), statusChanges.get(CREATED_DATE).in(subquery)));
     }
 
     if (!isCountQuery && pageable != null && pageable.getSort() != null) {
