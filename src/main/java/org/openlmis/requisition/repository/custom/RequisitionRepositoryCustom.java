@@ -26,7 +26,8 @@ import org.springframework.data.domain.Pageable;
 public interface RequisitionRepositoryCustom {
 
   Page<Requisition> searchRequisitions(RequisitionSearchParams params,
-      List<String> userPermissionStrings, Pageable pageable);
+      List<String> userPermissionStrings, Set<Pair<UUID, UUID>> programNodePairs,
+      Pageable pageable);
 
   List<Requisition> searchRequisitions(UUID processingPeriod,
       UUID facility, UUID program, Boolean emergency);
@@ -35,6 +36,6 @@ public interface RequisitionRepositoryCustom {
       Set<UUID> supervisoryNodeIds, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs, Pageable pageable);
+      Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable);
 
 }

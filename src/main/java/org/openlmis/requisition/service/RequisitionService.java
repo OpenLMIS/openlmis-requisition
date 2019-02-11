@@ -36,6 +36,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SP
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -351,6 +352,7 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
     UserDto user = authenticationHelper.getCurrentUser();
     List<String> permissionStrings = new ArrayList<>();
+    Set<Pair<UUID, UUID>> programNodePairs = Sets.newHashSet();
 
     if (null != user) {
       profiler.start("GET_PERM_STRINGS");
@@ -361,7 +363,20 @@ public class RequisitionService {
           .map(PermissionStringDto::toString)
           .collect(toList());
 
-      if (permissionStrings.isEmpty()) {
+      profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
+      programNodePairs = user
+          .getRoleAssignments()
+          .stream()
+          .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+          .filter(item -> Objects.nonNull(item.getProgramId()))
+          .filter(item -> null == params.getProgram()
+              || params.getProgram().equals(item.getProgramId()))
+          .filter(item -> null == params.getSupervisoryNode()
+              || params.getSupervisoryNode().equals(item.getSupervisoryNodeId()))
+          .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
+          .collect(toSet());
+
+      if (permissionStrings.isEmpty() && programNodePairs.isEmpty()) {
         profiler.stop().log();
         return Pagination.getPage(Collections.emptyList(), pageable);
       }
@@ -369,7 +384,7 @@ public class RequisitionService {
 
     profiler.start("REPOSITORY_SEARCH");
     Page<Requisition> results = requisitionRepository
-        .searchRequisitions(params, permissionStrings, pageable);
+        .searchRequisitions(params, permissionStrings, programNodePairs, pageable);
 
     profiler.stop().log();
     return results;
@@ -388,7 +403,7 @@ public class RequisitionService {
 
     if (!CollectionUtils.isEmpty(user.getRoleAssignments())) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair> programNodePairs = user
+      Set<Pair<UUID, UUID>> programNodePairs = user
           .getRoleAssignments()
           .stream()
           .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))

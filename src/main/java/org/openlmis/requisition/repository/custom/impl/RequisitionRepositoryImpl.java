@@ -114,15 +114,18 @@ public class RequisitionRepositoryImpl
    *
    * @param params It contains parameters which have to be matched by requisition.
    * @param userPermissionStrings Permission strings of current user.
+   * @param programNodePairs program / supervisoryNode pairs
    * @return Page of Requisitions with matched parameters.
    */
   @Override
   public Page<Requisition> searchRequisitions(RequisitionSearchParams params,
-      List<String> userPermissionStrings, Pageable pageable) {
+      List<String> userPermissionStrings, Set<Pair<UUID, UUID>> programNodePairs,
+      Pageable pageable) {
     CriteriaBuilder builder = getCriteriaBuilder();
 
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareQuery(builder, countQuery, params, userPermissionStrings, true, pageable);
+    countQuery = prepareQuery(builder, countQuery, params,
+        userPermissionStrings, programNodePairs, true, pageable);
 
     Long count = countEntities(countQuery);
 
@@ -132,7 +135,7 @@ public class RequisitionRepositoryImpl
 
     CriteriaQuery<Requisition> requisitionQuery = builder.createQuery(Requisition.class);
     requisitionQuery = prepareQuery(builder, requisitionQuery, params,
-        userPermissionStrings, false, pageable);
+        userPermissionStrings, programNodePairs, false, pageable);
 
     List<Requisition> requisitions = getEntities(requisitionQuery, pageable);
     return Pagination.getPage(requisitions, pageable, count);
@@ -218,7 +221,7 @@ public class RequisitionRepositoryImpl
    */
   @Override
   public Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair> programNodePairs, Pageable pageable) {
+      Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable) {
     XLOGGER.entry(programNodePairs, pageable);
 
     Profiler profiler = new Profiler("SEARCH_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
@@ -292,7 +295,7 @@ public class RequisitionRepositoryImpl
 
   private <T> CriteriaQuery<T> prepareQuery(CriteriaBuilder builder, CriteriaQuery<T> query,
       RequisitionSearchParams params, List<String> userPermissionStrings,
-      boolean count, Pageable pageable) {
+      Set<Pair<UUID, UUID>> programNodePairs, boolean count, Pageable pageable) {
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -324,10 +327,8 @@ public class RequisitionRepositoryImpl
     predicate = addDateRangeFilter(predicate, builder, root,
         MODIFIED_DATE, fromModifiedDate, toModifiedDate);
 
-    Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
-        .join("permissionStrings");
-    Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
-    predicate = builder.and(predicate, permissionStringExp.in(userPermissionStrings));
+    predicate = createPermissionPredicate(
+        builder, root, predicate, userPermissionStrings, programNodePairs);
 
     query.where(predicate);
 
@@ -340,8 +341,41 @@ public class RequisitionRepositoryImpl
     return query;
   }
 
+  private Predicate createPermissionPredicate(CriteriaBuilder builder, Root<Requisition> root,
+      Predicate predicate, List<String> userPermissionStrings,
+      Set<Pair<UUID, UUID>> programNodePairs) {
+    if (userPermissionStrings.isEmpty() && programNodePairs.isEmpty()) {
+      return predicate;
+    }
+
+    if (!userPermissionStrings.isEmpty() && programNodePairs.isEmpty()) {
+      return builder.and(predicate,
+          createPermissionStringsPredicate(root, userPermissionStrings));
+    }
+
+    if (userPermissionStrings.isEmpty()) {
+      return builder.and(predicate,
+          createProgramNodePairPredicate(builder, root, programNodePairs));
+    }
+
+    return builder.and(predicate,
+        builder.or(
+            createPermissionStringsPredicate(root, userPermissionStrings),
+            createProgramNodePairPredicate(builder, root, programNodePairs)));
+  }
+
+  private Predicate createPermissionStringsPredicate(Root<Requisition> root,
+      List<String> userPermissionStrings) {
+    Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
+        .join("permissionStrings");
+    Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
+
+    return permissionStringExp.in(userPermissionStrings);
+  }
+
   private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
-      CriteriaQuery<T> query, Set<Pair> programNodePairs, boolean isCountQuery, Pageable pageable) {
+      CriteriaQuery<T> query, Set<Pair<UUID, UUID>> programNodePairs,
+      boolean isCountQuery, Pageable pageable) {
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -352,14 +386,7 @@ public class RequisitionRepositoryImpl
       query.distinct(true);
     }
 
-    List<Predicate> combinedPredicates = new ArrayList<>();
-    for (Pair pair : programNodePairs) {
-      Predicate programPredicate = builder.equal(root.get(PROGRAM_ID), pair.getLeft());
-      Predicate nodePredicate = builder.equal(root.get(SUPERVISORY_NODE_ID), pair.getRight());
-      Predicate combinedPredicate = builder.and(programPredicate, nodePredicate);
-      combinedPredicates.add(combinedPredicate);
-    }
-    Predicate pairPredicate = builder.or(combinedPredicates.toArray(new Predicate[0]));
+    Predicate pairPredicate = createProgramNodePairPredicate(builder, root, programNodePairs);
 
     Predicate statusPredicate = builder.or(
         builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
@@ -387,6 +414,22 @@ public class RequisitionRepositoryImpl
     }
 
     return query.where(predicate);
+  }
+
+  private Predicate createProgramNodePairPredicate(CriteriaBuilder builder,
+      Root<Requisition> root, Set<Pair<UUID, UUID>> programNodePairs) {
+    Predicate[] combinedPredicates = new Predicate[programNodePairs.size()];
+
+    int index = 0;
+    for (Pair pair : programNodePairs) {
+      Predicate predicate = builder.conjunction();
+      predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, pair.getLeft());
+      predicate = addEqualFilter(predicate, builder, root, SUPERVISORY_NODE_ID, pair.getRight());
+
+      combinedPredicates[index++] = predicate;
+    }
+
+    return builder.or(combinedPredicates);
   }
 
   private <T> CriteriaQuery<T> addSortProperties(CriteriaBuilder builder,

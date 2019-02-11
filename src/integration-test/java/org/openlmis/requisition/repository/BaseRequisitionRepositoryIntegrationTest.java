@@ -27,11 +27,15 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBM
 import com.google.common.collect.Lists;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -57,6 +61,8 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
   protected RequisitionTemplate testTemplate;
 
   protected List<String> userPermissionStrings = new ArrayList<>();
+
+  protected Set<Pair<UUID, UUID>> programNodePairs = new HashSet<>();
 
   @Override
   RequisitionRepository getRepository() {
@@ -84,6 +90,8 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
     requisition.setStockAdjustmentReasons(newArrayList(reason));
+
+    programNodePairs.add(new ImmutablePair<>(programId, requisition.getSupervisoryNodeId()));
 
     return requisition;
   }

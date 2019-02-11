@@ -63,6 +63,7 @@ import static org.openlmis.requisition.utils.Pagination.getPage;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -1083,7 +1084,10 @@ public class RequisitionServiceTest {
         .map(PermissionStringDto::toString)
         .collect(toList());
 
-    given(requisitionRepository.searchRequisitions(params, permissionStrings, pageRequest))
+    given(requisitionRepository
+        .searchRequisitions(params, permissionStrings,
+            singleton(new ImmutablePair<>(program.getId(), supervisoryNode.getId())),
+            pageRequest))
         .willReturn(getPage(singletonList(requisition), pageRequest));
 
     // when
@@ -1123,9 +1127,9 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void searchShouldReturnEmptyListIfPermissionStringsIsEmpty() {
+  public void searchShouldReturnEmptyListIfPermissionStringsIsEmptyAndUserHasNoRoleAssignments() {
     // given
-    RequisitionSearchParams params = new DefaultRequisitionSearchParams(
+    final RequisitionSearchParams params = new DefaultRequisitionSearchParams(
         requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), requisition.getSupervisoryNodeId(),
         requisition.getEmergency(), requisition.getCreatedDate().minusDays(2).toLocalDate(),
@@ -1135,6 +1139,8 @@ public class RequisitionServiceTest {
 
     given(authenticationHelper.getCurrentUser()).willReturn(user);
     given(permissionStringsHandler.get()).willReturn(emptySet());
+
+    user.setRoleAssignments(Sets.newHashSet());
 
     // when
     List<Requisition> receivedRequisitions = requisitionService
@@ -1539,7 +1545,7 @@ public class RequisitionServiceTest {
 
   private void mockNoPreviousRequisition() {
     when(requisitionRepository
-        .searchRequisitions(any(), any(), any(), any()))
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), any(Boolean.class)))
         .thenReturn(emptyList());
   }
 
@@ -1629,7 +1635,8 @@ public class RequisitionServiceTest {
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(Arrays.asList(processingPeriod));
 
-    when(requisitionRepository.searchRequisitions(any(), any(), any(), any()))
+    when(requisitionRepository
+        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), any(Boolean.class)))
         .thenReturn(new ArrayList<>());
 
     when(idealStockAmountReferenceDataService.search(facility.getId(), processingPeriod.getId()))

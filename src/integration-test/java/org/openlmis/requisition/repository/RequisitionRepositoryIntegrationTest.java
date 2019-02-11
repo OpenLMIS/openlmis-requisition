@@ -16,6 +16,7 @@
 package org.openlmis.requisition.repository;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -25,6 +26,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -132,7 +134,7 @@ public class RequisitionRepositoryIntegrationTest
         EnumSet.of(requisitionToCopy.getStatus()));
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
@@ -179,7 +181,7 @@ public class RequisitionRepositoryIntegrationTest
         requisition1.getModifiedDate(), null, null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(3, receivedRequisitions.size());
@@ -194,6 +196,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition1 = requisitions.get(0);
     Requisition requisition2 = requisitions.get(1);
     Requisition requisition3 = requisitions.get(2);
+
     requisition1.setModifiedDate(requisition1.getModifiedDate().minusMonths(3));
     requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
@@ -203,7 +206,7 @@ public class RequisitionRepositoryIntegrationTest
         null, requisition3.getModifiedDate(), null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(3, receivedRequisitions.size());
@@ -227,7 +230,7 @@ public class RequisitionRepositoryIntegrationTest
         requisition2.getModifiedDate(), requisition3.getModifiedDate(), null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
@@ -252,7 +255,7 @@ public class RequisitionRepositoryIntegrationTest
         null, null, null, null, null, null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
@@ -273,7 +276,7 @@ public class RequisitionRepositoryIntegrationTest
     RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(5, receivedRequisitions.size());
@@ -285,7 +288,7 @@ public class RequisitionRepositoryIntegrationTest
         null, null, null, null, true, null, null, null, null, null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
@@ -298,7 +301,7 @@ public class RequisitionRepositoryIntegrationTest
         null, null, null, null, false, null, null, null, null, null);
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(3, receivedRequisitions.size());
@@ -331,11 +334,86 @@ public class RequisitionRepositoryIntegrationTest
     RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStringSubset, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStringSubset, emptySet(), pageRequest)
         .getContent();
 
     // then
     assertEquals(1, receivedRequisitions.size());
+    assertThat(
+        receivedRequisitions.get(0).getPermissionStrings().get(0).getPermissionString(),
+        isIn(userPermissionStringSubset));
+  }
+
+  @Test
+  public void searchShouldExcludeRequisitionsWithNoMatchingProgramNodePair() {
+    // given
+    Set<Pair<UUID, UUID>> programNodePairsSubset = singleton(programNodePairs.iterator().next());
+
+    // when
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, emptyList(), programNodePairsSubset, pageRequest)
+        .getContent();
+
+    // then
+    assertEquals(1, receivedRequisitions.size());
+
+    ImmutablePair<UUID, UUID> receivedPair = new ImmutablePair<>(
+        receivedRequisitions.get(0).getProgramId(),
+        receivedRequisitions.get(0).getSupervisoryNodeId());
+
+    assertThat(receivedPair, isIn(programNodePairsSubset));
+  }
+
+  @Test
+  public void searchShouldNotReturnDuplicationsIfPermissionStringsAndProgramNodePairsAreSame() {
+    // given
+    Requisition requisition = requisitions.get(1);
+
+    List<String> permissionStringsSubset = Lists.newArrayList();
+    permissionStringsSubset.add(String.format(
+        "REQUISITION_VIEW|%s|%s", requisition.getFacilityId(), requisition.getProgramId()));
+
+    Set<Pair<UUID, UUID>> programNodePairSubset = Sets.newHashSet();
+    programNodePairSubset.add(
+        new ImmutablePair<>(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
+
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+
+    List<Requisition> found = repository
+        .searchRequisitions(searchParams, permissionStringsSubset,
+            programNodePairSubset, pageRequest)
+        .getContent();
+
+    assertThat(found, hasSize(1));
+    assertThat(found, hasItem(requisition));
+  }
+
+  @Test
+  public void searchShouldCombineResultsIfPermissionStringsAndProgramNodePairsAreDifferent() {
+    // given
+    Requisition firstRnR = requisitions.get(1);
+    Requisition secondRnR = requisitions.get(4);
+
+    List<String> permissionStringsSubset = Lists.newArrayList();
+    permissionStringsSubset.add(String.format(
+        "REQUISITION_VIEW|%s|%s", firstRnR.getFacilityId(), firstRnR.getProgramId()));
+
+    Set<Pair<UUID, UUID>> programNodePairSubset = Sets.newHashSet();
+    programNodePairSubset.add(
+        new ImmutablePair<>(secondRnR.getProgramId(), secondRnR.getSupervisoryNodeId()));
+
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+
+    List<Requisition> found = repository
+        .searchRequisitions(searchParams, permissionStringsSubset,
+            programNodePairSubset, pageRequest)
+        .getContent();
+
+    assertThat(found, hasSize(2));
+    assertThat(found, hasItem(firstRnR));
+    assertThat(found, hasItem(secondRnR));
   }
 
   @Test
@@ -485,7 +563,8 @@ public class RequisitionRepositoryIntegrationTest
     addStatusChanges(matchingRequisition2, 3);
     repository.save(matchingRequisition2);
 
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
     // when
     Page<Requisition> results = repository
@@ -517,7 +596,8 @@ public class RequisitionRepositoryIntegrationTest
     addStatusChanges(matchingRequisition2, 0);
     repository.save(matchingRequisition2);
 
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
     Pageable sortPageRequest = new PageRequest(
         Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, Direction.DESC, "emergency");
@@ -610,7 +690,8 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition2.authorize(products, user);
     saveAndFlushWithDelay(matchingRequisition2);
 
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
     Pageable sortPageRequest = new PageRequest(
         Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, direction, "authorizedDate");
@@ -671,7 +752,8 @@ public class RequisitionRepositoryIntegrationTest
     partialMatchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
     repository.save(partialMatchingRequisition2);
 
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
     
     // when
     Page<Requisition> results = repository
@@ -697,8 +779,9 @@ public class RequisitionRepositoryIntegrationTest
     requisitions.get(3).setStatus(RELEASED);
     requisitions.get(4).setStatus(SKIPPED);
     repository.save(requisitions);
-    
-    Set<Pair> programNodePairs = Sets.newHashSet(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
     // when
     Page<Requisition> results = repository
@@ -733,7 +816,7 @@ public class RequisitionRepositoryIntegrationTest
         EnumSet.of(requisitionToCopy.getStatus()));
 
     List<Requisition> receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
@@ -744,7 +827,7 @@ public class RequisitionRepositoryIntegrationTest
         Sort.Direction.DESC, "createdDate");
 
     receivedRequisitions = repository
-        .searchRequisitions(searchParams, userPermissionStrings, pageRequest)
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
         .getContent();
 
     assertEquals(2, receivedRequisitions.size());
