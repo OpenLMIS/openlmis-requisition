@@ -1864,7 +1864,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int size = 10;
     int page = 0;
 
-    given(requisitionService.searchApprovedRequisitionsWith(
+    given(requisitionService.searchApprovedRequisitions(
         eq(facilityId), eq(programId), any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
@@ -1907,7 +1907,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     ArgumentCaptor<Pageable> sortByCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-    given(requisitionService.searchApprovedRequisitionsWith(
+    given(requisitionService.searchApprovedRequisitions(
         eq(facilityId), eq(programId), sortByCaptor.capture()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 
@@ -1960,7 +1960,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     int size = 10;
     int page = 0;
 
-    given(requisitionService.searchApprovedRequisitionsWith(
+    given(requisitionService.searchApprovedRequisitions(
         eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
 
@@ -2015,7 +2015,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldNotGetApprovedRequisitionsIfUserHasNoFulfillmentRightsForFacility() {
     // given
-    given(requisitionService.searchApprovedRequisitionsWith(
+    given(requisitionService.searchApprovedRequisitions(
         any(), any(), any()))
         .willReturn(Pagination.getPage(Collections.emptyList(), null));
 
@@ -2042,7 +2042,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     RequisitionWithSupplyingDepotsDto requisition =
         new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
 
-    given(requisitionService.searchApprovedRequisitionsWith(
+    given(requisitionService.searchApprovedRequisitions(
         any(), any(), any()))
         .willReturn(Pagination.getPage(singletonList(requisition), null));
 

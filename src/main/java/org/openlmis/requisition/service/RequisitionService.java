@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.service;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
@@ -576,8 +575,8 @@ public class RequisitionService {
    *                   and "size" (page size) query parameters.
    * @return List of requisitions.
    */
-  public Page<RequisitionWithSupplyingDepotsDto> searchApprovedRequisitionsWith(
-      UUID facilityId, UUID programId, Pageable pageable) {
+  public Page<RequisitionWithSupplyingDepotsDto> searchApprovedRequisitions(UUID facilityId,
+      UUID programId, Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
@@ -585,8 +584,7 @@ public class RequisitionService {
     profiler.start("GET_CURRENT_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
-    Set<UUID> programIds;
-    Set<UUID> supervisoryNodeIds = new HashSet<>();
+    Set<Pair<UUID, UUID>> programIdSupervisoryNodeIdPairs = new HashSet<>();
     Set<UUID> fulfillmentFacilitiesIds = new HashSet<>();
     List<SupplyLineDto> supplyLines = null;
 
@@ -605,34 +603,29 @@ public class RequisitionService {
         return Pagination.getPage(emptyList(), pageable, 0);
       }
 
-      profiler.start("SEARCH_FOR_SUPPLY_LINES");
-      supplyLines = supplyLineReferenceDataService
-          .searchBySupplyingFacilities(fulfillmentFacilitiesIds);
-
-      supervisoryNodeIds = supplyLines.stream()
-          .map(supplyLine -> supplyLine.getSupervisoryNode().getId())
-          .collect(toSet());
-
-      programIds = supplyLines.stream()
-          .map(supplyLine -> supplyLine.getProgram().getId())
-          .collect(toSet());
-
-      if (null != programId) {
-        programIds = programIds.stream()
-            .filter(id -> id.equals(programId))
-            .collect(toSet());
+      if (null == programId) {
+        profiler.start("SEARCH_FOR_SUPPLY_LINES_BY_SUPPLYING_FACILITIES");
+        supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds);
+      } else {
+        profiler.start("SEARCH_FOR_SUPPLY_LINES_BY_PROGRAM_AND_SUPPLYING_FACILITIES");
+        supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds, programId);
       }
 
-      if (isEmpty(supervisoryNodeIds) || isEmpty(programIds)) {
+      if (isEmpty(supplyLines)) {
         return Pagination.getPage(emptyList(), pageable, 0);
       }
-    } else {
-      programIds = newHashSet(programId);
+
+      programIdSupervisoryNodeIdPairs = supplyLines.stream()
+          .map(supplyLine ->
+              Pair.of(supplyLine.getProgram().getId(), supplyLine.getSupervisoryNode().getId()))
+          .collect(toSet());
+    } else if (null != programId) {
+      programIdSupervisoryNodeIdPairs.add(Pair.of(programId, null));
     }
 
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     Page<Requisition> result = requisitionRepository.searchApprovedRequisitions(
-        facilityId, programIds, supervisoryNodeIds, pageable);
+        facilityId, programIdSupervisoryNodeIdPairs, pageable);
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =

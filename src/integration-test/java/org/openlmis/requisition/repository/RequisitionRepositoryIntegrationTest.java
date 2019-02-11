@@ -429,7 +429,7 @@ public class RequisitionRepositoryIntegrationTest
         requisitions.stream().skip(1).collect(Collectors.toList());
     matchingRequisitions.forEach(r -> r.setTemplate(testTemplate));
 
-    requisitions.forEach(r -> repository.save(r));
+    requisitions.forEach(repository::save);
 
     // when
     List<Requisition> result = repository.findByTemplateId(testTemplate.getId());
@@ -888,7 +888,7 @@ public class RequisitionRepositoryIntegrationTest
     Requisition requisition2 = generateRequisition(RequisitionStatus.APPROVED);
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
-        null, emptySet(), emptySet(), createPageable(10, 0));
+        null, emptySet(), createPageable(10, 0));
 
     assertEquals(2, requisitions.getTotalElements());
     for (Requisition r : requisitions) {
@@ -911,7 +911,6 @@ public class RequisitionRepositoryIntegrationTest
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         requisition1.getFacilityId(),
         emptySet(),
-        emptySet(),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -926,8 +925,7 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         null,
-        singleton(requisition1.getProgramId()),
-        emptySet(),
+        singleton(Pair.of(requisition1.getProgramId(), null)),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -941,8 +939,7 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         requisition1.getFacilityId(),
-        singleton(requisition1.getProgramId()),
-        singleton(requisition1.getSupervisoryNodeId()),
+        singleton(Pair.of(requisition1.getProgramId(), requisition1.getSupervisoryNodeId())),
         createPageable(10, 0));
 
     assertEquals(1, requisitions.getTotalElements());
@@ -963,8 +960,7 @@ public class RequisitionRepositoryIntegrationTest
 
     Page<Requisition> requisitions = repository.searchApprovedRequisitions(
         facilityId,
-        singleton(programId),
-        singleton(supervisoryNodeId),
+        singleton(Pair.of(programId, supervisoryNodeId)),
         createPageable(10, 0));
 
     assertEquals(0, requisitions.getTotalElements());

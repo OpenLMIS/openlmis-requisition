@@ -40,6 +40,11 @@ public class SupplyLineDtoDataBuilder {
     return this;
   }
 
+  public SupplyLineDtoDataBuilder withProgram(ProgramDto program) {
+    this.program = program;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link SupplyLineDto}.
    */

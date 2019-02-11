@@ -657,11 +657,8 @@ public class RequisitionController extends BaseRequisitionController {
     );
 
     profiler.start("SEARCH_FOR_APPROVED_REQUISITIONS");
-    Page<RequisitionWithSupplyingDepotsDto> page = requisitionService
-        .searchApprovedRequisitionsWith(
-            facilityId,
-            programId,
-            pageable);
+    Page<RequisitionWithSupplyingDepotsDto> page = requisitionService.searchApprovedRequisitions(
+        facilityId, programId, pageable);
 
     stopProfiler(profiler, page);
     return page;

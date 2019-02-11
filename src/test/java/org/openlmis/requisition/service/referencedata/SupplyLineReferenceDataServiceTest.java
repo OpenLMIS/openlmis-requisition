@@ -81,7 +81,7 @@ public class SupplyLineReferenceDataServiceTest
 
     SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
     mockPageResponseEntity(dto);
-    List<SupplyLineDto> result = service.searchBySupplyingFacilities(supplyingFacilitiesIds);
+    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds);
 
     assertThat(result, hasSize(1));
     assertTrue(result.contains(dto));
@@ -91,6 +91,31 @@ public class SupplyLineReferenceDataServiceTest
         .hasAuthHeader()
         .hasEmptyBody()
         .hasQueryParameter("supplyingFacilityId", supplyingFacilityId)
+        .hasEmptyBody()
+        .isUriStartsWith(service.getServiceUrl() + service.getUrl());
+  }
+
+  @Test
+  public void shouldSearchSupplyLinesBySupplyingFacilityIdAndProgramId() {
+    UUID programId = UUID.randomUUID();
+    UUID supplyingFacilityId = UUID.randomUUID();
+    Set<UUID> supplyingFacilitiesIds = new HashSet<>();
+    supplyingFacilitiesIds.add(supplyingFacilityId);
+
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    mockPageResponseEntity(dto);
+
+    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds, programId);
+
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("supplyingFacilityId", supplyingFacilityId)
+        .hasQueryParameter("programId", programId)
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }

@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import com.google.common.base.Joiner;
@@ -99,10 +100,6 @@ public class RequisitionRepositoryImpl
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
   private static final String AUTHORIZED_DATE = "authorizedDate";
   private static final String MODIFIED_DATE = "modifiedDate";
-  private static final String WITH_PROGRAM_IDS =
-      "r.programId IN :programIds";
-  private static final String WITH_SUPERVISORY_NODE_IDS =
-      "r.supervisoryNodeId IN :supervisoryNodeIds";
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -179,24 +176,23 @@ public class RequisitionRepositoryImpl
    * - programIds collection is empty and filterBy is programName,
    * - both facilityIds and programIds collections are empty and filterBy is all.
    *
-   * @param facilityId Desired facility UUID list.
-   * @param programIds  Desired set of program UUIDs.
-   * @param supervisoryNodeIds Desired set of supervisory node UUIDs.
+   * @param facilityId             Desired facility UUID list.
+   * @param programSupervisoryNode Desired set of program UUIDs.
    * @return List of requisitions with required fields for convert.
    */
   @Override
-  public Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
-      Set<UUID> supervisoryNodeIds, Pageable pageable) {
-    XLOGGER.entry(facilityId, programIds, supervisoryNodeIds, pageable);
+  public Page<Requisition> searchApprovedRequisitions(UUID facilityId,
+      Set<Pair<UUID, UUID>> programSupervisoryNode, Pageable pageable) {
+    XLOGGER.entry(facilityId, programSupervisoryNode, pageable);
 
-    Query countQuery = createQuery(facilityId, programIds, supervisoryNodeIds,true, pageable);
+    Query countQuery = createQuery(facilityId, programSupervisoryNode, true, pageable);
     Long count = (Long) countQuery.getSingleResult();
 
     if (count == 0) {
       return Pagination.getPage(Collections.emptyList(), pageable, 0);
     }
 
-    Query searchQuery = createQuery(facilityId, programIds, supervisoryNodeIds, false, pageable);
+    Query searchQuery = createQuery(facilityId, programSupervisoryNode, false, pageable);
     addScalars(searchQuery);
 
     // hibernate always returns a list of array of objects
@@ -208,7 +204,7 @@ public class RequisitionRepositoryImpl
             Object[].class);
 
     List<Requisition> requisitions = list.stream().map(this::toRequisition)
-        .collect(Collectors.toList());
+        .collect(toList());
 
     XLOGGER.exit(requisitions);
     return Pagination.getPage(requisitions, pageable, count);
@@ -472,19 +468,21 @@ public class RequisitionRepositoryImpl
     return query.orderBy(orders);
   }
 
-  private Query createQuery(UUID facilityId, Set<UUID> programIds, Set<UUID> supervisoryNodeIds,
+  private Query createQuery(UUID facilityId, Set<Pair<UUID, UUID>> programSupervisoryNode,
       Boolean count, Pageable pageable) {
-    StringBuilder builder = new StringBuilder(
-        count ? SELECT_COUNT_APPROVED_SQL : SEARCH_APPROVED_SQL);
+    StringBuilder builder =
+        new StringBuilder(count ? SELECT_COUNT_APPROVED_SQL : SEARCH_APPROVED_SQL);
 
     if (null != facilityId) {
       builder.append(String.format(" AND r.facilityid = '%s'", facilityId));
     }
-    if (isNotEmpty(programIds)) {
-      builder.append(String.format(" AND %s", WITH_PROGRAM_IDS));
-    }
-    if (isNotEmpty(supervisoryNodeIds)) {
-      builder.append(String.format(" AND %s", WITH_SUPERVISORY_NODE_IDS));
+    if (isNotEmpty(programSupervisoryNode)) {
+      builder.append(" AND (");
+      List<String> programAndSupervisoryNodeConditions = programSupervisoryNode.stream()
+          .map(this::createQueryForProgramAndNode)
+          .collect(toList());
+      builder.append(Joiner.on(" OR ").join(programAndSupervisoryNodeConditions));
+      builder.append(')');
     }
 
     if (!count && pageable.getSort() != null) {
@@ -493,14 +491,6 @@ public class RequisitionRepositoryImpl
     }
 
     Query query = entityManager.createNativeQuery(builder.toString());
-
-    if (isNotEmpty(programIds)) {
-      query.setParameter("programIds", programIds);
-    }
-
-    if (isNotEmpty(supervisoryNodeIds)) {
-      query.setParameter("supervisoryNodeIds", supervisoryNodeIds);
-    }
 
     if (count) {
       addScalarsForCount(query);
@@ -562,4 +552,18 @@ public class RequisitionRepositoryImpl
     return Joiner.on(' ').join(sql);
   }
 
+  private String createQueryForProgramAndNode(Pair<UUID, UUID> programSupervisoryNode) {
+    UUID programId = programSupervisoryNode.getLeft();
+    UUID supervisoryNodeId = programSupervisoryNode.getRight();
+
+    if (null != programId && null != supervisoryNodeId) {
+      return String.format("(r.programId = '%s' AND r.supervisoryNodeId = '%s')",
+          programId, supervisoryNodeId);
+    } else if (null != programId) {
+      return String.format("r.programId = '%s'", programId);
+    } else if (null != supervisoryNodeId) {
+      return String.format("r.supervisoryNodeId = '%s'", supervisoryNodeId);
+    }
+    return "";
+  }
 }

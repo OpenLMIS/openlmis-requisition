@@ -32,10 +32,9 @@ public interface RequisitionRepositoryCustom {
   List<Requisition> searchRequisitions(UUID processingPeriod,
       UUID facility, UUID program, Boolean emergency);
 
-  Page<Requisition> searchApprovedRequisitions(UUID facilityId, Set<UUID> programIds,
-      Set<UUID> supervisoryNodeIds, Pageable pageable);
+  Page<Requisition> searchApprovedRequisitions(UUID facilityId,
+      Set<Pair<UUID, UUID>> programSupervisoryNodePair, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable);
-
 }

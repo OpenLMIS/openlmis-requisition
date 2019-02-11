@@ -22,7 +22,6 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -75,6 +74,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -275,17 +275,18 @@ public class RequisitionServiceTest {
       .build();
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
-  private List<String> permissionStrings = singletonList("validPermissionString");
   private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private Requisition previousRequisition;
-  private SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
+  private SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder()
+      .withSupervisoryNode(supervisoryNode)
+      .withProgram(program)
+      .build();
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
   private static final UUID PRODUCT_ID = UUID.randomUUID();
   private static final UUID NON_FULL_PRODUCT_ID = UUID.randomUUID();
-  private String productNamePrefix = "Product ";
   private StockCardRangeSummaryDto stockCardRangeSummaryDto;
 
   @Before
@@ -1152,7 +1153,7 @@ public class RequisitionServiceTest {
   }
 
   @Test
-  public void shouldFilterRequisitionsForConvertFacilityIdAndProgramId() {
+  public void shouldFilterRequisitionsForConvertByFacilityIdAndProgramId() {
     // given
     FacilityDto supplyingDepot = new FacilityDtoDataBuilder().build();
 
@@ -1161,13 +1162,10 @@ public class RequisitionServiceTest {
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        singleton(program.getId()), singleton(supervisoryNode.getId()), supplyingDepot, pageable);
+        singleton(Pair.of(program.getId(), supervisoryNode.getId())), supplyingDepot, pageable);
 
     //when
-    requisitionService.searchApprovedRequisitionsWith(
-        facility.getId(),
-        program.getId(),
-        pageable);
+    requisitionService.searchApprovedRequisitions(facility.getId(), program.getId(), pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1182,12 +1180,12 @@ public class RequisitionServiceTest {
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, facility.getId(),
-        asSet(supplyLine.getProgram().getId()), asSet(supplyLine.getSupervisoryNode().getId()),
+        singleton(
+            Pair.of(supplyLine.getProgram().getId(), supplyLine.getSupervisoryNode().getId())),
         supplyingDepot, pageable);
 
     //when
-    requisitionService.searchApprovedRequisitionsWith(
-        facility.getId(), null, pageable);
+    requisitionService.searchApprovedRequisitions(facility.getId(), null, pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1203,11 +1201,10 @@ public class RequisitionServiceTest {
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
     setupStubsForTestApprovedRequisition(essentialMedsRequisitions, null,
-        singleton(program.getId()), singleton(supervisoryNode.getId()), facilityDto, pageable);
+        singleton(Pair.of(program.getId(), supervisoryNode.getId())), facilityDto, pageable);
 
     //when
-    requisitionService.searchApprovedRequisitionsWith(
-        null, program.getId(), pageable);
+    requisitionService.searchApprovedRequisitions(null, program.getId(), pageable);
 
     // then
     verifyNoMoreInteractions(programReferenceDataService);
@@ -1225,10 +1222,7 @@ public class RequisitionServiceTest {
 
     // when
     Page<RequisitionWithSupplyingDepotsDto> receivedRequisitions = requisitionService
-        .searchApprovedRequisitionsWith(
-            facility.getId(),
-            program.getId(),
-            pageable);
+        .searchApprovedRequisitions(facility.getId(), program.getId(), pageable);
 
     // then
     assertEquals(0, receivedRequisitions.getTotalElements());
@@ -1475,12 +1469,11 @@ public class RequisitionServiceTest {
     return requisition;
   }
 
-  private RequisitionDto generateRequisitionDto() {
+  private void generateRequisitionDto() {
     requisitionDto = new RequisitionDto();
     requisitionDto.setId(requisition.getId());
     requisitionDto.setSupervisoryNode(supervisoryNode.getId());
     requisitionDto.setStatus(AUTHORIZED);
-    return requisitionDto;
   }
 
   private void generateReasons() {
@@ -1509,16 +1502,14 @@ public class RequisitionServiceTest {
   }
 
   private void setupStubsForTestApprovedRequisition(List<BasicRequisitionDto> requisitionDtos,
-      UUID facilityId, Set<UUID> programIds, Set<UUID> supervisoryNodeIds,
-      FacilityDto supplyingDepot, Pageable pageable) {
+      UUID facilityId, Set<Pair<UUID, UUID>> programSupervisoryNode, FacilityDto supplyingDepot,
+      Pageable pageable) {
     final Page<Requisition> requisitions = Pagination
         .getPage(emptyList(), pageable, requisitionDtos.size());
 
-    when(requisitionRepository.searchApprovedRequisitions(
-        facilityId, programIds, supervisoryNodeIds, pageable))
+    when(requisitionRepository
+        .searchApprovedRequisitions(facilityId, programSupervisoryNode, pageable))
         .thenReturn(requisitions);
-
-    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
 
     List<RequisitionWithSupplyingDepotsDto> requisitionsWithDepots = new ArrayList<>();
     for (BasicRequisitionDto dto : requisitionDtos) {
@@ -1555,6 +1546,7 @@ public class RequisitionServiceTest {
     List<ApprovedProductDto> approvedProducts = new ArrayList<>();
 
     for (int i = 0, length = products.length; i < length; ++i) {
+      String productNamePrefix = "Product ";
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(products[i])
@@ -1630,10 +1622,10 @@ public class RequisitionServiceTest {
         .thenReturn(processingPeriod);
 
     when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(Arrays.asList(processingPeriod.getProcessingSchedule()));
+        .thenReturn(singletonList(processingPeriod.getProcessingSchedule()));
 
     when(periodService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(Arrays.asList(processingPeriod));
+        .thenReturn(singletonList(processingPeriod));
 
     when(requisitionRepository
         .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), any(Boolean.class)))
@@ -1676,8 +1668,10 @@ public class RequisitionServiceTest {
     when(permissionStringsHandler.get())
         .thenReturn(asSet(
             PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
-    when(supplyLineReferenceDataService.searchBySupplyingFacilities(singleton(facility.getId())))
-        .thenReturn(asList(supplyLine));
+    when(supplyLineReferenceDataService.search(singleton(facility.getId()), program.getId()))
+        .thenReturn(singletonList(supplyLine));
+    when(supplyLineReferenceDataService.search(singleton(facility.getId())))
+        .thenReturn(singletonList(supplyLine));
   }
 
   private void stubRecentRequisition() {
