@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service;
 
 import java.util.List;
+import java.util.Objects;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -49,7 +50,8 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
     for (int i = 0, length = roles.size(); i < length; ++i) {
       RoleDto role = roles.get(i);
 
-      if (user.hasMatchingSupervisorySupervisionRole(role.getId(),
+      if (Objects.nonNull(details.getSupervisoryNodeId())
+          && user.hasMatchingSupervisorySupervisionRole(role.getId(),
           details.getProgramId(), details.getSupervisoryNodeId())) {
         return true;
       }
