@@ -672,6 +672,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateConsumptions();
     updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
+    supervisoryNodeId = null;
 
     statusChanges.add(StatusChange.newStatusChange(this, rejector));
   }

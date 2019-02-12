@@ -686,9 +686,11 @@ public class RequisitionRepositoryIntegrationTest
     saveAndFlushWithDelay(matchingRequisition2);
 
     matchingRequisition3.authorize(products, user);
+    matchingRequisition3.setSupervisoryNodeId(supervisoryNodeId);
     saveAndFlushWithDelay(matchingRequisition3);
 
     matchingRequisition2.authorize(products, user);
+    matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     saveAndFlushWithDelay(matchingRequisition2);
 
     Set<Pair<UUID, UUID>> programNodePairs =
