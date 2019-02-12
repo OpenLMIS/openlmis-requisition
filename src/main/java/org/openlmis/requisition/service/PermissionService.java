@@ -49,8 +49,8 @@ public class PermissionService {
   public static final String REQUISITION_VIEW = REQUISITION_BASE + "VIEW";
   static final String REQUISITION_TEMPLATES_MANAGE = REQUISITION_BASE + "TEMPLATES_MANAGE";
 
-  private static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
-  private static final String REPORTS_VIEW = "REPORTS_VIEW";
+  static final String REPORT_TEMPLATES_EDIT = "REPORT_TEMPLATES_EDIT";
+  static final String REPORTS_VIEW = "REPORTS_VIEW";
 
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
 

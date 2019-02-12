@@ -19,9 +19,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
+import static org.openlmis.requisition.service.PermissionService.REPORTS_VIEW;
+import static org.openlmis.requisition.service.PermissionService.REPORT_TEMPLATES_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_CREATE;
@@ -112,7 +115,46 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canUpdateRequisition() {
+  public void canInitOrAuthorizeRequisitionIfHasCreateRight() {
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, true);
+
+    // expect
+    expectValidationSucceeds(permissionService
+        .canInitOrAuthorizeRequisition(programId, facilityId));
+  }
+
+  @Test
+  public void canInitOrAuthorizeRequisitionIfHasAuthorizeRight() {
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, true);
+
+    // expect
+    expectValidationSucceeds(permissionService
+        .canInitOrAuthorizeRequisition(programId, facilityId));
+  }
+
+  @Test
+  public void cannotInitOrAuthorizeRequisitionIfHasNoCreateAndAuthorizeRight() {
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, false);
+
+    // when
+    ValidationResult result = permissionService
+        .canInitOrAuthorizeRequisition(programId, facilityId);
+
+    // then
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
+    assertEquals(new Message(ERROR_NO_FOLLOWING_PERMISSION,
+            REQUISITION_CREATE, REQUISITION_AUTHORIZE),
+        result.getError().getMessage());
+  }
+
+  @Test
+  public void canUpdateCreatedRequisition() {
     // given
     hasRole(REQUISITION_CREATE, true);
 
@@ -123,7 +165,51 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void cannotUpdateRequisition() {
+  public void canUpdateRejectedRequisition() {
+    // given
+    hasRole(REQUISITION_CREATE, true);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.REJECTED);
+
+    // expect
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
+  }
+
+  @Test
+  public void canUpdateSubmittedRequisition() {
+    // given
+    hasRole(REQUISITION_AUTHORIZE, true);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SUBMITTED);
+
+    // expect
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
+  }
+
+  @Test
+  public void canUpdateAuthorizedRequisition() {
+    // given
+    hasRole(REQUISITION_APPROVE, true);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.AUTHORIZED);
+
+    // expect
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
+  }
+
+  @Test
+  public void canUpdateInApprovalRequisition() {
+    // given
+    hasRole(REQUISITION_APPROVE, true);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.IN_APPROVAL);
+
+    // expect
+    expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
+  }
+
+  @Test
+  public void cannotUpdateCreatedRequisition() {
     // given
     hasRole(REQUISITION_CREATE, false);
 
@@ -132,6 +218,68 @@ public class PermissionServiceTest {
     // expect
     expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
         RequisitionStatus.INITIATED, REQUISITION_CREATE);
+  }
+
+  @Test
+  public void cannotUpdateRejectedRequisition() {
+    // given
+    hasRole(REQUISITION_CREATE, false);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.REJECTED);
+
+    // expect
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
+        RequisitionStatus.REJECTED, REQUISITION_CREATE);
+  }
+
+  @Test
+  public void cannotUpdateSubmittedRequisition() {
+    // given
+    hasRole(REQUISITION_AUTHORIZE, false);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SUBMITTED);
+
+    // expect
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
+        RequisitionStatus.SUBMITTED, REQUISITION_CREATE);
+  }
+
+  @Test
+  public void cannotUpdateAuthorizedRequisition() {
+    // given
+    hasRole(REQUISITION_APPROVE, false);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.AUTHORIZED);
+
+    // expect
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
+        RequisitionStatus.AUTHORIZED, REQUISITION_CREATE);
+  }
+
+  @Test
+  public void cannotUpdateInApprovalRequisition() {
+    // given
+    hasRole(REQUISITION_APPROVE, false);
+
+    given(requisition.getStatus()).willReturn(RequisitionStatus.IN_APPROVAL);
+
+    // expect
+    expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
+        RequisitionStatus.IN_APPROVAL, REQUISITION_CREATE);
+  }
+
+  @Test
+  public void cannotUpdateSkippedRequisition() {
+    // given
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SKIPPED);
+
+    // when
+    ValidationResult result = permissionService.canUpdateRequisition(requisition);
+
+    // then
+    assertTrue(result.hasErrors());
+    assertEquals(FailureType.VALIDATION, result.getError().getType());
+    assertEquals(new Message(ERROR_CANNOT_UPDATE_REQUISITION), result.getError().getMessage());
   }
 
   @Test
@@ -329,6 +477,42 @@ public class PermissionServiceTest {
     // expect
     expectMissingPermission(permissionService.canManageRequisitionTemplate(),
         REQUISITION_TEMPLATES_MANAGE);
+  }
+
+  @Test
+  public void canEditReportTemplates() {
+    // given
+    hasRight(REPORT_TEMPLATES_EDIT, true);
+
+    // expect
+    expectValidationSucceeds(permissionService.canEditReportTemplates());
+  }
+
+  @Test
+  public void cannotEditReportTemplates() {
+    // given
+    hasRight(REPORT_TEMPLATES_EDIT, false);
+
+    // expect
+    expectMissingPermission(permissionService.canEditReportTemplates(), REQUISITION_VIEW);
+  }
+
+  @Test
+  public void canViewReports() {
+    // given
+    hasRight(REPORTS_VIEW, true);
+
+    // expect
+    expectValidationSucceeds(permissionService.canViewReports());
+  }
+
+  @Test
+  public void cannotViewReports() {
+    // given
+    hasRight(REPORTS_VIEW, false);
+
+    // expect
+    expectMissingPermission(permissionService.canViewReports(), REPORTS_VIEW);
   }
 
   private void hasRight(String rightName, boolean hasRight) {
