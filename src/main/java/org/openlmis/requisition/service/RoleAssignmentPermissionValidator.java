@@ -15,12 +15,24 @@
 
 package org.openlmis.requisition.service;
 
+import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.service.referencedata.RequisitionGroupReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +47,12 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
   @Autowired
   private RoleReferenceDataService roleReferenceDataService;
 
+  @Autowired
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @Autowired
+  private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
+
   @Override
   boolean checkUserToken(PermissionValidationDetails details, Profiler profiler) {
     profiler.start("GET_CURRENT_USER");
@@ -46,14 +64,17 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
     profiler.start("GET_ROLES_FOR_RIGHT");
     List<RoleDto> roles = roleReferenceDataService.search(right.getId());
 
+    Set<UUID> supervisoryNodeIds = getMatchingSupervisoryNodeIds(details, user, profiler);
+
     profiler.start("CHECK_HAS_ROLE");
     for (int i = 0, length = roles.size(); i < length; ++i) {
       RoleDto role = roles.get(i);
 
-      if (Objects.nonNull(details.getSupervisoryNodeId())
-          && user.hasMatchingSupervisorySupervisionRole(role.getId(),
-          details.getProgramId(), details.getSupervisoryNodeId())) {
-        return true;
+      for (UUID supervisoryNodeId : supervisoryNodeIds) {
+        if (user.hasMatchingSupervisorySupervisionRole(role.getId(),
+            details.getProgramId(), supervisoryNodeId)) {
+          return true;
+        }
       }
 
       if (!details.containsPartnerRequisition()
@@ -64,6 +85,52 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
     }
 
     return false;
+  }
+
+  private Set<UUID> getMatchingSupervisoryNodeIds(PermissionValidationDetails details,
+      UserDto user, Profiler profiler) {
+    Set<UUID> supervisoryNodeIds;
+
+    if (Objects.isNull(details.getSupervisoryNodeId())) {
+      profiler.start("GET_SUPERVISORY_NODE_IDS_FROM_USER_ROLE_ASSIGNMENTS");
+      Set<UUID> userSupervisoryNodeIds = user
+          .getRoleAssignments()
+          .stream()
+          .map(RoleAssignmentDto::getSupervisoryNodeId)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toSet());
+
+      profiler.start("GET_SUPERVISORY_NODES");
+      List<SupervisoryNodeDto> supervisoryNodes = supervisoryNodeReferenceDataService
+          .findByIds(userSupervisoryNodeIds)
+          .stream()
+          .filter(item -> Objects.nonNull(item.getRequisitionGroupId()))
+          .collect(Collectors.toList());
+
+      profiler.start("GET_REQUISITION_GROUP");
+      Map<UUID, RequisitionGroupDto> requisitionGroups = requisitionGroupReferenceDataService
+          .findAll()
+          .stream()
+          .collect(Collectors.toMap(RequisitionGroupDto::getId, Function.identity()));
+
+      supervisoryNodeIds = Sets.newHashSet();
+
+      for (int i = 0, length = supervisoryNodes.size(); i < length; ++i) {
+        SupervisoryNodeDto supervisoryNode = supervisoryNodes.get(i);
+        RequisitionGroupDto requisitionGroup = requisitionGroups
+            .get(supervisoryNode.getRequisitionGroupId());
+
+        if (requisitionGroup.hasFacility(details.getFacilityId())) {
+          supervisoryNodeIds.add(supervisoryNode.getId());
+        }
+      }
+
+    } else {
+      profiler.start("GET_SUPERVISORY_NODE_FROM_PARAM");
+      supervisoryNodeIds = Collections.singleton(details.getSupervisoryNodeId());
+    }
+
+    return supervisoryNodeIds;
   }
 
 }

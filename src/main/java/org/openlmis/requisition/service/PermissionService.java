@@ -141,7 +141,7 @@ public class PermissionService {
     // we can't be sure that a user will have correct rights based on permission strings
     // that is why we need to verify if the user has a correct right by checking user's
     // roles
-    return checkRole(REQUISITION_APPROVE, requisition);
+    return checkRightOrRole(REQUISITION_APPROVE, requisition);
   }
 
   /**
@@ -198,7 +198,7 @@ public class PermissionService {
     // we can't be sure that a user will have correct rights based on permission strings
     // that is why we need to verify if the user has a correct right by checking user's
     // roles
-    return checkRole(REQUISITION_VIEW, requisition);
+    return checkRightOrRole(REQUISITION_VIEW, requisition);
   }
 
   /**
@@ -264,7 +264,7 @@ public class PermissionService {
   }
 
   private ValidationResult checkPermissionOnUpdate(String rightName, Requisition requisition) {
-    ValidationResult result = checkRole(rightName, requisition);
+    ValidationResult result = checkRightOrRole(rightName, requisition);
 
     if (result.isSuccess()) {
       return result;
@@ -297,7 +297,16 @@ public class PermissionService {
         .hasPermission(new RightAssignmentPermissionValidationDetails(rightName, warehouseId));
   }
 
-  private ValidationResult checkRole(String rightName, Requisition requisition) {
+  private ValidationResult checkRightOrRole(String rightName, Requisition requisition) {
+    // we first check if a user has permission by right assignments because
+    // checking if the user has a correct role assignment is slower
+    ValidationResult rightCheck = checkRight(rightName,
+        requisition.getFacilityId(), requisition.getProgramId());
+
+    if (rightCheck.isSuccess()) {
+      return rightCheck;
+    }
+
     return roleAssignmentPermissionValidator
         .hasPermission(new RoleAssignmentPermissionValidationDetails(rightName, requisition));
   }

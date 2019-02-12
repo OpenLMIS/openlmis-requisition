@@ -73,4 +73,20 @@ public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNode
 
     assertThat(dto.getPartnerNodeIds()).hasSize(0).isEmpty();
   }
+
+  @Test
+  public void shouldGetRequisitionGroupIds() {
+    ObjectReferenceDto requisitionGroup = new ObjectReferenceDtoDataBuilder().build();
+
+    dto.setRequisitionGroup(requisitionGroup);
+
+    assertThat(dto.getRequisitionGroupId()).isEqualTo(requisitionGroup.getId());
+  }
+
+  @Test
+  public void shouldGetNullValueIfRequisitionGroupIsNull() {
+    dto.setRequisitionGroup(null);
+
+    assertThat(dto.getRequisitionGroupId()).isNull();
+  }
 }

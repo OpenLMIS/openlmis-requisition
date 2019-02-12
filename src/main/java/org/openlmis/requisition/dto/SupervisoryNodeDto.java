@@ -80,4 +80,18 @@ public final class SupervisoryNodeDto extends BaseDto {
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
+
+  /**
+   * Retrieves UUID of requisition group from object reference. If the object is null,
+   * the null value will be returned.
+   *
+   * @return UUID of requisition group or null.
+   */
+  @JsonIgnore
+  public UUID getRequisitionGroupId() {
+    return Optional
+        .ofNullable(requisitionGroup)
+        .map(ObjectReferenceDto::getId)
+        .orElse(null);
+  }
 }

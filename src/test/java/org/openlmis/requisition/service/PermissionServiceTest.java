@@ -535,6 +535,8 @@ public class PermissionServiceTest {
   }
 
   private void hasRole(String rightName, boolean hasRight) {
+    hasRight(rightName, requisition.getFacilityId(), requisition.getProgramId(), false);
+
     given(roleAssignmentPermissionValidator
         .hasPermission(new RoleAssignmentPermissionValidationDetails(rightName, requisition)))
         .willReturn(getValidationResult(rightName, hasRight));

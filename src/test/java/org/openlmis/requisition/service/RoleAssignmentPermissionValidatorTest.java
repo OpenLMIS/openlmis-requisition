@@ -32,12 +32,18 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.service.referencedata.RequisitionGroupReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
 public class RoleAssignmentPermissionValidatorTest
@@ -51,6 +57,12 @@ public class RoleAssignmentPermissionValidatorTest
   @Mock
   private RoleReferenceDataService roleReferenceDataService;
 
+  @Mock
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @Mock
+  private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
+
   @InjectMocks
   private RoleAssignmentPermissionValidator validator;
 
@@ -60,15 +72,21 @@ public class RoleAssignmentPermissionValidatorTest
   private UserDto user = DtoGenerator.of(UserDto.class);
   private RightDto right = DtoGenerator.of(RightDto.class);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
+  private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
+  private RequisitionGroupDto requisitionGroup = DtoGenerator.of(RequisitionGroupDto.class);
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
 
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
-  private UUID facilityId = UUID.randomUUID();
-  private UUID supervisoryNodeId = UUID.randomUUID();
+  private UUID facilityId = facility.getId();
+  private UUID supervisoryNodeId = supervisoryNode.getId();
 
   @Before
   public void setUp() {
     super.setUp();
+
+    supervisoryNode.setRequisitionGroup(new ObjectReferenceDto(requisitionGroup.getId()));
+    requisitionGroup.setMemberFacilities(Sets.newHashSet(facility));
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -82,6 +100,12 @@ public class RoleAssignmentPermissionValidatorTest
 
     when(roleReferenceDataService.search(right.getId()))
         .thenReturn(Lists.newArrayList(role));
+
+    when(supervisoryNodeReferenceDataService.findByIds(Sets.newHashSet(supervisoryNodeId)))
+        .thenReturn(Lists.newArrayList(supervisoryNode));
+
+    when(requisitionGroupReferenceDataService.findAll())
+        .thenReturn(Lists.newArrayList(requisitionGroup));
   }
 
   @Test
@@ -158,6 +182,35 @@ public class RoleAssignmentPermissionValidatorTest
     // given
     given(roleReferenceDataService.search(right.getId()))
         .willReturn(Collections.emptyList());
+
+    // when
+    ValidationResult result = validator.hasPermission(getDetails());
+
+    // then
+    assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  public void userShouldHavePermissionIfFacilityIsInRequisitionGroup() {
+    // given
+    given(requisition.getSupervisoryNodeId()).willReturn(null);
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, supervisoryNodeId, null)));
+
+    // when
+    ValidationResult result = validator.hasPermission(getDetails());
+
+    // then
+    assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
+  public void userShouldNotHavePermissionIfFacilityIsNotInRequisitionGroup() {
+    // given
+    given(requisition.getSupervisoryNodeId()).willReturn(null);
+    given(requisition.getFacilityId()).willReturn(UUID.randomUUID());
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, supervisoryNodeId, null)));
 
     // when
     ValidationResult result = validator.hasPermission(getDetails());
