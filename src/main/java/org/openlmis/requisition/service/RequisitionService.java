@@ -603,13 +603,8 @@ public class RequisitionService {
         return Pagination.getPage(emptyList(), pageable, 0);
       }
 
-      if (null == programId) {
-        profiler.start("SEARCH_FOR_SUPPLY_LINES_BY_SUPPLYING_FACILITIES");
-        supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds);
-      } else {
-        profiler.start("SEARCH_FOR_SUPPLY_LINES_BY_PROGRAM_AND_SUPPLYING_FACILITIES");
-        supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds, programId);
-      }
+      profiler.start("SEARCH_FOR_SUPPLY_LINES");
+      supplyLines = supplyLineReferenceDataService.search(fulfillmentFacilitiesIds, programId);
 
       if (isEmpty(supplyLines)) {
         return Pagination.getPage(emptyList(), pageable, 0);

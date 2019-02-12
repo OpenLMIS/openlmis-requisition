@@ -1670,8 +1670,6 @@ public class RequisitionServiceTest {
             PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
     when(supplyLineReferenceDataService.search(singleton(facility.getId()), program.getId()))
         .thenReturn(singletonList(supplyLine));
-    when(supplyLineReferenceDataService.search(singleton(facility.getId())))
-        .thenReturn(singletonList(supplyLine));
   }
 
   private void stubRecentRequisition() {
