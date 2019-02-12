@@ -15,19 +15,12 @@
 
 package org.openlmis.requisition.service;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE;
-import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
-import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asApiKey;
-import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asClient;
-import static org.openlmis.requisition.service.OAuth2AuthenticationDataBuilder.asService;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -38,50 +31,32 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
-import org.openlmis.requisition.dto.ResultDto;
-import org.openlmis.requisition.dto.RightDto;
-import org.openlmis.requisition.dto.RoleAssignmentDto;
-import org.openlmis.requisition.dto.RoleDto;
-import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
-import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.testutils.DtoGenerator;
-import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
 public class PermissionServiceTest {
 
   @Mock
-  private UserReferenceDataService userReferenceDataService;
+  private RightAssignmentPermissionValidator rightAssignmentPermissionValidator;
 
   @Mock
-  private RoleReferenceDataService roleReferenceDataService;
-
-  @Mock
-  private AuthenticationHelper authenticationHelper;
+  private RoleAssignmentPermissionValidator roleAssignmentPermissionValidator;
 
   @Mock
   private RequisitionRepository requisitionRepository;
@@ -92,21 +67,6 @@ public class PermissionServiceTest {
   @Mock
   private Requisition requisition;
 
-  private SecurityContext securityContext;
-
-  private UserDto user = DtoGenerator.of(UserDto.class);
-  private RightDto requisitionCreateRight = DtoGenerator.of(RightDto.class, 7).get(0);
-  private RightDto requisitionApproveRight = DtoGenerator.of(RightDto.class, 7).get(1);
-  private RightDto requisitionAuthorizeRight = DtoGenerator.of(RightDto.class, 7).get(2);
-  private RightDto requisitionDeleteRight = DtoGenerator.of(RightDto.class, 7).get(3);
-  private RightDto requisitionViewRight = DtoGenerator.of(RightDto.class, 7).get(4);
-  private RightDto requisitionConvertRight = DtoGenerator.of(RightDto.class, 7).get(5);
-  private RightDto manageRequisitionTemplateRight = DtoGenerator.of(RightDto.class, 7).get(6);
-
-  private OAuth2Authentication trustedClient;
-  private OAuth2Authentication userClient;
-  private OAuth2Authentication apiKeyClient;
-
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
@@ -116,13 +76,6 @@ public class PermissionServiceTest {
 
   @Before
   public void setUp() {
-    securityContext = mock(SecurityContext.class);
-    SecurityContextHolder.setContext(securityContext);
-
-    trustedClient = asService();
-    userClient = asClient("admin");
-    apiKeyClient = asApiKey();
-
     releasableRequisitionDto.setRequisitionId(requisitionId);
     releasableRequisitionDto.setSupplyingDepotId(facilityId);
     releasableDtos.add(releasableRequisitionDto);
@@ -134,348 +87,279 @@ public class PermissionServiceTest {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
     when(requisition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
 
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-    when(authenticationHelper.getCurrentUser()).thenReturn(user);
-
-    when(authenticationHelper.getRight(REQUISITION_CREATE)).thenReturn(requisitionCreateRight);
-    when(authenticationHelper.getRight(REQUISITION_APPROVE)).thenReturn(requisitionApproveRight);
-    when(authenticationHelper.getRight(REQUISITION_AUTHORIZE))
-        .thenReturn(requisitionAuthorizeRight);
-    when(authenticationHelper.getRight(REQUISITION_DELETE)).thenReturn(requisitionDeleteRight);
-    when(authenticationHelper.getRight(REQUISITION_VIEW)).thenReturn(requisitionViewRight);
-    when(authenticationHelper.getRight(ORDERS_EDIT)).thenReturn(
-        requisitionConvertRight);
-    when(authenticationHelper.getRight(REQUISITION_TEMPLATES_MANAGE)).thenReturn(
-        manageRequisitionTemplateRight);
-
     when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
     when(requisitionRepository.findAll(ImmutableSet.of(requisitionId)))
         .thenReturn(Lists.newArrayList(requisition));
-
-    ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
   }
 
   @Test
   public void canInitRequisition() {
-    hasRight(requisitionCreateRight, true);
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canInitRequisition(programId, facilityId));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
   public void cannotInitRequisition() {
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
+
+    // expect
     expectMissingPermission(permissionService.canInitRequisition(programId, facilityId),
         REQUISITION_CREATE);
   }
 
   @Test
   public void canUpdateRequisition() {
-    hasRight(requisitionCreateRight, true);
+    // given
+    hasRole(REQUISITION_CREATE, true);
 
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    given(requisition.getStatus()).willReturn(RequisitionStatus.INITIATED);
 
+    // expect
     expectValidationSucceeds(permissionService.canUpdateRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
   public void cannotUpdateRequisition() {
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    // given
+    hasRole(REQUISITION_CREATE, false);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.INITIATED);
+
+    // expect
     expectMissingPermissionToUpdate(permissionService.canUpdateRequisition(requisition),
         RequisitionStatus.INITIATED, REQUISITION_CREATE);
   }
 
   @Test
   public void canSubmitRequisition() {
-    hasRight(requisitionCreateRight, true);
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canSubmitRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_CREATE, requisitionCreateRight);
   }
 
   @Test
   public void cannotSubmitRequisition() {
+    // given
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
+
+    // expect
     expectMissingPermission(permissionService.canSubmitRequisition(requisition),
         REQUISITION_CREATE);
   }
 
   @Test
-  public void canApproveRequisitionIfUserHasMatchingSupervisorySupervisionRole() {
-    RoleDto role = DtoGenerator.of(RoleDto.class);
-    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
-        .thenReturn(Lists.newArrayList(role));
-    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
-        programId, supervisoryNodeId, null)));
+  public void canApproveRequisitionRequisition() {
+    // given
+    hasRole(REQUISITION_APPROVE, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canApproveRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper,
-        userReferenceDataService, roleReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
-  }
-
-  @Test
-  public void canApproveNonPartnerRequisitionIfUserHasMatchingHomeFacilitySupervisionRole() {
-    RoleDto role = DtoGenerator.of(RoleDto.class);
-    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
-        .thenReturn(Lists.newArrayList(role));
-    user.setHomeFacilityId(facilityId);
-    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
-        programId, null, null)));
-
-    expectValidationSucceeds(permissionService.canApproveRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper,
-        userReferenceDataService, roleReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_APPROVE, requisitionApproveRight);
-  }
-
-  @Test
-  public void cannotApprovePartnerRequisitionIfUserHasMatchingHomeFacilitySupervisionRole() {
-    RoleDto role = DtoGenerator.of(RoleDto.class);
-    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
-        .thenReturn(Lists.newArrayList(role));
-    when(requisition.hasOriginalRequisitionId()).thenReturn(true);
-    user.setHomeFacilityId(facilityId);
-    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
-        programId, null, null)));
-
-    expectMissingPermission(permissionService.canApproveRequisition(requisition),
-        REQUISITION_APPROVE);
   }
 
   @Test
   public void cannotApproveRequisition() {
-    when(roleReferenceDataService.search(requisitionApproveRight.getId()))
-        .thenReturn(Lists.newArrayList());
+    // given
+    hasRole(REQUISITION_APPROVE, false);
 
+    // expect
     expectMissingPermission(permissionService.canApproveRequisition(requisition),
         REQUISITION_APPROVE);
   }
 
   @Test
   public void canAuthorizeRequisition() {
-    hasRight(requisitionAuthorizeRight, true);
+    // given
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canAuthorizeRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_AUTHORIZE, requisitionAuthorizeRight);
   }
 
   @Test
   public void cannotAuthorizeRequisition() {
+    // given
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, false);
+
+    // expect
     expectMissingPermission(permissionService.canAuthorizeRequisition(requisition),
         REQUISITION_AUTHORIZE);
   }
 
   @Test
   public void canDeleteInitiatedRequisitionWhenHasCreateRight() {
-    hasRight(requisitionDeleteRight, true);
-    hasRight(requisitionCreateRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_CREATE, facilityId, programId, true);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.INITIATED);
+
+    // expect
     expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void cannotDeleteInitiatedRequisitionWhenHasNoCreateRight() {
-    hasRight(requisitionDeleteRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.INITIATED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.INITIATED);
+
+    // expect
     expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_CREATE);
   }
 
   @Test
   public void shouldDeleteSkippedRequisitionWhenHasCreateRight() {
-    hasRight(requisitionDeleteRight, true);
-    hasRight(requisitionCreateRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_CREATE, facilityId, programId, true);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SKIPPED);
+
+    // expect
     expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void shouldNotDeleteSkippedRequisitionWhenHasNoCreateRight() {
-    hasRight(requisitionDeleteRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.SKIPPED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_CREATE, facilityId, programId, false);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SKIPPED);
+
+    // expect
     expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_CREATE);
   }
 
   @Test
   public void canDeleteSubmittedRequisitionWhenHasAuthorizeRight() {
-    hasRight(requisitionDeleteRight, true);
-    hasRight(requisitionAuthorizeRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, true);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SUBMITTED);
+
+    // expect
     expectValidationSucceeds(permissionService.canDeleteRequisition(requisition));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_DELETE, requisitionDeleteRight);
   }
 
   @Test
   public void cannotDeleteSubmittedRequisitionWhenHasNoAuthorizeRight() {
-    hasRight(requisitionDeleteRight, true);
-    when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, true);
+    hasRight(REQUISITION_AUTHORIZE, facilityId, programId, false);
 
+    given(requisition.getStatus()).willReturn(RequisitionStatus.SUBMITTED);
+
+    // expect
     expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_AUTHORIZE);
   }
 
   @Test
   public void cannotDeleteRequisitionWhenHasNoDeleteRight() {
+    // given
+    hasRight(REQUISITION_DELETE, facilityId, programId, false);
+
+    // expect
     expectMissingPermission(permissionService.canDeleteRequisition(requisition),
         REQUISITION_DELETE);
   }
 
   @Test
   public void canViewRequisition() {
-    hasRight(requisitionViewRight, true);
+    // given
+    hasRole(REQUISITION_VIEW, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canViewRequisition(requisitionId));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifySupervisionRight(order, REQUISITION_VIEW, requisitionViewRight);
   }
 
   @Test
   public void cannotViewRequisition() {
+    // given
+    hasRole(REQUISITION_VIEW, false);
+
+    // expect
     expectMissingPermission(permissionService.canViewRequisition(requisitionId), REQUISITION_VIEW);
   }
 
   @Test
   public void canConvertToOrder() {
-    hasRight(requisitionConvertRight, true);
+    // given
+    hasRight(ORDERS_EDIT, facilityId, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canConvertToOrder(releasableDtos));
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, requisitionConvertRight);
   }
 
   @Test
   public void cannotConvertToOrder() {
+    // given
+    hasRight(ORDERS_EDIT, facilityId, false);
+
+    // expect
     expectMissingPermission(permissionService.canConvertToOrder(releasableDtos), ORDERS_EDIT);
   }
 
   @Test
   public void canManageRequisitionTemplate() {
-    hasRight(manageRequisitionTemplateRight, true);
+    // given
+    hasRight(REQUISITION_TEMPLATES_MANAGE, true);
 
+    // expect
     expectValidationSucceeds(permissionService.canManageRequisitionTemplate());
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyGeneralAdminRight(order, REQUISITION_TEMPLATES_MANAGE, manageRequisitionTemplateRight);
   }
 
   @Test
   public void cannotManageRequisitionTemplate() {
+    // given
+    hasRight(REQUISITION_TEMPLATES_MANAGE, false);
+
+    // expect
     expectMissingPermission(permissionService.canManageRequisitionTemplate(),
         REQUISITION_TEMPLATES_MANAGE);
   }
 
-  @Test
-  public void serviceLevelTokensShouldHaveAllThePermissions() {
-    when(securityContext.getAuthentication()).thenReturn(trustedClient);
-
-    // Requisition permissions
-    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(true));
-    assertThat(
-        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
-        is(true)
-    );
-    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(true));
-    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(true));
-    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(true));
-
-    // Report permissions
-    assertThat(permissionService.canViewReports().isSuccess(), is(true));
-    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(true));
-    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(true));
+  private void hasRight(String rightName, boolean hasRight) {
+    given(rightAssignmentPermissionValidator
+        .hasPermission(new RightAssignmentPermissionValidationDetails(rightName)))
+        .willReturn(getValidationResult(rightName, hasRight));
   }
 
-  @Test
-  public void serviceLevelTokensShouldNotHaveAnyPermissionIfIdsDoesNotMatch() {
-    when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
-
-    assertThat(
-        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
-        is(false)
-    );
-
-    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
-    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(false));
-
-    // Report permissions
-    assertThat(permissionService.canViewReports().isSuccess(), is(false));
-    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(false));
-    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(false));
+  private void hasRight(String rightName, UUID facilityId, UUID programId, boolean hasRight) {
+    given(rightAssignmentPermissionValidator
+        .hasPermission(new RightAssignmentPermissionValidationDetails(
+            rightName, facilityId, programId)))
+        .willReturn(getValidationResult(rightName, hasRight));
   }
 
-  @Test
-  public void apiKeyTokensShouldNotHaveAllThePermissions() {
-    when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
-
-    // Requisition permissions
-    assertThat(permissionService.canViewRequisition(requisitionId).isSuccess(), is(false));
-    assertThat(
-        permissionService.canInitOrAuthorizeRequisition(programId, facilityId).isSuccess(),
-        is(false)
-    );
-    assertThat(permissionService.canInitRequisition(programId, facilityId).isSuccess(), is(false));
-    assertThat(permissionService.canApproveRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canAuthorizeRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canDeleteRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canSubmitRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canUpdateRequisition(requisition).isSuccess(), is(false));
-    assertThat(permissionService.canConvertToOrder(releasableDtos).isSuccess(), is(false));
-
-    // Report permissions
-    assertThat(permissionService.canViewReports().isSuccess(), is(false));
-    assertThat(permissionService.canEditReportTemplates().isSuccess(), is(false));
-    assertThat(permissionService.canManageRequisitionTemplate().isSuccess(), is(false));
+  private void hasRight(String rightName, UUID warehouseId, boolean hasRight) {
+    given(rightAssignmentPermissionValidator
+        .hasPermission(new RightAssignmentPermissionValidationDetails(rightName, warehouseId)))
+        .willReturn(getValidationResult(rightName, hasRight));
   }
-  
-  private void hasRight(RightDto right, boolean assign) {
-    ResultDto<Boolean> resultDto = new ResultDto<>(assign);
 
-    when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), programId, facilityId, null))
-        .thenReturn(resultDto);
-    when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), null, null, facilityId))
-        .thenReturn(resultDto);
-    when(userReferenceDataService
-        .hasRight(user.getId(), right.getId(), null, null, null))
-        .thenReturn(resultDto);
+  private void hasRole(String rightName, boolean hasRight) {
+    given(roleAssignmentPermissionValidator
+        .hasPermission(new RoleAssignmentPermissionValidationDetails(rightName, requisition)))
+        .willReturn(getValidationResult(rightName, hasRight));
+  }
+
+  private ValidationResult getValidationResult(String rightName, boolean success) {
+    return success
+        ? ValidationResult.success()
+        : ValidationResult.noPermission(ERROR_NO_FOLLOWING_PERMISSION, rightName);
   }
 
   private void expectValidationSucceeds(ValidationResult validationResult) {
@@ -495,32 +379,6 @@ public class PermissionServiceTest {
     assertEquals(FailureType.NO_PERMISSION, result.getError().getType());
     assertEquals(new Message(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
         status.toString(), rightName), result.getError().getMessage());
-  }
-
-  private void verifySupervisionRight(InOrder order, String rightName, RightDto right) {
-    order.verify(authenticationHelper).getCurrentUser();
-    order.verify(authenticationHelper).getRight(rightName);
-
-    if (REQUISITION_APPROVE.equalsIgnoreCase(rightName)) {
-      order.verify(roleReferenceDataService).search(right.getId());
-    } else {
-      order
-          .verify(userReferenceDataService)
-          .hasRight(user.getId(), right.getId(), programId, facilityId, null);
-    }
-  }
-
-  private void verifyFulfillmentRight(InOrder order, String rightName, RightDto right) {
-    order.verify(authenticationHelper).getCurrentUser();
-    order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(user.getId(), right.getId(), null, null,
-        facilityId);
-  }
-
-  private void verifyGeneralAdminRight(InOrder order, String rightName, RightDto right) {
-    order.verify(authenticationHelper).getCurrentUser();
-    order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(user.getId(), right.getId(), null, null, null);
   }
 
 }
