@@ -368,9 +368,9 @@ public class RequisitionService {
           .stream()
           .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
           .filter(item -> Objects.nonNull(item.getProgramId()))
-          .filter(item -> Objects.nonNull(params.getProgram())
+          .filter(item -> Objects.isNull(params.getProgram())
               || Objects.equals(params.getProgram(), item.getProgramId()))
-          .filter(item -> Objects.nonNull(params.getSupervisoryNode())
+          .filter(item -> Objects.isNull(params.getSupervisoryNode())
               || Objects.equals(params.getSupervisoryNode(), item.getSupervisoryNodeId()))
           .map(item -> Pair.of(item.getProgramId(), item.getSupervisoryNodeId()))
           .collect(toSet());
