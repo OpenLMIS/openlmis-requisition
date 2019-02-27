@@ -64,6 +64,7 @@ import org.openlmis.requisition.utils.Message;
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class ApprovalNotifierTest {
+
   public static final String TEST_KEY = "testKey";
   private static final String APPROVER_1 = "approver1";
 
@@ -125,8 +126,9 @@ public class ApprovalNotifierTest {
 
     approvalNotifier.notifyApprovers(requisition);
 
-    verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
-        + "This email is informing you that the test requisition"));
+    verify(notificationService).notify(refEq(approver), eq(SUBJECT),
+        contains("Dear approver: This email is informing you that the test requisition"),
+        eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -142,8 +144,9 @@ public class ApprovalNotifierTest {
 
     approvalNotifier.notifyApprovers(requisition);
 
-    verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
-        + "This email is informing you that the emergency requisition"));
+    verify(notificationService).notify(refEq(approver), eq(SUBJECT),
+        contains("Dear approver: This email is informing you that the emergency requisition"),
+        eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -163,7 +166,8 @@ public class ApprovalNotifierTest {
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 
     verify(notificationService, times(2))
-        .notify(any(UserDto.class), eq(SUBJECT), argument.capture());
+        .notify(any(UserDto.class), eq(SUBJECT), argument.capture(),
+            eq(ApprovalNotifier.NOTIFICATION_TAG));
 
     List<String> values = argument.getAllValues();
 
@@ -183,7 +187,7 @@ public class ApprovalNotifierTest {
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0))
-        .notify(any(UserDto.class), any(), any());
+        .notify(any(UserDto.class), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -199,7 +203,7 @@ public class ApprovalNotifierTest {
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0))
-        .notify(any(UserDto.class), any(), any());
+        .notify(any(UserDto.class), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   private void mockChangeDate() {

@@ -88,7 +88,8 @@ public class ConvertToOrderNotifierTest {
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
-        eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT));
+        eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT),
+        eq(ConvertToOrderNotifier.NOTIFICATION_TAG));
   }
 
   private void mockServices() {

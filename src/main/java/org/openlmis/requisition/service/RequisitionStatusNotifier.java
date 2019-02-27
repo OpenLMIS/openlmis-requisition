@@ -49,6 +49,7 @@ import org.springframework.stereotype.Component;
 public class RequisitionStatusNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequisitionStatusNotifier.class);
+  static final String NOTIFICATION_TAG = "requisition-statusUpdate";
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -115,7 +116,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
     content = sub.replace(content);
 
-    notificationService.notify(initiator, subject, content);
+    notificationService.notify(initiator, subject, content, NOTIFICATION_TAG);
   }
 
   private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {

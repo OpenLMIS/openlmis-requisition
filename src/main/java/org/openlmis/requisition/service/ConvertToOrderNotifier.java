@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 public class ConvertToOrderNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConvertToOrderNotifier.class);
+  static final String NOTIFICATION_TAG = "requisition-convertToOrder";
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -85,6 +86,6 @@ public class ConvertToOrderNotifier extends BaseNotifier {
             initiator.getLastName(), program.getName(), period.getName()))
         .asMessage();
 
-    notificationService.notify(initiator, subject, content);
+    notificationService.notify(initiator, subject, content, NOTIFICATION_TAG);
   }
 }

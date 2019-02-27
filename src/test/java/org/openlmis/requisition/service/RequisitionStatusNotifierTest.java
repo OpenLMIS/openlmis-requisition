@@ -113,7 +113,8 @@ public class RequisitionStatusNotifierTest {
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT),
-        eq(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT));
+        eq(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT),
+        eq(RequisitionStatusNotifier.NOTIFICATION_TAG));
   }
 
   private void mockServices() {

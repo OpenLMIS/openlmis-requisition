@@ -51,10 +51,10 @@ public class NotificationService {
    * @param content content of the email
    * @return true if success, false if failed.
    */
-  public boolean notify(UserDto user, String subject, String content) {
+  public boolean notify(UserDto user, String subject, String content, String tag) {
     String url = notificationUrl + "/api/notifications";
 
-    NotificationDto request = buildNotification(user, subject, content);
+    NotificationDto request = buildNotification(user, subject, content, tag);
 
     try {
       restTemplate.postForObject(
@@ -75,9 +75,10 @@ public class NotificationService {
     this.restTemplate = restTemplate;
   }
 
-  private NotificationDto buildNotification(UserDto user, String subject, String content) {
+  private NotificationDto buildNotification(UserDto user, String subject,
+      String content, String tag) {
     Map<String, MessageDto> messages = new HashMap<>();
-    messages.put(EMAIL.toString(), new MessageDto(subject, content));
+    messages.put(EMAIL.toString(), new MessageDto(subject, content, tag));
 
     return new NotificationDto(user.getId(), messages);
   }

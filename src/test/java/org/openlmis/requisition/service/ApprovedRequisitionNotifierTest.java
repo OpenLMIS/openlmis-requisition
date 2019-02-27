@@ -128,20 +128,21 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, times(1))
-        .notify(eq(clerkOne), any(), any());
+        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any());
+        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any());
+        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any());
+        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
   public void notifyClerkShouldNotifyWithCorrectSubject() {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
-    verify(notificationService, times(4)).notify(any(), eq(SUBJECT), any());
+    verify(notificationService, times(4))
+        .notify(any(), eq(SUBJECT), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -156,7 +157,8 @@ public class ApprovedRequisitionNotifierTest {
 
     approvedRequisitionNotifier.notifyClerks(requisition);
 
-    verify(notificationService).notify(eq(clerkOne), any(), eq(expectedContent));
+    verify(notificationService).notify(eq(clerkOne), any(),
+        eq(expectedContent), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -166,13 +168,13 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any());
+        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any());
+        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any());
+        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any());
+        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -182,13 +184,13 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any());
+        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any());
+        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any());
+        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any());
+        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -198,13 +200,13 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any());
+        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any());
+        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any());
+        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any());
+        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   private void mockServices() {

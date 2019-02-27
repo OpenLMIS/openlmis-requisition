@@ -51,6 +51,7 @@ import org.springframework.stereotype.Component;
 public class ApprovalNotifier extends BaseNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ApprovalNotifier.class);
+  static final String NOTIFICATION_TAG = "requisition-actionRequired";
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -116,7 +117,8 @@ public class ApprovalNotifier extends BaseNotifier {
 
     for (UserDto approver : approvers) {
       valuesMap.put("approver", approver.getUsername());
-      notificationService.notify(approver, subject, sub.replace(content));
+      notificationService.notify(approver, subject,
+          sub.replace(content), NOTIFICATION_TAG);
     }
   }
 

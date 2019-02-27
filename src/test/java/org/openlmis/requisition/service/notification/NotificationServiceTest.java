@@ -42,6 +42,7 @@ public class NotificationServiceTest {
   private static final String ACCESS_TOKEN = "token";
   private static final String MAIL_SUBJECT = "subject";
   private static final String MAIL_CONTENT = "content";
+  private static final String MAIL_TAG = "tag";
   private static final String BASE_URL = "http://localhost";
 
   @Mock
@@ -65,7 +66,7 @@ public class NotificationServiceTest {
   public void shouldNotifyUser() throws Exception {
     UserDto user = DtoGenerator.of(UserDto.class);
 
-    notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT);
+    notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT, MAIL_TAG);
 
     ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
 

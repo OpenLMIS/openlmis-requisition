@@ -47,6 +47,7 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
 
   private static final String CONVERT_TO_ORDER_URL = System.getenv("BASE_URL")
       + "/#!/requisitions/convertToOrder";
+  static final String NOTIFICATION_TAG = "requisition-requisitionApproved";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -89,7 +90,8 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
 
     for (UserDto user : getClerks(requisition)) {
       messageParams.put("user", user.getUsername());
-      notificationService.notify(user, subject, new StrSubstitutor(messageParams).replace(content));
+      notificationService.notify(user, subject,
+          new StrSubstitutor(messageParams).replace(content), NOTIFICATION_TAG);
     }
   }
 
