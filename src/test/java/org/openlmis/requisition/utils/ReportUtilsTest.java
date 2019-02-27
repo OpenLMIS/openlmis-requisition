@@ -22,8 +22,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REMARKS_COLUMN;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +45,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.context.i18n.LocaleContextHolder;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ReportUtilsTest {
 
   private static final int FIELD_ONE_WIDTH = 10;
@@ -111,7 +115,7 @@ public class ReportUtilsTest {
     Map<String, RequisitionTemplateColumn> map = new HashMap<>();
     RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
     stubDisplay(column, 1);
-    map.put("skipped", column);
+    map.put(SKIPPED_COLUMN, column);
 
     // when
     Map<String, RequisitionTemplateColumn> result =
@@ -127,7 +131,7 @@ public class ReportUtilsTest {
     Map<String, RequisitionTemplateColumn> map = new HashMap<>();
     RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
     stubDisplay(column, 1);
-    map.put("approvedQuantity", column);
+    map.put(APPROVED_QUANTITY, column);
 
     // when
     Map<String, RequisitionTemplateColumn> result =
@@ -143,11 +147,43 @@ public class ReportUtilsTest {
     Map<String, RequisitionTemplateColumn> map = new HashMap<>();
     RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
     stubDisplay(column, 1);
-    map.put("approvedQuantity", column);
+    map.put(APPROVED_QUANTITY, column);
 
     // when
     Map<String, RequisitionTemplateColumn> result =
         ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.AUTHORIZED);
+
+    // then
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  public void shouldFilterOutRemarksColumnIfStatusIsPreAuthorize() {
+    // given
+    Map<String, RequisitionTemplateColumn> map = new HashMap<>();
+    RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
+    stubDisplay(column, 1);
+    map.put(REMARKS_COLUMN, column);
+
+    // when
+    Map<String, RequisitionTemplateColumn> result =
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.INITIATED);
+
+    // then
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void shouldIncludeRemarksColumnIfStatusIsPostAuthorized() {
+    // given
+    Map<String, RequisitionTemplateColumn> map = new HashMap<>();
+    RequisitionTemplateColumn column = mock(RequisitionTemplateColumn.class);
+    stubDisplay(column, 1);
+    map.put(REMARKS_COLUMN, column);
+
+    // when
+    Map<String, RequisitionTemplateColumn> result =
+        ReportUtils.getSortedTemplateColumnsForPrint(map, RequisitionStatus.APPROVED);
 
     // then
     assertEquals(1, result.size());

@@ -17,6 +17,9 @@ package org.openlmis.requisition.utils;
 
 import static net.sf.jasperreports.engine.JRParameter.REPORT_LOCALE;
 import static net.sf.jasperreports.engine.JRParameter.REPORT_RESOURCE_BUNDLE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REMARKS_COLUMN;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -66,9 +69,10 @@ public final class ReportUtils {
     List<Map.Entry<String, RequisitionTemplateColumn>> sorted = map
         .entrySet()
         .stream()
-        .filter(ent -> !"skipped".equals(ent.getKey()))
+        .filter(ent -> !SKIPPED_COLUMN.equals(ent.getKey()))
         .filter(ent -> ent.getValue().getIsDisplayed())
-        .filter(ent -> !"approvedQuantity".equals(ent.getKey())
+        .filter(ent -> !APPROVED_QUANTITY.equals(ent.getKey())
+            && !REMARKS_COLUMN.equals(ent.getKey())
             || requisitionStatus.isAuthorized())
         .sorted(Comparator.comparingInt(ent -> ent.getValue().getDisplayOrder()))
         .collect(Collectors.toList());

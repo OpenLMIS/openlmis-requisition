@@ -24,6 +24,7 @@ Bug fixes:
 * [OLMIS-5888](https://openlmis.atlassian.net/browse/OLMIS-5888): The calc order qty isa column is now visible in the requisition print again.
 * [OLMIS-5886](https://openlmis.atlassian.net/browse/OLMIS-5886): Show `Additional Quantity Required` column in requisition print
 * [OLMIS-5885](https://openlmis.atlassian.net/browse/OLMIS-5885): The ideal stock amount column is now visible in the requisition print again.
+* [OLMIS-5963](https://openlmis.atlassian.net/browse/OLMIS-5963): The remarks column in requisition print is now only visible if requisition is at least AUTHORIZED.
 
 7.1.0 / 2018-12-12
 ==================
