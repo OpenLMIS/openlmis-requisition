@@ -19,11 +19,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SupplyLineReferenceDataService extends BaseReferenceDataService<SupplyLineDto> {
+
+  private static final String SUPPLY_LINES_EXPAND = "SUPPLY_LINES_EXPAND";
+
+  @Autowired
+  private TogglzReferenceDataService togglzReferenceDataService;
 
   @Override
   protected String getUrl() {
@@ -73,6 +80,19 @@ public class SupplyLineReferenceDataService extends BaseReferenceDataService<Sup
   }
 
   private List<SupplyLineDto> search(RequestParameters parameters) {
+    if (isFeatureActive()) {
+      return getPage("/v2", parameters).getContent();
+    }
     return getPage(parameters).getContent();
+  }
+
+  private boolean isFeatureActive() {
+    return togglzReferenceDataService
+        .findAll()
+        .stream()
+        .filter(feature -> SUPPLY_LINES_EXPAND.equals(feature.getName()))
+        .findFirst()
+        .map(TogglzFeatureDto::isEnabled)
+        .orElse(false);
   }
 }
