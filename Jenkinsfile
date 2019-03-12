@@ -231,9 +231,6 @@ pipeline {
                 }
             }
         }
-        always {
-            cleanWs notFailBuild: true
-        }
     }
 }
 
