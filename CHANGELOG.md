@@ -13,6 +13,7 @@ Improvements:
 * [OLMIS-5000](https://openlmis.atlassian.net/browse/OLMIS-5000): Refactored /requisitionsForConvert endpoint to improve its performance.
 * [OLMIS-5909](https://openlmis.atlassian.net/browse/OLMIS-5909): Adjusted permission checks in the service
   *  a user without correct permission strings but with correct role assignments will be able to go through requisition workflow and find correct requisitions by the search endpoint.
+* [OLMIS-4531](https://openlmis.atlassian.net/browse/OLMIS-4531): Added compressing HTTP POST responses.
 
 Bug fixes:
 * [OLMIS-5847](https://openlmis.atlassian.net/browse/OLMIS-5847): Made that requisition template names are case insensitive unique.
