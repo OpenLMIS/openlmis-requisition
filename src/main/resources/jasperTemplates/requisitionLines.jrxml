@@ -876,7 +876,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("idealStockAmount").getIsDisplayed() && $F{idealStockAmount} != null ? $P{decimalFormat}.format($F{idealStockAmount}).toString() : 0.0]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("idealStockAmount").getIsDisplayed() && $F{idealStockAmount} != null ? $P{decimalFormat}.format($F{idealStockAmount}).toString() :  null]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
