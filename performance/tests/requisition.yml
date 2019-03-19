@@ -1,276 +1,276 @@
-#execution:
+execution:
 #  - concurrency: 1
 #    iterations: 10
 #    scenario: requisition-workflow
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: search-one-page
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: get-requisitions-for-approval
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: get-requisitions-for-convert
-#
-#scenarios:
-#  get-period-for-initiate:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/periodsForInitiate?programId=${program_id}&facilityId=${facility_id}&emergency=${emergency}
-#        method: GET
-#        label: GetPeriodsForInitiate
-#        headers:
-#          Authorization: Bearer ${access_token}
-#        extract-jsonpath:
-#          periods_count:
-#            jsonpath: $.size()
-#          period_id:
-#            jsonpath: $.[:1]id
-#        jsr223:
-#          script-text: |
-#            def count = vars.get("periods_count");
-#
-#            if (count.toInteger() > 0) {
-#              def uuid = vars.get("period_id");
-#              uuid = uuid.replaceAll(/"|\[|\]/, "");
-#
-#              vars.put("period_id", uuid);
-#            }
-#      - if: '${periods_count} == 0'
-#        then:
-#          - url: ${__P(base-uri)}/api/processingPeriods/?processingScheduleId=${schedule_id}
-#            method: GET
-#            label: GetPeriodsByScheduleId
-#            headers:
-#              Authorization: Bearer ${access_token}
-#            jsr223:
-#              script-text: |
-#                import groovy.json.JsonSlurper;
-#                import groovy.json.JsonOutput;
-#                import java.text.SimpleDateFormat;
-#                import java.util.Locale;
-#                import java.util.UUID;
-#                import java.util.Random;
-#
-#                def dateFormat = "yyyy-MM-dd";
-#                def random = new Random();
-#
-#                def response = prev.getResponseDataAsString();
-#
-#                def jsonSlurper = new JsonSlurper();
-#                def periods = jsonSlurper.parseText(response);
-#
-#                def last = periods.last();
-#
-#                def endDate = new SimpleDateFormat(dateFormat, Locale.ENGLISH).parse(last.endDate);
-#                def periodDuration = last.durationInMonths * 30;
-#
-#                def newStartDate = endDate + 1;
-#                def newEndDate = newStartDate + periodDuration;
-#
-#                last.id = UUID.randomUUID().toString();
-#                last.startDate = newStartDate.format(dateFormat);
-#                last.endDate = newEndDate.format(dateFormat);
-#                last.name = last.name + (random.nextInt(1000000) + 1);
-#
-#                vars.put("new_period_id", last.id);
-#                vars.put("new_period", JsonOutput.toJson(last));
-#          - url: ${__P(base-uri)}/api/processingPeriods/${new_period_id}
-#            method: PUT
-#            label: CreateProcessingPeriod
-#            headers:
-#              Authorization: Bearer ${access_token}
-#              Content-Type: application/json
-#            body: ${new_period}
-#            extract-jsonpath:
-#              period_id:
-#                jsonpath: $.id
-#            jsr223:
-#              script-text: |
-#                def uuid = vars.get("period_id");
-#                uuid = uuid.replaceAll(/"|\[|\]/, "");
-#
-#                vars.put("period_id", uuid);
-#  initiate-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/initiate?program=${program_id}&facility=${facility_id}&suggestedPeriod=${period_id}&emergency=${emergency}
-#        method: POST
-#        label: InitiateRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#        extract-jsonpath:
-#          requisition_id:
-#            jsonpath: $.id
-#        jsr223:
-#          script-text: |
-#            String uuid = vars.get("requisition_id");
-#            uuid = uuid.replaceAll(/"|\[|\]/, "");
-#            vars.put("requisition_id", uuid);
-#  update-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
-#        method: GET
-#        label: GetRequisitionToUpdate
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#        jsr223:
-#          script-text: |
-#            import groovy.json.JsonSlurper;
-#            import groovy.json.JsonOutput;
-#
-#            def response = prev.getResponseDataAsString();
-#
-#            def jsonSlurper = new JsonSlurper();
-#            def requisition = jsonSlurper.parseText(response);
-#
-#            requisition.datePhysicalStockCountCompleted = new Date().format('yyyy-MM-dd');
-#
-#            requisition.requisitionLineItems.eachWithIndex { line, index ->
-#              line.skipped = false;
-#              line.beginningBalance = (index + 1) * 10;
-#              line.totalConsumedQuantity = line.beginningBalance / 2;
-#              line.totalReceivedQuantity = line.beginningBalance / 5;
-#              line.requestedQuantity = line.beginningBalance * 2;
-#              line.requestedQuantityExplanation = "we need more";
-#              line.totalStockoutDays = 0;
-#            }
-#
-#            vars.put("requisition", JsonOutput.toJson(requisition));
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
-#        method: PUT
-#        label: UpdateRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#        body: ${requisition}
-#  submit-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/submit
-#        method: POST
-#        label: SubmitRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#  authorize-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/authorize
-#        method: POST
-#        label: AuthorizeRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#  reject-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/reject
-#        method: PUT
-#        label: RejectRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#  approve-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/approve
-#        method: POST
-#        label: ApproveRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#  get-supplying-depot:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?programId={program_id}&facilityId={facility_id}
-#        method: GET
-#        label: GetSupplyingDepotForFacility
-#        headers:
-#          Authorization: Bearer ${access_token}
-#        jsr223:
-#          script-text: |
-#            import groovy.json.JsonSlurper;
-#
-#            def requisitionId = vars.get("requisition_id");
-#            def response = prev.getResponseDataAsString();
-#
-#            def jsonSlurper = new JsonSlurper();
-#            def page = jsonSlurper.parseText(response);
-#
-#            def found = page.content.find { elem ->
-#              return requisitionId.equals(elem.requisition.id);
-#            }
-#
-#            def depotId = found.supplyingDepots.first().id;
-#
-#            def form = "{\"createOrder\": true, \"requisitionsToRelease\": [{ \"requisitionId\": \"" + requisitionId + "\", \"supplyingDepotId\": \"" + depotId + "\"}]}";
-#
-#            vars.put("convert_form", form);
-#  convert-to-order:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/batchReleases
-#        method: POST
-#        label: ConvertRequisitionToOrder
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#        body: ${convert_form}
-#  delete-requisition:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
-#        method: DELETE
-#        label: DeleteRequisition
-#        headers:
-#          Authorization: Bearer ${access_token}
-#  requisition-workflow:
-#    variables:
-#      # Family Planning
-#      program_id: dce17f2e-af3e-40ad-8e00-3496adef44c3
-#      # Nandumbo Health Center
-#      facility_id: 176c4276-1fb1-4507-8ad2-cdfba0f47445
-#      facility_code: HC02
-#      emergency: false
-#      # SCH001
-#      schedule_id: 9c15bd6e-3f6b-4b91-b53a-36c199d35eac
-#    requests:
-#      - include-scenario: get-user-token
-#      - include-scenario: get-period-for-initiate
-#      - include-scenario: initiate-requisition
-#      - include-scenario: delete-requisition
-#      - include-scenario: initiate-requisition
-#      - include-scenario: update-requisition
-#      - include-scenario: submit-requisition
-#      - include-scenario: authorize-requisition
-#      - include-scenario: reject-requisition
-#      - include-scenario: submit-requisition
-#      - include-scenario: authorize-requisition
-#      - include-scenario: approve-requisition
-#      - include-scenario: get-supplying-depot
-#      - include-scenario: convert-to-order
-#  search-one-page:
-#    requests:
-#      - include-scenario: get-user-token
-#      - url: ${__P(base-uri)}/api/requisitions/search?page=0&size=10
-#        method: GET
-#        label: GetAPageOfTenRequisitions
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#  get-requisitions-for-approval:
-#    requests:
-#      - include-scenario: get-user-token
-#      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval?page=0&size=10
-#        method: GET
-#        label: GetAPageOfTenRequisitionsForApproval
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#  get-requisitions-for-convert:
-#      requests:
-#        - include-scenario: get-user-token
-#        - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?page=0&size=10
-#          method: GET
-#          label: GetAPageOfTenRequisitionsForConvert
-#          headers:
-#            Authorization: Bearer ${access_token}
-#            Content-Type: application/json
-#
-#reporting:
-#    - module: passfail
-#      criteria:
-#        90% of get requisition for convert fail to get in 50000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
+  - concurrency: 1
+    hold-for: 2m
+    scenario: search-one-page
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-requisitions-for-approval
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-requisitions-for-convert
+
+scenarios:
+  get-period-for-initiate:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/periodsForInitiate?programId=${program_id}&facilityId=${facility_id}&emergency=${emergency}
+        method: GET
+        label: GetPeriodsForInitiate
+        headers:
+          Authorization: Bearer ${access_token}
+        extract-jsonpath:
+          periods_count:
+            jsonpath: $.size()
+          period_id:
+            jsonpath: $.[:1]id
+        jsr223:
+          script-text: |
+            def count = vars.get("periods_count");
+
+            if (count.toInteger() > 0) {
+              def uuid = vars.get("period_id");
+              uuid = uuid.replaceAll(/"|\[|\]/, "");
+
+              vars.put("period_id", uuid);
+            }
+      - if: '${periods_count} == 0'
+        then:
+          - url: ${__P(base-uri)}/api/processingPeriods/?processingScheduleId=${schedule_id}
+            method: GET
+            label: GetPeriodsByScheduleId
+            headers:
+              Authorization: Bearer ${access_token}
+            jsr223:
+              script-text: |
+                import groovy.json.JsonSlurper;
+                import groovy.json.JsonOutput;
+                import java.text.SimpleDateFormat;
+                import java.util.Locale;
+                import java.util.UUID;
+                import java.util.Random;
+
+                def dateFormat = "yyyy-MM-dd";
+                def random = new Random();
+
+                def response = prev.getResponseDataAsString();
+
+                def jsonSlurper = new JsonSlurper();
+                def periods = jsonSlurper.parseText(response);
+
+                def last = periods.last();
+
+                def endDate = new SimpleDateFormat(dateFormat, Locale.ENGLISH).parse(last.endDate);
+                def periodDuration = last.durationInMonths * 30;
+
+                def newStartDate = endDate + 1;
+                def newEndDate = newStartDate + periodDuration;
+
+                last.id = UUID.randomUUID().toString();
+                last.startDate = newStartDate.format(dateFormat);
+                last.endDate = newEndDate.format(dateFormat);
+                last.name = last.name + (random.nextInt(1000000) + 1);
+
+                vars.put("new_period_id", last.id);
+                vars.put("new_period", JsonOutput.toJson(last));
+          - url: ${__P(base-uri)}/api/processingPeriods/${new_period_id}
+            method: PUT
+            label: CreateProcessingPeriod
+            headers:
+              Authorization: Bearer ${access_token}
+              Content-Type: application/json
+            body: ${new_period}
+            extract-jsonpath:
+              period_id:
+                jsonpath: $.id
+            jsr223:
+              script-text: |
+                def uuid = vars.get("period_id");
+                uuid = uuid.replaceAll(/"|\[|\]/, "");
+
+                vars.put("period_id", uuid);
+  initiate-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/initiate?program=${program_id}&facility=${facility_id}&suggestedPeriod=${period_id}&emergency=${emergency}
+        method: POST
+        label: InitiateRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        extract-jsonpath:
+          requisition_id:
+            jsonpath: $.id
+        jsr223:
+          script-text: |
+            String uuid = vars.get("requisition_id");
+            uuid = uuid.replaceAll(/"|\[|\]/, "");
+            vars.put("requisition_id", uuid);
+  update-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
+        method: GET
+        label: GetRequisitionToUpdate
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          script-text: |
+            import groovy.json.JsonSlurper;
+            import groovy.json.JsonOutput;
+
+            def response = prev.getResponseDataAsString();
+
+            def jsonSlurper = new JsonSlurper();
+            def requisition = jsonSlurper.parseText(response);
+
+            requisition.datePhysicalStockCountCompleted = new Date().format('yyyy-MM-dd');
+
+            requisition.requisitionLineItems.eachWithIndex { line, index ->
+              line.skipped = false;
+              line.beginningBalance = (index + 1) * 10;
+              line.totalConsumedQuantity = line.beginningBalance / 2;
+              line.totalReceivedQuantity = line.beginningBalance / 5;
+              line.requestedQuantity = line.beginningBalance * 2;
+              line.requestedQuantityExplanation = "we need more";
+              line.totalStockoutDays = 0;
+            }
+
+            vars.put("requisition", JsonOutput.toJson(requisition));
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
+        method: PUT
+        label: UpdateRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        body: ${requisition}
+  submit-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/submit
+        method: POST
+        label: SubmitRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  authorize-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/authorize
+        method: POST
+        label: AuthorizeRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  reject-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/reject
+        method: PUT
+        label: RejectRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  approve-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/approve
+        method: POST
+        label: ApproveRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  get-supplying-depot:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?programId={program_id}&facilityId={facility_id}
+        method: GET
+        label: GetSupplyingDepotForFacility
+        headers:
+          Authorization: Bearer ${access_token}
+        jsr223:
+          script-text: |
+            import groovy.json.JsonSlurper;
+
+            def requisitionId = vars.get("requisition_id");
+            def response = prev.getResponseDataAsString();
+
+            def jsonSlurper = new JsonSlurper();
+            def page = jsonSlurper.parseText(response);
+
+            def found = page.content.find { elem ->
+              return requisitionId.equals(elem.requisition.id);
+            }
+
+            def depotId = found.supplyingDepots.first().id;
+
+            def form = "{\"createOrder\": true, \"requisitionsToRelease\": [{ \"requisitionId\": \"" + requisitionId + "\", \"supplyingDepotId\": \"" + depotId + "\"}]}";
+
+            vars.put("convert_form", form);
+  convert-to-order:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/batchReleases
+        method: POST
+        label: ConvertRequisitionToOrder
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        body: ${convert_form}
+  delete-requisition:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
+        method: DELETE
+        label: DeleteRequisition
+        headers:
+          Authorization: Bearer ${access_token}
+  requisition-workflow:
+    variables:
+      # Family Planning
+      program_id: dce17f2e-af3e-40ad-8e00-3496adef44c3
+      # Nandumbo Health Center
+      facility_id: 176c4276-1fb1-4507-8ad2-cdfba0f47445
+      facility_code: HC02
+      emergency: false
+      # SCH001
+      schedule_id: 9c15bd6e-3f6b-4b91-b53a-36c199d35eac
+    requests:
+      - include-scenario: get-user-token
+      - include-scenario: get-period-for-initiate
+      - include-scenario: initiate-requisition
+      - include-scenario: delete-requisition
+      - include-scenario: initiate-requisition
+      - include-scenario: update-requisition
+      - include-scenario: submit-requisition
+      - include-scenario: authorize-requisition
+      - include-scenario: reject-requisition
+      - include-scenario: submit-requisition
+      - include-scenario: authorize-requisition
+      - include-scenario: approve-requisition
+      - include-scenario: get-supplying-depot
+      - include-scenario: convert-to-order
+  search-one-page:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/requisitions/search?page=0&size=10
+        method: GET
+        label: GetAPageOfTenRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+  get-requisitions-for-approval:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval?page=0&size=10
+        method: GET
+        label: GetAPageOfTenRequisitionsForApproval
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+  get-requisitions-for-convert:
+      requests:
+        - include-scenario: get-user-token
+        - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?page=0&size=10
+          method: GET
+          label: GetAPageOfTenRequisitionsForConvert
+          headers:
+            Authorization: Bearer ${access_token}
+            Content-Type: application/json
+
+reporting:
+    - module: passfail
+      criteria:
+        90% of get requisition for convert fail to get in 50000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
 #        90% of get periods for initiate fail to get in 7000 milliseconds: p90 of GetPeriodsForInitiate>7000ms
 #        90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
 #        90% of get requisition to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
