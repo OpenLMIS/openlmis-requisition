@@ -18,37 +18,20 @@ package org.openlmis.requisition.service.referencedata;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.BDDMockito.given;
 
-import com.google.common.collect.Lists;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.SupplyLineDto;
-import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SupplyLineReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<SupplyLineDto> {
 
-  private static final String PROGRAM_ID = "programId";
-  private static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
-
-  @Mock
-  private TogglzReferenceDataService togglzReferenceDataService;
-
-  private TogglzFeatureDto featureFlag;
-
-  @InjectMocks
   private SupplyLineReferenceDataService service;
 
   @Override
@@ -58,7 +41,7 @@ public class SupplyLineReferenceDataServiceTest
 
   @Override
   protected BaseCommunicationService<SupplyLineDto> getService() {
-    return service;
+    return new SupplyLineReferenceDataService();
   }
 
   @Override
@@ -66,13 +49,6 @@ public class SupplyLineReferenceDataServiceTest
   public void setUp() {
     super.setUp();
     service = (SupplyLineReferenceDataService) prepareService();
-
-    featureFlag = new TogglzFeatureDto();
-    featureFlag.setName("SUPPLY_LINES_EXPAND");
-    featureFlag.setEnabled(false);
-
-    given(togglzReferenceDataService.findAll())
-        .willReturn(Lists.newArrayList(featureFlag));
   }
 
   @Test
@@ -91,7 +67,7 @@ public class SupplyLineReferenceDataServiceTest
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter(PROGRAM_ID, programId)
+        .hasQueryParameter("programId", programId)
         .hasQueryParameter("supervisoryNodeId", supervisoryNodeId)
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl());
@@ -116,8 +92,8 @@ public class SupplyLineReferenceDataServiceTest
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter(SUPPLYING_FACILITY_ID, supplyingFacilityId)
-        .hasQueryParameter(PROGRAM_ID, programId)
+        .hasQueryParameter("supplyingFacilityId", supplyingFacilityId)
+        .hasQueryParameter("programId", programId)
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl());
   }
@@ -140,84 +116,8 @@ public class SupplyLineReferenceDataServiceTest
         .isGetRequest()
         .hasAuthHeader()
         .hasEmptyBody()
-        .hasQueryParameter(SUPPLYING_FACILITY_ID, supplyingFacilityId)
+        .hasQueryParameter("supplyingFacilityId", supplyingFacilityId)
         .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl());
-  }
-
-  @Test
-  public void shouldSearchSupplyLinesByProgramIdAndSupervisoryNodeIdV2() {
-    featureFlag.setEnabled(true);
-
-    UUID programId = UUID.randomUUID();
-    UUID supervisoryNodeId = UUID.randomUUID();
-
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
-    mockPageResponseEntity(dto);
-    List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
-
-    assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
-
-    verifyPageRequest()
-        .isGetRequest()
-        .hasAuthHeader()
-        .hasEmptyBody()
-        .hasQueryParameter(PROGRAM_ID, programId)
-        .hasQueryParameter("supervisoryNodeId", supervisoryNodeId)
-        .hasEmptyBody()
-        .isUriStartsWith(service.getServiceUrl() + service.getUrl() + "v2");
-  }
-
-  @Test
-  public void shouldSearchSupplyLinesBySupplyingFacilityIdAndProgramIdV2() {
-    featureFlag.setEnabled(true);
-
-    UUID programId = UUID.randomUUID();
-    UUID supplyingFacilityId = UUID.randomUUID();
-    Set<UUID> supplyingFacilitiesIds = new HashSet<>();
-    supplyingFacilitiesIds.add(supplyingFacilityId);
-
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
-    mockPageResponseEntity(dto);
-
-    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds, programId);
-
-    assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
-
-    verifyPageRequest()
-        .isGetRequest()
-        .hasAuthHeader()
-        .hasEmptyBody()
-        .hasQueryParameter(SUPPLYING_FACILITY_ID, supplyingFacilityId)
-        .hasQueryParameter(PROGRAM_ID, programId)
-        .hasEmptyBody()
-        .isUriStartsWith(service.getServiceUrl() + service.getUrl() + "v2");
-  }
-
-  @Test
-  public void shouldSearchSupplyLinesBySupplyingFacilityIdV2() {
-    featureFlag.setEnabled(true);
-
-    UUID supplyingFacilityId = UUID.randomUUID();
-    Set<UUID> supplyingFacilitiesIds = new HashSet<>();
-    supplyingFacilitiesIds.add(supplyingFacilityId);
-
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
-    mockPageResponseEntity(dto);
-
-    List<SupplyLineDto> result = service.search(supplyingFacilitiesIds, null);
-
-    assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
-
-    verifyPageRequest()
-        .isGetRequest()
-        .hasAuthHeader()
-        .hasEmptyBody()
-        .hasQueryParameter(SUPPLYING_FACILITY_ID, supplyingFacilityId)
-        .hasEmptyBody()
-        .isUriStartsWith(service.getServiceUrl() + service.getUrl() + "v2");
   }
 }
