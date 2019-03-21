@@ -270,7 +270,7 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        90% of get requisition for convert fail to get in 50000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>50000ms
+        90% of get requisition for convert fail to get in 1000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>1000ms
 #        90% of get periods for initiate fail to get in 7000 milliseconds: p90 of GetPeriodsForInitiate>7000ms
 #        90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
 #        90% of get requisition to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
