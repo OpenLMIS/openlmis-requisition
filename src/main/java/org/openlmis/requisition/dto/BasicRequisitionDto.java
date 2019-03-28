@@ -61,6 +61,8 @@ public final class BasicRequisitionDto extends BaseDto implements Requisition.Ex
   @JsonSerialize(as = BasicProgramDto.class)
   private BasicProgramDto program;
 
+  private Map<String, Object> extraData;
+
   @Override
   public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
     StatusChangeDto statusChangeDto = (StatusChangeDto) statusChangeExporter;
@@ -100,10 +102,5 @@ public final class BasicRequisitionDto extends BaseDto implements Requisition.Ex
   @Override
   public Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter() {
     return Optional.of(StatusChangeDto::new);
-  }
-
-  @Override
-  public void setExtraData(Map<String, Object> extraData) {
-    // unsupported operation
   }
 }

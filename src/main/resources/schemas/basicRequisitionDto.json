@@ -55,8 +55,11 @@
       "type": "object",
       "$ref": "basicProgramDto.json",
       "title": "program"
+    },
+    "extraData": {
+      "type": "object",
+      "title": "extraData"
     }
-
   },
   "required": [
     "id",
