@@ -75,13 +75,14 @@ public class RequisitionRepositoryTransactionalIntegrationTest
     Requisition requisition = generateInstance();
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
 
-    StatusChange change1 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    UUID authorId = UUID.randomUUID();
+    StatusChange change1 = StatusChange.newStatusChange(requisition, authorId);
     change1.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change2 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    StatusChange change2 = StatusChange.newStatusChange(requisition, authorId);
     change2.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change3 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    StatusChange change3 = StatusChange.newStatusChange(requisition, authorId);
     change3.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change4 = StatusChange.newStatusChange(requisition, UUID.randomUUID());
+    StatusChange change4 = StatusChange.newStatusChange(requisition, authorId);
     change4.setSupervisoryNodeId(UUID.randomUUID());
 
     requisition.setStatusChanges(Lists.newArrayList(change1, change2, change3, change4));

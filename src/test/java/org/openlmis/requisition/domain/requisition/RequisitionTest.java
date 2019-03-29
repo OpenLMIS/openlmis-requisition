@@ -1101,7 +1101,8 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldNotAddPreviousAdjustedConsumptionIfNull() {
+  public void shouldNotAddPreviousAdjustedConsumptionIfItIsNull() {
+    //given
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setOrderableId(ORDERABLE_ID);
 
@@ -1116,8 +1117,12 @@ public class RequisitionTest {
     requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
     requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
-    requisition.setPreviousAdjustedConsumptions(1);
+    final int numberOfMonthsToAverage = 1;
 
+    //when
+    requisition.setPreviousAdjustedConsumptions(numberOfMonthsToAverage);
+
+    //then
     assertEquals(Collections.emptyList(),
         requisitionLineItem.getPreviousAdjustedConsumptions());
   }
