@@ -21,7 +21,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.LINE_ITEM_SUPPLIED_BY_OT
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -40,6 +39,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
+import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
@@ -90,6 +90,12 @@ public class RequisitionSplitterTest {
   private Requisition requisition;
   private SupplyPartnerDto supplyPartner;
 
+  private UUID orderableId1 = UUID.randomUUID();
+  private UUID orderableId2 = UUID.randomUUID();
+  private UUID orderableId3 = UUID.randomUUID();
+
+  private StockAdjustment stockAdjustment;
+
   private SupplyPartnerAssociationDto association;
   private SupplyPartnerAssociationDto associationWithDifferentProgram;
   private SupplyPartnerAssociationDto associationWithDifferentNode;
@@ -100,21 +106,28 @@ public class RequisitionSplitterTest {
 
   @Before
   public void setUp() {
+    stockAdjustment = new StockAdjustment(UUID.randomUUID(), 100);
+
     requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withOrderableId(orderableId1)
+            .build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withOrderableId(orderableId2)
+            .build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withOrderableId(orderableId3)
+            .addStockAdjustment(stockAdjustment)
+            .build())
         .withPermissionStrings()
         .buildAuthorizedRequisition();
-
-    List<UUID> orderableIds = Lists.newArrayList(requisition.getAllOrderableIds());
 
     association = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
         .withFacility(new ObjectReferenceDto(UUID.randomUUID()))
-        .withOrderable(new ObjectReferenceDto(orderableIds.get(2)))
+        .withOrderable(new ObjectReferenceDto(orderableId3))
         .withOrderable(new ObjectReferenceDto(UUID.randomUUID()))
         .build();
 
@@ -122,21 +135,21 @@ public class RequisitionSplitterTest {
         .withProgram(new ObjectReferenceDto(UUID.randomUUID()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
-        .withOrderable(new ObjectReferenceDto(orderableIds.get(1)))
+        .withOrderable(new ObjectReferenceDto(orderableId2))
         .build();
 
     associationWithDifferentNode = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(UUID.randomUUID()))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
-        .withOrderable(new ObjectReferenceDto(orderableIds.get(0)))
+        .withOrderable(new ObjectReferenceDto(orderableId1))
         .build();
 
     associationWithDifferentFacility = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(UUID.randomUUID()))
-        .withOrderable(new ObjectReferenceDto(orderableIds.get(2)))
+        .withOrderable(new ObjectReferenceDto(orderableId3))
         .build();
 
     associationWithDifferentOrderable = new SupplyPartnerAssociationDtoDataBuilder()
@@ -345,10 +358,15 @@ public class RequisitionSplitterTest {
         .isEqualToIgnoringGivenFields(
             originalLineItem,
             "id", "skipped", "requisition", "requestedQuantity", "requestedQuantityExplanation",
-            "remarks", "approvedQuantity")
+            "remarks", "approvedQuantity", "stockAdjustments")
         .hasFieldOrPropertyWithValue("id", null)
         .hasFieldOrPropertyWithValue("skipped", false)
         .hasFieldOrPropertyWithValue("requisition", partnerRequisition);
+
+    assertThat(partnerLineItem.getStockAdjustments()).hasSize(1);
+    assertThat(partnerLineItem.getStockAdjustments().get(0))
+        .hasFieldOrPropertyWithValue("reasonId", stockAdjustment.getReasonId())
+        .hasFieldOrPropertyWithValue("quantity", stockAdjustment.getQuantity());
 
     Set<UUID> keysWithoutHandledOrderable = Sets.newHashSet(originalLineItems.keySet());
     keysWithoutHandledOrderable.remove(partnerLineItem.getOrderableId());

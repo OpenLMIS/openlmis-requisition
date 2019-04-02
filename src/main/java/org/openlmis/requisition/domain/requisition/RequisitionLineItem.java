@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -281,9 +282,14 @@ public class RequisitionLineItem extends BaseEntity {
         original.totalCost, original.numberOfNewPatientsAdded, original.additionalQuantityRequired,
         original.adjustedConsumption, original.previousAdjustedConsumptions,
         original.averageConsumption, original.maximumStockQuantity,
-        original.calculatedOrderQuantity, original.stockAdjustments, original.maxPeriodsOfStock,
+        original.calculatedOrderQuantity, null, original.maxPeriodsOfStock,
         original.nonFullSupply, original.idealStockAmount, original.calculatedOrderQuantityIsa);
     setId(original.getId());
+    this.stockAdjustments = original
+        .stockAdjustments
+        .stream()
+        .map(item -> new StockAdjustment(item.getReasonId(), item.getQuantity()))
+        .collect(Collectors.toList());
   }
 
   /**
