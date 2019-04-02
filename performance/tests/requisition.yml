@@ -103,6 +103,7 @@ scenarios:
             jsonpath: $.id
         jsr223:
           script-text: |
+           def response = prev.getResponseDataAsString();
             String uuid = vars.get("requisition_id");
             uuid = uuid.replaceAll(/"|\[|\]/, "");
             vars.put("requisition_id", uuid);
@@ -176,7 +177,6 @@ scenarios:
           script-text: |
             import groovy.json.JsonSlurper;
             def response = prev.getResponseDataAsString();
-            log.info("search-requisitions req id" + response)
   get-supplying-depot:
     requests:
       - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?programId=${program_id}&facilityId=${facility_id}
