@@ -40,6 +40,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
@@ -52,6 +53,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyPartnerReferenceDataService;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.testutils.SupplyPartnerAssociationDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyPartnerDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
@@ -106,7 +108,7 @@ public class RequisitionSplitterTest {
 
   @Before
   public void setUp() {
-    stockAdjustment = new StockAdjustment(UUID.randomUUID(), 100);
+    stockAdjustment = new StockAdjustmentDataBuilder().build();
 
     requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
@@ -118,6 +120,9 @@ public class RequisitionSplitterTest {
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withOrderableId(orderableId3)
             .addStockAdjustment(stockAdjustment)
+            .build())
+        .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
+            .setReasonId(stockAdjustment.getReasonId())
             .build())
         .withPermissionStrings()
         .buildAuthorizedRequisition();
