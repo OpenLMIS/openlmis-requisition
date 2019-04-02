@@ -296,7 +296,7 @@ public class Requisition extends BaseTimestampedEntity {
         original.supplyingFacilityId, original.status, original.statusChanges, original.emergency,
         original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
         original.previousRequisitions, original.availableProducts,
-        original.datePhysicalStockCountCompleted, original.stockAdjustmentReasons,
+        original.datePhysicalStockCountCompleted, null,
         null, new ExtraDataEntity());
 
     setId(original.getId());
@@ -311,6 +311,13 @@ public class Requisition extends BaseTimestampedEntity {
         .stream()
         .map(rps -> new RequisitionPermissionString(this, rps.getPermissionString()))
         .collect(toList());
+
+    this.stockAdjustmentReasons = original
+        .stockAdjustmentReasons
+        .stream()
+        .map(StockAdjustmentReason::new)
+        .peek(item -> item.setId(null))
+        .collect(Collectors.toList());
   }
 
   /**

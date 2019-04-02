@@ -69,6 +69,18 @@ public class StockAdjustmentReason extends BaseEntity {
 
   private Boolean hidden;
 
+  /**
+   * Copy constructor.
+   *
+   * @param original an original stock adjustment reason with data that will be placed in a new
+   *                 stock adjustment reason.
+   */
+  public StockAdjustmentReason(StockAdjustmentReason original) {
+    this(original.reasonId, original.name, original.description, original.reasonType,
+        original.reasonCategory, original.isFreeTextAllowed, original.hidden);
+    setId(original.getId());
+  }
+
   public boolean isCreditReasonType() {
     return getReasonType() == ReasonType.CREDIT;
   }
@@ -130,6 +142,7 @@ public class StockAdjustmentReason extends BaseEntity {
   }
 
   public interface Exporter {
+
     void setId(UUID id);
 
     void setName(String name);
@@ -146,6 +159,7 @@ public class StockAdjustmentReason extends BaseEntity {
   }
 
   public interface Importer {
+
     UUID getId();
 
     String getName();
