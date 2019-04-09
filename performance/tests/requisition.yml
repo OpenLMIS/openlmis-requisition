@@ -28,11 +28,9 @@ scenarios:
         jsr223:
           script-text: |
             def count = vars.get("periods_count");
-
             if (count.toInteger() > 0) {
               def uuid = vars.get("period_id");
               uuid = uuid.replaceAll(/"|\[|\]/, "");
-
               vars.put("period_id", uuid);
             }
       - if: '${periods_count} == 0'
@@ -50,28 +48,20 @@ scenarios:
                 import java.util.Locale;
                 import java.util.UUID;
                 import java.util.Random;
-
                 def dateFormat = "yyyy-MM-dd";
                 def random = new Random();
-
                 def response = prev.getResponseDataAsString();
-
                 def jsonSlurper = new JsonSlurper();
                 def periods = jsonSlurper.parseText(response);
-
                 def last = periods.last();
-
                 def endDate = new SimpleDateFormat(dateFormat, Locale.ENGLISH).parse(last.endDate);
                 def periodDuration = last.durationInMonths * 30;
-
                 def newStartDate = endDate + 1;
                 def newEndDate = newStartDate + periodDuration;
-
                 last.id = UUID.randomUUID().toString();
                 last.startDate = newStartDate.format(dateFormat);
                 last.endDate = newEndDate.format(dateFormat);
                 last.name = last.name + (random.nextInt(1000000) + 1);
-
                 vars.put("new_period_id", last.id);
                 vars.put("new_period", JsonOutput.toJson(last));
           - url: ${__P(base-uri)}/api/processingPeriods/${new_period_id}
@@ -88,7 +78,6 @@ scenarios:
               script-text: |
                 def uuid = vars.get("period_id");
                 uuid = uuid.replaceAll(/"|\[|\]/, "");
-
                 vars.put("period_id", uuid);
   initiate-requisition:
     requests:
@@ -119,14 +108,10 @@ scenarios:
           script-text: |
             import groovy.json.JsonSlurper;
             import groovy.json.JsonOutput;
-
             def response = prev.getResponseDataAsString();
-
             def jsonSlurper = new JsonSlurper();
             def requisition = jsonSlurper.parseText(response);
-
             requisition.datePhysicalStockCountCompleted = new Date().format('yyyy-MM-dd');
-
             requisition.requisitionLineItems.eachWithIndex { line, index ->
               line.skipped = false;
               line.beginningBalance = (index + 1) * 10;
@@ -136,7 +121,6 @@ scenarios:
               line.requestedQuantityExplanation = "we need more";
               line.totalStockoutDays = 0;
             }
-
             vars.put("requisition", JsonOutput.toJson(requisition));
       - url: ${__P(base-uri)}/api/requisitions/${requisition_id}
         method: PUT
@@ -187,21 +171,15 @@ scenarios:
         jsr223:
           script-text: |
             import groovy.json.JsonSlurper;
-
             def requisitionId = vars.get("requisition_id");
             def response = prev.getResponseDataAsString();
-
             def jsonSlurper = new JsonSlurper();
             def page = jsonSlurper.parseText(response);
-
             def found = page.content.find { elem ->
               return requisitionId.equals(elem.requisition.id);
             }
-
             def depotId = found.supplyingDepots.first().id;
-
             def form = "{\"createOrder\": true, \"requisitionsToRelease\": [{ \"requisitionId\": \"" + requisitionId + "\", \"supplyingDepotId\": \"" + depotId + "\"}]}";
-
             vars.put("convert_form", form);
   convert-to-order:
     requests:
@@ -275,7 +253,7 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        90% of get requisition for convert fail to get in 1000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>1000ms
+        90% of get requisition for convert fail to get in 5000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>5000ms
         90% of get periods for initiate fail to get in 7000 milliseconds: p90 of GetPeriodsForInitiate>7000ms
         90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
         90% of get requisition to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
