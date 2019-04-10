@@ -26,18 +26,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageService {
 
-  private final XLogger xLogger = XLoggerFactory.getXLogger(getClass());
+  private final XLogger logger = XLoggerFactory.getXLogger(getClass());
 
   @Autowired
   @Qualifier("messageSource")
   private ExposedMessageSource messageSource;
 
+  /**
+   * Translates message.
+   *
+   * @param message to be localized
+   * @return localized message
+   */
   public Message.LocalizedMessage localize(Message message) {
-    xLogger.info("Requisition message service message key {}", message.getKey());
-    xLogger.info("Requisition message service locale {}", LocaleContextHolder.getLocale());
+    logger.info("Requisition message service message key {}", message.getKey());
+    logger.info("Requisition message service locale {}", LocaleContextHolder.getLocale());
     Message.LocalizedMessage localized = message
         .localMessage(messageSource, LocaleContextHolder.getLocale());
-    xLogger.info("Requisition message service localized {}", localized.asMessage());
+    logger.info("Requisition message service localized {}", localized.asMessage());
     return localized;
   }
 
