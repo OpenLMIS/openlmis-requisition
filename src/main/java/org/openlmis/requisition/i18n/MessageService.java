@@ -16,6 +16,8 @@
 package org.openlmis.requisition.i18n;
 
 import org.openlmis.requisition.utils.Message;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -24,12 +26,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageService {
 
+  private final XLogger xLogger = XLoggerFactory.getXLogger(getClass());
+
   @Autowired
   @Qualifier("messageSource")
   private ExposedMessageSource messageSource;
 
   public Message.LocalizedMessage localize(Message message) {
-    return message.localMessage(messageSource, LocaleContextHolder.getLocale());
+    xLogger.info("Requisition message service message key {}", message.getKey());
+    xLogger.info("Requisition message service locale {}", LocaleContextHolder.getLocale());
+    Message.LocalizedMessage localized = message
+        .localMessage(messageSource, LocaleContextHolder.getLocale());
+    xLogger.info("Requisition message service localized {}", localized.asMessage());
+    return localized;
   }
 
 }
