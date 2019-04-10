@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_STATUS_UPDATE_CONTENT;
 
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
@@ -114,6 +115,7 @@ public class RequisitionStatusNotifierTest {
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT),
         eq(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT),
+        eq(REQUISITION_SMS_STATUS_UPDATE_CONTENT),
         eq(RequisitionStatusNotifier.NOTIFICATION_TAG));
   }
 
@@ -137,5 +139,9 @@ public class RequisitionStatusNotifierTest {
         .new LocalizedMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
     when(messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)))
         .thenReturn(localizedMessage);
+    localizedMessage = new Message(TEST_KEY)
+      .new LocalizedMessage(REQUISITION_SMS_STATUS_UPDATE_CONTENT);
+    when(messageService.localize(new Message(REQUISITION_SMS_STATUS_UPDATE_CONTENT)))
+      .thenReturn(localizedMessage);
   }
 }

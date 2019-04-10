@@ -16,5 +16,6 @@
 package org.openlmis.requisition.service.notification;
 
 public enum NotificationChannelDto {
-  EMAIL
+  EMAIL,
+  SMS
 }

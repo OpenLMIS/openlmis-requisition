@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_STATUS_UPDATE_CONTENT;
 
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
@@ -111,12 +112,13 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     valuesMap.put("requisitionUrl", getRequisitionUrl(requisition));
 
     String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-    String content = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+    String emailContent = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+    String smsContent = getMessage(REQUISITION_SMS_STATUS_UPDATE_CONTENT);
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
-    content = sub.replace(content);
 
-    notificationService.notify(initiator, subject, content, NOTIFICATION_TAG);
+    notificationService.notify(initiator, subject, sub.replace(emailContent),
+        sub.replace(smsContent), NOTIFICATION_TAG);
   }
 
   private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {

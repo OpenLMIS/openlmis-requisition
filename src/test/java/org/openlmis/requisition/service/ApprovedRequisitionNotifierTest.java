@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
@@ -61,12 +62,15 @@ import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 public class ApprovedRequisitionNotifierTest {
 
   private static final String SUBJECT = "Action Required";
-  private static final String CONTENT = "Dear ${user}:\\n"
+  private static final String EMAIL_CONTENT = "Dear ${user}:\\n"
       + "This email is informing you that the ${requisitionType} requisition approved on "
       + "${finalApprovalDate} for the Period ${period} and ${program} at ${facility} is ready to "
       + "be converted to an order. Please login to convert the requisition to an order.\\n"
       + "${url}\\n"
       + "Thank you.";
+  private static final String SMS_CONTENT = "The ${requisitionType} requisition approved on "
+      + "${finalApprovalDate} for the Period ${period} and ${program} at ${facility} is ready to "
+      + "be converted to an order.";
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -128,13 +132,17 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, times(1))
-        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkOne), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkTwo), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkThree), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkFour), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -142,12 +150,13 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, times(4))
-        .notify(any(), eq(SUBJECT), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(any(), eq(SUBJECT), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
   public void notifyClerkShouldNotifyWithCorrectMessageBody() {
-    String expectedContent = "Dear ClerkOne:\\n"
+    String expectedEmailContent = "Dear ClerkOne:\\n"
         + "This email is informing you that the regular requisition approved on May 8, 2017 "
         + "10:15:30 AM for the Period " + processingPeriod.getName()
         + " and " + program.getName() + " at " + facility.getName() + " is ready to be "
@@ -155,10 +164,15 @@ public class ApprovedRequisitionNotifierTest {
         + System.getenv("BASE_URL") + "/#!/requisitions/convertToOrder\\n"
         + "Thank you.";
 
+    String expectedSmsContent = "The regular requisition approved on May 8, 2017 "
+        + "10:15:30 AM for the Period " + processingPeriod.getName()
+        + " and " + program.getName() + " at " + facility.getName() + " is ready to be "
+        + "converted to an order.";
+
     approvedRequisitionNotifier.notifyClerks(requisition);
 
-    verify(notificationService).notify(eq(clerkOne), any(),
-        eq(expectedContent), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+    verify(notificationService).notify(eq(clerkOne), any(), eq(expectedEmailContent),
+        eq(expectedSmsContent), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -168,13 +182,17 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkOne), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkTwo), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkThree), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkFour), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -184,13 +202,17 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkOne), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkTwo), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkThree), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkFour), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -200,13 +222,17 @@ public class ApprovedRequisitionNotifierTest {
     approvedRequisitionNotifier.notifyClerks(requisition);
 
     verify(notificationService, never())
-        .notify(eq(clerkOne), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkOne), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkTwo), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkTwo), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkThree), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkThree), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
     verify(notificationService, times(1))
-        .notify(eq(clerkFour), any(), any(), eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
+        .notify(eq(clerkFour), any(), any(), any(),
+          eq(ApprovedRequisitionNotifier.NOTIFICATION_TAG));
   }
 
   private void mockServices() {
@@ -245,10 +271,17 @@ public class ApprovedRequisitionNotifierTest {
         requisitionApprovedSubject.new LocalizedMessage(SUBJECT);
     when(messageService.localize(requisitionApprovedSubject))
         .thenReturn(localizedMessage);
-    Message requisitionApprovedContent =
+
+    Message requisitionApprovedEmailContent =
         new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
-    localizedMessage = requisitionApprovedContent.new LocalizedMessage(CONTENT);
-    when(messageService.localize(requisitionApprovedContent))
+    localizedMessage = requisitionApprovedEmailContent.new LocalizedMessage(EMAIL_CONTENT);
+    when(messageService.localize(requisitionApprovedEmailContent))
+        .thenReturn(localizedMessage);
+
+    Message requisitionApprovedSmsContent =
+        new Message(REQUISITION_SMS_REQUISITION_APPROVED_CONTENT);
+    localizedMessage = requisitionApprovedSmsContent.new LocalizedMessage(SMS_CONTENT);
+    when(messageService.localize(requisitionApprovedSmsContent))
         .thenReturn(localizedMessage);
   }
 

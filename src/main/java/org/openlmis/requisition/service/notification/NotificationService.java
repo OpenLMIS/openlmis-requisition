@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service.notification;
 
 import static org.openlmis.requisition.service.notification.NotificationChannelDto.EMAIL;
+import static org.openlmis.requisition.service.notification.NotificationChannelDto.SMS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,13 +49,14 @@ public class NotificationService {
    *
    * @param user    receiver of the notification
    * @param subject subject of the email
-   * @param content content of the email
+   * @param emailContent content of the email
    * @return true if success, false if failed.
    */
-  public boolean notify(UserDto user, String subject, String content, String tag) {
+  public boolean notify(UserDto user, String subject, String emailContent, String smsContent,
+      String tag) {
     String url = notificationUrl + "/api/notifications";
 
-    NotificationDto request = buildNotification(user, subject, content, tag);
+    NotificationDto request = buildNotification(user, subject, emailContent, smsContent, tag);
 
     try {
       restTemplate.postForObject(
@@ -76,9 +78,10 @@ public class NotificationService {
   }
 
   private NotificationDto buildNotification(UserDto user, String subject,
-      String content, String tag) {
+      String emailContent, String smsContent, String tag) {
     Map<String, MessageDto> messages = new HashMap<>();
-    messages.put(EMAIL.toString(), new MessageDto(subject, content, tag));
+    messages.put(EMAIL.toString(), new MessageDto(subject, emailContent, tag));
+    messages.put(SMS.toString(), new MessageDto(subject, smsContent, tag));
 
     return new NotificationDto(user.getId(), messages);
   }

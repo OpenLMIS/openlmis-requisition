@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_ACTION_REQUIRED_CONTENT;
 
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
@@ -103,7 +104,8 @@ public class ApprovalNotifier extends BaseNotifier {
     ZonedDateTime submittedDate = submitAuditEntry.get().getCreatedDate();
 
     String subject = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);
-    String content = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
+    String emailContent = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
+    String smsContent = getMessage(REQUISITION_SMS_ACTION_REQUIRED_CONTENT);
 
     DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
@@ -118,7 +120,7 @@ public class ApprovalNotifier extends BaseNotifier {
     for (UserDto approver : approvers) {
       valuesMap.put("approver", approver.getUsername());
       notificationService.notify(approver, subject,
-          sub.replace(content), NOTIFICATION_TAG);
+          sub.replace(emailContent), sub.replace(smsContent), NOTIFICATION_TAG);
     }
   }
 

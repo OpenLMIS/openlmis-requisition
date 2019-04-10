@@ -41,7 +41,8 @@ import org.springframework.web.client.RestTemplate;
 public class NotificationServiceTest {
   private static final String ACCESS_TOKEN = "token";
   private static final String MAIL_SUBJECT = "subject";
-  private static final String MAIL_CONTENT = "content";
+  private static final String MAIL_CONTENT = "Email content";
+  private static final String SMS_CONTENT = "SMS content";
   private static final String MAIL_TAG = "tag";
   private static final String BASE_URL = "http://localhost";
 
@@ -66,7 +67,7 @@ public class NotificationServiceTest {
   public void shouldNotifyUser() throws Exception {
     UserDto user = DtoGenerator.of(UserDto.class);
 
-    notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT, MAIL_TAG);
+    notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT, SMS_CONTENT, MAIL_TAG);
 
     ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
 

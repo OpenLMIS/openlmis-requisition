@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT;
 
 import java.util.Collections;
 import org.junit.Before;
@@ -89,6 +90,7 @@ public class ConvertToOrderNotifierTest {
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT),
+        eq(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT),
         eq(ConvertToOrderNotifier.NOTIFICATION_TAG));
   }
 
@@ -104,11 +106,21 @@ public class ConvertToOrderNotifierTest {
         convertToOrderSubject.new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
     when(messageService.localize(convertToOrderSubject))
         .thenReturn(localizedMessage);
-    Message convertToOrderContent =
+
+    Message convertToOrderEmailContent =
         new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
-    localizedMessage = convertToOrderContent
+    localizedMessage = convertToOrderEmailContent
         .new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
-    when(messageService.localize(convertToOrderContent))
+    when(messageService.localize(convertToOrderEmailContent))
         .thenReturn(localizedMessage);
+
+    Message convertToOrderSmsContent =
+        new Message(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT);
+    localizedMessage = convertToOrderSmsContent
+        .new LocalizedMessage(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT);
+    when(messageService.localize(convertToOrderSmsContent))
+        .thenReturn(localizedMessage);
+
+
   }
 }

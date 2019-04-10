@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,11 +82,15 @@ public class ConvertToOrderNotifier extends BaseNotifier {
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
     String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
-    String content = messageService
+    String emailContent = messageService
         .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, initiator.getFirstName(),
             initiator.getLastName(), program.getName(), period.getName()))
         .asMessage();
+    String smsContent = messageService
+        .localize(new Message(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT, program.getName(),
+            period.getName()))
+        .asMessage();
 
-    notificationService.notify(initiator, subject, content, NOTIFICATION_TAG);
+    notificationService.notify(initiator, subject, emailContent, smsContent, NOTIFICATION_TAG);
   }
 }

@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
@@ -78,7 +79,8 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
    */
   public void notifyClerks(Requisition requisition) {
     String subject = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
-    String content = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
+    String emailContent = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
+    String smsContent = getMessage(REQUISITION_SMS_REQUISITION_APPROVED_CONTENT);
 
     Map<String, String> messageParams = new HashMap<>();
     messageParams.put("requisitionType", getRequisitionType(requisition));
@@ -91,7 +93,8 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
     for (UserDto user : getClerks(requisition)) {
       messageParams.put("user", user.getUsername());
       notificationService.notify(user, subject,
-          new StrSubstitutor(messageParams).replace(content), NOTIFICATION_TAG);
+          new StrSubstitutor(messageParams).replace(emailContent),
+          new StrSubstitutor(messageParams).replace(smsContent), NOTIFICATION_TAG);
     }
   }
 

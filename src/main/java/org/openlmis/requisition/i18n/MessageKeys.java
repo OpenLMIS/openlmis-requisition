@@ -279,18 +279,26 @@ public abstract class MessageKeys {
       = "requisition.email.convertToOrder.subject";
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT
       = "requisition.email.convertToOrder.content";
+  public static final String REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT
+      = "requisition.sms.convertToOrder.content";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT
       = "requisition.email.statusUpdate.subject";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_CONTENT
       = "requisition.email.statusUpdate.content";
+  public static final String REQUISITION_SMS_STATUS_UPDATE_CONTENT
+      = "requisition.sms.statusUpdate.content";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT
       = "requisition.email.actionRequired.subject";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT
       = "requisition.email.actionRequired.content";
+  public static final String REQUISITION_SMS_ACTION_REQUIRED_CONTENT
+      = "requisition.sms.actionRequired.content";
   public static final String REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT
       = "requisition.email.requisitionApproved.subject";
   public static final String REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT
       = "requisition.email.requisitionApproved.content";
+  public static final String REQUISITION_SMS_REQUISITION_APPROVED_CONTENT
+      = "requisition.sms.requisitionApproved.content";
 
   public static final String STATUS_CHANGE_USER_SYSTEM =
       SERVICE_PREFIX + ".statusChange.user.system";

@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 
@@ -99,10 +100,13 @@ public class ApprovalNotifierTest {
 
   private static final String SUBJECT = "subject";
   private static final String EMERGENCY = "emergency";
-  private static final String CONTENT = "Dear ${approver}: This email is informing you that the "
-      + "${requisitionType} requisition submitted on ${submittedDate} for the Period ${periodName} "
-      + "and ${programName} at ${facilityName} is ready for review. Please login to review "
-      + "the requisition.${requisitionUrl}Thank you.";
+  private static final String EMAIL_CONTENT = "Dear ${approver}: This email is informing you that "
+      + "the ${requisitionType} requisition submitted on ${submittedDate} for the Period "
+      + "${periodName} and ${programName} at ${facilityName} is ready for review. Please login to "
+      + "review the requisition.${requisitionUrl}Thank you.";
+  private static final String SMS_CONTENT = "The ${requisitionType} requisition submitted on "
+      + "${submittedDate} for the Period ${periodName} and ${programName} at ${facilityName} is "
+      + "ready for review.";
 
   @Before
   public void setUp() throws Exception {
@@ -128,6 +132,7 @@ public class ApprovalNotifierTest {
 
     verify(notificationService).notify(refEq(approver), eq(SUBJECT),
         contains("Dear approver: This email is informing you that the test requisition"),
+        contains("The test requisition"),
         eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
@@ -146,6 +151,7 @@ public class ApprovalNotifierTest {
 
     verify(notificationService).notify(refEq(approver), eq(SUBJECT),
         contains("Dear approver: This email is informing you that the emergency requisition"),
+        contains("The emergency requisition"),
         eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
@@ -167,6 +173,7 @@ public class ApprovalNotifierTest {
 
     verify(notificationService, times(2))
         .notify(any(UserDto.class), eq(SUBJECT), argument.capture(),
+            any(),
             eq(ApprovalNotifier.NOTIFICATION_TAG));
 
     List<String> values = argument.getAllValues();
@@ -187,7 +194,7 @@ public class ApprovalNotifierTest {
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0))
-        .notify(any(UserDto.class), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
+      .notify(any(UserDto.class), any(), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   @Test
@@ -203,7 +210,7 @@ public class ApprovalNotifierTest {
     approvalNotifier.notifyApprovers(requisition);
 
     verify(notificationService, times(0))
-        .notify(any(UserDto.class), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
+      .notify(any(UserDto.class), any(), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
   }
 
   private void mockChangeDate() {
@@ -244,8 +251,11 @@ public class ApprovalNotifierTest {
     localizedMessage = new Message(TEST_KEY).new LocalizedMessage(SUBJECT);
     when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)))
         .thenReturn(localizedMessage);
-    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(CONTENT);
+    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(EMAIL_CONTENT);
     when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT)))
+        .thenReturn(localizedMessage);
+    localizedMessage = new Message(TEST_KEY).new LocalizedMessage(SMS_CONTENT);
+    when(messageService.localize(new Message(REQUISITION_SMS_ACTION_REQUIRED_CONTENT)))
         .thenReturn(localizedMessage);
   }
 }
