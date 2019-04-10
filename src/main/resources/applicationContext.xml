@@ -11,11 +11,6 @@
 
     <context:component-scan base-package="org.openlmis"/>
 
-    <bean id="localeResolver"
-          class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
-        <property name="defaultLocale" value="${defaultLocale}"/>
-    </bean>
-
     <bean id="validator"
           class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 </beans>
