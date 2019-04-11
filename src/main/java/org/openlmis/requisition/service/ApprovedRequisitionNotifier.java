@@ -24,6 +24,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,7 +39,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
-import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,13 +77,13 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
    *
    * @param requisition  the requisition to notify the clerks for
    */
-  public void notifyClerks(Requisition requisition) {
-    String subject = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
-    String emailContent = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
-    String smsContent = getMessage(REQUISITION_SMS_REQUISITION_APPROVED_CONTENT);
+  public void notifyClerks(Requisition requisition, Locale locale) {
+    String subject = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT, locale);
+    String emailContent = getMessage(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT, locale);
+    String smsContent = getMessage(REQUISITION_SMS_REQUISITION_APPROVED_CONTENT, locale);
 
     Map<String, String> messageParams = new HashMap<>();
-    messageParams.put("requisitionType", getRequisitionType(requisition));
+    messageParams.put("requisitionType", getRequisitionType(requisition, locale));
     messageParams.put("finalApprovalDate", getFinalApprovalDate(requisition));
     messageParams.put("facility", getFacilityName(requisition));
     messageParams.put("url", CONVERT_TO_ORDER_URL);
@@ -98,9 +98,10 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
     }
   }
 
-  private String getRequisitionType(Requisition requisition) {
-    return messageService.localize(new Message(requisition.getEmergency()
-        ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR)).asMessage();
+  private String getRequisitionType(Requisition requisition, Locale locale) {
+    return getMessage(
+        requisition.getEmergency() ? REQUISITION_TYPE_EMERGENCY : REQUISITION_TYPE_REGULAR,
+        locale);
   }
 
   private String getFinalApprovalDate(Requisition requisition) {

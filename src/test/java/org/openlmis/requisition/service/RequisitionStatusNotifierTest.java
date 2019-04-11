@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,6 +80,7 @@ public class RequisitionStatusNotifierTest {
   private RequisitionStatusNotifier requisitionStatusNotifier;
 
   private UserDto user = DtoGenerator.of(UserDto.class);
+  private Locale locale = Locale.ENGLISH;
 
   @Before
   public void setUp() throws Exception {
@@ -110,7 +112,7 @@ public class RequisitionStatusNotifierTest {
     when(authorizeAuditEntry.getAuthorId()).thenReturn(user.getId());
     when(authorizeAuditEntry.getCreatedDate()).thenReturn(ZonedDateTime.now());
 
-    requisitionStatusNotifier.notifyStatusChanged(requisition);
+    requisitionStatusNotifier.notifyStatusChanged(requisition, locale);
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT),
@@ -130,18 +132,21 @@ public class RequisitionStatusNotifierTest {
   private void mockMessages() {
     Message.LocalizedMessage localizedMessage = new Message(TEST_KEY)
         .new LocalizedMessage("test");
-    when(messageService.localize(any())).thenReturn(localizedMessage);
+    when(messageService.localize(any(), eq(locale))).thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY)
         .new LocalizedMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-    when(messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT)))
+    when(messageService
+        .localize(eq(new Message(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT)), eq(locale)))
         .thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY)
         .new LocalizedMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
-    when(messageService.localize(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)))
+    when(messageService
+        .localize(eq(new Message(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT)), eq(locale)))
         .thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY)
       .new LocalizedMessage(REQUISITION_SMS_STATUS_UPDATE_CONTENT);
-    when(messageService.localize(new Message(REQUISITION_SMS_STATUS_UPDATE_CONTENT)))
+    when(messageService
+        .localize(eq(new Message(REQUISITION_SMS_STATUS_UPDATE_CONTENT)), eq(locale)))
       .thenReturn(localizedMessage);
   }
 }

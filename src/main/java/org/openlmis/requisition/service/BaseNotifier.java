@@ -34,9 +34,15 @@ public class BaseNotifier {
   @Autowired
   protected MessageService messageService;
 
-  protected String getMessage(String key) {
+  protected String getMessage(String key, Locale locale) {
     return messageService
-        .localize(new Message(key))
+        .localize(new Message(key), locale)
+        .asMessage();
+  }
+
+  protected String getMessage(String key, Locale locale, String... parameters) {
+    return messageService
+        .localize(new Message(key, parameters), locale)
         .asMessage();
   }
 

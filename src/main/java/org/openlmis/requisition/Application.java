@@ -52,7 +52,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
@@ -113,18 +112,6 @@ public class Application {
     lr.setCookieName("lang");
     lr.setDefaultLocale(locale);
     return lr;
-  }
-
-  /**
-   * Creates new DispatcherServlet.
-   *
-   * @return Created DispatcherServlet.
-   */
-  @Bean
-  public DispatcherServlet dispatcherServlet() {
-    DispatcherServlet dispatcherServlet = new DispatcherServlet();
-    dispatcherServlet.setThreadContextInheritable(true);
-    return dispatcherServlet;
   }
 
   /**

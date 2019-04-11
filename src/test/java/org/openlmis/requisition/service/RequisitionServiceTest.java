@@ -71,6 +71,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1290,7 +1291,7 @@ public class RequisitionServiceTest {
 
     requisitionService.convertToOrder(list, user);
 
-    verify(requisitionStatusProcessor).statusChange(any(Requisition.class));
+    verify(requisitionStatusProcessor).statusChange(any(Requisition.class), any(Locale.class));
   }
 
   @Test

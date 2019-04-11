@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import java.util.Locale;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,19 +41,19 @@ public class DefaultRequisitionStatusProcessor implements RequisitionStatusProce
    * @param requisition a requisition that has just changed its status
    */
   @Override
-  public void statusChange(Requisition requisition) {
+  public void statusChange(Requisition requisition, Locale locale) {
     if (requisition.getStatus() == RequisitionStatus.RELEASED) {
-      convertToOrderNotifier.notifyConvertToOrder(requisition);
+      convertToOrderNotifier.notifyConvertToOrder(requisition, locale);
     } else if (!requisition.isPreAuthorize()) {
-      requisitionStatusNotifier.notifyStatusChanged(requisition);
+      requisitionStatusNotifier.notifyStatusChanged(requisition, locale);
     }
 
     if (requisition.isApprovable()) {
-      approvalNotifier.notifyApprovers(requisition);
+      approvalNotifier.notifyApprovers(requisition, locale);
     }
 
     if (requisition.getStatus() == RequisitionStatus.APPROVED) {
-      approvedRequisitionNotifier.notifyClerks(requisition);
+      approvedRequisitionNotifier.notifyClerks(requisition, locale);
     }
   }
 

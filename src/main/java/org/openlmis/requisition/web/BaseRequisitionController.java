@@ -90,6 +90,7 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -432,7 +433,7 @@ public abstract class BaseRequisitionController extends BaseController {
   void callStatusChangeProcessor(Profiler profiler, Requisition requisition) {
     profiler.start("CALL_STATUS_CHANGE_PROCESSOR");
     assignInitialSupervisoryNode(requisition);
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
   }
 
   private void assignInitialSupervisoryNode(Requisition requisition) {

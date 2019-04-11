@@ -129,6 +129,7 @@ import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.profiler.Profiler;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -1064,7 +1065,8 @@ public class RequisitionControllerTest {
 
     requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
 
-    verify(requisitionStatusNotifier).notifyStatusChanged(initiatedRequsition);
+    verify(requisitionStatusNotifier)
+        .notifyStatusChanged(initiatedRequsition, LocaleContextHolder.getLocale());
   }
 
   @Test
@@ -1079,7 +1081,8 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(requisitionStatusProcessor).statusChange(authorizedRequsition);
+    verify(requisitionStatusProcessor)
+        .statusChange(authorizedRequsition, LocaleContextHolder.getLocale());
   }
 
   @Test
@@ -1124,7 +1127,8 @@ public class RequisitionControllerTest {
 
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
-    verify(requisitionStatusProcessor).statusChange(submittedRequsition);
+    verify(requisitionStatusProcessor)
+        .statusChange(submittedRequsition, LocaleContextHolder.getLocale());
   }
 
   @Test

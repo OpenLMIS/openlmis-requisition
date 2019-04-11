@@ -20,6 +20,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVER
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -31,7 +32,6 @@ import org.openlmis.requisition.service.notification.NotificationService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
-import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class ConvertToOrderNotifier extends BaseNotifier {
    *  @param requisition requisition that was converted
    *
    */
-  public void notifyConvertToOrder(Requisition requisition) {
+  public void notifyConvertToOrder(Requisition requisition, Locale locale) {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
@@ -81,15 +81,11 @@ public class ConvertToOrderNotifier extends BaseNotifier {
 
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
-    String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
-    String emailContent = messageService
-        .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, initiator.getFirstName(),
-            initiator.getLastName(), program.getName(), period.getName()))
-        .asMessage();
-    String smsContent = messageService
-        .localize(new Message(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT, program.getName(),
-            period.getName()))
-        .asMessage();
+    String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, locale);
+    String emailContent = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, locale,
+        initiator.getFirstName(), initiator.getLastName(), program.getName(), period.getName());
+    String smsContent = getMessage(REQUISITION_SMS_CONVERT_TO_ORDER_CONTENT, locale,
+        program.getName(), period.getName());
 
     notificationService.notify(initiator, subject, emailContent, smsContent, NOTIFICATION_TAG);
   }

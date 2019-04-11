@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.i18n;
 
+import java.util.Locale;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -39,12 +40,21 @@ public class MessageService {
    * @return localized message
    */
   public Message.LocalizedMessage localize(Message message) {
+    return localize(message, LocaleContextHolder.getLocale());
+  }
+
+  /**
+   * Translates message with parametrized locale.
+   *
+   * @param message to be localized
+   * @param locale  language used for translating
+   * @return localized message
+   */
+  public Message.LocalizedMessage localize(Message message, Locale locale) {
     logger.info("Requisition message service message key {}", message.getKey());
     logger.info("Requisition message service locale {}", LocaleContextHolder.getLocale());
-    Message.LocalizedMessage localized = message
-        .localMessage(messageSource, LocaleContextHolder.getLocale());
+    Message.LocalizedMessage localized = message.localMessage(messageSource, locale);
     logger.info("Requisition message service localized {}", localized.asMessage());
     return localized;
   }
-
 }
