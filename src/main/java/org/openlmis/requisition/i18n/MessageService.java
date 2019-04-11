@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.i18n;
 
+import java.util.Locale;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,12 +25,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageService {
 
+
+
   @Autowired
   @Qualifier("messageSource")
   private ExposedMessageSource messageSource;
 
   public Message.LocalizedMessage localize(Message message) {
-    return message.localMessage(messageSource, LocaleContextHolder.getLocale());
+    return localize(message, LocaleContextHolder.getLocale());
   }
 
+  /**
+   * Translates message with parametrized locale.
+   *
+   * @param message to be localized
+   * @param locale  language used for translating
+   * @return localized message
+   */
+  public Message.LocalizedMessage localize(Message message, Locale locale) {
+    return message.localMessage(messageSource, locale);
+  }
 }

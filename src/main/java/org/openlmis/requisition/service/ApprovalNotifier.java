@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -78,9 +79,9 @@ public class ApprovalNotifier extends BaseNotifier {
    *
    * @param requisition requisition that was converted
    */
-  public void notifyApprovers(Requisition requisition) {
+  public void notifyApprovers(Requisition requisition, Locale locale) {
     Collection<UserDto> approvers = getApprovers(requisition);
-    String reqType = getMessage(getEmergencyKey(requisition));
+    String reqType = getMessage(getEmergencyKey(requisition), locale);
     ProcessingPeriodDto period =
         periodReferenceDataService.findOne(requisition.getProcessingPeriodId());
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
@@ -101,8 +102,8 @@ public class ApprovalNotifier extends BaseNotifier {
     }
     ZonedDateTime submittedDate = submitAuditEntry.get().getCreatedDate();
 
-    String subject = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT);
-    String content = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT);
+    String subject = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT, locale);
+    String content = getMessage(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT, locale);
 
     DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 

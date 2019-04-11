@@ -94,6 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -616,7 +617,7 @@ public class RequisitionService {
       orders.add(order);
 
       requisitionRepository.save(requisition);
-      requisitionStatusProcessor.statusChange(requisition);
+      requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
     }
 
     profiler.start("CREATE_ORDER_IN_FULFILLMENT");
@@ -638,7 +639,7 @@ public class RequisitionService {
 
     for (Requisition requisition : releasedRequisitions) {
       requisitionRepository.save(requisition);
-      requisitionStatusProcessor.statusChange(requisition);
+      requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
     }
     profiler.stop().log();
     return releasedRequisitions;

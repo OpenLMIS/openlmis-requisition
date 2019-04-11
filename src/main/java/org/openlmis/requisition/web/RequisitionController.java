@@ -63,6 +63,7 @@ import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -489,7 +490,8 @@ public class RequisitionController extends BaseRequisitionController {
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
     profiler.start("NOTIFY_STATUS_CHANGED");
-    requisitionStatusNotifier.notifyStatusChanged(rejectedRequisition);
+    requisitionStatusNotifier
+        .notifyStatusChanged(rejectedRequisition, LocaleContextHolder.getLocale());
 
     BasicRequisitionDto dto = buildBasicDto(profiler, rejectedRequisition);
 

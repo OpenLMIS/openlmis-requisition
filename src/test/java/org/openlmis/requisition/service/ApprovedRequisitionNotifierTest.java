@@ -29,6 +29,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,6 +117,8 @@ public class ApprovedRequisitionNotifierTest {
 
   private RightDto right = DtoGenerator.of(RightDto.class);
 
+  private Locale locale = Locale.ENGLISH;
+
   @Before
   public void setUp() {
     prepareStatusChange();
@@ -125,7 +128,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerksShouldNotifyAllClerksOnce() {
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService, times(1))
         .notify(eq(clerkOne), any(), any());
@@ -139,7 +142,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldNotifyWithCorrectSubject() {
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService, times(4)).notify(any(), eq(SUBJECT), any());
   }
@@ -154,7 +157,7 @@ public class ApprovedRequisitionNotifierTest {
         + System.getenv("BASE_URL") + "/#!/requisitions/convertToOrder\\n"
         + "Thank you.";
 
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService).notify(eq(clerkOne), any(), eq(expectedContent));
   }
@@ -163,7 +166,7 @@ public class ApprovedRequisitionNotifierTest {
   public void notifyClerkShouldIgnoreUsersThatCanNotBeNotified() {
     clerkOne = new UserDtoDataBuilder().denyNotify().build();
 
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService, never())
         .notify(eq(clerkOne), any(), any());
@@ -179,7 +182,7 @@ public class ApprovedRequisitionNotifierTest {
   public void notifyClerkShouldIgnoreUsersThatAreNotVerified() {
     clerkOne = new UserDtoDataBuilder().asUnverified().build();
 
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService, never())
         .notify(eq(clerkOne), any(), any());
@@ -195,7 +198,7 @@ public class ApprovedRequisitionNotifierTest {
   public void notifyClerkShouldIgnoreUsersWithoutEmail() {
     clerkOne = new UserDtoDataBuilder().withoutEmail().build();
 
-    approvedRequisitionNotifier.notifyClerks(requisition);
+    approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
     verify(notificationService, never())
         .notify(eq(clerkOne), any(), any());
@@ -232,21 +235,21 @@ public class ApprovedRequisitionNotifierTest {
   }
 
   private void mockMessages() {
-    when(messageService.localize(regularRequisitionMessage))
+    when(messageService.localize(eq(regularRequisitionMessage), eq(locale)))
         .thenReturn(regularRequisitionMessage.new LocalizedMessage("regular"));
-    when(messageService.localize(emergencyRequisitionMessage))
+    when(messageService.localize(eq(emergencyRequisitionMessage), eq(locale)))
         .thenReturn(emergencyRequisitionMessage.new LocalizedMessage("emergency"));
 
     Message requisitionApprovedSubject =
         new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);
     Message.LocalizedMessage localizedMessage =
         requisitionApprovedSubject.new LocalizedMessage(SUBJECT);
-    when(messageService.localize(requisitionApprovedSubject))
+    when(messageService.localize(eq(requisitionApprovedSubject), eq(locale)))
         .thenReturn(localizedMessage);
     Message requisitionApprovedContent =
         new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT);
     localizedMessage = requisitionApprovedContent.new LocalizedMessage(CONTENT);
-    when(messageService.localize(requisitionApprovedContent))
+    when(messageService.localize(requisitionApprovedContent, locale))
         .thenReturn(localizedMessage);
   }
 

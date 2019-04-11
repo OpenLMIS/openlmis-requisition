@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import java.util.Locale;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.springframework.scheduling.annotation.Async;
 
@@ -26,5 +27,5 @@ public interface RequisitionStatusProcessor {
    * @param requisition a requisition that has just changed its status
    */
   @Async
-  void statusChange(Requisition requisition);
+  void statusChange(Requisition requisition, Locale locale);
 }

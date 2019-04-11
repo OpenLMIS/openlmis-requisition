@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
    *
    * @param requisition a requisition that has just changed its status
    */
-  public void notifyStatusChanged(Requisition requisition) {
+  public void notifyStatusChanged(Requisition requisition, Locale locale) {
 
     List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
@@ -97,7 +98,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
     Map<String, String> valuesMap = new HashMap<>();
     valuesMap.put("initiator", initiator.getUsername());
-    valuesMap.put("requisitionType", getMessage(getEmergencyKey(requisition)));
+    valuesMap.put("requisitionType", getMessage(getEmergencyKey(requisition), locale));
     valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate()
         .format(dateTimeFormatter));
     valuesMap.put("programName", getProgram(requisition).getName());
@@ -109,8 +110,8 @@ public class RequisitionStatusNotifier extends BaseNotifier {
         dateTimeFormatter));
     valuesMap.put("requisitionUrl", getRequisitionUrl(requisition));
 
-    String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT);
-    String content = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT);
+    String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, locale);
+    String content = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, locale);
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
     content = sub.replace(content);

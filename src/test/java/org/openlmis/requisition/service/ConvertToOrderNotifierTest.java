@@ -25,6 +25,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVER
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 import java.util.Collections;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,6 +69,7 @@ public class ConvertToOrderNotifierTest {
   private ConvertToOrderNotifier convertToOrderNotifier;
 
   private UserDto user = DtoGenerator.of(UserDto.class);
+  private Locale locale = Locale.ENGLISH;
 
   @Before
   public void setUp() {
@@ -84,7 +86,7 @@ public class ConvertToOrderNotifierTest {
     when(initiateAuditEntry.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(initiateAuditEntry.getAuthorId()).thenReturn(user.getId());
 
-    convertToOrderNotifier.notifyConvertToOrder(requisition);
+    convertToOrderNotifier.notifyConvertToOrder(requisition, locale);
 
     verify(notificationService).notify(refEq(user),
         eq(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT),
@@ -101,13 +103,13 @@ public class ConvertToOrderNotifierTest {
     Message convertToOrderSubject = new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
     Message.LocalizedMessage localizedMessage =
         convertToOrderSubject.new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
-    when(messageService.localize(convertToOrderSubject))
+    when(messageService.localize(eq(convertToOrderSubject), eq(locale)))
         .thenReturn(localizedMessage);
     Message convertToOrderContent =
         new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
     localizedMessage = convertToOrderContent
         .new LocalizedMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT);
-    when(messageService.localize(convertToOrderContent))
+    when(messageService.localize(convertToOrderContent, locale))
         .thenReturn(localizedMessage);
   }
 }

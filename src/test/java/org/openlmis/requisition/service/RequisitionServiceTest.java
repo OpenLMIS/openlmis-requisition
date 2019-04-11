@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -1369,7 +1370,7 @@ public class RequisitionServiceTest {
 
     requisitionService.convertToOrder(list, user);
 
-    verify(requisitionStatusProcessor).statusChange(any(Requisition.class));
+    verify(requisitionStatusProcessor).statusChange(any(Requisition.class), any(Locale.class));
   }
 
   @Test

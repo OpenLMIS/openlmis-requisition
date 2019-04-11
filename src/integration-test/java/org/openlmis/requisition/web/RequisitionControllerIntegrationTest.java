@@ -67,6 +67,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -2136,7 +2137,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private void mockValidationSuccess() {
     given(statusMessageRepository.save(any(StatusMessage.class))).willReturn(null);
 
-    doNothing().when(requisitionStatusProcessor).statusChange(any(Requisition.class));
+    doNothing().when(requisitionStatusProcessor)
+        .statusChange(any(Requisition.class), any(Locale.class));
     doNothing().when(facilitySupportsProgramHelper)
         .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
     doNothing().when(facilitySupportsProgramHelper)

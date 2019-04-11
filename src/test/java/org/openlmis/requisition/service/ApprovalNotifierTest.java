@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,6 +96,7 @@ public class ApprovalNotifierTest {
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private Requisition requisition = mock(Requisition.class);
+  private Locale locale = Locale.ENGLISH;
 
   private static final String SUBJECT = "subject";
   private static final String EMERGENCY = "emergency";
@@ -123,7 +125,7 @@ public class ApprovalNotifierTest {
 
     mockChangeDate();
 
-    approvalNotifier.notifyApprovers(requisition);
+    approvalNotifier.notifyApprovers(requisition, locale);
 
     verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
         + "This email is informing you that the test requisition"));
@@ -140,7 +142,7 @@ public class ApprovalNotifierTest {
 
     mockChangeDate();
 
-    approvalNotifier.notifyApprovers(requisition);
+    approvalNotifier.notifyApprovers(requisition, locale);
 
     verify(notificationService).notify(refEq(approver), eq(SUBJECT), contains("Dear approver: "
         + "This email is informing you that the emergency requisition"));
@@ -159,7 +161,7 @@ public class ApprovalNotifierTest {
 
     mockChangeDate();
 
-    approvalNotifier.notifyApprovers(requisition);
+    approvalNotifier.notifyApprovers(requisition, locale);
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 
     verify(notificationService, times(2))
@@ -180,7 +182,7 @@ public class ApprovalNotifierTest {
     mockRequisition();
     mockMessages();
 
-    approvalNotifier.notifyApprovers(requisition);
+    approvalNotifier.notifyApprovers(requisition, locale);
 
     verify(notificationService, times(0))
         .notify(any(UserDto.class), any(), any());
@@ -196,7 +198,7 @@ public class ApprovalNotifierTest {
     mockMessages();
     mockChangeDate(RequisitionStatus.REJECTED);
 
-    approvalNotifier.notifyApprovers(requisition);
+    approvalNotifier.notifyApprovers(requisition, locale);
 
     verify(notificationService, times(0))
         .notify(any(UserDto.class), any(), any());
@@ -232,16 +234,17 @@ public class ApprovalNotifierTest {
 
   private void mockMessages() {
     Message.LocalizedMessage localizedMessage = new Message(TEST_KEY).new LocalizedMessage("test");
-    when(messageService.localize(any())).thenReturn(localizedMessage);
+    when(messageService.localize(any(), any())).thenReturn(localizedMessage);
 
     localizedMessage = new Message(TEST_KEY).new LocalizedMessage(EMERGENCY);
-    when(messageService.localize(new Message(REQUISITION_TYPE_EMERGENCY)))
+    when(messageService.localize(eq(new Message(REQUISITION_TYPE_EMERGENCY)), eq(locale)))
         .thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY).new LocalizedMessage(SUBJECT);
-    when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)))
+    when(messageService
+        .localize(eq(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT)), eq(locale)))
         .thenReturn(localizedMessage);
     localizedMessage = new Message(TEST_KEY).new LocalizedMessage(CONTENT);
-    when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT)))
+    when(messageService.localize(new Message(REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT), locale))
         .thenReturn(localizedMessage);
   }
 }

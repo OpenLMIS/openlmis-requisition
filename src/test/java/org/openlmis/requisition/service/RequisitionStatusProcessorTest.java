@@ -23,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Locale;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +56,8 @@ public class RequisitionStatusProcessorTest {
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   private SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDto();
-
   private UUID supervisoryNodeId = UUID.randomUUID();
+  private Locale locale = Locale.ENGLISH;
 
   @InjectMocks
   private DefaultRequisitionStatusProcessor requisitionStatusProcessor;
@@ -74,9 +75,9 @@ public class RequisitionStatusProcessorTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.RELEASED);
 
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, locale);
 
-    verify(convertToOrderNotifier).notifyConvertToOrder(eq(requisition));
+    verify(convertToOrderNotifier).notifyConvertToOrder(eq(requisition), eq(locale));
   }
 
   @Test
@@ -84,9 +85,9 @@ public class RequisitionStatusProcessorTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.isPreAuthorize()).thenReturn(true);
 
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, locale);
 
-    verify(requisitionStatusNotifier, never()).notifyStatusChanged(eq(requisition));
+    verify(requisitionStatusNotifier, never()).notifyStatusChanged(eq(requisition), eq(locale));
   }
 
   @Test
@@ -94,9 +95,9 @@ public class RequisitionStatusProcessorTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.isPreAuthorize()).thenReturn(false);
 
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, locale);
 
-    verify(requisitionStatusNotifier).notifyStatusChanged(eq(requisition));
+    verify(requisitionStatusNotifier).notifyStatusChanged(eq(requisition), eq(locale));
   }
 
   @Test
@@ -104,9 +105,9 @@ public class RequisitionStatusProcessorTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.isApprovable()).thenReturn(true);
 
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, locale);
 
-    verify(approvalNotifier).notifyApprovers(eq(requisition));
+    verify(approvalNotifier).notifyApprovers(eq(requisition), eq(locale));
   }
 
   @Test
@@ -114,9 +115,8 @@ public class RequisitionStatusProcessorTest {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
-    requisitionStatusProcessor.statusChange(requisition);
+    requisitionStatusProcessor.statusChange(requisition, locale);
 
-    verify(approvedRequisitionNotifier).notifyClerks(requisition);
+    verify(approvedRequisitionNotifier).notifyClerks(eq(requisition), eq(locale));
   }
-
 }

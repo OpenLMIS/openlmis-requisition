@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class NotificationService {
+
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Autowired

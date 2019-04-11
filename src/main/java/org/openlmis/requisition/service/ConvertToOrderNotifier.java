@@ -19,6 +19,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVER
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -58,7 +59,7 @@ public class ConvertToOrderNotifier extends BaseNotifier {
    *  @param requisition requisition that was converted
    *
    */
-  public void notifyConvertToOrder(Requisition requisition) {
+  public void notifyConvertToOrder(Requisition requisition, Locale locale) {
     ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
     ProcessingPeriodDto period = periodReferenceDataService.findOne(
         requisition.getProcessingPeriodId());
@@ -79,11 +80,12 @@ public class ConvertToOrderNotifier extends BaseNotifier {
 
     UserDto initiator = userReferenceDataService.findOne(initiateAuditEntry.get().getAuthorId());
 
-    String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT);
+    String subject = getMessage(REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT, locale);
     String content = messageService
         .localize(new Message(REQUISITION_EMAIL_CONVERT_TO_ORDER_CONTENT, initiator.getFirstName(),
-            initiator.getLastName(), program.getName(), period.getName()))
+            initiator.getLastName(), program.getName(), period.getName()), locale)
         .asMessage();
+
 
     notificationService.notify(initiator, subject, content);
   }
