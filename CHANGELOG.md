@@ -3,6 +3,7 @@
 
 Bug fixes:
 * [OLMIS-6128](https://openlmis.atlassian.net/browse/OLMIS-6128): Changed dev image version to 5.2 with fix for syncing with transifex.
+* [OLMIS-6193](https://openlmis.atlassian.net/browse/OLMIS-6193): Fixed translating messages for requisition status change notifications.
 
 7.1.0 / 2018-12-12
 ==================
