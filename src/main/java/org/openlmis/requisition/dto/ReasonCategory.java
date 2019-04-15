@@ -18,5 +18,6 @@ package org.openlmis.requisition.dto;
 public enum ReasonCategory {
   TRANSFER,
   ADJUSTMENT,
-  PHYSICAL_INVENTORY
+  PHYSICAL_INVENTORY,
+  AGGREGATION
 }
