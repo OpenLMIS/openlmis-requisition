@@ -6,7 +6,7 @@ Breaking changes:
 
 New functionality:
 * [OLMIS-5138](https://openlmis.atlassian.net/browse/OLMIS-5138): Added `originalRequisition` extended property to Requisition model
-* [OLMIS-5142](https://openlmis.atlassian.net/browse/OLMIS-5142): Added ability to split a requisition if there are defined supply partner(s) 
+* [OLMIS-5142](https://openlmis.atlassian.net/browse/OLMIS-5142): Added ability to split a requisition if there are defined supply partner(s)
 
 Improvements:
 * [OLMIS-3773](https://openlmis.atlassian.net/browse/OLMIS-3773): Adjusted facility search by ids and findAll after changing return type to page.
@@ -28,6 +28,7 @@ Bug fixes:
 * [OLMIS-5885](https://openlmis.atlassian.net/browse/OLMIS-5885): The ideal stock amount column is now visible in the requisition print again.
 * [OLMIS-5963](https://openlmis.atlassian.net/browse/OLMIS-5963): The remarks column in requisition print is now only visible if requisition is at least AUTHORIZED.
 * [OLMIS-6193](https://openlmis.atlassian.net/browse/OLMIS-6193): Fixed translating messages for requisition status change notifications.
+* [OLMIS-6090](https://openlmis.atlassian.net/browse/OLMIS-6090): Fixed convert to order endpoint for facilities with multiple program handled by the same supplying facility.
 
 7.1.0 / 2018-12-12
 ==================
@@ -107,7 +108,7 @@ Contract breaking changes:
 * [OLMIS-4112](https://openlmis.atlassian.net/browse/OLMIS-4112): Allow adding/removing line items for emergency requisitions
   * if requisition line item will be added/removed from regular requisition, error message will be shown
   * if orderableId field in requisition line item will be changed (for both regular and emergency requisitions), error message will be shown
-* [OLMIS-4076](https://openlmis.atlassian.net/browse/OLMIS-4076): The constraint to verify uniqueness of status changes was replaced with a trigger. The status changes do no longer link to previous status change. 
+* [OLMIS-4076](https://openlmis.atlassian.net/browse/OLMIS-4076): The constraint to verify uniqueness of status changes was replaced with a trigger. The status changes do no longer link to previous status change.
 
 New functionality:
 * [OLMIS-3917](https://openlmis.atlassian.net/browse/OLMIS-3917): Added stock based Requisition configuration to template.
@@ -118,7 +119,7 @@ New functionality:
 
 Bug fixes added in a backwards-compatible manner:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Updated Fulfillment Order service to use new fulfillment API.
-* [OLMIS-3295](https://openlmis.atlassian.net/browse/OLMIS-3295): Updated stock event structure to match new stock management API  
+* [OLMIS-3295](https://openlmis.atlassian.net/browse/OLMIS-3295): Updated stock event structure to match new stock management API
 * [OLMIS-3135](https://openlmis.atlassian.net/browse/OLMIS-3135): Handle API Key requests.
   * For now all requests are blocked.
 * [OLMIS-3778](https://openlmis.atlassian.net/browse/OLMIS-3778): Fixed Requisition service checked rights of a wrong user

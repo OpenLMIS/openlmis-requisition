@@ -71,8 +71,10 @@ public class RequisitionForConvertBuilderTest {
   private FacilityDto facility2;
   private Requisition requisition1;
   private Requisition requisition2;
+  private Requisition requisition3;
   private SupplyLineDto supplyLine1;
   private SupplyLineDto supplyLine2;
+  private SupplyLineDto supplyLine3;
 
   @Before
   public void setUp() {
@@ -87,24 +89,37 @@ public class RequisitionForConvertBuilderTest {
     SupervisoryNodeDto supervisoryNode2 = new SupervisoryNodeDto();
     supervisoryNode2.setId(UUID.randomUUID());
 
-    ProgramDto program = new ProgramDtoDataBuilder().build();
+    ProgramDto program1 = new ProgramDtoDataBuilder().build();
+    ProgramDto program2 = new ProgramDtoDataBuilder().build();
 
     requisition1 = new RequisitionDataBuilder()
-        .withProgramId(program.getId())
+        .withProgramId(program1.getId())
         .withFacilityId(facility.getId())
         .withSupervisoryNodeId(supervisoryNode1.getId())
         .build();
     requisition2 = new RequisitionDataBuilder()
-        .withProgramId(program.getId())
+        .withProgramId(program1.getId())
+        .withFacilityId(facility.getId())
+        .withSupervisoryNodeId(supervisoryNode2.getId())
+        .build();
+    requisition3 = new RequisitionDataBuilder()
+        .withProgramId(program2.getId())
         .withFacilityId(facility.getId())
         .withSupervisoryNodeId(supervisoryNode2.getId())
         .build();
 
     supplyLine1 = new SupplyLineDtoDataBuilder()
+        .withProgram(program1)
         .withSupervisoryNode(supervisoryNode1)
         .withSupplyingFacility(facility1)
         .build();
     supplyLine2 = new SupplyLineDtoDataBuilder()
+        .withProgram(program1)
+        .withSupervisoryNode(supervisoryNode2)
+        .withSupplyingFacility(facility2)
+        .build();
+    supplyLine3 = new SupplyLineDtoDataBuilder()
+        .withProgram(program2)
         .withSupervisoryNode(supervisoryNode2)
         .withSupplyingFacility(facility2)
         .build();
@@ -112,10 +127,10 @@ public class RequisitionForConvertBuilderTest {
     when(facilityReferenceDataService.search(
         asSet(facility.getId(), facility1.getId(), facility2.getId())))
         .thenReturn(asList(facility, facility1, facility2));
-    when(programReferenceDataService.search(asSet(program.getId())))
-        .thenReturn(singletonList(program));
+    when(programReferenceDataService.search(asSet(program1.getId())))
+        .thenReturn(singletonList(program1));
     when(supplyLineReferenceDataService.getPage(any(RequestParameters.class)))
-        .thenReturn(Pagination.getPage(asList(supplyLine1, supplyLine2),
+        .thenReturn(Pagination.getPage(asList(supplyLine1, supplyLine2, supplyLine3),
             new PageRequest(0, Integer.MAX_VALUE), 2));
   }
 
@@ -123,13 +138,13 @@ public class RequisitionForConvertBuilderTest {
   public void shouldBuildRequisitionsWithDepotsRespectingUserAccessibleDepots() {
     //when
     List<RequisitionWithSupplyingDepotsDto> result = requisitionForConvertBuilder.buildRequisitions(
-        asList(requisition1, requisition2),
+        asList(requisition1, requisition2, requisition3),
         asSet(facility1.getId(), facility2.getId()),
-        asList(supplyLine1, supplyLine2));
+        asList(supplyLine1, supplyLine2, supplyLine3));
 
     //then
     //we have 2 requisition representations
-    assertEquals(2, result.size());
+    assertEquals(3, result.size());
 
     //first requisition has 2 supplying depots where user has rights
     assertEquals(facility1, result.get(0).getSupplyingDepots().get(0));
@@ -142,7 +157,7 @@ public class RequisitionForConvertBuilderTest {
 
   @Test
   public void shouldSearchForSupplyingFacilitiesIfNullValueWasPassed() {
-    requisitionForConvertBuilder.buildRequisitions(asList(requisition1, requisition2),
+    requisitionForConvertBuilder.buildRequisitions(asList(requisition1, requisition2, requisition3),
         asSet(facility1.getId(), facility2.getId()), null);
 
     verify(supplyLineReferenceDataService).getPage(any(RequestParameters.class));

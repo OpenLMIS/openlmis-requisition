@@ -19,7 +19,9 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -90,10 +92,14 @@ public class RequisitionForConvertBuilder {
     Map<UUID, ProgramDto> programs = getPrograms(requisitions);
 
     profiler.start("GET_SUPERVISORY_NODE_SUPPLYING_FACILITY_PAIRS");
-    Map<UUID, UUID> supervisoryNodeSupplyingFacilityPairs = supplyLines.stream()
-        .collect(toMap(
-            supplyLine -> supplyLine.getSupervisoryNode().getId(),
-            supplyLine -> supplyLine.getSupplyingFacility().getId()));
+    Table<UUID, UUID, UUID> programSupervisoryNodeFacilities = HashBasedTable.create();
+
+    supplyLines
+        .forEach(supplyLineDto -> programSupervisoryNodeFacilities.put(
+            supplyLineDto.getProgram().getId(),
+            supplyLineDto.getSupervisoryNode().getId(),
+            supplyLineDto.getSupplyingFacility().getId())
+        );
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (Requisition requisition : requisitions) {
@@ -106,7 +112,8 @@ public class RequisitionForConvertBuilder {
       responseList.add(new RequisitionWithSupplyingDepotsDto(
           requisitionDto,
           singletonList(facilities.get(
-              supervisoryNodeSupplyingFacilityPairs.get(requisition.getSupervisoryNodeId())))));
+              programSupervisoryNodeFacilities.get(
+                  requisition.getProgramId(), requisition.getSupervisoryNodeId())))));
     }
 
     profiler.stop().log();
