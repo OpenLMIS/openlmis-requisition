@@ -98,8 +98,7 @@ public class RequisitionForConvertBuilder {
         .forEach(supplyLineDto -> programSupervisoryNodeFacilities.put(
             supplyLineDto.getProgram().getId(),
             supplyLineDto.getSupervisoryNode().getId(),
-            supplyLineDto.getSupplyingFacility().getId())
-        );
+            supplyLineDto.getSupplyingFacility().getId()));
 
     List<RequisitionWithSupplyingDepotsDto> responseList = new ArrayList<>();
     for (Requisition requisition : requisitions) {
