@@ -13,7 +13,6 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
         disableConcurrentBuilds()
-        skipStagesAfterUnstable()
     }
     environment {
         COMPOSE_PROJECT_NAME = "requisition${BRANCH_NAME}"
@@ -63,14 +62,7 @@ pipeline {
             }
             steps {
                 withCredentials([file(credentialsId: '8da5ba56-8ebb-4a6a-bdb5-43c9d0efb120', variable: 'ENV_FILE')]) {
-                    script {
-                        try {
-                            sh(script: "./ci-buildImage.sh")
-                        }
-                        catch (exc) {
-                            currentBuild.result = 'UNSTABLE'
-                        }
-                    }
+                    sh( script: "./ci-buildImage.sh" )
                 }
             }
             post {
@@ -133,17 +125,10 @@ pipeline {
                     steps {
                         withSonarQubeEnv('Sonar OpenLMIS') {
                             withCredentials([string(credentialsId: 'SONAR_LOGIN', variable: 'SONAR_LOGIN'), string(credentialsId: 'SONAR_PASSWORD', variable: 'SONAR_PASSWORD')]) {
-                                script {
-                                    try {
-                                        sh(script: "./ci-sonarAnalysis.sh")
+                                sh(script: "./ci-sonarAnalysis.sh")
 
-                                        // workaround: Sonar plugin retrieves the path directly from the output
-                                        sh 'echo "Working dir: ${WORKSPACE}/build/sonar"'
-                                    }
-                                    catch (exc) {
-                                        currentBuild.result = 'UNSTABLE'
-                                    }
-                                }
+                                // workaround: Sonar plugin retrieves the path directly from the output
+                                sh 'echo "Working dir: ${WORKSPACE}/build/sonar"'
                             }
                         }
                         timeout(time: 1, unit: 'HOURS') {
