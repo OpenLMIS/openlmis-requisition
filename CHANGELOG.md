@@ -1,3 +1,9 @@
+8.0.1 / WIP
+==================
+
+Improvements:
+* [OLMIS-6332](https://openlmis.atlassian.net/browse/OLMIS-6332): Changed default page size to max integer.
+
 8.0.0 / 2019-05-27
 ==================
 
