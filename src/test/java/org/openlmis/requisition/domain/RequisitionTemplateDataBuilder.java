@@ -37,12 +37,18 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
+import org.openlmis.requisition.testutils.ObjectReferenceDtoDataBuilder;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionTemplateDataBuilder {
+public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTemplate>,
+    RepositoryDataBuilder<RequisitionTemplate>, DtoDataBuilder<RequisitionTemplateDto> {
   private static int instanceNumber = 0;
 
   private UUID id;
@@ -79,6 +85,7 @@ public class RequisitionTemplateDataBuilder {
   /**
    * Builds {@link RequisitionTemplate} instance with test data.
    */
+  @Override
   public RequisitionTemplate build() {
     RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
         populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
@@ -90,6 +97,32 @@ public class RequisitionTemplateDataBuilder {
     }
 
     return template;
+  }
+
+  /**
+   * Builds {@link RequisitionTemplate} instance with test data without id.
+   */
+  @Override
+  public RequisitionTemplate buildAsNew() {
+    RequisitionTemplate requisitionTemplate = build();
+    requisitionTemplate.setId(null);
+    requisitionTemplate.setCreatedDate(null);
+    requisitionTemplate.setModifiedDate(null);
+    return requisitionTemplate;
+  }
+
+  /**
+   * Builds {@link RequisitionTemplateDto} instance with test data.
+   */
+  @Override
+  public RequisitionTemplateDto buildAsDto() {
+    RequisitionTemplate requisitionTemplate = build();
+    RequisitionTemplateDto requisitionTemplateDto = new RequisitionTemplateDto();
+    requisitionTemplate.export(requisitionTemplateDto);
+    requisitionTemplateDto.setColumnsMap(new HashMap<>());
+    requisitionTemplateDto.setProgram(new ObjectReferenceDtoDataBuilder().buildAsDto());
+    requisitionTemplateDto.setFacilityTypes(new HashSet<>());
+    return requisitionTemplateDto;
   }
 
   /**
@@ -166,6 +199,21 @@ public class RequisitionTemplateDataBuilder {
       if (columnsMap.containsKey(stockColumn)) {
         columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
       }
+    }
+
+    return this;
+  }
+
+  /**
+   * Set populateStockOnHandFromStockCards flag. If builder contains stock based columns,
+   * the method will modify the source to {@link SourceType#STOCK_CARDS}.
+   */
+  public RequisitionTemplateDataBuilder withPopulateStockOnHandFromStockCards(
+      boolean populateStockOnHandFromStockCards) {
+    this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
+
+    if (populateStockOnHandFromStockCards) {
+      withPopulateStockOnHandFromStockCards();
     }
 
     return this;

@@ -31,6 +31,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.OrderDtoDataBuilder;
 
 @RunWith(Parameterized.class)
 public class OrderFulfillmentServiceParameterizedTest
@@ -43,10 +44,7 @@ public class OrderFulfillmentServiceParameterizedTest
 
   @Override
   protected OrderDto generateInstance() {
-    OrderDto order = new OrderDto();
-    order.setId(UUID.randomUUID());
-
-    return order;
+    return new OrderDtoDataBuilder().buildAsDto();
   }
 
   @Override

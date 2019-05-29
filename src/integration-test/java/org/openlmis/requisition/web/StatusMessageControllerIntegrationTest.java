@@ -34,6 +34,8 @@ import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
+import org.openlmis.requisition.testutils.StatusMessageDataBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -107,16 +109,13 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
   private StatusMessage generateStatusMessage(Requisition requisition) {
     UUID messageId = UUID.randomUUID();
 
-    StatusChange change = new StatusChange();
-    change.setId(UUID.randomUUID());
-
-    StatusMessage message = new StatusMessage();
-    message.setId(messageId);
-    message.setStatusChange(change);
-    message.setRequisition(requisition);
-    message.setStatus(requisition.getStatus());
-    message.setAuthorId(UUID.randomUUID());
-    message.setBody("");
+    StatusChange change = new StatusChangeDataBuilder().build();
+    StatusMessage message = new StatusMessageDataBuilder()
+        .withId(messageId)
+        .withStatusChange(change)
+        .withRequisition(requisition)
+        .withStatus(requisition.getStatus())
+        .build();
 
     given(statusMessageRepository.findOne(messageId)).willReturn(message);
     return message;

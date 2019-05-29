@@ -49,6 +49,7 @@ import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.errorhandling.FailureType;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -74,13 +75,15 @@ public class PermissionServiceTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID supervisoryNodeId = UUID.randomUUID();
-  private ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
+  private ReleasableRequisitionDto releasableRequisitionDto;
   private List<ReleasableRequisitionDto> releasableDtos = new ArrayList<>();
 
   @Before
   public void setUp() {
-    releasableRequisitionDto.setRequisitionId(requisitionId);
-    releasableRequisitionDto.setSupplyingDepotId(facilityId);
+    releasableRequisitionDto = new ReleasableRequisitionDtoDataBuilder()
+        .withRequisitionId(requisitionId)
+        .withSupplyingDepotId(facilityId)
+        .buildAsDto();
     releasableDtos.add(releasableRequisitionDto);
 
     when(requisition.getId()).thenReturn(requisitionId);

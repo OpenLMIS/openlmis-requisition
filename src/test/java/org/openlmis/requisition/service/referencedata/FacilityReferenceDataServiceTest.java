@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.MinimalFacilityDtoDataBuilder;
 
 public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTest<FacilityDto> {
 
@@ -37,7 +39,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
 
   @Override
   protected FacilityDto generateInstance() {
-    return new FacilityDto();
+    return new FacilityDtoDataBuilder().buildAsDto();
   }
 
   @Override
@@ -60,7 +62,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
 
 
     // when
-    FacilityDto dto = new FacilityDto();
+    FacilityDto dto = new FacilityDtoDataBuilder().buildAsDto();
     mockPageResponseEntity(dto);
     List<FacilityDto> result = service.search(Sets.newHashSet(facility1, facility2));
 
@@ -104,7 +106,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
     expectedBody.put("recurse", recurse);
     expectedBody.put("zoneId", zoneId);
 
-    MinimalFacilityDto dto = new MinimalFacilityDto();
+    MinimalFacilityDto dto = new MinimalFacilityDtoDataBuilder().buildAsDto();
 
     // when
     mockPageResponseEntity(dto);
@@ -132,7 +134,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
     expectedBody.put("name", name);
     expectedBody.put("recurse", recurse);
 
-    MinimalFacilityDto dto = new MinimalFacilityDto();
+    MinimalFacilityDto dto = new MinimalFacilityDtoDataBuilder().buildAsDto();
 
     // when
     mockPageResponseEntity(dto);

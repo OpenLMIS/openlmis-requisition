@@ -44,6 +44,10 @@ import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -115,11 +119,12 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
           .orElse(emptyList())
           .stream()
           .map(line -> {
-            OrderableDto orderableDto = new OrderableDto();
-            orderableDto.setId(line.getOrderableId());
-            orderableDto.setPrograms(Sets.newHashSet());
-            orderableDto.setProductCode(RandomStringUtils.randomAlphanumeric(5));
-            orderableDto.setFullProductName(RandomStringUtils.randomAlphanumeric(5));
+            OrderableDto orderableDto = new OrderableDtoDataBuilder()
+                .withId(line.getOrderableId())
+                .withPrograms(Sets.newHashSet())
+                .withProductCode(RandomStringUtils.randomAlphanumeric(5))
+                .withFullProductName(RandomStringUtils.randomAlphanumeric(5))
+                .buildAsDto();
 
             RequisitionLineItemDto lineDto = new RequisitionLineItemDto();
             line.export(lineDto, orderableDto);
@@ -130,23 +135,23 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
 
       FacilityDto facility = null;
       if (requisition.getFacilityId() != null) {
-        facility = new FacilityDto();
-        facility.setId(requisition.getFacilityId());
-        facility.setName("facility");
+        facility = new FacilityDtoDataBuilder()
+            .withId(requisition.getFacilityId())
+            .buildAsDto();
       }
 
       ProgramDto program = null;
       if (requisition.getProgramId() != null) {
-        program = new ProgramDto();
-        program.setId(requisition.getProgramId());
-        program.setName("program");
+        program = new ProgramDtoDataBuilder()
+            .withId(requisition.getProgramId())
+            .buildAsDto();
       }
 
       ProcessingPeriodDto period = null;
       if (requisition.getProcessingPeriodId() != null) {
-        period = new ProcessingPeriodDto();
-        period.setId(requisition.getProcessingPeriodId());
-        period.setName("period");
+        period = new ProcessingPeriodDtoDataBuilder()
+            .withId(requisition.getProcessingPeriodId())
+            .buildAsDto();
       }
 
       dto.setProcessingPeriod(period);

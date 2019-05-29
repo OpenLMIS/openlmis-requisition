@@ -719,7 +719,7 @@ public class RequisitionTemplateDtoValidatorTest {
     }
 
     when(programReferenceDataService.findOne(template.getProgramId())).thenReturn(
-        new ProgramDtoDataBuilder().withId(template.getProgramId()).build());
+        new ProgramDtoDataBuilder().withId(template.getProgramId()).buildAsDto());
 
     for (UUID facilityTypeId : template.getFacilityTypeIds()) {
       when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(

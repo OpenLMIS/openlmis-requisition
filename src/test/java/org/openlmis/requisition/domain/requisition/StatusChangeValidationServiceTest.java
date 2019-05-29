@@ -68,7 +68,7 @@ public class StatusChangeValidationServiceTest {
   public void shouldNotCallValidatorsNotForApprovalDuringApprove() {
     requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
-        .setStatus(RequisitionStatus.AUTHORIZED)
+        .withStatus(RequisitionStatus.AUTHORIZED)
         .build();
     addValidatorForApprovalAndCallValidationService();
   }
@@ -83,8 +83,8 @@ public class StatusChangeValidationServiceTest {
             ReflectionTestUtils.getField(statusChangeValidationService, "validators");
 
     List<Class> actual = validators.stream()
-            .map(RequisitionStatusChangeDomainValidator::getClass)
-            .collect(Collectors.toList());
+        .map(RequisitionStatusChangeDomainValidator::getClass)
+        .collect(Collectors.toList());
     assertThat(actual).containsExactlyInAnyOrder(expectedClasses);
 
   }

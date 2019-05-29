@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
 
 public class ScheduleReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<ProcessingScheduleDto> {
@@ -33,7 +34,7 @@ public class ScheduleReferenceDataServiceTest
 
   @Override
   protected ProcessingScheduleDto generateInstance() {
-    return new ProcessingScheduleDto();
+    return new ProcessingScheduleDtoDataBuilder().buildAsDto();
   }
 
   @Override

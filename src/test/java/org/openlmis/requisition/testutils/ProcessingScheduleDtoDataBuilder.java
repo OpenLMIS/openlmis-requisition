@@ -18,8 +18,9 @@ package org.openlmis.requisition.testutils;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class ProcessingScheduleDtoDataBuilder {
+public class ProcessingScheduleDtoDataBuilder implements DtoDataBuilder<ProcessingScheduleDto> {
 
   private static int instanceNumber = 0;
 
@@ -42,7 +43,7 @@ public class ProcessingScheduleDtoDataBuilder {
     name = "Schedule" + instanceNumber;
   }
 
-  public ProcessingScheduleDto build() {
+  public ProcessingScheduleDto buildAsDto() {
     return new ProcessingScheduleDto(id, code, description, modifiedDate, name);
   }
 }

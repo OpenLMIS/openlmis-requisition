@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.RoleDtoDataBuilder;
 
 public class RoleReferenceDataServiceTest extends BaseReferenceDataServiceTest<RoleDto> {
 
@@ -32,7 +33,7 @@ public class RoleReferenceDataServiceTest extends BaseReferenceDataServiceTest<R
 
   @Override
   protected RoleDto generateInstance() {
-    return new RoleDto();
+    return new RoleDtoDataBuilder().buildAsDto();
   }
 
   @Override

@@ -37,6 +37,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -77,7 +78,16 @@ public class BasicRequisitionDtoBuilderTest {
 
   @Before
   public void setUp() {
-    requisition = buildRequisition();
+    requisition = new RequisitionDataBuilder()
+        .withId(requisitionUuid)
+        .withSupervisoryNodeId(supervisoryNodeUuid)
+        .withModifiedDate(ZonedDateTime.now())
+        .withFacilityId(facility.getId())
+        .withProgramId(program.getId())
+        .withProcessingPeriodId(processingPeriod.getId())
+        .withStatus(RequisitionStatus.INITIATED)
+        .withEmergency(false)
+        .build();
   }
 
   @Test
@@ -165,15 +175,5 @@ public class BasicRequisitionDtoBuilderTest {
     assertEquals(program, basicRequisitionDto.getProgram());
     assertEquals(processingPeriod, basicRequisitionDto.getProcessingPeriod());
     assertEquals(requisition.getModifiedDate(), basicRequisitionDto.getModifiedDate());
-  }
-
-  private Requisition buildRequisition() {
-    Requisition requisition = new Requisition(facility.getId(), program.getId(),
-        processingPeriod.getId(), RequisitionStatus.INITIATED, false);
-    requisition.setId(requisitionUuid);
-    requisition.setSupervisoryNodeId(supervisoryNodeUuid);
-    requisition.setModifiedDate(ZonedDateTime.now());
-
-    return requisition;
   }
 }

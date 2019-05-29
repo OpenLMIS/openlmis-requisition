@@ -18,12 +18,12 @@ package org.openlmis.requisition.service.fulfillment;
 import static java.util.Arrays.asList;
 
 import java.util.List;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.OrderDtoDataBuilder;
 import org.springframework.web.client.RestClientException;
 
 public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<OrderDto> {
@@ -37,10 +37,7 @@ public class OrderFulfillmentServiceTest extends BaseFulfillmentServiceTest<Orde
 
   @Override
   protected OrderDto generateInstance() {
-    OrderDto order = new OrderDto();
-    order.setId(UUID.randomUUID());
-    
-    return order;
+    return new OrderDtoDataBuilder().buildAsDto();
   }
 
   @Override

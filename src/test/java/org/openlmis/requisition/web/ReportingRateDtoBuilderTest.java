@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -43,6 +44,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.dto.BasicProcessingPeriodDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -73,7 +75,7 @@ public class ReportingRateDtoBuilderTest {
     // given
     List<ProcessingPeriodDto> periods = generateProcessingPeriods(5, null)
         .stream()
-        .sorted((left, right) -> left.getStartDate().compareTo(right.getStartDate()))
+        .sorted(Comparator.comparing(BasicProcessingPeriodDto::getStartDate))
         .collect(Collectors.toList());
 
     when(periodReferenceDataService.search(any(UUID.class), any(LocalDate.class)))

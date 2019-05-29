@@ -22,9 +22,13 @@ import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
-public class StatusChangeDataBuilder {
+public class StatusChangeDataBuilder implements DataBuilder<StatusChange>,
+    RepositoryDataBuilder<StatusChange> {
 
+  private UUID id = UUID.randomUUID();
   private Requisition requisition = new RequisitionDataBuilder().build();
   private StatusMessage statusMessage = null;
   private UUID authorId = UUID.randomUUID();
@@ -39,12 +43,25 @@ public class StatusChangeDataBuilder {
    */
   public StatusChange build() {
     StatusChange statusChange = new StatusChange();
+    statusChange.setId(id);
     statusChange.setRequisition(requisition);
     statusChange.setStatusMessage(statusMessage);
     statusChange.setAuthorId(authorId);
     statusChange.setSupervisoryNodeId(supervisoryNodeId);
     statusChange.setStatus(status);
     statusChange.setCreatedDate(createdDate);
+    return statusChange;
+  }
+
+  /**
+   * Build an instance of the {@link StatusChange} class without id.
+   *
+   * @return the instance of the {@link StatusChange} class without id
+   */
+  @Override
+  public StatusChange buildAsNew() {
+    StatusChange statusChange = build();
+    statusChange.setId(null);
     return statusChange;
   }
 
@@ -85,5 +102,4 @@ public class StatusChangeDataBuilder {
     return this.withRequisition(requisition)
           .withStatus(requisitionStatus);
   }
-
 }

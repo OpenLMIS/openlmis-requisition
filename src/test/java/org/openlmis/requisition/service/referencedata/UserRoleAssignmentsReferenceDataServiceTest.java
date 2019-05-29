@@ -32,6 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.testutils.DetailedRoleAssignmentDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -42,7 +43,7 @@ public class UserRoleAssignmentsReferenceDataServiceTest
 
   @Override
   protected DetailedRoleAssignmentDto generateInstance() {
-    return new DetailedRoleAssignmentDto();
+    return new DetailedRoleAssignmentDtoDataBuilder().buildAsDto();
   }
 
   @Override

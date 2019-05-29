@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.GeographicZoneDtoDataBuilder;
 
 public class GeographicZoneReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<GeographicZoneDto> {
@@ -36,7 +37,7 @@ public class GeographicZoneReferenceDataServiceTest
 
   @Override
   protected GeographicZoneDto generateInstance() {
-    return new GeographicZoneDto();
+    return new GeographicZoneDtoDataBuilder().buildAsDto();
   }
 
   @Override

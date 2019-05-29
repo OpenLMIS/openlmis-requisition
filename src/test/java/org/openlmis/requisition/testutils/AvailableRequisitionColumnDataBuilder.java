@@ -23,8 +23,10 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.ColumnType;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.testutils.api.DataBuilder;
 
-public class AvailableRequisitionColumnDataBuilder {
+public class AvailableRequisitionColumnDataBuilder implements
+    DataBuilder<AvailableRequisitionColumn> {
 
   private UUID id;
   private String name;

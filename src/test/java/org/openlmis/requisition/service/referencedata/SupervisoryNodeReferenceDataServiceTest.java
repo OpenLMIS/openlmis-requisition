@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 
 public class SupervisoryNodeReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<SupervisoryNodeDto> {
@@ -38,7 +39,7 @@ public class SupervisoryNodeReferenceDataServiceTest
 
   @Override
   protected SupervisoryNodeDto generateInstance() {
-    return new SupervisoryNodeDto();
+    return new SupervisoryNodeDtoDataBuilder().buildAsDto();
   }
 
   @Override

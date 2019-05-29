@@ -18,13 +18,14 @@ package org.openlmis.requisition.service.referencedata;
 import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
+import org.openlmis.requisition.testutils.FacilityTypeDtoDataBuilder;
 
 public class FacilityTypeReferenceDataServiceTest
     extends BaseCommunicationServiceTest<FacilityTypeDto> {
 
   @Override
   protected FacilityTypeDto generateInstance() {
-    return new FacilityTypeDto();
+    return new FacilityTypeDtoDataBuilder().buildAsDto();
   }
 
   @Override

@@ -22,9 +22,10 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.testutils.api.DataBuilder;
 
 @NoArgsConstructor
-public class StockAdjustmentReasonDataBuilder {
+public class StockAdjustmentReasonDataBuilder implements DataBuilder<StockAdjustmentReason> {
 
   private UUID reasonId = UUID.randomUUID();
   private String name = RandomStringUtils.randomAlphanumeric(5);
@@ -42,9 +43,28 @@ public class StockAdjustmentReasonDataBuilder {
         isFreeTextAllowed, hidden);
   }
 
-  public StockAdjustmentReasonDataBuilder setReasonId(UUID reasonId) {
+  public StockAdjustmentReasonDataBuilder withReasonId(UUID reasonId) {
     this.reasonId = reasonId;
     return this;
   }
 
+  public StockAdjustmentReasonDataBuilder withReasonCategory(ReasonCategory reasonCategory) {
+    this.reasonCategory = reasonCategory;
+    return this;
+  }
+
+  public StockAdjustmentReasonDataBuilder withReasonType(ReasonType reasonType) {
+    this.reasonType = reasonType;
+    return this;
+  }
+
+  public StockAdjustmentReasonDataBuilder withIsFreeTextAllowed(boolean isFreeTextAllowed) {
+    this.isFreeTextAllowed = isFreeTextAllowed;
+    return this;
+  }
+
+  public StockAdjustmentReasonDataBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
 }

@@ -33,7 +33,7 @@ public class StockCardRangeSummaryDtoTest extends ToStringContractTest<StockCard
   public void setUp() {
     dto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of("tag1", 10, "tag2", 20))
-        .build();
+        .buildAsDto();
   }
 
   @Test
@@ -50,7 +50,7 @@ public class StockCardRangeSummaryDtoTest extends ToStringContractTest<StockCard
   public void shouldReturnZeroIfMapIsEmpty() {
     dto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(Collections.EMPTY_MAP)
-        .build();
+        .buildAsDto();
 
     assertEquals(new Integer(0), dto.getTagAmount("tag1"));
   }

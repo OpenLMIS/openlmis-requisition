@@ -17,7 +17,9 @@ package org.openlmis.requisition.domain.requisition;
 
 import com.google.common.collect.Maps;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,11 +29,19 @@ import org.assertj.core.util.Sets;
 import org.openlmis.requisition.domain.ExtraDataEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.testutils.BasicRequisitionTemplateDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionDataBuilder {
+public class RequisitionDataBuilder implements DataBuilder<Requisition>,
+    RepositoryDataBuilder<Requisition>, DtoDataBuilder<RequisitionDto> {
   private UUID id = UUID.randomUUID();
   private List<RequisitionLineItem> requisitionLineItems = Lists.newArrayList();
   private String draftStatusMessage = "";
@@ -56,6 +66,96 @@ public class RequisitionDataBuilder {
   private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
   private List<RequisitionPermissionString> permissionStrings = new ArrayList<>();
   private Map<String, Object> extraData = Maps.newHashMap();
+  private ZonedDateTime createdDate = ZonedDateTime.now();
+  private ZonedDateTime modifiedDate = ZonedDateTime.now();
+
+  /**
+   * Creates new instance of {@link Requisition}.
+   */
+  @Override
+  public Requisition build() {
+    return buildInitiatedRegularRequisition();
+  }
+
+  /**
+   * Creates new instance of {@link Requisition} dedicated to repository usage.
+   */
+  @Override
+  public Requisition buildAsNew() {
+    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
+        status, emergency);
+    requisition.setCreatedDate(createdDate);
+    requisition.setModifiedDate(modifiedDate);
+    requisition.setNumberOfMonthsInPeriod(numberOfMonthsInPeriod);
+    requisition.setTemplate(template);
+    requisition.setSupervisoryNodeId(supervisoryNodeId);
+    requisition.setDraftStatusMessage(draftStatusMessage);
+    requisition.setRequisitionLineItems(requisitionLineItems);
+    requisition.setSupplyingFacilityId(supplyingFacilityId);
+    requisition.setStatusChanges(statusChanges);
+    requisition.setReportOnly(reportOnly);
+    requisition.setNumberOfMonthsInPeriod(numberOfMonthsInPeriod);
+    requisition.setPreviousRequisitions(previousRequisitions);
+    requisition.setAvailableProducts(availableProducts);
+    requisition.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
+    requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
+    requisition.setExtraData(extraData);
+    return requisition;
+  }
+
+  /**
+   * Creates new instance of {@link RequisitionDto}.
+   */
+  @Override
+  public RequisitionDto buildAsDto() {
+    Requisition requisition = buildInitiatedRegularRequisition();
+    RequisitionDto requisitionDto = new RequisitionDto();
+    requisition.export(requisitionDto);
+    requisitionDto.setRequisitionLineItems(new ArrayList<>());
+    requisitionDto.setTemplate(new BasicRequisitionTemplateDtoDataBuilder().buildAsDto());
+    requisitionDto.setProgram(new ProgramDtoDataBuilder().buildAsDto());
+    requisitionDto.setProcessingPeriod(new ProcessingPeriodDtoDataBuilder().buildAsDto());
+    requisitionDto.setStockAdjustmentReasons(new ArrayList<>());
+    requisitionDto.setAvailableFullSupplyProducts(new HashSet<>());
+    requisitionDto.setAvailableNonFullSupplyProducts(new HashSet<>());
+    return requisitionDto;
+  }
+
+  /**
+   * Creates new initiated instance of {@link Requisition}.
+   */
+  public Requisition buildInitiatedRegularRequisition() {
+    Requisition requisition = new Requisition(
+        requisitionLineItems, version, draftStatusMessage, template, facilityId, programId,
+        processingPeriodId, supplyingFacilityId, status, statusChanges, emergency, reportOnly,
+        numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
+        datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings,
+        new ExtraDataEntity(extraData)
+    );
+    requisition.setId(id);
+    requisition.setCreatedDate(createdDate);
+    requisition.setModifiedDate(modifiedDate);
+
+    requisitionLineItems.forEach(line -> line.setRequisition(requisition));
+
+    return requisition;
+  }
+
+  /**
+   * Builds a requisition in authorized status.
+   */
+  public Requisition buildAuthorizedRequisition() {
+    Requisition requisition = withStatus(RequisitionStatus.AUTHORIZED)
+        .build();
+
+    List<StatusChange> statusChanges = new ArrayList<>();
+    statusChanges.add(new StatusChangeDataBuilder().forInitiatedRequisition(requisition).build());
+    statusChanges.add(new StatusChangeDataBuilder().forSubmittedRequisition(requisition).build());
+    statusChanges.add(new StatusChangeDataBuilder().forAuthorizedRequisition(requisition).build());
+
+    requisition.setStatusChanges(statusChanges);
+    return requisition;
+  }
 
   /**
    * Add a requisition line item. Update available products list only if requisition is
@@ -72,43 +172,42 @@ public class RequisitionDataBuilder {
   }
 
   /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   * Sets stock adjustment reason.
    */
-  public Requisition build() {
-    return buildInitiatedRegularRequisition();
+  public RequisitionDataBuilder addStockAdjustmentReason(StockAdjustmentReason reason) {
+    this.stockAdjustmentReasons.add(reason);
+    return this;
   }
 
   /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   * Sets id.
    */
-  public Requisition buildInitiatedRegularRequisition() {
-    Requisition requisition = new Requisition(
-        requisitionLineItems, version, draftStatusMessage, template, facilityId, programId,
-        processingPeriodId, supplyingFacilityId, status, statusChanges, emergency, reportOnly,
-        numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
-        datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings,
-        new ExtraDataEntity(extraData)
-    );
-    requisition.setId(id);
-    requisitionLineItems.forEach(line -> line.setRequisition(requisition));
-
-    return requisition;
+  public RequisitionDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
   }
 
   /**
-   * Sets datePhysicalStockCountCompleted.
+   * Sets physical stock count completion date.
    */
-  public RequisitionDataBuilder setDatePhysicalStockCountCompleted(
+  public RequisitionDataBuilder withDatePhysicalStockCountCompleted(
       LocalDate datePhysicalStockCountCompleted) {
     this.datePhysicalStockCountCompleted =
         new DatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
     return this;
   }
 
+  public RequisitionDataBuilder withDatePhysicalStockCountCompleted(
+      DatePhysicalStockCountCompleted datePhysicalStockCountCompleted) {
+    this.datePhysicalStockCountCompleted = datePhysicalStockCountCompleted;
+    return this;
+  }
+
   /**
-   * Sets status.
-   */
-  public RequisitionDataBuilder setStatus(RequisitionStatus status) {
+  * Sets status.
+  */
+
+  public RequisitionDataBuilder withStatus(RequisitionStatus status) {
     this.status = status;
     return this;
   }
@@ -116,16 +215,8 @@ public class RequisitionDataBuilder {
   /**
    * Sets template.
    */
-  public RequisitionDataBuilder setTemplate(RequisitionTemplate template) {
+  public RequisitionDataBuilder withTemplate(RequisitionTemplate template) {
     this.template = template;
-    return this;
-  }
-
-  /**
-   * Sets template.
-   */
-  public RequisitionDataBuilder addStockAdjustmentReason(StockAdjustmentReason reason) {
-    this.stockAdjustmentReasons.add(reason);
     return this;
   }
 
@@ -139,38 +230,49 @@ public class RequisitionDataBuilder {
     return this;
   }
 
+  /**
+   * Sets facility id.
+   */
   public RequisitionDataBuilder withFacilityId(UUID facilityId) {
     this.facilityId = facilityId;
     return this;
   }
 
+
+  /**
+   * Sets program id.
+   */
   public RequisitionDataBuilder withProgramId(UUID programId) {
     this.programId = programId;
     return this;
   }
 
+  /**
+   * Sets processing period id.
+   */
   public RequisitionDataBuilder withProcessingPeriodId(UUID processingPeriodId) {
     this.processingPeriodId = processingPeriodId;
     return this;
   }
 
+  /**
+   * Sets supervisory node id.
+   */
   public RequisitionDataBuilder withSupervisoryNodeId(UUID supervisoryNodeId) {
     this.supervisoryNodeId = supervisoryNodeId;
     return this;
   }
 
-  public RequisitionDataBuilder withTemplate(RequisitionTemplate template) {
-    this.template = template;
-    return this;
-  }
-
-  public RequisitionDataBuilder withOriginalRequisition(UUID originalRequisitionId) {
+  /**
+   * Sets original requisition id.
+   */
+  public RequisitionDataBuilder withOriginalRequisitionId(UUID originalRequisitionId) {
     this.extraData.put(Requisition.EXTRA_DATA_ORIGINAL_REQUISITION_ID, originalRequisitionId);
     return this;
   }
 
   /**
-   * Creates default permission strings.
+   * Sets default view permission string.
    */
   public RequisitionDataBuilder withPermissionStrings() {
     permissionStrings.add(new RequisitionPermissionString(null,
@@ -180,25 +282,93 @@ public class RequisitionDataBuilder {
   }
 
   /**
-   * Builds a requisition in authorized status.
-   *
-   * @return the requisition in authorized status
+   * Sets requisition line items.
    */
-  public Requisition buildAuthorizedRequisition() {
-    Requisition requisition = withStatus(RequisitionStatus.AUTHORIZED)
-        .build();
-
-    List<StatusChange> statusChanges = new ArrayList<>();
-    statusChanges.add(new StatusChangeDataBuilder().forInitiatedRequisition(requisition).build());
-    statusChanges.add(new StatusChangeDataBuilder().forSubmittedRequisition(requisition).build());
-    statusChanges.add(new StatusChangeDataBuilder().forAuthorizedRequisition(requisition).build());
-
-    requisition.setStatusChanges(statusChanges);
-    return requisition;
+  public RequisitionDataBuilder withRequisitionLineItems(
+      List<RequisitionLineItem> requisitionLineItems) {
+    this.requisitionLineItems = requisitionLineItems;
+    return this;
   }
 
-  private RequisitionDataBuilder withStatus(RequisitionStatus status) {
-    this.status = status;
+  /**
+   * Sets number of months in period.
+   */
+  public RequisitionDataBuilder withNumberOfMonthsInPeriod(
+      Integer numberOfMonthsInPeriod) {
+    this.numberOfMonthsInPeriod = numberOfMonthsInPeriod;
+    return this;
+  }
+
+  /**
+   * Sets stock adjustment reasons.
+   */
+  public RequisitionDataBuilder withStockAdjustmentReasons(
+      List<StockAdjustmentReason> stockAdjustmentReasons) {
+    this.stockAdjustmentReasons = stockAdjustmentReasons;
+    return this;
+  }
+
+  /**
+   * Sets emergency.
+   */
+  public RequisitionDataBuilder withEmergency(Boolean emergency) {
+    this.emergency = emergency;
+    return this;
+  }
+
+  public RequisitionDataBuilder withCreatedDate(ZonedDateTime createdDate) {
+    this.createdDate = createdDate;
+    return this;
+  }
+
+  public RequisitionDataBuilder withModifiedDate(ZonedDateTime modifiedDate) {
+    this.modifiedDate = modifiedDate;
+    return this;
+  }
+
+  public RequisitionDataBuilder withSupplyingFacilityId(UUID supplyingFacilityId) {
+    this.supplyingFacilityId = supplyingFacilityId;
+    return this;
+  }
+
+  public RequisitionDataBuilder withDraftStatusMessage(String draftStatusMessage) {
+    this.draftStatusMessage = draftStatusMessage;
+    return this;
+  }
+
+  public RequisitionDataBuilder withStatusChanges(List<StatusChange> statusChanges) {
+    this.statusChanges = statusChanges;
+    return this;
+  }
+
+  /**
+   * Sets all fields empty.
+   */
+  public RequisitionDataBuilder withEmptyFields() {
+    id = null;
+    requisitionLineItems = new ArrayList<>();
+    draftStatusMessage = null;
+    template = null;
+    facilityId = null;
+    programId = null;
+    processingPeriodId = null;
+    supplyingFacilityId = null;
+    status = null;
+    statusChanges = null;
+    emergency = null;
+    reportOnly = null;
+    numberOfMonthsInPeriod = null;
+    version = null;
+    supervisoryNodeId = null;
+    previousRequisitions = new ArrayList<>();
+    availableProducts = new HashSet<>();
+    datePhysicalStockCountCompleted = null;
+    stockAdjustmentReasons = new ArrayList<>();
+    permissionStrings = new ArrayList<>();
+    extraData = null;
+    createdDate = null;
+    modifiedDate = null;
     return this;
   }
 }
+

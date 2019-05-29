@@ -22,8 +22,11 @@ import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
 import org.openlmis.requisition.dto.SupplyPartnerDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
-public class SupplyPartnerDtoDataBuilder {
+public class SupplyPartnerDtoDataBuilder implements DtoDataBuilder<SupplyPartnerDto>,
+    RepositoryDataBuilder<SupplyPartnerDto> {
   private UUID id = UUID.randomUUID();
   private String name = RandomStringUtils.randomAlphanumeric(5);
   private String code = name.toUpperCase(Locale.ENGLISH);
@@ -39,6 +42,7 @@ public class SupplyPartnerDtoDataBuilder {
     return this;
   }
 
+  @Override
   public SupplyPartnerDto buildAsNew() {
     return new SupplyPartnerDto(name, code, associations);
   }
@@ -46,7 +50,8 @@ public class SupplyPartnerDtoDataBuilder {
   /**
    * Builds an instance of {@link SupplyPartnerDto}.
    */
-  public SupplyPartnerDto build() {
+  @Override
+  public SupplyPartnerDto buildAsDto() {
     SupplyPartnerDto supplyPartner = buildAsNew();
     supplyPartner.setId(id);
 

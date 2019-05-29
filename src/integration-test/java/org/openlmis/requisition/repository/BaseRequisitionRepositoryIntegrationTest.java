@@ -38,11 +38,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
-import org.openlmis.requisition.dto.ReasonCategory;
-import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
+import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -78,14 +79,20 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
     // Add permission to user for each facility and program
     userPermissionStrings.add("REQUISITION_VIEW|" + facilityId + "|" + programId);
 
-    Requisition requisition = new Requisition(facilityId, programId, processingPeriodId,
-        INITIATED, getNextInstanceNumber() % 2 == 0);
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setModifiedDate(ZonedDateTime.now());
-    requisition.setSupervisoryNodeId(UUID.randomUUID());
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setTemplate(testTemplate);
-    requisition.setDraftStatusMessage(RandomStringUtils.randomAlphanumeric(500));
+    Requisition requisition = new RequisitionDataBuilder()
+          .withFacilityId(facilityId)
+          .withProgramId(programId)
+          .withProcessingPeriodId(processingPeriodId)
+          .withStatus(INITIATED)
+          .withEmergency(getNextInstanceNumber() % 2 == 0)
+          .withCreatedDate(ZonedDateTime.now())
+          .withModifiedDate(ZonedDateTime.now())
+          .withSupervisoryNodeId(UUID.randomUUID())
+          .withNumberOfMonthsInPeriod(1)
+          .withTemplate(testTemplate)
+          .withDraftStatusMessage(RandomStringUtils.randomAlphanumeric(500))
+          .buildAsNew();
+
     addStatusChanges(requisition, 0);
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
@@ -97,13 +104,10 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
   }
 
   protected StockAdjustmentReason generateStockAdjustmentReason() {
-    StockAdjustmentReason reason = new StockAdjustmentReason();
-    reason.setReasonId(UUID.randomUUID());
-    reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.CREDIT);
-    reason.setDescription("simple description");
-    reason.setIsFreeTextAllowed(false);
-    reason.setName(RandomStringUtils.random(5));
+    StockAdjustmentReason reason = new StockAdjustmentReasonDataBuilder()
+        .withIsFreeTextAllowed(false)
+        .withName(RandomStringUtils.random(5))
+        .build();
     return reason;
   }
 
@@ -188,8 +192,10 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
   }
 
   private void addStatusChange(Requisition requisition, RequisitionStatus status) {
-    StatusChange statusChange = StatusChange.newStatusChange(requisition, UUID.randomUUID());
-    statusChange.setStatus(status);
+    StatusChange statusChange = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withStatus(status)
+        .buildAsNew();
 
     requisition.getStatusChanges().add(statusChange);
 

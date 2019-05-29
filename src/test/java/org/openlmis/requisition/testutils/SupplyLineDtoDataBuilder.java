@@ -21,14 +21,15 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class SupplyLineDtoDataBuilder {
+public class SupplyLineDtoDataBuilder implements DtoDataBuilder<SupplyLineDto> {
 
   private UUID id = UUID.randomUUID();
   private SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
   private String description = RandomStringUtils.randomAlphanumeric(5);
-  private ProgramDto program = new ProgramDtoDataBuilder().build();
-  private FacilityDto supplyingFacility = new FacilityDtoDataBuilder().build();
+  private ProgramDto program = new ProgramDtoDataBuilder().buildAsDto();
+  private FacilityDto supplyingFacility = new FacilityDtoDataBuilder().buildAsDto();
 
   public SupplyLineDtoDataBuilder withSupplyingFacility(FacilityDto supplyingFacility) {
     this.supplyingFacility = supplyingFacility;
@@ -48,7 +49,7 @@ public class SupplyLineDtoDataBuilder {
   /**
    * Creates new instance of {@link SupplyLineDto}.
    */
-  public SupplyLineDto build() {
+  public SupplyLineDto buildAsDto() {
     SupplyLineDto dto = new SupplyLineDto(supervisoryNode, description, program, supplyingFacility);
     dto.setId(id);
     return dto;

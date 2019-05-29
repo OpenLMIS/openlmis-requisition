@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceTest<OrderableDto> {
 
@@ -38,7 +39,7 @@ public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceT
 
   @Override
   protected OrderableDto generateInstance() {
-    return new OrderableDto();
+    return new OrderableDtoDataBuilder().buildAsDto();
   }
 
   @Override

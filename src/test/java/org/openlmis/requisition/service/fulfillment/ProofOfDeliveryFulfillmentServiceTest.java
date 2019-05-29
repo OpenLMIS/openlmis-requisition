@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.ProofOfDeliveryDtoDataBuilder;
 
 public class ProofOfDeliveryFulfillmentServiceTest
     extends BaseFulfillmentServiceTest<ProofOfDeliveryDto> {
@@ -33,7 +34,7 @@ public class ProofOfDeliveryFulfillmentServiceTest
 
   @Override
   protected ProofOfDeliveryDto generateInstance() {
-    return new ProofOfDeliveryDto();
+    return new ProofOfDeliveryDtoDataBuilder().buildAsDto();
   }
 
   @Override

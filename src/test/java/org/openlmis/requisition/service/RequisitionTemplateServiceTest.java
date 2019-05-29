@@ -53,7 +53,8 @@ public class RequisitionTemplateServiceTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID facilityTypeId = UUID.randomUUID();
-  private RequisitionTemplate template = new RequisitionTemplateDataBuilder().withAllColumns()
+  private RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+      .withAllColumns()
       .withAdditionalQuantityRequiredColumnDisplayed()
       .build();
 

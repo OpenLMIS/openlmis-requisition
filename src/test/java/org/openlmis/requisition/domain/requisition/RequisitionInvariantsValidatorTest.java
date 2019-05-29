@@ -56,11 +56,11 @@ public class RequisitionInvariantsValidatorTest {
     requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder().build())
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().buildSkipped())
+        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build())
         .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().buildSkipped())
+        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build())
         .withSupervisoryNodeId(UUID.randomUUID())
-        .withOriginalRequisition(UUID.randomUUID())
+        .withOriginalRequisitionId(UUID.randomUUID())
         .build();
 
     requisitionUpdater = new RequisitionDataBuilder()
@@ -70,7 +70,7 @@ public class RequisitionInvariantsValidatorTest {
         .withSupervisoryNodeId(requisitionToUpdate.getSupervisoryNodeId())
         .withLineItems(requisitionToUpdate.getRequisitionLineItems())
         .withTemplate(requisitionToUpdate.getTemplate())
-        .withOriginalRequisition(requisitionToUpdate.getOriginalRequisitionId())
+        .withOriginalRequisitionId(requisitionToUpdate.getOriginalRequisitionId())
         .build();
 
     validator = new RequisitionInvariantsValidator(
@@ -198,7 +198,7 @@ public class RequisitionInvariantsValidatorTest {
   public void shouldNotRejectIfValueWasChangedInNotFullSupplyForStockColumn() throws Exception {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
         .withNonFullSupplyFlag()
-        .setStockOnHand(1000)
+        .withStockOnHand(1000)
         .build();
 
     requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()

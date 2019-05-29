@@ -28,9 +28,15 @@ import org.joda.money.Money;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionLineItemDataBuilder {
+public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLineItem>,
+    RepositoryDataBuilder<RequisitionLineItem>, DtoDataBuilder<RequisitionLineItemDto> {
   private UUID id = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
   private Requisition requisition = new Requisition();
@@ -65,69 +71,42 @@ public class RequisitionLineItemDataBuilder {
   private Integer calculatedOrderQuantityIsa = 50;
   private Integer additionalQuantityRequired = 0;
 
-  public RequisitionLineItemDataBuilder withId(UUID id) {
-    this.id = id;
-    return this;
-  }
-
-  public RequisitionLineItemDataBuilder withNonFullSupplyFlag() {
-    this.nonFullSupply = true;
-    return this;
+  /**
+   * Constructs builder for {@link RequisitionLineItem}.
+   */
+  public RequisitionLineItemDataBuilder() {
   }
 
   /**
+   * Builds {@link RequisitionLineItem} test data instance.
+   * @return RequisitionLineItem
+   */
+  /**
    * Creates new instance of {@link RequisitionLineItem} with passed data.
    */
+  @Override
   public RequisitionLineItem build() {
     return buildForInitiatedRegularRequisition();
   }
 
-  /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
-   */
-  public RequisitionLineItem buildSkipped() {
-    this.skipped = true;
-    return buildForInitiatedRegularRequisition();
+  @Override
+  public RequisitionLineItem buildAsNew() {
+    RequisitionLineItem requisitionLineItem = buildForInitiatedRegularRequisition();
+    requisitionLineItem.setId(null);
+    return requisitionLineItem;
   }
 
   /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
+   * Builds {@link RequisitionLineItemDto} test data instance.
+   * @return RequisitionLineItemDto
    */
-  public RequisitionLineItem buildWithIncorrectStockOnHand() {
-    stockOnHand = 10;
-    return buildForInitiatedRegularRequisition();
-  }
-
-  /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
-   */
-  public RequisitionLineItem buildWithIncorrectMaximumStockQuantity() {
-    maximumStockQuantity = 1000;
-    return buildForInitiatedRegularRequisition();
-  }
-
-  /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
-   */
-  public RequisitionLineItem buildWithIncorrectCalculatedOrderQuantityIsa() {
-    calculatedOrderQuantityIsa = 1;
-    return buildForInitiatedRegularRequisition();
-  }
-
-  /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
-   */
-  public RequisitionLineItem buildWithApprovedQuantity() {
-    approvedQuantity = 100;
-    return buildForInitiatedRegularRequisition();
-  }
-
-  /**
-   * Creates new instance of {@link RequisitionLineItem} with passed data.
-   */
-  public RequisitionLineItem buildWithRemarks() {
-    remarks = "OK";
-    return buildForInitiatedRegularRequisition();
+  @Override
+  public RequisitionLineItemDto buildAsDto() {
+    RequisitionLineItem requisitionLineItem = build();
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    OrderableDto orderableDto = new OrderableDtoDataBuilder().buildAsDto();
+    requisitionLineItem.export(requisitionLineItemDto, orderableDto);
+    return requisitionLineItemDto;
   }
 
   /**
@@ -148,38 +127,109 @@ public class RequisitionLineItemDataBuilder {
     return lineItem;
   }
 
-  public RequisitionLineItemDataBuilder setTotalStockoutDays(Integer totalStockoutDays) {
-    this.totalStockoutDays = totalStockoutDays;
+  public RequisitionLineItemDataBuilder withId(UUID id) {
+    this.id = id;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setApprovedQuantity(Integer approvedQuantity) {
+  public RequisitionLineItemDataBuilder withNonFullSupplyFlag() {
+    this.nonFullSupply = true;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withSkippedFlag() {
+    this.skipped = true;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withSkippedFlag(Boolean skipped) {
+    this.skipped = skipped;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withIncorrectStockOnHand() {
+    stockOnHand = 10;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withIncorrectMaximumStockQuantity() {
+    maximumStockQuantity = 1000;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withIncorrectCalculatedOrderQuantityIsa() {
+    calculatedOrderQuantityIsa = 1;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withApprovedQuantity() {
+    approvedQuantity = 100;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withApprovedQuantity(Integer approvedQuantity) {
     this.approvedQuantity = approvedQuantity;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setStockOnHand(Integer stockOnHand) {
+  public RequisitionLineItemDataBuilder withRemarks() {
+    remarks = "OK";
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withRemarks(String remarks) {
+    this.remarks = remarks;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withTotalStockoutDays(Integer totalStockoutDays) {
+    this.totalStockoutDays = totalStockoutDays;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withStockOnHand(Integer stockOnHand) {
     this.stockOnHand = stockOnHand;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setTotalConsumedQuantity(Integer totalConsumedQuantity) {
+  public RequisitionLineItemDataBuilder withTotalConsumedQuantity(Integer totalConsumedQuantity) {
     this.totalConsumedQuantity = totalConsumedQuantity;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setTotalReceivedQuantity(Integer totalReceivedQuantity) {
+  public RequisitionLineItemDataBuilder withTotalReceivedQuantity(Integer totalReceivedQuantity) {
     this.totalReceivedQuantity = totalReceivedQuantity;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setBeginningBalance(Integer beginningBalance) {
+  public RequisitionLineItemDataBuilder withBeginningBalance(Integer beginningBalance) {
     this.beginningBalance = beginningBalance;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setTotal(Integer total) {
+  public RequisitionLineItemDataBuilder withTotal(Integer total) {
     this.total = total;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withTotalLossesAndAdjustments(
+      Integer totalLossesAndAdjustments) {
+    this.totalLossesAndAdjustments = totalLossesAndAdjustments;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withPricePerPack(Money pricePerPack) {
+    this.pricePerPack = pricePerPack;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withPacksToShip(Long packsToShip) {
+    this.packsToShip = packsToShip;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock) {
+    this.maxPeriodsOfStock = maxPeriodsOfStock;
     return this;
   }
 
@@ -192,7 +242,7 @@ public class RequisitionLineItemDataBuilder {
     return Money.of(CurrencyUnit.of(currencyCode), value.doubleValue());
   }
 
-  public RequisitionLineItemDataBuilder setRequisition(Requisition requisition) {
+  public RequisitionLineItemDataBuilder withRequisition(Requisition requisition) {
     this.requisition = requisition;
     return this;
   }
@@ -200,7 +250,7 @@ public class RequisitionLineItemDataBuilder {
   /**
    * Sets approved product.
    */
-  public RequisitionLineItemDataBuilder setApprovedProduct(ApprovedProductDto approvedProduct) {
+  public RequisitionLineItemDataBuilder withApprovedProduct(ApprovedProductDto approvedProduct) {
     this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
 
     OrderableDto orderable = approvedProduct.getOrderable();
@@ -218,45 +268,35 @@ public class RequisitionLineItemDataBuilder {
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setIdealStockAmount(int idealStockAmount) {
+  public RequisitionLineItemDataBuilder withIdealStockAmount(Integer idealStockAmount) {
     this.idealStockAmount = idealStockAmount;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setTotalLossesAndAdjustments(
-      int totalLossesAndAdjustments) {
-    this.totalLossesAndAdjustments = totalLossesAndAdjustments;
-    return this;
-  }
-
-  public RequisitionLineItemDataBuilder setStockAdjustments(
+  public RequisitionLineItemDataBuilder withStockAdjustments(
       List<StockAdjustment> stockAdjustments) {
     this.stockAdjustments = stockAdjustments;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setRequestedQuantity(int requestedQuantity) {
+  public RequisitionLineItemDataBuilder withRequestedQuantity(Integer requestedQuantity) {
     this.requestedQuantity = requestedQuantity;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setRemarks(String remarks) {
-    this.remarks = remarks;
-    return this;
-  }
-
-  public RequisitionLineItemDataBuilder setRequestedQuantityExplanation(
+  public RequisitionLineItemDataBuilder withRequestedQuantityExplanation(
       String requestedQuantityExplanation) {
     this.requestedQuantityExplanation = requestedQuantityExplanation;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setTotalCost(Money totalCost) {
+  public RequisitionLineItemDataBuilder withTotalCost(Money totalCost) {
     this.totalCost = totalCost;
     return this;
   }
 
-  public RequisitionLineItemDataBuilder setNumberOfNewPatientsAdded(int numberOfNewPatientsAdded) {
+  public RequisitionLineItemDataBuilder withNumberOfNewPatientsAdded(
+      Integer numberOfNewPatientsAdded) {
     this.numberOfNewPatientsAdded = numberOfNewPatientsAdded;
     return this;
   }
@@ -269,6 +309,62 @@ public class RequisitionLineItemDataBuilder {
 
   public RequisitionLineItemDataBuilder withOrderableId(UUID orderableId) {
     this.orderableId = orderableId;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withAverageConsumption(Integer averageConsumption) {
+    this.averageConsumption = averageConsumption;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withCalculatedOrderQuantity(
+      Integer calculatedOrderQuantity) {
+    this.calculatedOrderQuantity = calculatedOrderQuantity;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withPreviousAdjustedConsumptions(
+      List<Integer> previousAdjustedConsumptions) {
+    this.previousAdjustedConsumptions = previousAdjustedConsumptions;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withAdjustedConsumption(Integer adjustedConsumption) {
+    this.adjustedConsumption = adjustedConsumption;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withMaximumStockQuantity(Integer maximumStockQuantity) {
+    this.maximumStockQuantity = maximumStockQuantity;
+    return this;
+  }
+
+  /**
+   * Sets all fields to null.
+   */
+  public RequisitionLineItemDataBuilder withEmptyNumericFields() {
+    beginningBalance = null;
+    totalReceivedQuantity = null;
+    totalLossesAndAdjustments = null;
+    stockOnHand = null;
+    requestedQuantity = null;
+    totalConsumedQuantity = null;
+    total = null;
+    approvedQuantity = null;
+    totalStockoutDays = null;
+    packsToShip = null;
+    pricePerPack = null;
+    totalCost = null;
+    numberOfNewPatientsAdded = null;
+    adjustedConsumption = null;
+    averageConsumption = null;
+    maximumStockQuantity = null;
+    calculatedOrderQuantity = null;
+    maxPeriodsOfStock = null;
+    nonFullSupply = false;
+    idealStockAmount = null;
+    calculatedOrderQuantityIsa = null;
+    additionalQuantityRequired = null;
     return this;
   }
 }

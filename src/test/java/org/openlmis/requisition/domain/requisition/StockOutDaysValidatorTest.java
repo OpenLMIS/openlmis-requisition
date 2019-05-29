@@ -95,7 +95,7 @@ public class StockOutDaysValidatorTest {
       Integer totalStockoutDays) {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .setTotalStockoutDays(totalStockoutDays)
+            .withTotalStockoutDays(totalStockoutDays)
             .build())
         .build();
 

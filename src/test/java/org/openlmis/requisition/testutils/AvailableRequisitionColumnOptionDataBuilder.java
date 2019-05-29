@@ -18,8 +18,10 @@ package org.openlmis.requisition.testutils;
 import java.util.UUID;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
+import org.openlmis.requisition.testutils.api.DataBuilder;
 
-public class AvailableRequisitionColumnOptionDataBuilder {
+public class AvailableRequisitionColumnOptionDataBuilder implements
+    DataBuilder<AvailableRequisitionColumnOption> {
   private UUID id;
   private AvailableRequisitionColumn requisitionColumn;
   private String optionName;

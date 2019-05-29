@@ -18,8 +18,9 @@ package org.openlmis.requisition.testutils;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class StockCardSummaryDtoDataBuilder {
+public class StockCardSummaryDtoDataBuilder implements DtoDataBuilder<StockCardSummaryDto> {
   private UUID orderableId = UUID.randomUUID();
   private int stockOnHand = 10;
 
@@ -36,7 +37,7 @@ public class StockCardSummaryDtoDataBuilder {
   /**
    * Creates new instance of {@link StockCardSummaryDto} based on passed data.
    */
-  public StockCardSummaryDto build() {
+  public StockCardSummaryDto buildAsDto() {
     StockCardSummaryDto dto = new StockCardSummaryDto();
     dto.setOrderable(new ObjectReferenceDto(orderableId));
     dto.setStockOnHand(stockOnHand);

@@ -25,8 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -38,6 +40,8 @@ import org.openlmis.requisition.utils.MoneySerializer;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class RequisitionLineItemDto extends BaseDto
     implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer {
 

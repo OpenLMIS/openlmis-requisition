@@ -179,7 +179,7 @@ public class DatePhysicalStockCountCompletedValidatorTest {
                                   DatePhysicalStockCountCompleted datePhysicalStockCountCompleted) {
     return new DatePhysicalStockCountCompletedValidator(
         datePhysicalStockCountCompleted,
-        new RequisitionDataBuilder().setStatus(status).build(),
+        new RequisitionDataBuilder().withStatus(status).build(),
         now,
         isDatePhysicalStockCountCompletedEnabled);
   }
@@ -191,8 +191,8 @@ public class DatePhysicalStockCountCompletedValidatorTest {
     return new DatePhysicalStockCountCompletedValidator(
         new DatePhysicalStockCountCompleted(newDate),
         new RequisitionDataBuilder()
-            .setDatePhysicalStockCountCompleted(oldDate)
-            .setStatus(reqStatus)
+            .withDatePhysicalStockCountCompleted(oldDate)
+            .withStatus(reqStatus)
             .build(),
         now,
         isFlagEnabled);

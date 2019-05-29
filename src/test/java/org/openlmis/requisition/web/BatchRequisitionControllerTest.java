@@ -35,6 +35,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 
 public class BatchRequisitionControllerTest {
@@ -61,9 +62,6 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithOrderWhenUserHasPermission() {
-    ReleasableRequisitionBatchDto releasableBatchDto = new ReleasableRequisitionBatchDto();
-    releasableBatchDto.setCreateOrder(true);
-
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
     when(requisitionService.convertToOrder(any(), any()))
@@ -71,6 +69,10 @@ public class BatchRequisitionControllerTest {
     when(requisitionService.releaseWithoutOrder(any()))
         .thenReturn(new ArrayList<>());
 
+    ReleasableRequisitionBatchDto releasableBatchDto =
+        new ReleasableRequisitionBatchDtoDataBuilder()
+            .withCreateOrder(true)
+            .buildAsDto();
     batchRequisitionController.batchReleaseRequisitions(releasableBatchDto);
 
     verify(requisitionService, atLeastOnce()).convertToOrder(any(), any());
@@ -79,9 +81,6 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void batchReleaseRequisitionsWithoutOrderWhenUserHasPermission() {
-    ReleasableRequisitionBatchDto releasableBatchDto = new ReleasableRequisitionBatchDto();
-    releasableBatchDto.setCreateOrder(false);
-
     doReturn(ValidationResult.success())
         .when(permissionService).canConvertToOrder(anyList());
     when(requisitionService.convertToOrder(any(), any()))
@@ -89,6 +88,10 @@ public class BatchRequisitionControllerTest {
     when(requisitionService.releaseWithoutOrder(any()))
         .thenReturn(new ArrayList<>());
 
+    ReleasableRequisitionBatchDto releasableBatchDto =
+        new ReleasableRequisitionBatchDtoDataBuilder()
+            .withCreateOrder(false)
+            .buildAsDto();
     batchRequisitionController.batchReleaseRequisitions(releasableBatchDto);
 
     verify(requisitionService, never()).convertToOrder(any(), any());

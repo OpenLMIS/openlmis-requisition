@@ -121,7 +121,7 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldCallNotificationService() throws Exception {
-    UserDto approver = new UserDtoDataBuilder().withUsername("approver").build();
+    UserDto approver = new UserDtoDataBuilder().withUsername("approver").buildAsDto();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
@@ -140,7 +140,7 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldCallNotificationServiceForEmergencyRequisition() throws Exception {
-    UserDto approver = new UserDtoDataBuilder().withUsername("approver").build();
+    UserDto approver = new UserDtoDataBuilder().withUsername("approver").buildAsDto();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Collections.singletonList(approver));
@@ -160,8 +160,8 @@ public class ApprovalNotifierTest {
   @Test
   public void shouldCallNotificationServiceTwoTimesForTwoApproversWithProperUsernameInContent()
       throws Exception {
-    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
-    UserDto approver2 = new UserDtoDataBuilder().withUsername("approver2").build();
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).buildAsDto();
+    UserDto approver2 = new UserDtoDataBuilder().withUsername("approver2").buildAsDto();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Arrays.asList(approver, approver2));
@@ -186,7 +186,7 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceIfStatusChangesAreNull() {
-    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).buildAsDto();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Arrays.asList(approver));
@@ -201,7 +201,7 @@ public class ApprovalNotifierTest {
 
   @Test
   public void shouldNotCallNotificationServiceIfStatusChangeForSubmitIsMissing() {
-    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).build();
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).buildAsDto();
 
     when(supervisingUsersReferenceDataService.findAll(supervisoryNodeId, right.getId(), programId))
         .thenReturn(Arrays.asList(approver));

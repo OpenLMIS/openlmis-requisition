@@ -63,10 +63,13 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockData;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -74,7 +77,13 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
+import org.openlmis.requisition.testutils.DefaultRequisitionSearchParamsDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -114,25 +123,37 @@ public class RequisitionRepositoryIntegrationTest
     // so that the uniqueness constraint is not violated
     Requisition requisitionToCopy = requisitions.get(1);
 
-    Requisition requisition = new Requisition(requisitionToCopy.getFacilityId(),
-        requisitionToCopy.getProgramId(), requisitionToCopy.getProcessingPeriodId(),
-        requisitionToCopy.getStatus(), requisitionToCopy.getEmergency());
-    requisition.setModifiedDate(requisitionToCopy.getModifiedDate());
-    requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
-    requisition.setTemplate(testTemplate);
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(singletonList(
-        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
-    requisition.setEmergency(true);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToCopy.getFacilityId())
+        .withProgramId(requisitionToCopy.getProgramId())
+        .withProcessingPeriodId(requisitionToCopy.getProcessingPeriodId())
+        .withStatus(requisitionToCopy.getStatus())
+        .withModifiedDate(requisitionToCopy.getModifiedDate())
+        .withSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId())
+        .withTemplate(testTemplate)
+        .withNumberOfMonthsInPeriod(1)
+        .withEmergency(true)
+        .buildAsNew();
+    requisition.setStatusChanges(
+        singletonList(new StatusChangeDataBuilder()
+            .withRequisition(requisition)
+            .buildAsNew()
+        )
+    );
     repository.save(requisition);
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        requisitionToCopy.getFacilityId(), requisitionToCopy.getProgramId(),
-        requisitionToCopy.getProcessingPeriodId(), requisitionToCopy.getSupervisoryNodeId(),
-        requisitionToCopy.getEmergency(), requisitionToCopy.getCreatedDate().toLocalDate(),
-        requisitionToCopy.getCreatedDate().toLocalDate(),
-        requisitionToCopy.getModifiedDate(), requisitionToCopy.getModifiedDate(),
-        EnumSet.of(requisitionToCopy.getStatus()));
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withFacility(requisitionToCopy.getFacilityId())
+        .withProgram(requisitionToCopy.getProgramId())
+        .withProcessingPeriod(requisitionToCopy.getProcessingPeriodId())
+        .withSupervisoryNode(requisitionToCopy.getSupervisoryNodeId())
+        .withEmergency(requisitionToCopy.getEmergency())
+        .withInitiatedDateFrom(requisitionToCopy.getCreatedDate().toLocalDate())
+        .withInitiatedDateTo(requisitionToCopy.getCreatedDate().toLocalDate())
+        .withModifiedDateFrom(requisitionToCopy.getModifiedDate())
+        .withModifiedDateTo(requisitionToCopy.getModifiedDate())
+        .withRequisitionStatuses(EnumSet.of(requisitionToCopy.getStatus()))
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -177,9 +198,9 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().plusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().plusMonths(3));
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        null, null, null, null, null, null, null,
-        requisition1.getModifiedDate(), null, null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withModifiedDateFrom(requisition1.getModifiedDate())
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -202,9 +223,9 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        null, null, null, null, null, null, null,
-        null, requisition3.getModifiedDate(), null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withModifiedDateTo(requisition3.getModifiedDate())
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -226,9 +247,10 @@ public class RequisitionRepositoryIntegrationTest
     requisition2.setModifiedDate(requisition2.getModifiedDate().minusMonths(2));
     requisition3.setModifiedDate(requisition3.getModifiedDate().minusMonths(1));
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        null, null, null, null, null, null, null,
-        requisition2.getModifiedDate(), requisition3.getModifiedDate(), null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withModifiedDateFrom(requisition2.getModifiedDate())
+        .withModifiedDateTo(requisition3.getModifiedDate())
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -241,19 +263,30 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchRequisitionsByFacilityAndProgram() {
-    Requisition requisition = new Requisition(requisitions.get(0).getFacilityId(),
-        requisitions.get(0).getProgramId(), UUID.randomUUID(),
-        requisitions.get(0).getStatus(), false);
-    requisition.setSupervisoryNodeId(requisitions.get(0).getSupervisoryNodeId());
-    requisition.setTemplate(testTemplate);
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(singletonList(
-        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    Requisition requisitionToCopy = requisitions.get(0);
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToCopy.getFacilityId())
+        .withProgramId(requisitionToCopy.getProgramId())
+        .withStatus(requisitionToCopy.getStatus())
+        .withSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId())
+        .withTemplate(testTemplate)
+        .withNumberOfMonthsInPeriod(1)
+        .withEmergency(false)
+        .buildAsNew();
+
+    requisition.setStatusChanges(
+        singletonList(new StatusChangeDataBuilder()
+            .withRequisition(requisition)
+            .buildAsNew()
+        )
+    );
     repository.save(requisition);
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        requisitions.get(0).getFacilityId(), requisitions.get(0).getProgramId(), null, null,
-        null, null, null, null, null, null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withFacility(requisitions.get(0).getFacilityId())
+        .withProgram(requisitions.get(0).getProgramId())
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -285,8 +318,9 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchEmergencyRequsitions() {
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        null, null, null, null, true, null, null, null, null, null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withEmergency(true)
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -298,8 +332,9 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void testSearchStandardRequisitions() {
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
-        null, null, null, null, false, null, null, null, null, null);
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withEmergency(false)
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
@@ -332,7 +367,8 @@ public class RequisitionRepositoryIntegrationTest
         userPermissionStrings.get(0));
 
     // when
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, userPermissionStringSubset, emptySet(), pageRequest)
@@ -351,7 +387,8 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair<UUID, UUID>> programNodePairsSubset = singleton(programNodePairs.iterator().next());
 
     // when
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .build();
 
     List<Requisition> receivedRequisitions = repository
         .searchRequisitions(searchParams, emptyList(), programNodePairsSubset, pageRequest)
@@ -380,7 +417,8 @@ public class RequisitionRepositoryIntegrationTest
     programNodePairSubset.add(
         new ImmutablePair<>(requisition.getProgramId(), requisition.getSupervisoryNodeId()));
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .build();
 
     List<Requisition> found = repository
         .searchRequisitions(searchParams, permissionStringsSubset,
@@ -405,7 +443,8 @@ public class RequisitionRepositoryIntegrationTest
     programNodePairSubset.add(
         new ImmutablePair<>(secondRnR.getProgramId(), secondRnR.getSupervisoryNodeId()));
 
-    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .build();
 
     List<Requisition> found = repository
         .searchRequisitions(searchParams, permissionStringsSubset,
@@ -456,24 +495,29 @@ public class RequisitionRepositoryIntegrationTest
     UUID programId = UUID.randomUUID();
     Money pricePerPack = Money.of(CurrencyUnit.of(currencyCode), 14.57);
 
-    ProgramDto program = new ProgramDto();
-    program.setId(programId);
+    ProgramDto program = new ProgramDtoDataBuilder()
+        .withId(programId)
+        .buildAsDto();
 
-    ProgramOrderableDto programOrderable = new ProgramOrderableDto();
-    programOrderable.setPricePerPack(pricePerPack);
-    programOrderable.setProgramId(program.getId());
+    ProgramOrderableDto programOrderable = new ProgramOrderableDtoDataBuilder()
+        .withPricePerPack(pricePerPack)
+        .withProgramId(program.getId())
+        .buildAsDto();
 
-    OrderableDto orderable = new OrderableDto();
-    orderable.setId(UUID.randomUUID());
-    orderable.setPrograms(Sets.newHashSet(programOrderable));
+    OrderableDto orderable = new OrderableDtoDataBuilder()
+        .withId(UUID.randomUUID())
+        .withPrograms(Sets.newHashSet(programOrderable))
+        .buildAsDto();
 
-    ApprovedProductDto ftap = new ApprovedProductDto();
-    ftap.setOrderable(orderable);
-    ftap.setProgram(program);
-    ftap.setMaxPeriodsOfStock(7.25);
+    ApprovedProductDto ftap = new ApprovedProductDtoDataBuilder()
+        .withOrderable(orderable)
+        .withProgram(program)
+        .withMaxPeriodsOfStock(7.25)
+        .buildAsDto();
 
-    Requisition requisition = new Requisition(UUID.randomUUID(), programId,
-        UUID.randomUUID(), INITIATED, false);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withProgramId(programId)
+        .buildAsNew();
     requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
         Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData(),
         null, null, null);
@@ -486,8 +530,8 @@ public class RequisitionRepositoryIntegrationTest
 
   @Test
   public void shouldPersistWithPreviousRequisitions() {
-    Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), INITIATED, false);
+    Requisition requisition = new RequisitionDataBuilder()
+        .buildAsNew();
     requisition.setPreviousRequisitions(requisitions);
 
     requisition = repository.save(requisition);
@@ -825,15 +869,24 @@ public class RequisitionRepositoryIntegrationTest
     pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
         Sort.Direction.ASC, "createdDate");
 
-    Requisition requisition = new Requisition(requisitionToCopy.getFacilityId(),
-        requisitionToCopy.getProgramId(), requisitionToCopy.getProcessingPeriodId(),
-        requisitionToCopy.getStatus(), requisitionToCopy.getEmergency());
-    requisition.setSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId());
-    requisition.setTemplate(testTemplate);
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setStatusChanges(singletonList(
-        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
-    requisition.setEmergency(true);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToCopy.getFacilityId())
+        .withProgramId(requisitionToCopy.getProgramId())
+        .withProcessingPeriodId(requisitionToCopy.getProcessingPeriodId())
+        .withStatus(requisitionToCopy.getStatus())
+        .withEmergency(requisitionToCopy.getEmergency())
+        .withSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId())
+        .withTemplate(testTemplate)
+        .withNumberOfMonthsInPeriod(1)
+        .withEmergency(true)
+        .buildAsNew();
+
+    requisition.setStatusChanges(
+        singletonList(new StatusChangeDataBuilder()
+            .withRequisition(requisition)
+            .buildAsNew()
+        )
+    );
     repository.save(requisition);
 
     RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
@@ -866,15 +919,18 @@ public class RequisitionRepositoryIntegrationTest
   public void shouldNotAllowMultipleReasonsOfTheSameTypeInSingleLineItem() {
     UUID reasonId = UUID.randomUUID();
 
-    StockAdjustment adjustment1 = new StockAdjustment();
-    adjustment1.setReasonId(reasonId);
-    adjustment1.setQuantity(2);
+    StockAdjustment adjustment1 = new StockAdjustmentDataBuilder()
+        .withReasonId(reasonId)
+        .withQuantity(2)
+        .buildAsNew();
 
-    StockAdjustment adjustment2 = new StockAdjustment();
-    adjustment2.setReasonId(reasonId);
-    adjustment2.setQuantity(5);
+    StockAdjustment adjustment2 = new StockAdjustmentDataBuilder()
+        .withReasonId(reasonId)
+        .withQuantity(5)
+        .buildAsNew();
 
     Requisition requisition = generateInstance();
+    requisition.setId(UUID.randomUUID());
     RequisitionLineItem lineItem = new RequisitionLineItem();
     lineItem.setStockAdjustments(Lists.newArrayList(adjustment1, adjustment2));
     requisition.setRequisitionLineItems(Lists.newArrayList(lineItem));
@@ -1026,8 +1082,9 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   private RequisitionLineItem generateLineItem(Requisition requisition) {
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setRequisition(requisition);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withRequisition(requisition)
+        .buildAsNew();
     return item;
   }
 

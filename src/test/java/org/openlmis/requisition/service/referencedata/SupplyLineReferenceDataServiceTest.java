@@ -36,7 +36,7 @@ public class SupplyLineReferenceDataServiceTest
 
   @Override
   protected SupplyLineDto generateInstance() {
-    return new SupplyLineDto();
+    return new SupplyLineDtoDataBuilder().buildAsDto();
   }
 
   @Override
@@ -56,7 +56,7 @@ public class SupplyLineReferenceDataServiceTest
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
 
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().buildAsDto();
     mockPageResponseEntity(dto);
     List<SupplyLineDto> result = service.search(programId, supervisoryNodeId);
 
@@ -80,7 +80,7 @@ public class SupplyLineReferenceDataServiceTest
     Set<UUID> supplyingFacilitiesIds = new HashSet<>();
     supplyingFacilitiesIds.add(supplyingFacilityId);
 
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().buildAsDto();
     mockPageResponseEntity(dto);
 
     List<SupplyLineDto> result = service.search(supplyingFacilitiesIds, programId);
@@ -104,7 +104,7 @@ public class SupplyLineReferenceDataServiceTest
     Set<UUID> supplyingFacilitiesIds = new HashSet<>();
     supplyingFacilitiesIds.add(supplyingFacilityId);
 
-    SupplyLineDto dto = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto dto = new SupplyLineDtoDataBuilder().buildAsDto();
     mockPageResponseEntity(dto);
 
     List<SupplyLineDto> result = service.search(supplyingFacilitiesIds, null);

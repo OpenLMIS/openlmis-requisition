@@ -19,11 +19,15 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import org.javers.common.collections.Sets;
+import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
-public class RequisitionTemplateColumnDataBuilder {
+public class RequisitionTemplateColumnDataBuilder implements
+    DataBuilder<RequisitionTemplateColumn>, DtoDataBuilder<RequisitionTemplateColumnDto> {
 
   private String name;
   private String label;
@@ -43,7 +47,7 @@ public class RequisitionTemplateColumnDataBuilder {
     name = "column";
     label = "Column";
     indicator = "C";
-    displayOrder  = 1;
+    displayOrder = 1;
     isDisplayed = true;
     source = SourceType.REFERENCE_DATA;
     option = new AvailableRequisitionColumnOptionDataBuilder().build();
@@ -56,6 +60,7 @@ public class RequisitionTemplateColumnDataBuilder {
   /**
    * Builds {@link RequisitionTemplateColumn} instance with test data.
    */
+  @Override
   public RequisitionTemplateColumn build() {
     if (null != columnDefinition) {
       Optional
@@ -65,6 +70,17 @@ public class RequisitionTemplateColumnDataBuilder {
     }
     return new RequisitionTemplateColumn(name, label, indicator, displayOrder, isDisplayed, source,
         columnDefinition, option, definition, tag);
+  }
+
+  /**
+   * Builds {@link RequisitionTemplateColumnDto} instance with test data.
+   */
+  @Override
+  public RequisitionTemplateColumnDto buildAsDto() {
+    RequisitionTemplateColumn requisitionTemplateColumn = build();
+    RequisitionTemplateColumnDto requisitionTemplateColumnDto = new RequisitionTemplateColumnDto();
+    requisitionTemplateColumn.export(requisitionTemplateColumnDto);
+    return requisitionTemplateColumnDto;
   }
 
   public RequisitionTemplateColumnDataBuilder withNotDisplayed() {
@@ -133,6 +149,11 @@ public class RequisitionTemplateColumnDataBuilder {
 
   public RequisitionTemplateColumnDataBuilder withTag(String tag) {
     this.tag = tag;
+    return this;
+  }
+
+  public RequisitionTemplateColumnDataBuilder withDefinition(String definition) {
+    this.definition = definition;
     return this;
   }
 }

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
+import org.openlmis.requisition.testutils.JasperTemplateDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class JasperTemplateRepositoryIntegrationTest extends
@@ -37,8 +38,9 @@ public class JasperTemplateRepositoryIntegrationTest extends
 
   @Override
   protected JasperTemplate generateInstance() {
-    JasperTemplate jasperTemplate = new JasperTemplate();
-    jasperTemplate.setName(NAME);
+    JasperTemplate jasperTemplate = new JasperTemplateDataBuilder()
+        .withName(NAME)
+        .build();
     return jasperTemplate;
   }
 

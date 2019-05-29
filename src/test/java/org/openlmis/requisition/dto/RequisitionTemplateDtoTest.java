@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,6 +27,7 @@ import java.util.stream.IntStream;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 
 public class RequisitionTemplateDtoTest {
 
@@ -44,7 +44,8 @@ public class RequisitionTemplateDtoTest {
   public void shouldReturnProgramId() {
     UUID id = UUID.randomUUID();
 
-    RequisitionTemplateDto dto = new RequisitionTemplateDto();
+    RequisitionTemplateDto dto = new RequisitionTemplateDataBuilder()
+        .buildAsDto();
     dto.setProgram(new ObjectReferenceDto(id));
 
     assertThat(dto.getProgramId(), is(id));
@@ -57,8 +58,8 @@ public class RequisitionTemplateDtoTest {
         .mapToObj(idx -> UUID.randomUUID())
         .collect(Collectors.toSet());
 
-    RequisitionTemplateDto dto = new RequisitionTemplateDto();
-    dto.setFacilityTypes(new HashSet<>());
+    RequisitionTemplateDto dto = new RequisitionTemplateDataBuilder()
+        .buildAsDto();
 
     facilityTypeId.forEach(id -> dto.getFacilityTypes().add(new ObjectReferenceDto(id)));
     assertThat(dto.getFacilityTypeIds(), hasSize(facilityTypeId.size()));
@@ -67,8 +68,8 @@ public class RequisitionTemplateDtoTest {
 
   @Test
   public void shouldReturnEmptySetOfFacilityTypeIdsIfThereIsNoTypes() {
-    RequisitionTemplateDto dto = new RequisitionTemplateDto();
-    dto.setFacilityTypes(new HashSet<>());
+    RequisitionTemplateDto dto = new RequisitionTemplateDataBuilder()
+        .buildAsDto();
 
     assertThat(dto.getFacilityTypeIds(), hasSize(0));
   }

@@ -28,6 +28,7 @@ import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.transaction.TestTransaction;
@@ -58,8 +59,12 @@ public class RequisitionRepositoryTransactionalIntegrationTest
     Requisition requisition = generateInstance();
     requisition.setStatus(RequisitionStatus.INITIATED);
     requisition.setStatusChanges(Lists.newArrayList(
-        StatusChange.newStatusChange(requisition, UUID.randomUUID()),
-        StatusChange.newStatusChange(requisition, UUID.randomUUID())
+        new StatusChangeDataBuilder()
+            .withRequisition(requisition)
+            .buildAsNew(),
+        new StatusChangeDataBuilder()
+            .withRequisition(requisition)
+            .buildAsNew()
         )
     );
 
@@ -76,13 +81,25 @@ public class RequisitionRepositoryTransactionalIntegrationTest
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
 
     UUID authorId = UUID.randomUUID();
-    StatusChange change1 = StatusChange.newStatusChange(requisition, authorId);
+    StatusChange change1 = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withAuthorId(authorId)
+        .buildAsNew();
     change1.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change2 = StatusChange.newStatusChange(requisition, authorId);
+    StatusChange change2 = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withAuthorId(authorId)
+        .buildAsNew();
     change2.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change3 = StatusChange.newStatusChange(requisition, authorId);
+    StatusChange change3 = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withAuthorId(authorId)
+        .buildAsNew();
     change3.setSupervisoryNodeId(UUID.randomUUID());
-    StatusChange change4 = StatusChange.newStatusChange(requisition, authorId);
+    StatusChange change4 = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withAuthorId(authorId)
+        .buildAsNew();
     change4.setSupervisoryNodeId(UUID.randomUUID());
 
     requisition.setStatusChanges(Lists.newArrayList(change1, change2, change3, change4));

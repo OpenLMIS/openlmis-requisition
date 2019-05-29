@@ -80,17 +80,17 @@ public class RequisitionForConvertBuilderTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    final FacilityDto facility = new FacilityDtoDataBuilder().build();
-    facility1 = new FacilityDtoDataBuilder().build();
-    facility2 = new FacilityDtoDataBuilder().build();
+    final FacilityDto facility = new FacilityDtoDataBuilder().buildAsDto();
+    facility1 = new FacilityDtoDataBuilder().buildAsDto();
+    facility2 = new FacilityDtoDataBuilder().buildAsDto();
 
     SupervisoryNodeDto supervisoryNode1 = new SupervisoryNodeDto();
     supervisoryNode1.setId(UUID.randomUUID());
     SupervisoryNodeDto supervisoryNode2 = new SupervisoryNodeDto();
     supervisoryNode2.setId(UUID.randomUUID());
 
-    ProgramDto program1 = new ProgramDtoDataBuilder().build();
-    ProgramDto program2 = new ProgramDtoDataBuilder().build();
+    ProgramDto program1 = new ProgramDtoDataBuilder().buildAsDto();
+    ProgramDto program2 = new ProgramDtoDataBuilder().buildAsDto();
 
     requisition1 = new RequisitionDataBuilder()
         .withProgramId(program1.getId())
@@ -112,17 +112,17 @@ public class RequisitionForConvertBuilderTest {
         .withProgram(program1)
         .withSupervisoryNode(supervisoryNode1)
         .withSupplyingFacility(facility1)
-        .build();
+        .buildAsDto();
     supplyLine2 = new SupplyLineDtoDataBuilder()
         .withProgram(program1)
         .withSupervisoryNode(supervisoryNode2)
         .withSupplyingFacility(facility2)
-        .build();
+        .buildAsDto();
     supplyLine3 = new SupplyLineDtoDataBuilder()
         .withProgram(program2)
         .withSupervisoryNode(supervisoryNode2)
         .withSupplyingFacility(facility2)
-        .build();
+        .buildAsDto();
 
     when(facilityReferenceDataService.search(
         asSet(facility.getId(), facility1.getId(), facility2.getId())))

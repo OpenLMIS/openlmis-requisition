@@ -21,8 +21,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class ProcessingPeriodDtoDataBuilder {
+public class ProcessingPeriodDtoDataBuilder implements DtoDataBuilder<ProcessingPeriodDto> {
 
   private static int instanceNumber = 0;
 
@@ -51,7 +52,7 @@ public class ProcessingPeriodDtoDataBuilder {
     extraData = new HashMap<>();
   }
 
-  public ProcessingPeriodDto build() {
+  public ProcessingPeriodDto buildAsDto() {
     return new ProcessingPeriodDto(id, name, startDate, endDate, processingSchedule, description,
         durationInMonths, extraData);
   }
@@ -73,6 +74,21 @@ public class ProcessingPeriodDtoDataBuilder {
 
   public ProcessingPeriodDtoDataBuilder withDurationInMonths(Integer durationInMonths) {
     this.durationInMonths = durationInMonths;
+    return this;
+  }
+
+  public ProcessingPeriodDtoDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
+  public ProcessingPeriodDtoDataBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public ProcessingPeriodDtoDataBuilder withDescription(String description) {
+    this.description = description;
     return this;
   }
 }

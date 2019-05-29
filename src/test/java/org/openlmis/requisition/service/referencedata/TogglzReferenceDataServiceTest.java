@@ -17,12 +17,13 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.TogglzFeatureDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.TogglzFeatureDtoDataBuilder;
 
 public class TogglzReferenceDataServiceTest extends BaseReferenceDataServiceTest<TogglzFeatureDto> {
 
   @Override
   protected TogglzFeatureDto generateInstance() {
-    return new TogglzFeatureDto();
+    return new TogglzFeatureDtoDataBuilder().buildAsDto();
   }
 
   @Override

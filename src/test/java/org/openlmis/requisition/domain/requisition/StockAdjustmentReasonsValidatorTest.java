@@ -51,7 +51,7 @@ public class StockAdjustmentReasonsValidatorTest {
         .build();
     Requisition savedRequisition = new RequisitionDataBuilder()
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
-            .setReasonId(reasonId).build())
+            .withReasonId(reasonId).build())
         .build();
 
     StockAdjustmentReasonsValidator validator =

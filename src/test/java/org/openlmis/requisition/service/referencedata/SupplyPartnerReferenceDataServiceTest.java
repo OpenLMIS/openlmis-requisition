@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.SupplyPartnerDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.SupplyPartnerDtoDataBuilder;
 
 public class SupplyPartnerReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<SupplyPartnerDto> {
@@ -35,7 +36,7 @@ public class SupplyPartnerReferenceDataServiceTest
 
   @Override
   protected SupplyPartnerDto generateInstance() {
-    return new SupplyPartnerDto();
+    return new SupplyPartnerDtoDataBuilder().buildAsDto();
   }
 
   @Override

@@ -48,7 +48,7 @@ public class ApproveProductsAggregatorTest {
 
   @Before
   public void setUp() {
-    program = new ProgramDtoDataBuilder().build();
+    program = new ProgramDtoDataBuilder().buildAsDto();
 
     for (int i = 0; i < PRODUCT_COUNT; ++i) {
       UUID orderableId = UUID.randomUUID();
@@ -67,9 +67,9 @@ public class ApproveProductsAggregatorTest {
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(orderableId)
               .withProgramOrderable(program.getId(), fullSupplyOrderableIds.contains(orderableId))
-              .build())
+              .buildAsDto())
           .withProgram(program)
-          .build()
+          .buildAsDto()
       );
     }
   }

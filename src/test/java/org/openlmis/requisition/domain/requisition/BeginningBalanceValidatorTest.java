@@ -68,7 +68,7 @@ public class BeginningBalanceValidatorTest {
   private BeginningBalanceValidator getBeginningBalanceValidator(Integer beginningBalance) {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .setBeginningBalance(beginningBalance)
+            .withBeginningBalance(beginningBalance)
             .build())
         .build();
 

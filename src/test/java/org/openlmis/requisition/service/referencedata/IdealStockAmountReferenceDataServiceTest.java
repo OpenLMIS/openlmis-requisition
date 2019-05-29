@@ -34,7 +34,7 @@ public class IdealStockAmountReferenceDataServiceTest
 
   @Override
   protected IdealStockAmountDto generateInstance() {
-    return new IdealStockAmountDto();
+    return new IdealStockAmountDtoDataBuilder().buildAsDto();
   }
 
   @Override
@@ -54,7 +54,7 @@ public class IdealStockAmountReferenceDataServiceTest
     // given
     UUID facilityId = UUID.randomUUID();
     UUID processingPeriodId = UUID.randomUUID();
-    IdealStockAmountDto isa = new IdealStockAmountDtoDataBuilder().build();
+    IdealStockAmountDto isa = new IdealStockAmountDtoDataBuilder().buildAsDto();
 
     // when
     mockPageResponseEntity(isa);

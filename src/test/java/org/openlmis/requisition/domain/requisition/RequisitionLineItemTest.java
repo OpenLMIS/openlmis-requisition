@@ -146,7 +146,7 @@ public class RequisitionLineItemTest {
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(productId)
         .withNetContent(1)
-        .build();
+        .buildAsDto();
 
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
@@ -460,10 +460,11 @@ public class RequisitionLineItemTest {
   }
 
   @Test
-  public void shouldSetAverageConsumption() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3));
-    requisitionLineItem.setAdjustedConsumption(4);
+  public void shouldSetAverageConsumption() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withPreviousAdjustedConsumptions(Lists.newArrayList(1, 2, 3))
+        .withAdjustedConsumption(4)
+        .build();
 
     requisitionLineItem.calculateAndSetAverageConsumption();
 
@@ -472,17 +473,18 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldReturnFalseIfSkippedIsNull() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setSkipped(null);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(null)
+        .build();
 
     assertFalse(requisitionLineItem.isLineSkipped());
   }
 
   @Test
   public void shouldReturnSkippedValueIfSkippedIsNotNull() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-
-    requisitionLineItem.setSkipped(true);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(true)
+        .build();
     assertTrue(requisitionLineItem.isLineSkipped());
     requisitionLineItem.setSkipped(false);
     assertFalse(requisitionLineItem.isLineSkipped());
@@ -490,27 +492,27 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldReturnTrueIfStockOnHandIsNullForTotalConsumedQuantity() {
-    RequisitionLineItem item = new RequisitionLineItemDataBuilder().setStockOnHand(null).build();
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder().withStockOnHand(null).build();
     assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY));
   }
 
   @Test
   public void shouldReturnFalseIfStockOnHandIsNotNullForTotalConsumedQuantity() {
-    RequisitionLineItem item = new RequisitionLineItemDataBuilder().setStockOnHand(0).build();
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder().withStockOnHand(0).build();
     assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY));
   }
 
   @Test
   public void shouldReturnTrueIfTotalConsumedQuantityIsNullForStockOnHand() {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .setTotalConsumedQuantity(null).build();
+        .withTotalConsumedQuantity(null).build();
     assertTrue(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
   }
 
   @Test
   public void shouldReturnFalseIfTotalConsumedQuantityIsNotNullForStockOnHand() {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .setTotalConsumedQuantity(0).build();
+        .withTotalConsumedQuantity(0).build();
     assertFalse(item.allRequiredCalcFieldsNotFilled(RequisitionLineItem.STOCK_ON_HAND));
   }
 
@@ -531,7 +533,7 @@ public class RequisitionLineItemTest {
     UUID programId = UUID.randomUUID();
     new RequisitionLineItem(
         new RequisitionDataBuilder().withProgramId(programId).build(),
-        new ApprovedProductDtoDataBuilder().build());
+        new ApprovedProductDtoDataBuilder().buildAsDto());
   }
 
   @Test
@@ -558,10 +560,10 @@ public class RequisitionLineItemTest {
         .withOrderableId(orderableId)
         .withStockOutDays(2)
         .withTags(ImmutableMap.of(CONSUMED_TAG, -100))
-        .build();
+        .buildAsDto();
     List<ProcessingPeriodDto> previousPeriods = asList(
-        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build(),
-        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build());
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).buildAsDto(),
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).buildAsDto());
 
     item.calculateAndSetStockBasedAverageConsumption(
         summary, template, previousPeriods, previousRequisitions);
@@ -594,10 +596,10 @@ public class RequisitionLineItemTest {
         .withOrderableId(orderableId)
         .withStockOutDays(2)
         .withTags(ImmutableMap.of(CONSUMED_TAG, -100))
-        .build();
+        .buildAsDto();
     List<ProcessingPeriodDto> previousPeriods = asList(
-        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build(),
-        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).build());
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).buildAsDto(),
+        new ProcessingPeriodDtoDataBuilder().withDurationInMonths(3).buildAsDto());
 
     item.calculateAndSetStockBasedAverageConsumption(
         summary, template, previousPeriods, previousRequisitions);
@@ -612,12 +614,13 @@ public class RequisitionLineItemTest {
   }
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(UUID.randomUUID());
-    requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setApprovedQuantity(1);
-    requisitionLineItem.setRemarks("Remarks");
-    requisitionLineItem.setStockOnHand(5);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withOrderableId(UUID.randomUUID())
+        .withRequisition(requisition)
+        .withApprovedQuantity(1)
+        .withRemarks("Remarks")
+        .withStockOnHand(5)
+        .build();
 
     RequisitionLineItem updatedItem = new RequisitionLineItem();
     updatedItem.setOrderableId(requisitionLineItem.getOrderableId());
@@ -629,26 +632,26 @@ public class RequisitionLineItemTest {
     assertNull(updatedItem.getStockOnHand());
   }
 
-  private RequisitionLineItem createDefaultRequisitionLineItem(ApprovedProductDto ftap,
-      List<StockAdjustment> stockAdjustments) {
+  private RequisitionLineItem createDefaultRequisitionLineItem(
+      ApprovedProductDto ftap, List<StockAdjustment> stockAdjustments) {
     return new RequisitionLineItemDataBuilder()
-        .setRequisition(initiatedRequisition)
-        .setApprovedProduct(ftap)
-        .setIdealStockAmount(30)
-        .setBeginningBalance(3)
-        .setTotalReceivedQuantity(4)
-        .setTotalLossesAndAdjustments(0)
-        .setStockAdjustments(stockAdjustments)
-        .setStockOnHand(1)
-        .setRequestedQuantity(5)
-        .setTotalConsumedQuantity(2)
-        .setTotal(7)
-        .setApprovedQuantity(5)
-        .setTotalStockoutDays(6)
-        .setRemarks("remarks")
-        .setRequestedQuantityExplanation("explanation")
-        .setTotalCost(Money.of(CurrencyUnit.USD, 30))
-        .setNumberOfNewPatientsAdded(10)
+        .withRequisition(initiatedRequisition)
+        .withApprovedProduct(ftap)
+        .withIdealStockAmount(30)
+        .withBeginningBalance(3)
+        .withTotalReceivedQuantity(4)
+        .withTotalLossesAndAdjustments(0)
+        .withStockAdjustments(stockAdjustments)
+        .withStockOnHand(1)
+        .withRequestedQuantity(5)
+        .withTotalConsumedQuantity(2)
+        .withTotal(7)
+        .withApprovedQuantity(5)
+        .withTotalStockoutDays(6)
+        .withRemarks("remarks")
+        .withRequestedQuantityExplanation("explanation")
+        .withTotalCost(Money.of(CurrencyUnit.USD, 30))
+        .withNumberOfNewPatientsAdded(10)
         .build();
   }
 
@@ -656,11 +659,11 @@ public class RequisitionLineItemTest {
     return new ApprovedProductDtoDataBuilder()
         .withOrderable(
             new OrderableDtoDataBuilder()
-            .withId(orderableId)
-            .withProgramOrderable(programId, pricePerPack)
-            .build())
+                .withId(orderableId)
+                .withProgramOrderable(programId, pricePerPack)
+                .buildAsDto())
         .withMaxPeriodsOfStock(maxPeriodsOfStock)
-        .build();
+        .buildAsDto();
   }
 
   private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {

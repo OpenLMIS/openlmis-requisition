@@ -42,8 +42,6 @@ import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -61,7 +59,9 @@ import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -77,7 +77,12 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
@@ -171,11 +176,7 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected UserDto mockUserAuthenticated() {
-    UserDto user = new UserDto();
-    user.setId(UUID.randomUUID());
-    user.setFirstName("admin");
-    user.setLastName("strator");
-    user.setEmail("admin@openlmis.org");
+    UserDto user = new UserDtoDataBuilder().buildAsDto();
 
     given(authenticationHelper.getCurrentUser()).willReturn(user);
 
@@ -195,19 +196,16 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus) {
-    Requisition requisition = new Requisition(
-        UUID.randomUUID(), generateProgram().getId(),
-        generateProcessingPeriod(), requisitionStatus, true
-    );
+    Requisition requisition = new RequisitionDataBuilder()
+        .withProgramId(generateProgram().getId())
+        .withStatus(requisitionStatus)
+        .withEmergency(false)
+        .withNumberOfMonthsInPeriod(1)
+        .withProcessingPeriodId(generateProcessingPeriod())
+        .withTemplate(generateRequisitionTemplate())
+        .build();
 
-    requisition.setId(UUID.randomUUID());
-    requisition.setVersion(1L);
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setNumberOfMonthsInPeriod(1);
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));
-    requisition.setTemplate(generateRequisitionTemplate());
-    requisition.setEmergency(false);
-    requisition.setAvailableProducts(Collections.emptySet());
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
@@ -215,15 +213,15 @@ public abstract class BaseWebIntegrationTest {
 
   protected final Requisition generateRequisition(RequisitionStatus requisitionStatus,
                                                   UUID programId, UUID facilityId) {
-    Requisition requisition = new Requisition(
-        facilityId, programId, UUID.randomUUID(), requisitionStatus, true);
-
-    requisition.setId(UUID.randomUUID());
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setNumberOfMonthsInPeriod(1);
-    requisition.setRequisitionLineItems(new ArrayList<>());
-    requisition.setTemplate(generateRequisitionTemplate());
-    requisition.setProcessingPeriodId(generateProcessingPeriod());
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(facilityId)
+        .withProgramId(programId)
+        .withStatus(requisitionStatus)
+        .withEmergency(true)
+        .withNumberOfMonthsInPeriod(1)
+        .withProcessingPeriodId(generateProcessingPeriod())
+        .withTemplate(generateRequisitionTemplate())
+        .build();
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
     return requisition;
@@ -245,36 +243,36 @@ public abstract class BaseWebIntegrationTest {
         .map(r -> getProgramOrderableDto(r.getProgramId()))
         .collect(Collectors.toSet());
 
-    OrderableDto orderable = new OrderableDto();
-    orderable.setId(id);
-    orderable.setPrograms(programOrderables);
+    OrderableDto orderable = new OrderableDtoDataBuilder()
+        .withId(id)
+        .withPrograms(programOrderables)
+        .buildAsDto();
 
     return orderable;
   }
 
   private static ProgramOrderableDto getProgramOrderableDto(UUID programId) {
-    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-    programOrderableDto.setProgramId(programId);
-    programOrderableDto.setPricePerPack(Money.of(CurrencyUnit.EUR, 10));
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
+        .withProgramId(programId)
+        .withPricePerPack(Money.of(CurrencyUnit.EUR, 10))
+        .buildAsDto();
     return programOrderableDto;
   }
 
   private List<RequisitionLineItem> generateRequisitionLineItems(Requisition requisition) {
-    RequisitionLineItem lineItem = new RequisitionLineItem();
-    lineItem.setOrderableId(LINE_ITEM_PRODUCT_ID);
-    lineItem.setRequisition(requisition);
-    lineItem.setId(UUID.randomUUID());
-    lineItem.setPricePerPack(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
-    lineItem.setTotalCost(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
+    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
+        .withOrderableId(LINE_ITEM_PRODUCT_ID)
+        .withRequisition(requisition)
+        .withPricePerPack(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL))
+        .withTotalCost(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL))
+        .build();
 
     return Lists.newArrayList(lineItem);
   }
 
   private UUID generateProcessingPeriod() {
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-
-    period.setId(UUID.randomUUID());
-    period.setEndDate(LocalDate.now().minusDays(5));
+    ProcessingPeriodDto period = new ProcessingPeriodDtoDataBuilder()
+        .buildAsDto();
 
     when(periodReferenceDataService.findOne(eq(period.getId()))).thenReturn(period);
 
@@ -283,7 +281,7 @@ public abstract class BaseWebIntegrationTest {
 
   ProgramDto generateProgram() {
     ProgramDto program = new ProgramDtoDataBuilder()
-        .build();
+        .buildAsDto();
 
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
 
@@ -319,8 +317,7 @@ public abstract class BaseWebIntegrationTest {
   }
 
   void mockSearchSupervisoryNodeByProgramAndFacility() {
-    SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDto();
-    supervisoryNode.setId(UUID.randomUUID());
+    SupervisoryNodeDto supervisoryNode = new SupervisoryNodeDtoDataBuilder().buildAsDto();
     given(supervisoryNodeReferenceDataService.findSupervisoryNode(anyUuid(), anyUuid()))
         .willReturn(supervisoryNode);
   }

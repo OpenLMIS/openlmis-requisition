@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +30,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
@@ -39,6 +37,7 @@ import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.SourceType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,8 +84,12 @@ public class RequisitionTemplateRepositoryIntegrationTest
   @Test
   public void testChangeRequisitionTemplateColumnOrder() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn testColumn = new RequisitionTemplateColumn(
-        "name", "label", "I", 1, true, SOURCE, getColumn(), null, null, null);
+    RequisitionTemplateColumn testColumn = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SOURCE)
+        .withColumnDefinition(getColumn())
+        .withOption(null)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, testColumn);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -107,9 +110,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
     availableRequisitionColumn.setCanChangeOrder(false);
 
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn testColumn1 =
-        new RequisitionTemplateColumn("testColumn1", "Test Column 1", "A", 1,
-            false, SourceType.CALCULATED, availableRequisitionColumn, null, null, null);
+    RequisitionTemplateColumn testColumn1 = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(availableRequisitionColumn)
+        .withDisplay(false)
+        .withOption(null)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -124,10 +131,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
   @Test
   public void testChangeRequisitionTemplateDisplayStatus() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn testColumn1 =
-        new RequisitionTemplateColumn(
-            "testColumn2", "Test Column 2", "B", 1, false,
-            SourceType.CALCULATED, getColumn(), null, null, null);
+    RequisitionTemplateColumn testColumn1 = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(getColumn())
+        .withDisplay(false)
+        .withOption(null)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -148,10 +158,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
   @Test
   public void testChangeRequisitionTemplateLabel() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn testColumn1 =
-        new RequisitionTemplateColumn(
-            "testColumn3", "Test Column 3", "C", 1, false,
-            SourceType.CALCULATED, getColumn(), null, null, null);
+    RequisitionTemplateColumn testColumn1 = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(getColumn())
+        .withDisplay(false)
+        .withOption(null)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, testColumn1);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -167,8 +180,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
   @Test
   public void testChangeRequisitionTemplateSource() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn("column1", "label1", "I", 1,
-        false, SourceType.CALCULATED, getColumn(), null, null, null);
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(getColumn())
+        .withDisplay(false)
+        .withOption(null)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, column);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -191,9 +209,13 @@ public class RequisitionTemplateRepositoryIntegrationTest
     AvailableRequisitionColumnOption option = getOption("34b8e763-71a0-41f1-86b4-1829963f0704");
 
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn column =
-        new RequisitionTemplateColumn("column2", "label2", "I", 1,
-            false, SourceType.CALCULATED, getColumnWithOption(), option, null, null);
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(getColumnWithOption())
+        .withDisplay(false)
+        .withOption(option)
+        .withTag(null)
+        .build();
     columns.put(COLUMN_KEY, column);
 
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
@@ -218,9 +240,19 @@ public class RequisitionTemplateRepositoryIntegrationTest
   @Test
   public void testIsProductCodeFirstWhenDisplayed() {
     Map<String, RequisitionTemplateColumn> columns = new HashMap<>();
-    RequisitionTemplateColumn column =
-        new RequisitionTemplateColumn("productCode", "label", "I", 2,
-            false, SourceType.CALCULATED, getColumn(), null, null, null);
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withName("productCode")
+        .withLabel("label")
+        .withIndicator("I")
+        .withDisplayOrder(2)
+        .withDisplay(false)
+        .withSource(SourceType.CALCULATED)
+        .withColumnDefinition(getColumn())
+        .withOption(null)
+        .withDefinition(null)
+        .withTag(null)
+        .build();
+
     columns.put(COLUMN_KEY, column);
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withoutId()
@@ -264,7 +296,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
     template.archive();
     repository.saveAndFlush(template);
 
-    RequisitionTemplate newTemplate = new RequisitionTemplate();
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .build();
     newTemplate.updateFrom(template);
 
     repository.saveAndFlush(newTemplate);
@@ -275,7 +308,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate template = generateInstance();
     repository.saveAndFlush(template);
 
-    RequisitionTemplate newTemplate = new RequisitionTemplate();
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .build();
     newTemplate.updateFrom(template);
 
     repository.saveAndFlush(newTemplate);
@@ -286,10 +320,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
     RequisitionTemplate template = generateInstance();
     repository.saveAndFlush(template);
 
-    RequisitionTemplate newTemplate = new RequisitionTemplate(
-        null, 3, false, StringUtils.swapCase(template.getName()),
-        Maps.newHashMap(), Sets.newHashSet()
-    );
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .withNumberOfPeriodsToAverage(3)
+        .withPopulateStockOnHandFromStockCards(true)
+        .withName(StringUtils.swapCase(template.getName()))
+        .buildAsNew();
 
     repository.saveAndFlush(newTemplate);
   }

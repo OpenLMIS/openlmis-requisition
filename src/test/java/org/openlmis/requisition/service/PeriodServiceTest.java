@@ -57,6 +57,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -113,7 +114,7 @@ public class PeriodServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    schedule = new ProcessingScheduleDtoDataBuilder().build();
+    schedule = new ProcessingScheduleDtoDataBuilder().buildAsDto();
 
     currentPeriod = createPeriod(0);
     period1 = createPeriod(1);
@@ -165,13 +166,14 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnCurrentPeriodsIfThereIsMoreThanOne() throws Exception {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(SUBMITTED);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withStatus(SUBMITTED)
+        .build();
 
-    ProcessingPeriodDto period6 = new ProcessingPeriodDto();
-    period6.setId(UUID.randomUUID());
-    period6.setStartDate(currentPeriod.getStartDate());
-    period6.setEndDate(currentPeriod.getEndDate());
+    ProcessingPeriodDto period6 = new ProcessingPeriodDtoDataBuilder()
+        .withStartDate(currentPeriod.getStartDate())
+        .withEndDate(currentPeriod.getEndDate())
+        .buildAsDto();
 
     doReturn(Arrays.asList(currentPeriod, period6))
         .when(periodReferenceDataService)
@@ -226,8 +228,9 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnCurrentPeriodIfThereIsNonSubmittedRequisition() throws Exception {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(INITIATED);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withStatus(INITIATED)
+        .build();
 
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
@@ -278,9 +281,9 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setStatus(INITIATED);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withStatus(INITIATED)
+        .build();
 
     doReturn(singletonList(requisition))
         .when(requisitionRepository)
@@ -302,15 +305,15 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setStatus(INITIATED);
-    requisition.setEmergency(true);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withStatus(INITIATED)
+        .withEmergency(true)
+        .build();
 
-    Requisition anotherRequisition = new Requisition();
-    anotherRequisition.setId(UUID.randomUUID());
-    anotherRequisition.setStatus(SUBMITTED);
-    anotherRequisition.setEmergency(true);
+    Requisition anotherRequisition = new RequisitionDataBuilder()
+        .withStatus(SUBMITTED)
+        .withEmergency(true)
+        .build();
 
     doReturn(Arrays.asList(requisition, anotherRequisition))
         .when(requisitionRepository)
@@ -341,15 +344,15 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setStatus(APPROVED);
-    requisition.setEmergency(true);
+    Requisition requisition = new RequisitionDataBuilder()
+        .withStatus(APPROVED)
+        .withEmergency(true)
+        .build();
 
-    Requisition anotherRequisition = new Requisition();
-    anotherRequisition.setId(UUID.randomUUID());
-    anotherRequisition.setStatus(RELEASED);
-    anotherRequisition.setEmergency(true);
+    Requisition anotherRequisition = new RequisitionDataBuilder()
+        .withStatus(RELEASED)
+        .withEmergency(true)
+        .build();
 
     doReturn(Arrays.asList(requisition, anotherRequisition))
         .when(requisitionRepository)
@@ -434,8 +437,8 @@ public class PeriodServiceTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionIfPeriodIsNotTheOldest() {
-    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(UUID.randomUUID());
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDtoDataBuilder()
+        .buildAsDto();
 
     currentPeriod.setProcessingSchedule(processingScheduleDto);
     currentPeriod.setId(UUID.randomUUID());
@@ -452,8 +455,8 @@ public class PeriodServiceTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram() {
 
-    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDto();
-    processingScheduleDto.setId(UUID.randomUUID());
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDtoDataBuilder()
+        .buildAsDto();
     when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(singletonList(processingScheduleDto));
 
@@ -464,7 +467,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(INITIATED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(INITIATED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     periodService.findPeriod(programId, facilityId, null, false);
@@ -474,7 +477,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(SUBMITTED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(SUBMITTED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     periodService.findPeriod(programId, facilityId, null, false);
@@ -484,7 +487,8 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(AUTHORIZED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(AUTHORIZED), currentPeriod.getId(), facilityId,
+        programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -495,7 +499,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasApprovedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -506,7 +510,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasSkippedStatus() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(SKIPPED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(SKIPPED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -517,9 +521,10 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenRequisitionForNextPeriodIsPresent() {
     setMockForFindPeriod();
 
-    mockRequisitionFound(getRequisition(AUTHORIZED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(AUTHORIZED), currentPeriod.getId(), facilityId,
+        programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
-    mockRequisitionFound(getRequisition(INITIATED), period2.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(INITIATED), period2.getId(), facilityId, programId);
 
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
     assertEquals(period1, period);
@@ -532,7 +537,7 @@ public class PeriodServiceTest {
 
     // we mock the requisition search to return a requisition for the first period
     // but not for the second
-    mockRequisitionFound(getRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
+    mockRequisitionFound(buildRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
     //when
@@ -564,13 +569,13 @@ public class PeriodServiceTest {
         .withStartDate(LocalDate.now().plusMonths(plusMonth).with(firstDayOfMonth()))
         .withEndDate(LocalDate.now().plusMonths(plusMonth).with(lastDayOfMonth()))
         .withProcessingSchedule(schedule)
-        .build();
+        .buildAsDto();
   }
 
-  private Requisition getRequisition(RequisitionStatus status) {
-    Requisition requisition = new Requisition();
-    requisition.setStatus(status);
-    return requisition;
+  private Requisition buildRequisition(RequisitionStatus status) {
+    return new RequisitionDataBuilder()
+        .withStatus(status)
+        .build();
   }
 
   private void mockRequisitionFound(

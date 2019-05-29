@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.StockCardDtoDataBuilder;
 
 public class StockCardStockManagementServiceTest
     extends BaseStockmanagementServiceTest<StockCardDto> {
@@ -33,7 +34,7 @@ public class StockCardStockManagementServiceTest
 
   @Override
   protected StockCardDto generateInstance() {
-    return new StockCardDto();
+    return new StockCardDtoDataBuilder().buildAsDto();
   }
 
   @Override

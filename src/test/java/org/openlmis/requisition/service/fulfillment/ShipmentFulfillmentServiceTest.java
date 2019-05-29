@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ShipmentDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.ShipmentDtoDataBuilder;
 
 public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<ShipmentDto> {
 
@@ -32,7 +33,7 @@ public class ShipmentFulfillmentServiceTest extends BaseFulfillmentServiceTest<S
 
   @Override
   protected ShipmentDto generateInstance() {
-    return new ShipmentDto();
+    return new ShipmentDtoDataBuilder().buildAsDto();
   }
 
   @Override

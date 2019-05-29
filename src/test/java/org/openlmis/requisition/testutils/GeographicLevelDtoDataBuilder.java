@@ -17,8 +17,9 @@ package org.openlmis.requisition.testutils;
 
 import java.util.UUID;
 import org.openlmis.requisition.dto.GeographicLevelDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class GeographicLevelDtoDataBuilder {
+public class GeographicLevelDtoDataBuilder implements DtoDataBuilder<GeographicLevelDto> {
 
   private static int instanceNumber = 0;
 
@@ -43,7 +44,7 @@ public class GeographicLevelDtoDataBuilder {
    * Creates new instance of {@link GeographicLevelDto} with properties.
    * @return created facility.
    */
-  public GeographicLevelDto build() {
+  public GeographicLevelDto buildAsDto() {
     return new GeographicLevelDto(id, code, name, levelNumber);
   }
 }

@@ -17,13 +17,14 @@ package org.openlmis.requisition.service.referencedata;
 
 import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.RequisitionGroupDtoDataBuilder;
 
 public class RequisitionGroupReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<RequisitionGroupDto> {
 
   @Override
   protected RequisitionGroupDto generateInstance() {
-    return new RequisitionGroupDto();
+    return new RequisitionGroupDtoDataBuilder().buildAsDto();
   }
 
   @Override

@@ -103,10 +103,10 @@ public class ApprovedRequisitionNotifierTest {
   private Requisition requisition = mock(Requisition.class);
   private UUID requisitionId = UUID.randomUUID();
 
-  private UserDto clerkOne = new UserDtoDataBuilder().withUsername("ClerkOne").build();
-  private UserDto clerkTwo = new UserDtoDataBuilder().withUsername("ClerkTwo").build();
-  private UserDto clerkThree = new UserDtoDataBuilder().withUsername("ClerkThree").build();
-  private UserDto clerkFour = new UserDtoDataBuilder().withUsername("ClerkFour").build();
+  private UserDto clerkOne = new UserDtoDataBuilder().withUsername("ClerkOne").buildAsDto();
+  private UserDto clerkTwo = new UserDtoDataBuilder().withUsername("ClerkTwo").buildAsDto();
+  private UserDto clerkThree = new UserDtoDataBuilder().withUsername("ClerkThree").buildAsDto();
+  private UserDto clerkFour = new UserDtoDataBuilder().withUsername("ClerkFour").buildAsDto();
   private FacilityDto warehouseOne = DtoGenerator.of(FacilityDto.class, 3).get(0);
   private FacilityDto warehouseTwo = DtoGenerator.of(FacilityDto.class, 3).get(1);
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class, 3).get(2);
@@ -180,7 +180,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatCanNotBeNotified() {
-    clerkOne = new UserDtoDataBuilder().denyNotify().build();
+    clerkOne = new UserDtoDataBuilder().denyNotify().buildAsDto();
 
     approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
@@ -200,7 +200,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersThatAreNotVerified() {
-    clerkOne = new UserDtoDataBuilder().asUnverified().build();
+    clerkOne = new UserDtoDataBuilder().asUnverified().buildAsDto();
 
     approvedRequisitionNotifier.notifyClerks(requisition, locale);
 
@@ -220,7 +220,7 @@ public class ApprovedRequisitionNotifierTest {
 
   @Test
   public void notifyClerkShouldIgnoreUsersWithoutEmail() {
-    clerkOne = new UserDtoDataBuilder().withoutEmail().build();
+    clerkOne = new UserDtoDataBuilder().withoutEmail().buildAsDto();
 
     approvedRequisitionNotifier.notifyClerks(requisition, locale);
 

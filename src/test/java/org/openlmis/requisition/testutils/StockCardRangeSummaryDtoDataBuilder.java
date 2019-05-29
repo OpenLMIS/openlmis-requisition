@@ -20,8 +20,10 @@ import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class StockCardRangeSummaryDtoDataBuilder {
+public class StockCardRangeSummaryDtoDataBuilder implements
+    DtoDataBuilder<StockCardRangeSummaryDto> {
 
   private ObjectReferenceDto orderable;
   private Integer stockOutDays;
@@ -32,7 +34,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
    * Creates builder for creating new instance of {@link StockCardRangeSummaryDtoDataBuilder}.
    */
   public StockCardRangeSummaryDtoDataBuilder() {
-    orderable = new ObjectReferenceDtoDataBuilder().withPath("api/orderables").build();
+    orderable = new ObjectReferenceDtoDataBuilder().withPath("api/orderables").buildAsDto();
     stockOutDays = 0;
     tags = new HashMap<>();
     amount = 0;
@@ -42,7 +44,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
    * Creates new instance of {@link StockCardRangeSummaryDto} with properties.
    * @return created stock cards range summary
    */
-  public StockCardRangeSummaryDto build() {
+  public StockCardRangeSummaryDto buildAsDto() {
     return new StockCardRangeSummaryDto(orderable, stockOutDays, tags, amount);
   }
 
@@ -63,7 +65,7 @@ public class StockCardRangeSummaryDtoDataBuilder {
     this.orderable = new ObjectReferenceDtoDataBuilder()
         .withPath("api/orderables")
         .withId(orderableId)
-        .build();
+        .buildAsDto();
     return this;
   }
 }

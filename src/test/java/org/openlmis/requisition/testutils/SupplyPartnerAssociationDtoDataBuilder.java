@@ -20,11 +20,15 @@ import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
-public class SupplyPartnerAssociationDtoDataBuilder {
+public class SupplyPartnerAssociationDtoDataBuilder implements
+    DtoDataBuilder<SupplyPartnerAssociationDto>,
+    RepositoryDataBuilder<SupplyPartnerAssociationDto> {
   private UUID id = UUID.randomUUID();
-  private ObjectReferenceDto program = new ObjectReferenceDtoDataBuilder().build();
-  private ObjectReferenceDto supervisoryNode = new ObjectReferenceDtoDataBuilder().build();
+  private ObjectReferenceDto program = new ObjectReferenceDtoDataBuilder().buildAsDto();
+  private ObjectReferenceDto supervisoryNode = new ObjectReferenceDtoDataBuilder().buildAsDto();
   private List<ObjectReferenceDto> facilities = Lists.newArrayList();
   private List<ObjectReferenceDto> orderables = Lists.newArrayList();
 
@@ -49,6 +53,7 @@ public class SupplyPartnerAssociationDtoDataBuilder {
     return this;
   }
 
+  @Override
   public SupplyPartnerAssociationDto buildAsNew() {
     return new SupplyPartnerAssociationDto(program, supervisoryNode, facilities, orderables);
   }
@@ -56,7 +61,8 @@ public class SupplyPartnerAssociationDtoDataBuilder {
   /**
    * Builds an instance of {@link SupplyPartnerAssociationDto}.
    */
-  public SupplyPartnerAssociationDto build() {
+  @Override
+  public SupplyPartnerAssociationDto buildAsDto() {
     SupplyPartnerAssociationDto association = buildAsNew();
     association.setId(id);
 

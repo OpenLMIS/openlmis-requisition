@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -75,7 +76,7 @@ public class LineItemFieldsCalculatorTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Test
-  public void shouldCalculateTotalLossesAndAdjustments() throws Exception {
+  public void shouldCalculateTotalLossesAndAdjustments() {
     // given
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
@@ -111,9 +112,10 @@ public class LineItemFieldsCalculatorTest {
     doReturn(7).when(adjustment4).getQuantity();
     doReturn(id4).when(adjustment4).getReasonId();
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setStockAdjustments(Lists.newArrayList(adjustment1, adjustment2,
-        adjustment3, adjustment4));
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withStockAdjustments(Lists.newArrayList(adjustment1, adjustment2,
+            adjustment3, adjustment4))
+        .build();
     requisitionLineItem.setTotalLossesAndAdjustments(
         LineItemFieldsCalculator.calculateTotalLossesAndAdjustments(
             requisitionLineItem, Lists.newArrayList(reason1, reason2, reason3, reason4)));
@@ -123,7 +125,7 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateBeginningBalanceBasedOnPrevious() throws Exception {
+  public void shouldCalculateBeginningBalanceBasedOnPrevious() {
     RequisitionLineItem previous = new RequisitionLineItem();
     previous.setStockOnHand(STOCK_ON_HAND);
 
@@ -131,63 +133,68 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldSetZeroToBeginningBalanceIfPreviousNotExist() throws Exception {
+  public void shouldSetZeroToBeginningBalanceIfPreviousNotExist() {
     assertThat(LineItemFieldsCalculator.calculateBeginningBalance(null), is(0));
   }
 
   @Test
-  public void shouldSetZeroToBeginningBalanceIfPreviousNotHasData() throws Exception {
+  public void shouldSetZeroToBeginningBalanceIfPreviousNotHasData() {
     assertThat(LineItemFieldsCalculator.calculateBeginningBalance(new RequisitionLineItem()),
         is(0));
   }
 
   @Test
   public void shouldCalculateStockOnHand() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalLossesAndAdjustments(-100);
-    requisitionLineItem.setTotalConsumedQuantity(200);
-    requisitionLineItem.setTotalReceivedQuantity(500);
-    requisitionLineItem.setBeginningBalance(1000);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalLossesAndAdjustments(-100)
+        .withTotalConsumedQuantity(200)
+        .withTotalReceivedQuantity(500)
+        .withBeginningBalance(1000)
+        .build();
 
     assertEquals(1200, LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem));
   }
 
   @Test
-  public void shouldCalculateStockOnHandIfNull() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalLossesAndAdjustments(null);
-    requisitionLineItem.setTotalConsumedQuantity(200);
-    requisitionLineItem.setTotalReceivedQuantity(500);
-    requisitionLineItem.setBeginningBalance(1000);
+  public void shouldCalculateStockOnHandIfNull() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalLossesAndAdjustments(null)
+        .withTotalConsumedQuantity(200)
+        .withTotalReceivedQuantity(500)
+        .withBeginningBalance(1000)
+        .build();
 
     assertEquals(1300, LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem));
   }
 
   @Test
   public void shouldCalculateTotal() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalReceivedQuantity(500);
-    requisitionLineItem.setBeginningBalance(1000);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalReceivedQuantity(500)
+        .withBeginningBalance(1000)
+        .build();
 
     assertEquals(1500, LineItemFieldsCalculator.calculateTotal(requisitionLineItem));
   }
 
   @Test
   public void shouldCalculateTotalConsumedQuantity() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalLossesAndAdjustments(-800);
-    requisitionLineItem.setStockOnHand(300);
-    requisitionLineItem.setTotalReceivedQuantity(500);
-    requisitionLineItem.setBeginningBalance(1000);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalLossesAndAdjustments(-800)
+        .withStockOnHand(300)
+        .withTotalReceivedQuantity(500)
+        .withBeginningBalance(1000)
+        .build();
 
     assertEquals(400, LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem));
   }
 
   @Test
   public void shouldCalculateTotalCost() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
-    requisitionLineItem.setPacksToShip(40L);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
+        .withPacksToShip(40L)
+        .build();
 
     Money totalCost =
         LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
@@ -197,9 +204,10 @@ public class LineItemFieldsCalculatorTest {
 
   @Test
   public void shouldCalculateTotalCostAsZeroIfValuesAreMissing() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 3.25));
-    requisitionLineItem.setPacksToShip(null);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
+        .withPacksToShip(null)
+        .build();
 
     Money totalCost =
         LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
@@ -215,42 +223,46 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumption() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalStockoutDays(5);
-    requisitionLineItem.setTotalConsumedQuantity(20);
+  public void shouldCalculateAdjustedConsumption() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(5)
+        .withTotalConsumedQuantity(20)
+        .build();
 
     assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
         3, false));
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionWithAdditionalQuantityRequested() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalStockoutDays(5);
-    requisitionLineItem.setAdditionalQuantityRequired(20);
-    requisitionLineItem.setTotalConsumedQuantity(20);
+  public void shouldCalculateAdjustedConsumptionWithAdditionalQuantityRequested() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(5)
+        .withAdditionalQuantityRequired(20)
+        .withTotalConsumedQuantity(20)
+        .build();
 
     assertEquals(42, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
         3, true));
   }
 
   @Test
-  public void shouldCalcAdjustedConsumptionWithoutAdditionalQuantityRequested() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalStockoutDays(5);
-    requisitionLineItem.setAdditionalQuantityRequired(10);
-    requisitionLineItem.setTotalConsumedQuantity(20);
+  public void shouldCalcAdjustedConsumptionWithoutAdditionalQuantityRequested() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(5)
+        .withAdditionalQuantityRequired(10)
+        .withTotalConsumedQuantity(20)
+        .build();
 
     assertEquals(22, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
         3, false));
   }
 
   @Test
-  public void shouldCalculateAdjustedConsumptionWhenNonStockoutDaysIsZero() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setTotalStockoutDays(90);
-    requisitionLineItem.setTotalConsumedQuantity(20);
+  public void shouldCalculateAdjustedConsumptionWhenNonStockoutDaysIsZero() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(90)
+        .withTotalConsumedQuantity(20)
+        .build();
 
     assertEquals(20, LineItemFieldsCalculator.calculateAdjustedConsumption(requisitionLineItem,
         3, false));
@@ -265,7 +277,7 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldReturnAdjustedConsumptionWhenNoPreviousPeriods() throws Exception {
+  public void shouldReturnAdjustedConsumptionWhenNoPreviousPeriods() {
     int averageConsumption = LineItemFieldsCalculator
         .calculateAverageConsumption(singletonList(5));
 
@@ -273,7 +285,7 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateAverageConsumptionWhenOnePreviousPeriod() throws Exception {
+  public void shouldCalculateAverageConsumptionWhenOnePreviousPeriod() {
     int averageConsumption =
         LineItemFieldsCalculator.calculateAverageConsumption(asList(5, 10));
 
@@ -281,7 +293,7 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateMaximumStockQuantityForDefaultOption() throws Exception {
+  public void shouldCalculateMaximumStockQuantityForDefaultOption() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
         .withColumn(MAXIMUM_STOCK_QUANTITY, null, CALCULATED,
@@ -289,9 +301,10 @@ public class LineItemFieldsCalculatorTest {
             Sets.newHashSet(CALCULATED), null, true)
         .build();
 
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7.25));
-    item.setAverageConsumption(2);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withMaxPeriodsOfStock(BigDecimal.valueOf(7.25))
+        .withAverageConsumption(2)
+        .build();
 
     assertThat(
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
@@ -300,15 +313,16 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateMaximumStockQuantityWhenOptionIsNotSelected() throws Exception {
+  public void shouldCalculateMaximumStockQuantityWhenOptionIsNotSelected() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
         .withColumn(MAXIMUM_STOCK_QUANTITY, null, CALCULATED, Sets.newHashSet(CALCULATED))
         .build();
 
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7.25));
-    item.setAverageConsumption(2);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withMaxPeriodsOfStock(BigDecimal.valueOf(7.25))
+        .withAverageConsumption(2)
+        .build();
 
     assertThat(
         LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
@@ -317,11 +331,12 @@ public class LineItemFieldsCalculatorTest {
   }
 
   @Test
-  public void shouldCalculateCalculatedOrderQuantity() throws Exception {
+  public void shouldCalculateCalculatedOrderQuantity() {
 
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setStockOnHand(5);
-    item.setMaximumStockQuantity(10);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withStockOnHand(5)
+        .withMaximumStockQuantity(10)
+        .build();
 
     assertThat(
         LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
@@ -332,17 +347,20 @@ public class LineItemFieldsCalculatorTest {
 
   @Test
   public void shouldCalculateCalculatedOrderQuantityIfMaximumStockQuantityIsNotSet() {
-    RequisitionTemplateColumn column = new RequisitionTemplateColumn();
-    column.setOption(new AvailableRequisitionColumnOption(null, "default", "Default"));
+    RequisitionTemplateColumn column = new RequisitionTemplateColumnDataBuilder()
+        .withOption(new AvailableRequisitionColumnOption(null, "default", "Default"))
+        .build();
 
     final RequisitionTemplate template = new RequisitionTemplate(
         ImmutableMap.of(MAXIMUM_STOCK_QUANTITY, column)
     );
 
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setMaxPeriodsOfStock(BigDecimal.valueOf(7));
-    item.setAverageConsumption(2);
-    item.setStockOnHand(4);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withEmptyNumericFields()
+        .withMaxPeriodsOfStock(BigDecimal.valueOf(7))
+        .withAverageConsumption(2)
+        .withStockOnHand(4)
+        .build();
 
     assertThat(
         LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, template),
@@ -354,13 +372,14 @@ public class LineItemFieldsCalculatorTest {
   @Test
   public void shouldCalculateCalculatedOrderQuantityIfStockOnHandIsNotSet() {
 
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setStockOnHand((Integer) null);
-    item.setBeginningBalance(5);
-    item.setTotalReceivedQuantity(0);
-    item.setTotalLossesAndAdjustments(0);
-    item.setTotalConsumedQuantity(0);
-    item.setMaximumStockQuantity(10);
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withStockOnHand(null)
+        .withBeginningBalance(5)
+        .withTotalReceivedQuantity(0)
+        .withTotalLossesAndAdjustments(0)
+        .withTotalConsumedQuantity(0)
+        .withMaximumStockQuantity(10)
+        .build();
 
     assertThat(
         LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
@@ -371,33 +390,34 @@ public class LineItemFieldsCalculatorTest {
 
   @Test
   public void shouldReturnNullForCalculatedOrderQuantityIsaIfIsaIsNull() {
-    RequisitionLineItem line = new RequisitionLineItem();
-    line.setIdealStockAmount(null);
+    RequisitionLineItem line = new RequisitionLineItemDataBuilder()
+        .withIdealStockAmount(null)
+        .build();
 
     assertThat(calculateCalculatedOrderQuantityIsa(line), is(nullValue()));
   }
 
   @Test
   public void shouldCalculateCalculatedOrderQuantityIsa() {
-    RequisitionLineItem line = new RequisitionLineItem();
-    line.setIdealStockAmount(1000);
-    line.setStockOnHand(100);
+    RequisitionLineItem line = new RequisitionLineItemDataBuilder()
+        .withIdealStockAmount(1000)
+        .withStockOnHand(100)
+        .build();
 
     assertThat(calculateCalculatedOrderQuantityIsa(line), is(900));
   }
 
   @Test
   public void shouldNotAllowSkippingIfNonZeroOnStockColumns() {
-    RequisitionLineItem line = new RequisitionLineItem();
-    line.setStockOnHand(100);
+    RequisitionLineItem line = new RequisitionLineItemDataBuilder().withStockOnHand(100).build();
 
     assertThat(canSkipLineItem(line, line), is(false));
   }
 
   @Test
   public void shouldAllowSkippingIfPreviousRequisitionWasSkipped() {
-    RequisitionLineItem previous = new RequisitionLineItem();
-    previous.setSkipped(true);
+    RequisitionLineItem previous =
+        new RequisitionLineItemDataBuilder().withSkippedFlag(true).build();
     RequisitionLineItem current = new RequisitionLineItem();
 
     assertThat(canSkipLineItem(current, previous), is(true));
@@ -405,8 +425,8 @@ public class LineItemFieldsCalculatorTest {
 
   @Test
   public void shouldNotAllowSkippingIfPreviousRequisitionWasNotSkipped() {
-    RequisitionLineItem previous = new RequisitionLineItem();
-    previous.setSkipped(false);
+    RequisitionLineItem previous =
+        new RequisitionLineItemDataBuilder().withSkippedFlag(false).build();
     RequisitionLineItem current = new RequisitionLineItem();
 
     assertThat(canSkipLineItem(current, previous), is(false));
@@ -417,7 +437,7 @@ public class LineItemFieldsCalculatorTest {
     UUID orderableId = UUID.randomUUID();
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(CONSUMED_TAG, -2, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
@@ -447,7 +467,7 @@ public class LineItemFieldsCalculatorTest {
     UUID orderableId = UUID.randomUUID();
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(CONSUMED_TAG, 12, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
@@ -461,7 +481,7 @@ public class LineItemFieldsCalculatorTest {
     UUID orderableId = UUID.randomUUID();
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(RECEIVED_TAG, 2, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withStockBasedColumn(TOTAL_RECEIVED_QUANTITY, COLUMN_IDENTIFIER, RECEIVED_TAG)
@@ -491,7 +511,7 @@ public class LineItemFieldsCalculatorTest {
     UUID orderableId = UUID.randomUUID();
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(RECEIVED_TAG, -12, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     RequisitionTemplate template = new RequisitionTemplateDataBuilder().withStockBasedColumn(
         TOTAL_RECEIVED_QUANTITY, COLUMN_IDENTIFIER, RECEIVED_TAG)
@@ -504,7 +524,7 @@ public class LineItemFieldsCalculatorTest {
   public void shouldGetStockoutDays() {
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withStockOutDays(1)
-        .build();
+        .buildAsDto();
 
     assertEquals(new Integer(1),
         calculateStockBasedTotalStockoutDays(stockCardRangeSummaryDto, 3));
@@ -515,7 +535,7 @@ public class LineItemFieldsCalculatorTest {
     Integer numberOfMonthsInPeriod = 3;
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withStockOutDays(100)
-        .build();
+        .buildAsDto();
 
     assertEquals(new Integer(30 * numberOfMonthsInPeriod), calculateStockBasedTotalStockoutDays(
         stockCardRangeSummaryDto, numberOfMonthsInPeriod));
@@ -530,7 +550,7 @@ public class LineItemFieldsCalculatorTest {
   public void shouldCalculateTotalLossesAndAdjustmentsQuantityFromStockCards() {
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(RECEIVED_TAG, 2, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .build();
+        .buildAsDto();
 
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withStockBasedColumn(TOTAL_LOSSES_AND_ADJUSTMENTS, COLUMN_IDENTIFIER, ADJUSTMENT_TAG)
@@ -557,8 +577,8 @@ public class LineItemFieldsCalculatorTest {
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
         .build();
     List<ProcessingPeriodDto> periods = asList(
-        new ProcessingPeriodDtoDataBuilder().build(),
-        new ProcessingPeriodDtoDataBuilder().build());
+        new ProcessingPeriodDtoDataBuilder().buildAsDto(),
+        new ProcessingPeriodDtoDataBuilder().buildAsDto());
 
     assertEquals(new Integer(0), calculateStockBasedAverageConsumption(
         null, orderableId, template, periods, null));
@@ -571,11 +591,11 @@ public class LineItemFieldsCalculatorTest {
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
         .build();
     List<ProcessingPeriodDto> periods = asList(
-        new ProcessingPeriodDtoDataBuilder().build(),
-        new ProcessingPeriodDtoDataBuilder().build());
+        new ProcessingPeriodDtoDataBuilder().buildAsDto(),
+        new ProcessingPeriodDtoDataBuilder().buildAsDto());
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(CONSUMED_TAG, -10, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     assertEquals(new Integer(5), calculateStockBasedAverageConsumption(
         stockCardRangeSummaryDto, orderableId, template, periods, null));
@@ -590,16 +610,16 @@ public class LineItemFieldsCalculatorTest {
     List<ProcessingPeriodDto> periods = asList(
         new ProcessingPeriodDtoDataBuilder()
             .withDurationInMonths(2)
-            .build(),
+            .buildAsDto(),
         new ProcessingPeriodDtoDataBuilder()
             .withDurationInMonths(3)
-            .build(),
+            .buildAsDto(),
         new ProcessingPeriodDtoDataBuilder()
             .withDurationInMonths(4)
-            .build());
+            .buildAsDto());
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(CONSUMED_TAG, -80, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     assertEquals(new Integer(27), calculateStockBasedAverageConsumption(
         stockCardRangeSummaryDto, orderableId, template, periods, null));
@@ -612,11 +632,11 @@ public class LineItemFieldsCalculatorTest {
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
         .build();
     List<ProcessingPeriodDto> periods = asList(
-        new ProcessingPeriodDtoDataBuilder().build(),
-        new ProcessingPeriodDtoDataBuilder().build());
+        new ProcessingPeriodDtoDataBuilder().buildAsDto(),
+        new ProcessingPeriodDtoDataBuilder().buildAsDto());
     StockCardRangeSummaryDto stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
         .withTags(ImmutableMap.of(CONSUMED_TAG, -10, ADJUSTMENT_TAG, 10, OTHER_TAG, 5))
-        .withOrderableId(orderableId).build();
+        .withOrderableId(orderableId).buildAsDto();
 
     assertEquals(new Integer(10), calculateStockBasedAverageConsumption(
         stockCardRangeSummaryDto, orderableId, template, periods, 10));

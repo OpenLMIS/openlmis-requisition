@@ -68,7 +68,7 @@ public class TotalFieldValidatorTest {
   private TotalFieldValidator getTotalFieldValidator(Integer beginningBalance) {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .setTotal(beginningBalance)
+            .withTotal(beginningBalance)
             .build())
         .build();
 

@@ -26,6 +26,7 @@ import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.RoleAssignmentDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -38,12 +39,21 @@ public class UserDtoTest {
 
   @Before
   public void setUp() {
-    homeFacilitySupervisionRole = new RoleAssignmentDto(
-        UUID.randomUUID(), UUID.randomUUID(), null, null);
-    supervisorySupervisionRole = new RoleAssignmentDto(
-        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
-    RoleAssignmentDto anotherSupervisorySupervisionRole = new RoleAssignmentDto(
-        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null);
+    homeFacilitySupervisionRole = new RoleAssignmentDtoDataBuilder()
+        .withRoleId(UUID.randomUUID())
+        .withProgramId(UUID.randomUUID())
+        .withSupervisoryNodeId(null)
+        .withWarehouseId(null)
+        .buildAsDto();
+
+    RoleAssignmentDtoDataBuilder supervisoryNodeBuilder = new RoleAssignmentDtoDataBuilder()
+        .withRoleId(UUID.randomUUID())
+        .withProgramId(UUID.randomUUID())
+        .withSupervisoryNodeId(UUID.randomUUID())
+        .withWarehouseId(null);
+
+    supervisorySupervisionRole = supervisoryNodeBuilder.buildAsDto();
+    RoleAssignmentDto anotherSupervisorySupervisionRole = supervisoryNodeBuilder.buildAsDto();
 
     userDto = new UserDtoDataBuilder()
         .withUsername("jdoe")
@@ -52,7 +62,7 @@ public class UserDtoTest {
         .withRoleAssignment(homeFacilitySupervisionRole)
         .withRoleAssignment(supervisorySupervisionRole)
         .withRoleAssignment(anotherSupervisorySupervisionRole)
-        .build();
+        .buildAsDto();
   }
 
   @Test

@@ -21,8 +21,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class UserDtoDataBuilder {
+public class UserDtoDataBuilder implements DtoDataBuilder<UserDto> {
   private UUID id = UUID.randomUUID();
   private String username = RandomStringUtils.randomAlphanumeric(5);
   private String firstName = RandomStringUtils.randomAlphanumeric(5);
@@ -83,7 +84,7 @@ public class UserDtoDataBuilder {
   /**
    * Creates new instance of {@link UserDto}.
    */
-  public UserDto build() {
+  public UserDto buildAsDto() {
     UserDto user = new UserDto(
         username, firstName, lastName, email, verified, homeFacilityId, roleAssignments,
         allowNotify, active

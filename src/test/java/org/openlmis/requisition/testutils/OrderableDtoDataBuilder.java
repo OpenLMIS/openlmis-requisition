@@ -25,8 +25,10 @@ import org.joda.money.Money;
 import org.openlmis.requisition.dto.DispensableDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class OrderableDtoDataBuilder {
+@SuppressWarnings("PMD.TooManyMethods")
+public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
   private static int instanceNumber = 0;
 
   private UUID id;
@@ -96,11 +98,22 @@ public class OrderableDtoDataBuilder {
     return this;
   }
 
+  public OrderableDtoDataBuilder withPackRoundingThreshold(Integer packRoundingThreshold) {
+    this.packRoundingThreshold = packRoundingThreshold;
+    return this;
+  }
+
+  public OrderableDtoDataBuilder withRoundToZero(Boolean roundToZero) {
+    this.roundToZero = roundToZero;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link OrderableDto} with properties.
    * @return created orderable.
    */
-  public OrderableDto build() {
+  @Override
+  public OrderableDto buildAsDto() {
     OrderableDto dto = new OrderableDto();
     dto.setId(id);
     dto.setProductCode(productCode);
@@ -113,5 +126,15 @@ public class OrderableDtoDataBuilder {
     dto.setIdentifiers(identifiers);
 
     return dto;
+  }
+
+  public OrderableDtoDataBuilder withPrograms(Set<ProgramOrderableDto> programs) {
+    this.programs = programs;
+    return this;
+  }
+
+  public OrderableDtoDataBuilder withProductCode(String productCode) {
+    this.productCode = productCode;
+    return this;
   }
 }

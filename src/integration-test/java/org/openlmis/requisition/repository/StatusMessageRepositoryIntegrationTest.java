@@ -33,7 +33,7 @@ import org.junit.rules.ExpectedException;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,15 +83,11 @@ public class StatusMessageRepositoryIntegrationTest
     requisitionTemplate = new RequisitionTemplateDataBuilder().build();
     requisitionTemplate = requisitionTemplateRepository.save(requisitionTemplate);
 
-    requisition = new Requisition(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        RequisitionStatus.INITIATED,
-        false);
-    requisition.setNumberOfMonthsInPeriod(3);
-    requisition.setTemplate(requisitionTemplate);
-    
+    requisition = new RequisitionDataBuilder()
+        .withNumberOfMonthsInPeriod(3)
+        .withTemplate(requisitionTemplate)
+        .buildAsNew();
+
     requisitionRepository.save(requisition);
   }
   

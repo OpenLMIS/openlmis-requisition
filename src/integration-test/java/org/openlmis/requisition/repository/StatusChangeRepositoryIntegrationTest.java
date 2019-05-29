@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,10 +111,11 @@ public class StatusChangeRepositoryIntegrationTest
   }
 
   private Requisition generateRequisition() {
-    Requisition instance = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), RequisitionStatus.INITIATED, false);
-    instance.setNumberOfMonthsInPeriod(3);
-    instance.setTemplate(requisitionTemplate);
+    Requisition instance = requisition = new RequisitionDataBuilder()
+        .withNumberOfMonthsInPeriod(3)
+        .withTemplate(requisitionTemplate)
+        .buildAsNew();
+
     instance.setStatusChanges(Collections.singletonList(
         StatusChange.newStatusChange(instance, userId)));
 

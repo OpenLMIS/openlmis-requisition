@@ -119,8 +119,12 @@ import org.openlmis.requisition.service.stockmanagement.StockEventStockManagemen
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupportedProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -533,7 +537,7 @@ public class RequisitionControllerTest {
         any(HttpServletRequest.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
-        new ProgramDtoDataBuilder().build());
+        new ProgramDtoDataBuilder().buildAsDto());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
@@ -570,7 +574,7 @@ public class RequisitionControllerTest {
         any(HttpServletRequest.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
-        new ProgramDtoDataBuilder().build());
+        new ProgramDtoDataBuilder().buildAsDto());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
     when(periodReferenceDataService.findOne(any(UUID.class))).thenReturn(
@@ -1233,8 +1237,7 @@ public class RequisitionControllerTest {
   }
 
   private void mockFindSupervisoryNodeByProgramAndFacility() {
-    supervisoryNode = new SupervisoryNodeDto();
-    supervisoryNode.setId(UUID.randomUUID());
+    supervisoryNode = new SupervisoryNodeDtoDataBuilder().buildAsDto();
 
     when(supervisoryNodeReferenceDataService.findSupervisoryNode(any(), any()))
         .thenReturn(supervisoryNode);
@@ -1242,8 +1245,7 @@ public class RequisitionControllerTest {
 
   private SupervisoryNodeDto mockSupervisoryNodeForApprove() {
     UUID supervisoryNodeId = UUID.randomUUID();
-    SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDto();
-    supervisoryNodeDto.setId(supervisoryNodeId);
+    SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDtoDataBuilder().buildAsDto();
     when(supervisoryNodeReferenceDataService.findOne(supervisoryNodeId))
         .thenReturn(supervisoryNodeDto);
     when(authorizedRequsition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
@@ -1251,16 +1253,21 @@ public class RequisitionControllerTest {
   }
 
   private List<RequisitionPeriodDto> generateProcessingPeriods() {
-    RequisitionPeriodDto period = new RequisitionPeriodDto();
-    period.setId(uuid1);
-    RequisitionPeriodDto period2 = new RequisitionPeriodDto();
-    period2.setId(uuid2);
-    RequisitionPeriodDto period3 = new RequisitionPeriodDto();
-    period3.setId(uuid3);
-    RequisitionPeriodDto period4 = new RequisitionPeriodDto();
-    period4.setId(uuid4);
-    RequisitionPeriodDto period5 = new RequisitionPeriodDto();
-    period5.setId(uuid5);
+    RequisitionPeriodDto period = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid1)
+        .buildAsDto();
+    RequisitionPeriodDto period2 = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid2)
+        .buildAsDto();
+    RequisitionPeriodDto period3 = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid3)
+        .buildAsDto();
+    RequisitionPeriodDto period4 = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid4)
+        .buildAsDto();
+    RequisitionPeriodDto period5 = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid5)
+        .buildAsDto();
 
     List<RequisitionPeriodDto> periods = new ArrayList<>();
     periods.add(period);
@@ -1332,13 +1339,15 @@ public class RequisitionControllerTest {
 
   private SupplyLineDto prepareSupplyLine(Requisition requisition, boolean locallyFulfills,
                                           boolean withSupportedProgram) {
-    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().buildAsDto();
 
-    FacilityDto facility = new FacilityDto();
-    facility.setId(supplyLine.getSupplyingFacility().getId());
+    FacilityDto facility = new FacilityDtoDataBuilder()
+        .withId(supplyLine.getSupplyingFacility().getId())
+        .buildAsDto();
 
-    SupportedProgramDto supportedProgram = new SupportedProgramDto();
-    supportedProgram.setSupportLocallyFulfilled(locallyFulfills);
+    SupportedProgramDto supportedProgram = new SupportedProgramDtoDataBuilder()
+        .withSupportLocallyFulfilled(locallyFulfills)
+        .buildAsDto();
 
     when(supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId()))

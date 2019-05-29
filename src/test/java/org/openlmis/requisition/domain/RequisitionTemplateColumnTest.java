@@ -21,7 +21,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.javers.common.collections.Sets;
 import org.junit.Test;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
-import org.openlmis.requisition.testutils.RequisitionTemplateColumnDtoDataBuilder;
 
 public class RequisitionTemplateColumnTest {
 
@@ -39,7 +38,7 @@ public class RequisitionTemplateColumnTest {
 
   @Test
   public void shouldImportRequisitionTemplateColumn() {
-    RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDtoDataBuilder().build();
+    RequisitionTemplateColumnDto dto = new RequisitionTemplateColumnDataBuilder().buildAsDto();
     RequisitionTemplateColumn column = RequisitionTemplateColumn.newInstance(dto);
 
     assertValues(dto, column);

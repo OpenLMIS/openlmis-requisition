@@ -35,7 +35,7 @@ public class RoleAssignmentPermissionValidationDetailsTest
 
   @Override
   protected void prepare(EqualsVerifier<RoleAssignmentPermissionValidationDetails> verifier) {
-    Requisition left = new Requisition();
+    Requisition left = new RequisitionDataBuilder().build();
     Requisition right = new RequisitionDataBuilder().build();
 
     verifier.withPrefabValues(Requisition.class, left, right);
@@ -49,7 +49,7 @@ public class RoleAssignmentPermissionValidationDetailsTest
   @Test
   public void containsPartnerRequisitionShouldReturnTrueIfRequisitionIsPartnerRequisition() {
     // given
-    Requisition requisition = new Requisition();
+    Requisition requisition = new RequisitionDataBuilder().build();
     requisition.setOriginalRequisitionId(UUID.randomUUID());
 
     // when
@@ -63,7 +63,7 @@ public class RoleAssignmentPermissionValidationDetailsTest
   @Test
   public void containsPartnerRequisitionShouldReturnTrueIfRequisitionIsNormalRequisition() {
     // given
-    Requisition requisition = new Requisition();
+    Requisition requisition = new RequisitionDataBuilder().build();
 
     // when
     RoleAssignmentPermissionValidationDetails details =

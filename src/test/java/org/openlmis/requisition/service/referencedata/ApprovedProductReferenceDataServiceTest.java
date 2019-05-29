@@ -37,7 +37,7 @@ public class ApprovedProductReferenceDataServiceTest
 
   @Override
   protected ApprovedProductDto generateInstance() {
-    return new ApprovedProductDto();
+    return new ApprovedProductDtoDataBuilder().buildAsDto();
   }
 
   @Override
@@ -55,15 +55,15 @@ public class ApprovedProductReferenceDataServiceTest
   @Test
   public void shouldReturnApprovedProducts() {
     // given
-    ProgramDto program = new ProgramDtoDataBuilder().build();
+    ProgramDto program = new ProgramDtoDataBuilder().buildAsDto();
     UUID facilityId = randomUUID();
 
     ApprovedProductDto product = new ApprovedProductDtoDataBuilder()
         .withOrderable(new OrderableDtoDataBuilder()
             .withProgramOrderable(program.getId(), true)
-            .build())
+            .buildAsDto())
         .withProgram(program)
-        .build();
+        .buildAsDto();
 
     // when
     mockPageResponseEntity(product);

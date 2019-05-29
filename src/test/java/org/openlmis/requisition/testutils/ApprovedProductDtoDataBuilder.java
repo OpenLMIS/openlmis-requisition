@@ -19,11 +19,12 @@ import java.util.UUID;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class ApprovedProductDtoDataBuilder {
+public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedProductDto> {
   private UUID id = UUID.randomUUID();
-  private OrderableDto orderable = new OrderableDtoDataBuilder().build();
-  private ProgramDto program = new ProgramDtoDataBuilder().build();
+  private OrderableDto orderable = new OrderableDtoDataBuilder().buildAsDto();
+  private ProgramDto program = new ProgramDtoDataBuilder().buildAsDto();
   private Double maxPeriodsOfStock = 3.0;
   private Double minPeriodsOfStock = 1.5;
   private Double emergencyOrderPoint = 1.0;
@@ -47,7 +48,7 @@ public class ApprovedProductDtoDataBuilder {
    * Creates new instance of {@link ApprovedProductDto} with properties.
    * @return created approved product dto
    */
-  public ApprovedProductDto build() {
+  public ApprovedProductDto buildAsDto() {
     return new ApprovedProductDto(
         id, orderable, program, maxPeriodsOfStock, minPeriodsOfStock, emergencyOrderPoint
     );

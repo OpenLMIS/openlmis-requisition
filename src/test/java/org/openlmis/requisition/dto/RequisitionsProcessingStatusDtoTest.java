@@ -18,14 +18,22 @@ package org.openlmis.requisition.dto;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.assertj.core.util.Lists;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.testutils.ApproveRequisitionDtoDataBuilder;
+import org.openlmis.requisition.testutils.ApproveRequisitionLineItemDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionsProcessingStatusDtoDataBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionsProcessingStatusDtoTest {
@@ -37,27 +45,37 @@ public class RequisitionsProcessingStatusDtoTest {
   private ApproveRequisitionDto requisition2;
   private ApproveRequisitionDto requisition3;
 
-  RequisitionsProcessingStatusDto processingStatus;
+  private RequisitionsProcessingStatusDto processingStatus;
 
   @Before
-  public void setUp() throws Exception {
-    orderable1 = new OrderableDto();
-    orderable1.setId(UUID.randomUUID());
+  public void setUp() {
+    orderable1 = new OrderableDtoDataBuilder().withId(UUID.randomUUID()).buildAsDto();
+    orderable2 = new OrderableDtoDataBuilder().withId(UUID.randomUUID()).buildAsDto();
+    orderable3 = new OrderableDtoDataBuilder().withId(UUID.randomUUID()).buildAsDto();
 
-    orderable2 = new OrderableDto();
-    orderable2.setId(UUID.randomUUID());
+    requisition1 = create(UUID.randomUUID(),
+        new OrderableDtoWrapper(orderable1, false),
+        new OrderableDtoWrapper(orderable2, true),
+        new OrderableDtoWrapper(orderable3, true)
+    );
 
-    orderable3 = new OrderableDto();
-    orderable3.setId(UUID.randomUUID());
+    requisition2 = create(UUID.randomUUID(),
+        new OrderableDtoWrapper(orderable1, true),
+        new OrderableDtoWrapper(orderable2, false),
+        new OrderableDtoWrapper(orderable3, true)
+    );
+    requisition3 = create(UUID.randomUUID(),
+        new OrderableDtoWrapper(orderable1, false),
+        new OrderableDtoWrapper(orderable2, false),
+        new OrderableDtoWrapper(orderable3, true)
+    );
 
-    requisition1 = create(UUID.randomUUID(), orderable1, false, orderable2, true, orderable3);
-    requisition2 = create(UUID.randomUUID(), orderable1, true, orderable2, false, orderable3);
-    requisition3 = create(UUID.randomUUID(), orderable1, false, orderable2, false, orderable3);
+    Set<ApproveRequisitionDto> approveRequisitionDtos = new HashSet<>(
+        Arrays.asList(requisition1, requisition2, requisition3));
 
-    processingStatus = new RequisitionsProcessingStatusDto();
-    processingStatus.addProcessedRequisition(requisition1);
-    processingStatus.addProcessedRequisition(requisition2);
-    processingStatus.addProcessedRequisition(requisition3);
+    processingStatus = new RequisitionsProcessingStatusDtoDataBuilder()
+        .withProcessedRequisitions(approveRequisitionDtos)
+        .buildAsDto();
   }
 
   @Test
@@ -78,27 +96,28 @@ public class RequisitionsProcessingStatusDtoTest {
     }
   }
 
-  private ApproveRequisitionDto create(UUID key, OrderableDto orderable1, boolean skipped1,
-                                OrderableDto orderable2, boolean skipped2,
-                                OrderableDto orderable3) {
-    ApproveRequisitionDto dto = new ApproveRequisitionDto();
-    dto.setId(key);
+  private ApproveRequisitionDto create(UUID key, OrderableDtoWrapper... orderableDtoWrapers) {
+    ApproveRequisitionDto dto = new ApproveRequisitionDtoDataBuilder().withId(key).buildAsDto();
 
-    ApproveRequisitionLineItemDto line1 = new ApproveRequisitionLineItemDto();
-    line1.setOrderable(orderable1);
-    line1.setSkipped(skipped1);
+    List<ApproveRequisitionLineItemDto> items =
+        Arrays.asList(orderableDtoWrapers)
+            .stream()
+            .map(w -> new ApproveRequisitionLineItemDtoDataBuilder()
+                .withOrderable(w.getOrderable())
+                .withSkippedFlag(w.isSkipped())
+                .buildAsDto())
+            .collect(Collectors.toList());
 
-    ApproveRequisitionLineItemDto line2 = new ApproveRequisitionLineItemDto();
-    line2.setOrderable(orderable2);
-    line2.setSkipped(skipped2);
-
-    ApproveRequisitionLineItemDto line3 = new ApproveRequisitionLineItemDto();
-    line3.setOrderable(orderable3);
-    line3.setSkipped(true);
-
-    dto.setRequisitionLineItems(Lists.newArrayList(line1, line2, line3));
+    dto.setRequisitionLineItems(items);
 
     return dto;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  private class OrderableDtoWrapper {
+    private OrderableDto orderable;
+    private boolean skipped;
   }
 
 }

@@ -44,7 +44,7 @@ public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNode
 
   @Test
   public void shouldGetParentNodeId() {
-    ObjectReferenceDto parent  = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto parent  = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setParentNode(parent);
 
@@ -60,7 +60,7 @@ public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNode
 
   @Test
   public void shouldGetPartnerNodeIds() {
-    ObjectReferenceDto partner = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto partner = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setPartnerNodes(Sets.newHashSet(partner));
 
@@ -76,7 +76,7 @@ public class SupervisoryNodeDtoTest extends ToStringContractTest<SupervisoryNode
 
   @Test
   public void shouldGetRequisitionGroupIds() {
-    ObjectReferenceDto requisitionGroup = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto requisitionGroup = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setRequisitionGroup(requisitionGroup);
 

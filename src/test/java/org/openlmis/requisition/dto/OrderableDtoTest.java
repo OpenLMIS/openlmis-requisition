@@ -30,6 +30,9 @@ import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
@@ -43,10 +46,8 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
     products = new HashSet<>();
     products.addAll(genereteProducts(10));
 
-    program = new ProgramDto();
-    program.setId(UUID.randomUUID());
-    orderableDto = new OrderableDto();
-    orderableDto.setId(UUID.randomUUID());
+    program = new ProgramDtoDataBuilder().withId(UUID.randomUUID()).buildAsDto();
+    orderableDto = new OrderableDtoDataBuilder().withId(UUID.randomUUID()).buildAsDto();
   }
 
   @Override
@@ -61,10 +62,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsSmallerThanRemainder() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setPackRoundingThreshold(4);
-    productDto.setRoundToZero(false);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(4)
+        .withRoundToZero(false)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(26);
 
@@ -73,10 +75,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldCalculatePacksToOrderWhenPackRoundingThresholdIsGreaterThanRemainder() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(false);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(7)
+        .withRoundToZero(false)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(26);
 
@@ -85,10 +88,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldCalculatePacksToOrderWhenCanRoundToZero() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(7)
+        .withRoundToZero(true)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(6);
 
@@ -97,10 +101,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldCalculatePacksToOrderWhenCanNotRoundToZero() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(false);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(4)
+        .withRoundToZero(false)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(6);
 
@@ -109,10 +114,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldReturnZeroPacksToOrderIfNetContentIsZero() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(0);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(0)
+        .withPackRoundingThreshold(7)
+        .withRoundToZero(true)
+        .buildAsDto();
     long packsToOrder = productDto.packsToOrder(6);
 
     assertEquals(0, packsToOrder);
@@ -120,9 +126,10 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldReturnZeroPacksToOrderIfOrderQuantityIsZero() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setRoundToZero(false);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withRoundToZero(false)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(0);
 
@@ -131,10 +138,11 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldReturnZeroPackToOrderIfOrderQuantityIsOneAndRoundToZeroTrueWithNetContentTen() {
-    OrderableDto productDto = new OrderableDto();
-    productDto.setNetContent(10);
-    productDto.setPackRoundingThreshold(7);
-    productDto.setRoundToZero(true);
+    OrderableDto productDto = new OrderableDtoDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(7)
+        .withRoundToZero(true)
+        .buildAsDto();
 
     long packsToOrder = productDto.packsToOrder(1);
 
@@ -143,9 +151,10 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldNotRoundUpWhenEqualToThreshold() {
-    OrderableDto product = new OrderableDto();
-    product.setNetContent(100);
-    product.setPackRoundingThreshold(50);
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withNetContent(100)
+        .withPackRoundingThreshold(50)
+        .buildAsDto();
 
     long packsToOrder = product.packsToOrder(250);
     assertEquals(2, packsToOrder);
@@ -156,8 +165,10 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
 
   @Test
   public void shouldFindProgramOrderable() {
-    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-    programOrderableDto.setProgramId(program.getId());
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
+        .withProgramId(program.getId())
+        .buildAsDto();
+
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);
 
@@ -203,12 +214,12 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
   private Set<ProgramOrderableDto> genereteProducts(int instances) {
     Set<ProgramOrderableDto> programs = new HashSet<>();
     for (int i = 0; i < instances; i++) {
-      ProgramDto program = new ProgramDto();
-      program.setId(UUID.randomUUID());
-      OrderableDto orderableDto = new OrderableDto();
-      orderableDto.setId(UUID.randomUUID());
-      ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-      programOrderableDto.setProgramId(program.getId());
+      ProgramDto program = new ProgramDtoDataBuilder()
+          .withId(UUID.randomUUID())
+          .buildAsDto();
+      ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
+          .withProgramId(program.getId())
+          .buildAsDto();
       programs.add(programOrderableDto);
     }
     return programs;

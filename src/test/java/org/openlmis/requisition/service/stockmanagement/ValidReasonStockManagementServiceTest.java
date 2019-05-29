@@ -31,6 +31,8 @@ import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.DataRetrievalException;
+import org.openlmis.requisition.testutils.ReasonDtoDataBuilder;
+import org.openlmis.requisition.testutils.ValidReasonDtoDataBuilder;
 import org.springframework.http.HttpStatus;
 
 public class ValidReasonStockManagementServiceTest
@@ -48,11 +50,11 @@ public class ValidReasonStockManagementServiceTest
 
   @Override
   protected ValidReasonDto generateInstance() {
-    ValidReasonDto validReason = new ValidReasonDto();
+    ValidReasonDto validReason = new ValidReasonDtoDataBuilder().buildAsDto();
     validReason.setProgramId(UUID.randomUUID());
     validReason.setFacilityTypeId(UUID.randomUUID());
 
-    ReasonDto reason = new ReasonDto();
+    ReasonDto reason = new ReasonDtoDataBuilder().buildAsDto();
     reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
     reason.setReasonType(ReasonType.CREDIT);
     validReason.setReason(reason);

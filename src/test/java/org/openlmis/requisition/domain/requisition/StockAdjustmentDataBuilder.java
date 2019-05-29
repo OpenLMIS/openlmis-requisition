@@ -17,8 +17,11 @@ package org.openlmis.requisition.domain.requisition;
 
 import java.util.UUID;
 import org.apache.commons.lang.math.RandomUtils;
+import org.openlmis.requisition.testutils.api.DataBuilder;
+import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 
-public class StockAdjustmentDataBuilder {
+public class StockAdjustmentDataBuilder implements DataBuilder<StockAdjustment>,
+    RepositoryDataBuilder<StockAdjustment> {
   private UUID id = UUID.randomUUID();
   private UUID reasonId = UUID.randomUUID();
   private Integer quantity = RandomUtils.nextInt();
@@ -26,6 +29,7 @@ public class StockAdjustmentDataBuilder {
   /**
    * Creates new instance of {@link StockAdjustment} with provided data.
    */
+  @Override
   public StockAdjustment build() {
     StockAdjustment adjustment = new StockAdjustment(reasonId, quantity);
     adjustment.setId(id);
@@ -33,4 +37,22 @@ public class StockAdjustmentDataBuilder {
     return adjustment;
   }
 
+  /**
+   * Creates new instance of {@link StockAdjustment} without id.
+   */
+  @Override
+  public StockAdjustment buildAsNew() {
+    return new StockAdjustment(reasonId, quantity);
+  }
+
+  public StockAdjustmentDataBuilder withQuantity(Integer quantity) {
+    this.quantity = quantity;
+    return this;
+  }
+
+
+  public StockAdjustmentDataBuilder withReasonId(UUID reasonId) {
+    this.reasonId = reasonId;
+    return this;
+  }
 }

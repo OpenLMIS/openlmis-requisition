@@ -64,7 +64,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -115,6 +114,8 @@ import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanageme
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.ReasonDtoDataBuilder;
+import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
@@ -227,8 +228,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private UserDto user;
   private UUID facilityId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
-  private  Set<UUID> programIds = new HashSet<>();
-  private  Set<UUID> supervisoryNodeIds = new HashSet<>();
 
   @Before
   public void setUp() {
@@ -2038,7 +2037,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldGetApprovedRequisitionsWithUserFulfillmentRights() {
     // given
-    FacilityDto facility = new FacilityDtoDataBuilder().build();
+    FacilityDto facility = new FacilityDtoDataBuilder().buildAsDto();
 
     RequisitionWithSupplyingDepotsDto requisition =
         new RequisitionWithSupplyingDepotsDto(generateBasicRequisition(), singletonList(facility));
@@ -2124,14 +2123,13 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   }
 
   private void mockReasons() {
-    ReasonDto reasonDto = new ReasonDto();
-    reasonDto.setId(UUID.randomUUID());
-    reasonDto.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reasonDto.setReasonType(ReasonType.BALANCE_ADJUSTMENT);
-    reasonDto.setDescription("simple description");
-    reasonDto.setIsFreeTextAllowed(false);
-    reasonDto.setName("simple name");
-    reasonDto.setHidden(false);
+    ReasonDto reasonDto = new ReasonDtoDataBuilder()
+        .withReasonCategory(ReasonCategory.ADJUSTMENT)
+        .withReasonType(ReasonType.BALANCE_ADJUSTMENT)
+        .withDescription("simple description")
+        .withFreeTextAllowed(false)
+        .withHidden(false)
+        .buildAsDto();
 
     ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
     when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);
@@ -2216,9 +2214,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   }
 
   private ReleasableRequisitionDto generateReleasableRequisitionDto() {
-    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
-    releasableRequisitionDto.setSupplyingDepotId(UUID.randomUUID());
-    releasableRequisitionDto.setRequisitionId(UUID.randomUUID());
+    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDtoDataBuilder()
+        .buildAsDto();
 
     return releasableRequisitionDto;
   }

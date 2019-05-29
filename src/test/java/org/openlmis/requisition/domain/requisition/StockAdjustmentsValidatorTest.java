@@ -105,7 +105,7 @@ public class StockAdjustmentsValidatorTest {
         .addLineItem(new RequisitionLineItemDataBuilder()
             .addStockAdjustment(new StockAdjustment(reasonId, quantity)).build())
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
-            .setReasonId(reasonId).build())
+            .withReasonId(reasonId).build())
         .build();
 
     return new StockAdjustmentsValidator(requisition);

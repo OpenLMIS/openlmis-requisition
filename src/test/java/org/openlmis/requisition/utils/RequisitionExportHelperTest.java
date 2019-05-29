@@ -41,7 +41,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -51,6 +53,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -102,7 +105,7 @@ public class RequisitionExportHelperTest {
         generateRequisitionLineItemToExport(orderableDto.getId());
 
     when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
-            .thenReturn(Collections.singletonList(orderableDto));
+        .thenReturn(Collections.singletonList(orderableDto));
 
     List<RequisitionLineItemDto> items =
         requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
@@ -135,12 +138,12 @@ public class RequisitionExportHelperTest {
   @Test
   public void exportShouldNotSetOrderableIfNoneReturned() {
     when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
-            .thenReturn(Collections.emptyList());
+        .thenReturn(Collections.emptyList());
 
     RequisitionLineItem requisitionLineItem =
-            generateRequisitionLineItemToExport(orderableDto.getId());
+        generateRequisitionLineItemToExport(orderableDto.getId());
     List<RequisitionLineItemDto> items =
-            requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
+        requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
 
@@ -152,27 +155,29 @@ public class RequisitionExportHelperTest {
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
-    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
-    programOrderableDto.setProgramId(program);
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
+        .withProgramId(program)
+        .buildAsDto();
     Set<ProgramOrderableDto> products = new HashSet<>();
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableId(orderableDtoUuid);
-    requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setBeginningBalance(3);
-    requisitionLineItem.setTotalReceivedQuantity(4);
-    requisitionLineItem.setTotalLossesAndAdjustments(0);
-    requisitionLineItem.setStockOnHand(1);
-    requisitionLineItem.setRequestedQuantity(5);
-    requisitionLineItem.setTotalConsumedQuantity(2);
-    requisitionLineItem.setTotal(7);
-    requisitionLineItem.setApprovedQuantity(5);
-    requisitionLineItem.setTotalStockoutDays(6);
-    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
-    requisitionLineItem.setNumberOfNewPatientsAdded(8);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withRequisition(requisition)
+        .withOrderableId(orderableDtoUuid)
+        .withId(UUID.randomUUID())
+        .withBeginningBalance(3)
+        .withTotalReceivedQuantity(4)
+        .withTotalLossesAndAdjustments(0)
+        .withStockOnHand(1)
+        .withRequestedQuantity(5)
+        .withTotalConsumedQuantity(2)
+        .withTotal(7)
+        .withApprovedQuantity(5)
+        .withTotalStockoutDays(6)
+        .withPricePerPack(PRICE_PER_PACK)
+        .withNumberOfNewPatientsAdded(8)
+        .build();
 
     return requisitionLineItem;
   }
@@ -193,21 +198,27 @@ public class RequisitionExportHelperTest {
 
   private Requisition createTestRequisition(UUID facility, UUID period,
                                             UUID program, RequisitionStatus requisitionStatus) {
-    Requisition requisition = new Requisition(facility, program, period, requisitionStatus, false);
-    requisition.setId(UUID.randomUUID());
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(facility)
+        .withProgramId(program)
+        .withProcessingPeriodId(period)
+        .withStatus(requisitionStatus)
+        .withEmergency(false)
+        .build();
     return requisition;
   }
 
   private RequisitionLineItem createTestRequisitionLineItem(Integer quantityRequested,
                                                             Integer stockOnHand,
                                                             Requisition requisition) {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setRequestedQuantity(quantityRequested);
-    requisitionLineItem.setStockOnHand(stockOnHand);
-    requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableId(productId);
-    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withId(UUID.randomUUID())
+        .withRequestedQuantity(quantityRequested)
+        .withStockOnHand(stockOnHand)
+        .withRequisition(requisition)
+        .withOrderableId(productId)
+        .withPricePerPack(PRICE_PER_PACK)
+        .build();
     return requisitionLineItem;
   }
 

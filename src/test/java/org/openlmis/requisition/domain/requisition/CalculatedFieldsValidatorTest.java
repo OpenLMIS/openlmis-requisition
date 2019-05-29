@@ -47,7 +47,9 @@ public class CalculatedFieldsValidatorTest {
   @Test
   public void shouldRejectIfMaximumStockQuantityIsIncorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().buildWithIncorrectMaximumStockQuantity())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withIncorrectMaximumStockQuantity()
+            .build())
         .build();
 
     CalculatedFieldsValidator validator =
@@ -66,7 +68,8 @@ public class CalculatedFieldsValidatorTest {
   public void shouldRejectIfCalculatedOrderQuantityIsIncorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .buildWithIncorrectCalculatedOrderQuantityIsa())
+            .withIncorrectCalculatedOrderQuantityIsa()
+            .build())
         .build();
 
     CalculatedFieldsValidator validator =
@@ -85,7 +88,8 @@ public class CalculatedFieldsValidatorTest {
   public void shouldRejectIfCalculatedOrderQuantityIsaIsIncorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .buildWithIncorrectCalculatedOrderQuantityIsa())
+            .withIncorrectCalculatedOrderQuantityIsa()
+            .build())
         .build();
 
     CalculatedFieldsValidator validator =

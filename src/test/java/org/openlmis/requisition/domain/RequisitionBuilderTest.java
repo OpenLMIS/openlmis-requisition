@@ -44,6 +44,7 @@ import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountComplet
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -178,8 +179,9 @@ public class RequisitionBuilderTest {
   public void shouldNotSetSkippedIfNotOnTemplate() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(false);
-    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
-    lineItemDto.setSkipped(true);
+    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(true)
+        .buildAsDto();
     prepareLineItem(lineItemDto);
 
     RequisitionBuilder
@@ -255,8 +257,8 @@ public class RequisitionBuilderTest {
   private void prepareForTestSkipped() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
-    RequisitionLineItemDto lineItemDto = new RequisitionLineItemDto();
-    lineItemDto.setSkipped(true);
+    RequisitionLineItemDto lineItemDto =
+        new RequisitionLineItemDataBuilder().withSkippedFlag(true).buildAsDto();
     prepareLineItem(lineItemDto);
   }
 
@@ -264,7 +266,7 @@ public class RequisitionBuilderTest {
     pricePerPack = Money.of(CurrencyUnit.GBP, 20);
     lineItemDto.setOrderable(new OrderableDtoDataBuilder()
         .withProgramOrderable(program.getId(), pricePerPack)
-        .build());
+        .buildAsDto());
     when(requisitionDto.getRequisitionLineItems())
         .thenReturn(Collections.singletonList(lineItemDto));
   }

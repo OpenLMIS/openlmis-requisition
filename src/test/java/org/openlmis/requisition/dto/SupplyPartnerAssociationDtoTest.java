@@ -39,7 +39,7 @@ public class SupplyPartnerAssociationDtoTest
 
   @Test
   public void shouldGetProgramId() {
-    ObjectReferenceDto program  = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto program  = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setProgram(program);
 
@@ -48,7 +48,7 @@ public class SupplyPartnerAssociationDtoTest
 
   @Test
   public void shouldGetSupervisoryNodeId() {
-    ObjectReferenceDto supervisoryNode  = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto supervisoryNode  = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setSupervisoryNode(supervisoryNode);
 
@@ -57,7 +57,7 @@ public class SupplyPartnerAssociationDtoTest
 
   @Test
   public void shouldGetFacilityIds() {
-    ObjectReferenceDto facility = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto facility = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setFacilities(Lists.newArrayList(facility));
 
@@ -66,7 +66,7 @@ public class SupplyPartnerAssociationDtoTest
 
   @Test
   public void shouldGetOrderableIds() {
-    ObjectReferenceDto orderable = new ObjectReferenceDtoDataBuilder().build();
+    ObjectReferenceDto orderable = new ObjectReferenceDtoDataBuilder().buildAsDto();
 
     dto.setOrderables(Lists.newArrayList(orderable));
 

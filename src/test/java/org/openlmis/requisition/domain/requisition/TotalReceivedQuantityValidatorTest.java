@@ -69,7 +69,7 @@ public class TotalReceivedQuantityValidatorTest {
       Integer totalReceivedQuantity) {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .setTotalReceivedQuantity(totalReceivedQuantity)
+            .withTotalReceivedQuantity(totalReceivedQuantity)
             .build())
         .build();
 

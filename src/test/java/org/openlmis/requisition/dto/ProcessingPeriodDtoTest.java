@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
 
 public class ProcessingPeriodDtoTest extends EqualsContractTest<ProcessingPeriodDto> {
@@ -70,16 +71,15 @@ public class ProcessingPeriodDtoTest extends EqualsContractTest<ProcessingPeriod
   }
 
   private ProcessingPeriodDto prepareForReportOnlyTest(boolean extraData, String reportOnly) {
-    UUID id = UUID.randomUUID();
-    String name = "period";
-    LocalDate startDate = LocalDate.now();
-    LocalDate endDate = LocalDate.now();
-    ProcessingScheduleDto schedule = new ProcessingScheduleDtoDataBuilder().build();
-    String description = "desc";
-    Integer durationInMonths = 3;
-
-    ProcessingPeriodDto period = new ProcessingPeriodDto(id, name, startDate, endDate, schedule,
-        description, durationInMonths, null);
+    ProcessingPeriodDto period = new ProcessingPeriodDtoDataBuilder()
+        .withId(UUID.randomUUID())
+        .withName("period")
+        .withStartDate(LocalDate.now())
+        .withEndDate(LocalDate.now())
+        .withProcessingSchedule(new ProcessingScheduleDtoDataBuilder().buildAsDto())
+        .withDescription("desc")
+        .withDurationInMonths(3)
+        .buildAsDto();
 
     if (extraData) {
       period.setExtraData(Maps.newHashMap());

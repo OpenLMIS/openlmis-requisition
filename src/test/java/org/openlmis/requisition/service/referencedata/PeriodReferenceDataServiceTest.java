@@ -31,6 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.service.BaseCommunicationServiceTest;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.springframework.data.domain.PageRequest;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,7 +42,7 @@ public class PeriodReferenceDataServiceTest
 
   @Override
   protected ProcessingPeriodDto generateInstance() {
-    return new ProcessingPeriodDto();
+    return new ProcessingPeriodDtoDataBuilder().buildAsDto();
   }
 
   @Override

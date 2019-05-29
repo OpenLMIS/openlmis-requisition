@@ -122,7 +122,7 @@ public class RequisitionSplitterTest {
             .addStockAdjustment(stockAdjustment)
             .build())
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
-            .setReasonId(stockAdjustment.getReasonId())
+            .withReasonId(stockAdjustment.getReasonId())
             .build())
         .withPermissionStrings()
         .buildAuthorizedRequisition();
@@ -134,41 +134,41 @@ public class RequisitionSplitterTest {
         .withFacility(new ObjectReferenceDto(UUID.randomUUID()))
         .withOrderable(new ObjectReferenceDto(orderableId3))
         .withOrderable(new ObjectReferenceDto(UUID.randomUUID()))
-        .build();
+        .buildAsDto();
 
     associationWithDifferentProgram = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(UUID.randomUUID()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
         .withOrderable(new ObjectReferenceDto(orderableId2))
-        .build();
+        .buildAsDto();
 
     associationWithDifferentNode = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(UUID.randomUUID()))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
         .withOrderable(new ObjectReferenceDto(orderableId1))
-        .build();
+        .buildAsDto();
 
     associationWithDifferentFacility = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(UUID.randomUUID()))
         .withOrderable(new ObjectReferenceDto(orderableId3))
-        .build();
+        .buildAsDto();
 
     associationWithDifferentOrderable = new SupplyPartnerAssociationDtoDataBuilder()
         .withProgram(new ObjectReferenceDto(requisition.getProgramId()))
         .withSupervisoryNode(new ObjectReferenceDto(PARTNER_NODE_ID))
         .withFacility(new ObjectReferenceDto(requisition.getFacilityId()))
         .withOrderable(new ObjectReferenceDto(UUID.randomUUID()))
-        .build();
+        .buildAsDto();
 
     supplyPartner = new SupplyPartnerDtoDataBuilder()
         .withAssociation(association)
         .withAssociation(associationWithDifferentProgram)
         .withAssociation(associationWithDifferentNode)
-        .build();
+        .buildAsDto();
 
     SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
     supervisoryNode.setPartnerNodes(

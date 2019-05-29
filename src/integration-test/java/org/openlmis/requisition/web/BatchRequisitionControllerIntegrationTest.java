@@ -82,6 +82,9 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
+import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
@@ -191,8 +194,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     List<FacilityDto> facilityList = requisitions.stream()
         .map(r -> {
-          FacilityDto facilityDto = new FacilityDto();
-          facilityDto.setId(r.getFacilityId());
+          FacilityDto facilityDto = new FacilityDtoDataBuilder()
+              .withId(r.getFacilityId())
+              .buildAsDto();
 
           when(facilityReferenceDataService.findOne(r.getFacilityId())).thenReturn(facilityDto);
 
@@ -404,15 +408,15 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
   private ReleasableRequisitionBatchDto generateReleaseRequisitionDto(
       List<ReleasableRequisitionDto> requisitions) {
-    ReleasableRequisitionBatchDto releaseDto = new ReleasableRequisitionBatchDto();
-    releaseDto.setRequisitionsToRelease(requisitions);
+    ReleasableRequisitionBatchDto releaseDto = new ReleasableRequisitionBatchDtoDataBuilder()
+        .withRequisitionsToRelease(requisitions)
+        .buildAsDto();
     return releaseDto;
   }
 
   private ReleasableRequisitionDto generateReleasableRequisitionDto() {
-    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDto();
-    releasableRequisitionDto.setSupplyingDepotId(UUID.randomUUID());
-    releasableRequisitionDto.setRequisitionId(UUID.randomUUID());
+    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDtoDataBuilder()
+        .buildAsDto();
     return releasableRequisitionDto;
   }
 

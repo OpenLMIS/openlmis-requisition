@@ -62,6 +62,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -115,7 +116,7 @@ public class RequisitionDtoBuilderTest {
     orderableDto = new OrderableDtoDataBuilder()
         .withId(orderableId)
         .withProgramOrderable(program.getId(), false)
-        .build();
+        .buildAsDto();
   }
 
   @Test
@@ -157,19 +158,19 @@ public class RequisitionDtoBuilderTest {
   public void shouldPopulateAvailableProductsCollectionsBasedOnFullSupplyFlag() {
     OrderableDto fs1 = new OrderableDtoDataBuilder()
         .withProgramOrderable(requisition.getProgramId(), true)
-        .build();
+        .buildAsDto();
     OrderableDto fs2 = new OrderableDtoDataBuilder()
         .withProgramOrderable(requisition.getProgramId(), true)
-        .build();
+        .buildAsDto();
     OrderableDto nfs1 = new OrderableDtoDataBuilder()
         .withProgramOrderable(requisition.getProgramId(), false)
-        .build();
+        .buildAsDto();
     OrderableDto nfs2 = new OrderableDtoDataBuilder()
         .withProgramOrderable(requisition.getProgramId(), false)
-        .build();
+        .buildAsDto();
     OrderableDto differentProgram = new OrderableDtoDataBuilder()
         .withProgramOrderable(UUID.randomUUID(), true)
-        .build();
+        .buildAsDto();
 
     when(orderableReferenceDataService
         .findByIds(anySetOf(UUID.class)))
@@ -255,12 +256,12 @@ public class RequisitionDtoBuilderTest {
   }
 
   private StockAdjustmentReason generateStockAdjustmentReason() {
-    stockAdjustmentReason = new StockAdjustmentReason();
-    stockAdjustmentReason.setReasonId(UUID.randomUUID());
-    stockAdjustmentReason.setReasonType(ReasonType.CREDIT);
-    stockAdjustmentReason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    stockAdjustmentReason.setDescription("description");
-    stockAdjustmentReason.setIsFreeTextAllowed(false);
+    stockAdjustmentReason = new StockAdjustmentReasonDataBuilder()
+        .withReasonId(UUID.randomUUID())
+        .withReasonType(ReasonType.CREDIT)
+        .withReasonCategory(ReasonCategory.ADJUSTMENT)
+        .withIsFreeTextAllowed(false)
+        .build();
     return stockAdjustmentReason;
   }
 

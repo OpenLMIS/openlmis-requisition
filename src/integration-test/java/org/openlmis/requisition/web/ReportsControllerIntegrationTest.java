@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -44,9 +43,10 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.DispensableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.FacilityOperatorDto;
 import org.openlmis.requisition.dto.FacilityTypeDto;
@@ -64,6 +64,18 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.FacilityOperatorDtoDataBuilder;
+import org.openlmis.requisition.testutils.FacilityTypeDtoDataBuilder;
+import org.openlmis.requisition.testutils.GeographicLevelDtoDataBuilder;
+import org.openlmis.requisition.testutils.GeographicZoneDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.RequisitionReportDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupportedProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -192,168 +204,107 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
     UserDto user = generateValidUserDto();
     RequisitionDto requisition = generateValidRequisitionDto(programId, items);
-
-    RequisitionReportDto reportDto = new RequisitionReportDto();
-
-    reportDto.setRequisition(requisition);
-    reportDto.setFullSupply(fullSupply);
-    reportDto.setNonFullSupply(nonFullSupply);
-    reportDto.setFullSupplyTotalCost(Money.zero(CurrencyUnit.EUR));
-    reportDto.setNonFullSupplyTotalCost(Money.zero(CurrencyUnit.EUR));
-    reportDto.setTotalCost(Money.zero(CurrencyUnit.EUR));
-    reportDto.setInitiatedBy(user);
-    reportDto.setInitiatedDate(ZonedDateTime.now());
-    reportDto.setSubmittedBy(user);
-    reportDto.setSubmittedDate(ZonedDateTime.now());
-    reportDto.setAuthorizedBy(user);
-    reportDto.setAuthorizedDate(ZonedDateTime.now());
+    RequisitionReportDto reportDto = new RequisitionReportDtoDataBuilder()
+        .withRequisition(requisition)
+        .withFullSupply(fullSupply)
+        .withNonFullSupply(nonFullSupply)
+        .withFullSupplyTotalCost(Money.zero(CurrencyUnit.EUR))
+        .withNonFullSupplyTotalCost(Money.zero(CurrencyUnit.EUR))
+        .withTotalCost(Money.zero(CurrencyUnit.EUR))
+        .withInitiatedBy(user)
+        .withInitiatedDate(ZonedDateTime.now())
+        .withSubmittedBy(user)
+        .withSubmittedDate(ZonedDateTime.now())
+        .withAuthorizedBy(user)
+        .withAuthorizedDate(ZonedDateTime.now())
+        .buildAsDto();
 
     return reportDto;
   }
 
   private UserDto generateValidUserDto() {
-    UserDto user = new UserDto();
-
-    user.setId(UUID.randomUUID());
-    user.setUsername("username");
-    user.setFirstName("john");
-    user.setLastName("doe");
-    user.setEmail("johndoe@example.com");
-    user.setVerified(true);
-    user.setActive(true);
-
+    UserDto user = new UserDtoDataBuilder().buildAsDto();
     return user;
   }
 
   private RequisitionDto generateValidRequisitionDto(
       UUID programId, List<RequisitionLineItemDto> items) {
-    RequisitionDto requisition = new RequisitionDto();
-
-    requisition.setId(UUID.randomUUID());
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setModifiedDate(ZonedDateTime.now());
+    RequisitionDto requisition = new RequisitionDataBuilder()
+        .withStatus(RequisitionStatus.AUTHORIZED)
+        .withEmergency(false)
+        .withSupplyingFacilityId(UUID.randomUUID())
+        .withSupervisoryNodeId(UUID.randomUUID())
+        .buildAsDto();
     requisition.setRequisitionLineItems(items);
-    requisition.setDraftStatusMessage("message");
     requisition.setFacility(generateValidFacilityDto(programId));
     requisition.setProgram(generateValidProgramDto(programId));
     requisition.setProcessingPeriod(generateValidProcessingPeriodDto());
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-    requisition.setEmergency(false);
-    requisition.setSupplyingFacility(UUID.randomUUID());
-    requisition.setSupervisoryNode(UUID.randomUUID());
 
     return requisition;
   }
 
   private ProcessingPeriodDto generateValidProcessingPeriodDto() {
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-
-    period.setId(UUID.randomUUID());
-    period.setName("requisitionName");
-    period.setDescription("requisitionDesc");
-    period.setDurationInMonths(5);
+    ProcessingPeriodDto period = new ProcessingPeriodDtoDataBuilder()
+        .withDurationInMonths(5)
+        .buildAsDto();
 
     return period;
   }
 
   private ProgramDto generateValidProgramDto(UUID programId) {
-    ProgramDto program = new ProgramDto();
-
-    program.setId(programId);
-    program.setCode("programCode");
-    program.setName("programName");
-    program.setDescription("programDesc");
-    program.setActive(true);
-    program.setPeriodsSkippable(false);
-    program.setShowNonFullSupplyTab(true);
+    ProgramDto program = new ProgramDtoDataBuilder()
+        .withId(programId)
+        .withActive(true)
+        .withPeriodsSkippable(false)
+        .withShowNonFullSupplyTab(true)
+        .buildAsDto();
 
     return program;
   }
 
   private RequisitionLineItemDto generateValidRequisitionLineItemDto(UUID programId) {
-    RequisitionLineItemDto item = new RequisitionLineItemDto();
-
+    RequisitionLineItemDto item = new RequisitionLineItemDataBuilder()
+        .buildAsDto();
     item.setOrderable(generateValidOrderableDto(programId));
-    item.setBeginningBalance(10);
-    item.setTotalReceivedQuantity(5);
-    item.setTotalLossesAndAdjustments(2);
-    item.setStockOnHand(5);
-    item.setRequestedQuantity(10);
-    item.setTotalConsumedQuantity(5);
-    item.setRequestedQuantityExplanation("explanation");
-    item.setRemarks("remarks");
-    item.setApprovedQuantity(50);
-    item.setTotalStockoutDays(5);
-    item.setTotal(100);
-    item.setPacksToShip(5L);
-    item.setPricePerPack(Money.zero(CurrencyUnit.EUR));
-    item.setNumberOfNewPatientsAdded(5);
-    item.setTotalCost(Money.zero(CurrencyUnit.EUR));
-    item.setSkipped(false);
-    item.setAdjustedConsumption(50);
-    item.setPreviousAdjustedConsumptions(Collections.emptyList());
-    item.setAverageConsumption(5);
-    item.setMaxPeriodsOfStock(BigDecimal.valueOf(10));
-    item.setMaximumStockQuantity(5);
-    item.setCalculatedOrderQuantity(30);
 
     return item;
   }
 
   private FacilityDto generateValidFacilityDto(UUID... supportedPrograms) {
-    GeographicLevelDto level = new GeographicLevelDto();
-    level.setCode("zoneCode");
-    level.setName("zoneName");
-    level.setLevelNumber(1);
-
-    GeographicZoneDto zone = new GeographicZoneDto();
-    zone.setCode("zoneCode");
-    zone.setName("zoneName");
-    zone.setLevel(level);
-
-    FacilityOperatorDto operator = new FacilityOperatorDto();
-    operator.setCode("operatorCode");
-    operator.setName("operatorName");
-
-    FacilityTypeDto type = new FacilityTypeDto();
-    type.setCode("typeCode");
-    type.setName("typeName");
-    type.setDescription("typeDesc");
-    type.setDisplayOrder(1);
-    type.setActive(true);
-
-    FacilityDto facility = new FacilityDto();
+    FacilityTypeDto type = new FacilityTypeDtoDataBuilder()
+        .withDisplayOrder(1)
+        .withActive(true)
+        .buildAsDto();
+    GeographicLevelDto level = new GeographicLevelDtoDataBuilder().buildAsDto();
+    GeographicZoneDto zone = new GeographicZoneDtoDataBuilder()
+        .withLevel(level)
+        .buildAsDto();
+    FacilityOperatorDto operator = new FacilityOperatorDtoDataBuilder().buildAsDto();
     List<SupportedProgramDto> programs = Stream.of(supportedPrograms)
         .map(this::generateValidSupportedProgramDto)
         .collect(Collectors.toList());
-
-    facility.setDescription("description");
-    facility.setActive(true);
-    facility.setGoLiveDate(LocalDate.MIN);
-    facility.setGoDownDate(LocalDate.MAX);
-    facility.setComment("comment");
-    facility.setEnabled(true);
-    facility.setOpenLmisAccessible(true);
-    facility.setSupportedPrograms(programs);
-    facility.setGeographicZone(zone);
-    facility.setOperator(operator);
-    facility.setType(type);
+    FacilityDto facility = new FacilityDtoDataBuilder()
+        .withGoLiveDate(LocalDate.MIN)
+        .withGoDownDate(LocalDate.MAX)
+        .withEnabled(true)
+        .withSupportedPrograms(programs)
+        .withGeographicZone(zone)
+        .withOperator(operator)
+        .withType(type)
+        .buildAsDto();
 
     return facility;
   }
 
   private SupportedProgramDto generateValidSupportedProgramDto(UUID id) {
-    SupportedProgramDto program = new SupportedProgramDto();
-
-    program.setId(id);
-    program.setCode("supportedCode");
-    program.setName("supportedName");
-    program.setDescription("supportedDesc");
-    program.setProgramActive(true);
-    program.setPeriodsSkippable(false);
-    program.setShowNonFullSupplyTab(true);
-    program.setSupportActive(true);
-    program.setSupportStartDate(LocalDate.MAX);
+    SupportedProgramDto program = new SupportedProgramDtoDataBuilder()
+        .withId(id)
+        .withProgramActive(true)
+        .withPeriodsSkippable(false)
+        .withShowNonFullSupplyTab(true)
+        .withSupportActive(true)
+        .withSupportStartDate(LocalDate.MAX)
+        .buildAsDto();
 
     return program;
   }
@@ -363,25 +314,13 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .map(this::generateValidProgramOrderableDto)
         .collect(Collectors.toSet());
 
-    OrderableDto orderable = new OrderableDto();
-
-    orderable.setId(UUID.randomUUID());
-    orderable.setProductCode("productCode");
-    orderable.setFullProductName("fullName");
-    orderable.setPrograms(products);
-    orderable.setDispensable(new DispensableDto("unit", "display unit"));
-
+    OrderableDto orderable = new OrderableDtoDataBuilder()
+        .withPrograms(products)
+        .buildAsDto();
     return orderable;
   }
 
   private ProgramOrderableDto generateValidProgramOrderableDto(UUID programId) {
-    ProgramOrderableDto product = new ProgramOrderableDto();
-
-    product.setProgramId(UUID.randomUUID());
-    product.setOrderableDisplayCategoryId(UUID.randomUUID());
-    product.setOrderableCategoryDisplayName("categoryName");
-    product.setPricePerPack(Money.zero(CurrencyUnit.EUR));
-
-    return product;
+    return new ProgramOrderableDtoDataBuilder().buildAsDto();
   }
 }

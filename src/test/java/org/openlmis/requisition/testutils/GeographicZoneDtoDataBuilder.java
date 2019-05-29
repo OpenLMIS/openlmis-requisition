@@ -18,8 +18,9 @@ package org.openlmis.requisition.testutils;
 import java.util.UUID;
 import org.openlmis.requisition.dto.GeographicLevelDto;
 import org.openlmis.requisition.dto.GeographicZoneDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class GeographicZoneDtoDataBuilder {
+public class GeographicZoneDtoDataBuilder implements DtoDataBuilder<GeographicZoneDto> {
 
   private static int instanceNumber = 0;
 
@@ -38,7 +39,7 @@ public class GeographicZoneDtoDataBuilder {
     id = UUID.randomUUID();
     code = "Z" + instanceNumber;
     name = "zone " + instanceNumber;
-    level = new GeographicLevelDtoDataBuilder().build();
+    level = new GeographicLevelDtoDataBuilder().buildAsDto();
     parent = null;
   }
 
@@ -46,7 +47,12 @@ public class GeographicZoneDtoDataBuilder {
    * Creates new instance of {@link GeographicZoneDto} with properties.
    * @return created facility.
    */
-  public GeographicZoneDto build() {
+  public GeographicZoneDto buildAsDto() {
     return new GeographicZoneDto(id, code, name, level, parent);
+  }
+
+  public GeographicZoneDtoDataBuilder withLevel(GeographicLevelDto level) {
+    this.level = level;
+    return this;
   }
 }

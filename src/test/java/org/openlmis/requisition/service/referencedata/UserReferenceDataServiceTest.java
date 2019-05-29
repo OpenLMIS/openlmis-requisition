@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.openlmis.requisition.dto.ResultDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 
 public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<UserDto> {
 
@@ -34,7 +35,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
   @Override
   protected UserDto generateInstance() {
-    return new UserDto();
+    return new UserDtoDataBuilder().buildAsDto();
   }
 
   @Override

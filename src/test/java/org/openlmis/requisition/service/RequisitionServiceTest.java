@@ -85,14 +85,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
@@ -143,11 +143,16 @@ import org.openlmis.requisition.service.stockmanagement.StockCardRangeSummarySto
 import org.openlmis.requisition.service.stockmanagement.StockCardSummariesStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuilderFactory;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
+import org.openlmis.requisition.testutils.BasicRequisitionDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.IdealStockAmountDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
+import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
@@ -273,7 +278,7 @@ public class RequisitionServiceTest {
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
   private UserDto user = new UserDtoDataBuilder()
       .withRoleAssignment(role.getId(), supervisoryNode.getId(), program.getId())
-      .build();
+      .buildAsDto();
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
   private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
@@ -282,7 +287,7 @@ public class RequisitionServiceTest {
   private SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder()
       .withSupervisoryNode(supervisoryNode)
       .withProgram(program)
-      .build();
+      .buildAsDto();
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -292,9 +297,9 @@ public class RequisitionServiceTest {
 
   @Before
   public void setUp() {
-    generateRequisition();
-    generateRequisitionDto();
-    generateReasons();
+    requisition = generateRequisition();
+    requisitionDto = generateRequisitionDto();
+    stockAdjustmentReasons = generateReasons();
     mockRepositories();
     ReflectionTestUtils.setField(
         stockOnHandRetrieverBuilderFactory,
@@ -302,7 +307,7 @@ public class RequisitionServiceTest {
         stockCardSummariesStockManagementService
     );
 
-    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().build();
+    stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder().buildAsDto();
   }
 
   @Test
@@ -804,7 +809,7 @@ public class RequisitionServiceTest {
     when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
         .thenReturn(Lists.newArrayList(new IdealStockAmountDtoDataBuilder()
             .withCommodityTypeId(COMMODITY_TYPE_ID)
-            .build()));
+            .buildAsDto()));
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
@@ -908,7 +913,7 @@ public class RequisitionServiceTest {
         .withProcessingSchedule(processingPeriod.getProcessingSchedule())
         .withStartDate(processingPeriod.getStartDate().plusMonths(1))
         .withStartDate(processingPeriod.getEndDate().plusMonths(1))
-        .build();
+        .buildAsDto();
 
     List<ProcessingPeriodDto> periods = new ArrayList<>();
     periods.add(previousPeriod);
@@ -948,7 +953,7 @@ public class RequisitionServiceTest {
         .withProcessingSchedule(processingPeriod.getProcessingSchedule())
         .withStartDate(processingPeriod.getStartDate().plusMonths(1))
         .withStartDate(processingPeriod.getEndDate().plusMonths(1))
-        .build();
+        .buildAsDto();
 
     List<ProcessingPeriodDto> periods = new ArrayList<>();
     periods.add(previousPeriod);
@@ -1049,8 +1054,8 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldCallApproveRequisition() {
-    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder().build();
-    SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().build();
+    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder().buildAsDto();
+    SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().buildAsDto();
     when(orderableReferenceDataService.findByIds(any())).thenReturn(
         singletonList(fullSupplyOrderable));
 
@@ -1156,7 +1161,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertByFacilityIdAndProgramId() {
     // given
-    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().build();
+    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().buildAsDto();
 
     Pageable pageable = mockPageable();
 
@@ -1176,7 +1181,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertFacilityId() {
     // given
-    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().build();
+    FacilityDto supplyingDepot = new FacilityDtoDataBuilder().buildAsDto();
     Pageable pageable = mockPageable();
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
 
@@ -1196,7 +1201,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldFilterRequisitionsForConvertProgramId() {
     // given
-    FacilityDto facilityDto = new FacilityDtoDataBuilder().build();
+    FacilityDto facilityDto = new FacilityDtoDataBuilder().buildAsDto();
     Pageable pageable = mockPageable();
 
     List<BasicRequisitionDto> essentialMedsRequisitions = getBasicRequisitionDtoList();
@@ -1323,15 +1328,15 @@ public class RequisitionServiceTest {
   public void shouldSaveStatusMessageWithAStatusChangeThatWasAlreadyPersisted() {
     // given
     Requisition requisition = generateRequisition();
-    StatusChange statusChange = new StatusChange();
-    statusChange.setId(UUID.randomUUID());
-    statusChange.setRequisition(requisition);
-    statusChange.setCreatedDate(ZonedDateTime.now().minusDays(1));
+    StatusChange statusChange = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withCreatedDate(ZonedDateTime.now().minusDays(1))
+        .build();
 
-    StatusChange anotherStatusChange = new StatusChange();
-    anotherStatusChange.setId(UUID.randomUUID());
-    statusChange.setRequisition(requisition);
-    anotherStatusChange.setCreatedDate(ZonedDateTime.now());
+    StatusChange anotherStatusChange = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withCreatedDate(ZonedDateTime.now())
+        .build();
 
     requisition.setStatusChanges(Arrays.asList(statusChange, anotherStatusChange));
     requisition.setDraftStatusMessage("some_message");
@@ -1452,40 +1457,34 @@ public class RequisitionServiceTest {
   }
 
   private Requisition generateRequisition() {
-    requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        INITIATED, false);
-    requisition.setId(UUID.randomUUID());
-    requisition.setCreatedDate(ZonedDateTime.now());
-    requisition.setModifiedDate(ZonedDateTime.now());
-    requisition.setSupplyingFacilityId(facility.getId());
-    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
-    requisitionLineItems.add(lineItem1);
-    requisitionLineItems.add(lineItem2);
-    requisition.setRequisitionLineItems(requisitionLineItems);
-    requisition.setTemplate(requisitionTemplate);
-    requisition.setFacilityId(facility.getId());
-    requisition.setProgramId(program.getId());
-    requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisition.setStatus(AUTHORIZED);
-    return requisition;
+    return new RequisitionDataBuilder()
+        .withCreatedDate(ZonedDateTime.now())
+        .withModifiedDate(ZonedDateTime.now())
+        .withSupplyingFacilityId(facility.getId())
+        .withRequisitionLineItems(Arrays.asList(lineItem1, lineItem2))
+        .withTemplate(requisitionTemplate)
+        .withFacilityId(facility.getId())
+        .withProgramId(program.getId())
+        .withSupervisoryNodeId(supervisoryNode.getId())
+        .withStatus(AUTHORIZED)
+        .build();
   }
 
-  private void generateRequisitionDto() {
-    requisitionDto = new RequisitionDto();
-    requisitionDto.setId(requisition.getId());
-    requisitionDto.setSupervisoryNode(supervisoryNode.getId());
-    requisitionDto.setStatus(AUTHORIZED);
+  private RequisitionDto generateRequisitionDto() {
+    return new RequisitionDataBuilder()
+        .withId(requisition.getId())
+        .withSupervisoryNodeId(supervisoryNode.getId())
+        .withStatus(AUTHORIZED)
+        .buildAsDto();
   }
 
-  private void generateReasons() {
-    StockAdjustmentReason reason = new StockAdjustmentReason();
-    reason.setId(UUID.randomUUID());
-    reason.setReasonCategory(ReasonCategory.ADJUSTMENT);
-    reason.setReasonType(ReasonType.DEBIT);
-    reason.setDescription("simple description");
-    reason.setIsFreeTextAllowed(false);
-    reason.setName("simple name");
-    stockAdjustmentReasons = singletonList(reason);
+  private List<StockAdjustmentReason> generateReasons() {
+    StockAdjustmentReason reason = new StockAdjustmentReasonDataBuilder()
+        .withReasonCategory(ReasonCategory.ADJUSTMENT)
+        .withReasonType(ReasonType.DEBIT)
+        .withIsFreeTextAllowed(false)
+        .build();
+    return singletonList(reason);
   }
 
   private List<BasicRequisitionDto> getBasicRequisitionDtoList() {
@@ -1493,9 +1492,10 @@ public class RequisitionServiceTest {
     String[] programNames = {"one", "two", "three", "four", "five"};
 
     for (String programName : programNames) {
-      BasicRequisitionDto requisitionDto = new BasicRequisitionDto();
-      ProgramDto programDto = new ProgramDto();
-      programDto.setName(programName);
+      BasicRequisitionDto requisitionDto = new BasicRequisitionDtoDataBuilder().buildAsDto();
+      ProgramDto programDto = new ProgramDtoDataBuilder()
+          .withName(programName)
+          .buildAsDto();
       requisitionDto.setProgram(programDto);
       requisitionDtos.add(requisitionDto);
     }
@@ -1522,13 +1522,13 @@ public class RequisitionServiceTest {
   }
 
   private void mockPreviousRequisition() {
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
-    previousRequisitionLineItem.setAdjustedConsumption(ADJUSTED_CONSUMPTION);
-    previousRequisitionLineItem.setOrderableId(PRODUCT_ID);
-    previousRequisition = new Requisition();
-    previousRequisition.setId(UUID.randomUUID());
-    previousRequisition
-        .setRequisitionLineItems(singletonList(previousRequisitionLineItem));
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withAdjustedConsumption(ADJUSTED_CONSUMPTION)
+        .withOrderableId(PRODUCT_ID)
+        .build();
+    previousRequisition = new RequisitionDataBuilder()
+        .withRequisitionLineItems(singletonList(previousRequisitionLineItem))
+        .build();
 
     when(requisitionRepository
         .searchRequisitions(any(), eq(facility.getId()), eq(program.getId()), eq(false)))
@@ -1554,9 +1554,9 @@ public class RequisitionServiceTest {
               .withFullProductName(productNamePrefix + i)
               .withIdentifier(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString())
               .withProgramOrderable(program.getId(), fullSupply[i])
-              .build())
+              .buildAsDto())
           .withProgram(program)
-          .build()
+          .buildAsDto()
       );
     }
 
@@ -1636,32 +1636,27 @@ public class RequisitionServiceTest {
         .thenReturn(Lists.newArrayList());
 
     when(orderDtoBuilder.build(any(Requisition.class), any(UserDto.class)))
-        .thenAnswer(new Answer<OrderDto>() {
-          @Override
-          public OrderDto answer(InvocationOnMock invocation) throws Throwable {
-            Requisition requisition = (Requisition) invocation.getArguments()[0];
+        .thenAnswer(invocation -> {
+          Requisition requisition = (Requisition) invocation.getArguments()[0];
 
-            if (null == requisition) {
-              return null;
-            }
-
-            OrderDto order = new OrderDto();
-            order.setExternalId(requisition.getId());
-            order.setEmergency(requisition.getEmergency());
-            order.setQuotedCost(BigDecimal.ZERO);
-
-            order.setOrderLineItems(
-                requisition
-                    .getRequisitionLineItems()
-                    .stream()
-                    .map(line -> OrderLineItemDto.newOrderLineItem(line, null))
-                    .collect(toList())
-            );
-
-            order.setCreatedBy((UserDto) invocation.getArguments()[1]);
-
-            return order;
+          if (null == requisition) {
+            return null;
           }
+
+          OrderDto order = new OrderDtoDataBuilder()
+              .withExternalId(requisition.getId())
+              .withEmergency(requisition.getEmergency())
+              .withQuotedCost(BigDecimal.ZERO)
+              .withOrderLineItems(
+                  requisition
+                      .getRequisitionLineItems()
+                      .stream()
+                      .map(line -> OrderLineItemDto.newOrderLineItem(line, null))
+                      .collect(toList())
+              )
+              .withCreatedBy((UserDto) invocation.getArguments()[1])
+              .buildAsDto();
+          return order;
         });
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
@@ -1682,8 +1677,9 @@ public class RequisitionServiceTest {
   }
 
   private void stubPreviousPeriod() {
-    ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
-    periodDto.setId(PERIOD_ID);
+    ProcessingPeriodDto periodDto = new ProcessingPeriodDtoDataBuilder()
+        .withId(PERIOD_ID)
+        .buildAsDto();
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(periodDto));
   }

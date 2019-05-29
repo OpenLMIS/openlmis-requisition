@@ -31,6 +31,8 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupportedProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,7 +55,7 @@ public class FacilitySupportsProgramHelperTest {
 
   @Before
   public void setUp() throws Exception {
-    facilityDto = new FacilityDto();
+    facilityDto = new FacilityDtoDataBuilder().buildAsDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
     when(dateHelper.isDateBeforeNow(any(LocalDate.class))).thenReturn(true);
@@ -68,11 +70,12 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIsNotSupported() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(UUID.randomUUID());
-    supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(UUID.randomUUID())
+        .withSupportActive(true)
+        .withProgramActive(true)
+        .withSupportStartDate(SUPPORT_START_DATE)
+        .buildAsDto();
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -81,11 +84,12 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test
   public void shouldPassWhenProgramIsSupported() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(programId)
+        .withSupportActive(true)
+        .withProgramActive(true)
+        .withSupportStartDate(SUPPORT_START_DATE)
+        .buildAsDto();
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -94,11 +98,12 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenSupportIsNotActive() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(false);
-    supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(programId)
+        .withSupportActive(false)
+        .withProgramActive(true)
+        .withSupportStartDate(SUPPORT_START_DATE)
+        .buildAsDto();
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -107,11 +112,12 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenProgramIsNotActive() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(false);
-    supportedProgramDto.setSupportStartDate(SUPPORT_START_DATE);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(programId)
+        .withSupportActive(true)
+        .withProgramActive(false)
+        .withSupportStartDate(SUPPORT_START_DATE)
+        .buildAsDto();
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
@@ -120,10 +126,11 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenStartDateIsAfterCurrentDate() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(true);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(programId)
+        .withSupportActive(true)
+        .withProgramActive(true)
+        .buildAsDto();
     when(dateHelper.isDateBeforeNow(any(LocalDate.class))).thenReturn(false);
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
@@ -133,11 +140,12 @@ public class FacilitySupportsProgramHelperTest {
 
   @Test
   public void shouldPassWhenProgramStartDateIsNull() {
-    SupportedProgramDto supportedProgramDto = new SupportedProgramDto();
-    supportedProgramDto.setId(programId);
-    supportedProgramDto.setSupportActive(true);
-    supportedProgramDto.setProgramActive(true);
-    supportedProgramDto.setSupportStartDate(null);
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+        .withId(programId)
+        .withSupportActive(true)
+        .withProgramActive(true)
+        .withSupportStartDate(null)
+        .buildAsDto();
 
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 

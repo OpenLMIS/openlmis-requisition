@@ -30,6 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 
 public class RequisitionSecurityServiceTest {
@@ -49,7 +50,7 @@ public class RequisitionSecurityServiceTest {
   public void shouldUseCachedRightIfOneExists() {
     final UUID facility = UUID.randomUUID();
     final UUID program = UUID.randomUUID();
-    final Requisition requisition = mockRequisition(facility, program);
+    final Requisition requisition = buildRequisition(facility, program);
 
     when(permissionService.canViewRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
@@ -65,9 +66,9 @@ public class RequisitionSecurityServiceTest {
 
   @Test
   public void shouldNotUseCachedRightIfAllCallsAreDifferent() {
-    final Requisition requisition = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
-    final Requisition requisition2 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
-    final Requisition requisition3 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition2 = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition3 = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
 
     List<Requisition> allRequisitions = Lists.newArrayList(requisition, requisition2, requisition3);
 
@@ -82,10 +83,10 @@ public class RequisitionSecurityServiceTest {
 
   @Test
   public void shouldProperlyFilterAccessibleRequisitions() {
-    final Requisition requisition = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
-    final Requisition requisition2 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
-    final Requisition requisition3 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
-    final Requisition requisition4 = mockRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition2 = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition3 = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
+    final Requisition requisition4 = buildRequisition(UUID.randomUUID(), UUID.randomUUID());
 
     when(permissionService.canViewRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success(),
@@ -103,10 +104,10 @@ public class RequisitionSecurityServiceTest {
     assertEquals(requisition4, result.get(1));
   }
 
-  private Requisition mockRequisition(UUID programId, UUID facilityId) {
-    Requisition requisition = new Requisition();
-    requisition.setProgramId(programId);
-    requisition.setFacilityId(facilityId);
-    return requisition;
+  private Requisition buildRequisition(UUID programId, UUID facilityId) {
+    return new RequisitionDataBuilder()
+        .withProgramId(programId)
+        .withFacilityId(facilityId)
+        .build();
   }
 }

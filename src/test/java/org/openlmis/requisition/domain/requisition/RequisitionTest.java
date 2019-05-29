@@ -159,15 +159,16 @@ public class RequisitionTest {
   @Before
   public void setUp() {
     requisition = new Requisition();
-    requisitionLineItem = new RequisitionLineItem();
 
-    requisitionLineItem.setId(UUID.randomUUID());
-    requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
-    requisitionLineItem.setStockOnHand(20);
-    requisitionLineItem.setPricePerPack(PRICE_PER_PACK);
-    requisitionLineItem.setRequisition(requisition);
-    requisitionLineItem.setOrderableId(productId);
-    requisitionLineItem.setCalculatedOrderQuantity(CALCULATED_ORDER_QUANTITY);
+    requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withId(UUID.randomUUID())
+        .withRequestedQuantity(REQUESTED_QUANTITY)
+        .withStockOnHand(20)
+        .withPricePerPack(PRICE_PER_PACK)
+        .withOrderableId(productId)
+        .withCalculatedOrderQuantity(CALCULATED_ORDER_QUANTITY)
+        .withRequisition(requisition)
+        .build();
 
     requisition.setId(requisitionId);
     requisition.setStatus(RequisitionStatus.INITIATED);
@@ -184,12 +185,12 @@ public class RequisitionTest {
         .withOrderableId(requisitionLineItem.getOrderableId())
         .withStockOutDays(3)
         .withTags(tags)
-        .build();
+        .buildAsDto();
 
     product1 = mockApprovedProduct(productId1);
     product2 = mockApprovedProduct(productId2);
 
-    period = new ProcessingPeriodDtoDataBuilder().build();
+    period = new ProcessingPeriodDtoDataBuilder().buildAsDto();
   }
 
   @Test
@@ -295,7 +296,7 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
-    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().buildAsDto();
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(),
         Collections.singletonList(supplyLine), UUID.randomUUID());
@@ -308,7 +309,7 @@ public class RequisitionTest {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
-    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().build();
+    SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().buildAsDto();
 
     requisition.approve(parentNode.getId(), Collections.emptyMap(),
         Collections.singletonList(supplyLine), UUID.randomUUID());
@@ -868,7 +869,7 @@ public class RequisitionTest {
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(productId)
         .withNetContent(1)
-        .build();
+        .buildAsDto();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
 
@@ -886,7 +887,7 @@ public class RequisitionTest {
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(productId)
         .withNetContent(1)
-        .build();
+        .buildAsDto();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
@@ -920,7 +921,7 @@ public class RequisitionTest {
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(productId)
         .withNetContent(1)
-        .build();
+        .buildAsDto();
 
     setUpTestUpdatePacksToShip(product, packsToShip);
     requisitionLineItem.setApprovedQuantity((int) packsToShip);
@@ -1760,8 +1761,8 @@ public class RequisitionTest {
             new OrderableDtoDataBuilder()
                 .withId(orderableId)
                 .withProgramOrderable(programId, true)
-                .build())
-        .build();
+                .buildAsDto())
+        .buildAsDto();
   }
 
   private SupervisoryNodeDto mockSupervisoryParentNode(UUID parentId) {

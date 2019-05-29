@@ -58,11 +58,11 @@ public class StandardStockOnHandRetrieverTest extends StockOnHandRetrieverTest {
   private StockCardSummaryDto stockCardSummary = new StockCardSummaryDtoDataBuilder()
       .withOrderableId(orderable)
       .withStockOnHand(15)
-      .build();
+      .buildAsDto();
   private StockCardSummaryDto stockCardSummary2 = new StockCardSummaryDtoDataBuilder()
       .withOrderableId(orderable2)
       .withStockOnHand(20)
-      .build();
+      .buildAsDto();
 
   @Before
   public void setUp() {
@@ -70,15 +70,15 @@ public class StandardStockOnHandRetrieverTest extends StockOnHandRetrieverTest {
         .withOrderable(new OrderableDtoDataBuilder()
             .withId(orderable)
             .withProgramOrderable(programId, true)
-            .build())
-        .build();
+            .buildAsDto())
+        .buildAsDto();
 
     ApprovedProductDto approvedProduct2 = new ApprovedProductDtoDataBuilder()
         .withOrderable(new OrderableDtoDataBuilder()
             .withId(orderable2)
             .withProgramOrderable(programId, true)
-            .build())
-        .build();
+            .buildAsDto())
+        .buildAsDto();
 
     products = new ApproveProductsAggregator(
         Lists.newArrayList(approvedProduct, approvedProduct2), programId);

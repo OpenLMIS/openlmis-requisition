@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.RightDtoDataBuilder;
 
 public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<RightDto> {
 
@@ -31,7 +32,7 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
 
   @Override
   protected RightDto generateInstance() {
-    return new RightDto();
+    return new RightDtoDataBuilder().buildAsDto();
   }
 
   @Override

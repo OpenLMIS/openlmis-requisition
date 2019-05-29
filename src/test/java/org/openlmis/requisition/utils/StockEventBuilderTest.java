@@ -43,10 +43,13 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
@@ -57,6 +60,9 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.stockmanagement.StockCardStockManagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
+import org.openlmis.requisition.testutils.StockAdjustmentReasonDataBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -114,8 +120,9 @@ public class StockEventBuilderTest {
 
   @Before
   public void setUp() {
-    preparePeriod();
-    prepareRequisitionDto();
+    period = preparePeriod();
+    stockCards = new ArrayList<>();
+    requisition = prepareRequisitionDto(period.getId());
 
     when(configurationSettingService.getReasonIdForReceipts())
         .thenReturn(receiptsReason.getReasonId());
@@ -312,10 +319,11 @@ public class StockEventBuilderTest {
     requisition.setDatePhysicalStockCountCompleted(null);
     requisition.setEmergency(true);
 
-    StatusChange statusChange = new StatusChange();
     ZonedDateTime dateTime = ZonedDateTime.now();
-    statusChange.setStatus(RequisitionStatus.SUBMITTED);
-    statusChange.setCreatedDate(dateTime);
+    StatusChange statusChange = new StatusChangeDataBuilder()
+        .withCreatedDate(dateTime)
+        .withStatus(RequisitionStatus.SUBMITTED)
+        .build();
     requisition.setStatusChanges(Arrays.asList(statusChange));
 
     StockEventDto result = getStockEventDto();
@@ -423,20 +431,22 @@ public class StockEventBuilderTest {
   }
 
   private RequisitionLineItem prepareLineItemOneDto() {
-    lineItemOneDto = new RequisitionLineItem();
-
-    lineItemOneDto.setSkipped(false);
-    lineItemOneDto.setBeginningBalance(30);
-    lineItemOneDto.setStockOnHand(21);
-    lineItemOneDto.setTotalReceivedQuantity(22);
-    lineItemOneDto.setTotalConsumedQuantity(23);
-    lineItemOneDto.setStockAdjustments(Arrays.asList(
-        prepareStockAdjustment(reasons.get(0), 24),
-        prepareStockAdjustment(reasons.get(2), 25)
-    ));
-    lineItemOneDto.setOrderableId(UUID.randomUUID());
+    lineItemOneDto = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false)
+        .withBeginningBalance(30)
+        .withStockOnHand(21)
+        .withTotalReceivedQuantity(22)
+        .withTotalConsumedQuantity(23)
+        .withStockAdjustments(Arrays.asList(
+            prepareStockAdjustment(reasons.get(0), 24),
+            prepareStockAdjustment(reasons.get(2), 25)
+        ))
+        .withOrderableId(UUID.randomUUID())
+        .build();
     stockCards.add(StockCardDto.builder()
-        .orderable(new OrderableDtoDataBuilder().withId(lineItemOneDto.getOrderableId()).build())
+        .orderable(new OrderableDtoDataBuilder()
+            .withId(lineItemOneDto.getOrderableId())
+            .buildAsDto())
         .stockOnHand(30)
         .build());
 
@@ -444,41 +454,43 @@ public class StockEventBuilderTest {
   }
 
   private RequisitionLineItem prepareLineItemTwoDto() {
-    lineItemTwoDto = new RequisitionLineItem();
-
-    lineItemTwoDto.setSkipped(false);
-    lineItemTwoDto.setBeginningBalance(30);
-    lineItemTwoDto.setStockOnHand(34);
-    lineItemTwoDto.setTotalReceivedQuantity(35);
-    lineItemTwoDto.setTotalConsumedQuantity(36);
-    lineItemTwoDto.setStockAdjustments(Arrays.asList(
+    lineItemTwoDto = new RequisitionLineItemDataBuilder()
+      .withSkippedFlag(false)
+      .withBeginningBalance(30)
+      .withStockOnHand(34)
+      .withTotalReceivedQuantity(35)
+      .withTotalConsumedQuantity(36)
+      .withStockAdjustments(Arrays.asList(
         prepareStockAdjustment(reasons.get(1), 37),
         prepareStockAdjustment(reasons.get(3), 38)
-    ));
-    lineItemTwoDto.setOrderableId(UUID.randomUUID());
+      ))
+      .withOrderableId(UUID.randomUUID())
+      .build();
+
     stockCards.add(StockCardDto.builder()
-        .orderable(new OrderableDtoDataBuilder().withId(lineItemTwoDto.getOrderableId()).build())
+        .orderable(new OrderableDtoDataBuilder()
+            .withId(lineItemTwoDto.getOrderableId())
+            .buildAsDto())
         .stockOnHand(30)
         .build());
 
     return lineItemTwoDto;
   }
 
-  private void prepareRequisitionDto() {
-    requisition = new Requisition();
-    stockCards = new ArrayList<>();
-
-    requisition.setDatePhysicalStockCountCompleted(DATE_PHYSICAL_STOCK_COUNT_COMPLETED);
-    requisition.setTemplate(prepareTemplate());
-    requisition.setFacilityId(UUID.randomUUID());
-    requisition.setProgramId(UUID.randomUUID());
-    requisition.setStockAdjustmentReasons(prepareReasons());
-    requisition.setProcessingPeriodId(period.getId());
-    requisition.setRequisitionLineItems(Arrays.asList(
-        prepareLineItemOneDto(),
-        prepareLineItemTwoDto()
-    ));
-    requisition.setEmergency(false);
+  private Requisition prepareRequisitionDto(UUID periodId) {
+    return new RequisitionDataBuilder()
+        .withDatePhysicalStockCountCompleted(DATE_PHYSICAL_STOCK_COUNT_COMPLETED)
+        .withTemplate(prepareTemplate())
+        .withFacilityId(UUID.randomUUID())
+        .withProgramId(UUID.randomUUID())
+        .withStockAdjustmentReasons(prepareReasons())
+        .withProcessingPeriodId(periodId)
+        .withRequisitionLineItems(Arrays.asList(
+            prepareLineItemOneDto(),
+            prepareLineItemTwoDto()
+        ))
+        .withEmergency(false)
+        .build();
   }
 
   private RequisitionTemplate prepareTemplate() {
@@ -534,25 +546,25 @@ public class StockEventBuilderTest {
         .anyMatch(stockAdjustment -> stockAdjustment.getReasonId().equals(reason.getReasonId()));
   }
 
-  private void preparePeriod() {
-    period = new ProcessingPeriodDto();
-    period.setEndDate(PERIOD_END_DATE);
+  private ProcessingPeriodDto preparePeriod() {
+    return new ProcessingPeriodDtoDataBuilder()
+        .withEndDate(PERIOD_END_DATE)
+        .buildAsDto();
   }
 
   private StockAdjustmentReason prepareReason(String reasonName) {
-    StockAdjustmentReason reason = new StockAdjustmentReason();
-
-    reason.setReasonId(UUID.randomUUID());
-    reason.setName(reasonName);
+    StockAdjustmentReason reason = new StockAdjustmentReasonDataBuilder()
+        .withName(reasonName)
+        .build();
 
     return reason;
   }
 
   private StockAdjustment prepareStockAdjustment(StockAdjustmentReason reason, Integer quantity) {
-    StockAdjustment stockAdjustment = new StockAdjustment();
-
-    stockAdjustment.setQuantity(quantity);
-    stockAdjustment.setReasonId(reason.getReasonId());
+    StockAdjustment stockAdjustment = new StockAdjustmentDataBuilder()
+        .withQuantity(quantity)
+        .withReasonId(reason.getReasonId())
+        .build();
 
     return stockAdjustment;
   }

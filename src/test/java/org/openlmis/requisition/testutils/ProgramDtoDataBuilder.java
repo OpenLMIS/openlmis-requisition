@@ -19,10 +19,11 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
 @Getter
 @Setter
-public class ProgramDtoDataBuilder {
+public class ProgramDtoDataBuilder implements DtoDataBuilder<ProgramDto> {
 
   private UUID id = UUID.randomUUID();
   private String code = "em";
@@ -37,7 +38,7 @@ public class ProgramDtoDataBuilder {
   /**
    * Builds ProgramDto instance with test data.
    */
-  public ProgramDto build() {
+  public ProgramDto buildAsDto() {
     ProgramDto dto = new ProgramDto();
     dto.setId(id);
     dto.setCode(code);
@@ -55,14 +56,14 @@ public class ProgramDtoDataBuilder {
    * Builds ProgramDto instance with authorization step skipped.
    */
   public ProgramDto buildWithSkippedAuthorizationStep() {
-    return withSkipAuthorization(true).build();
+    return withSkipAuthorization(true).buildAsDto();
   }
 
   /**
    * Builds ProgramDto instance with authorization step not skipped.
    */
   public ProgramDto buildWithNotSkippedAuthorizationStep() {
-    return withSkipAuthorization(false).build();
+    return withSkipAuthorization(false).buildAsDto();
   }
 
   /**
@@ -75,6 +76,26 @@ public class ProgramDtoDataBuilder {
 
   public ProgramDtoDataBuilder withId(UUID id) {
     this.id = id;
+    return this;
+  }
+
+  public ProgramDtoDataBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public ProgramDtoDataBuilder withActive(Boolean active) {
+    this.active = active;
+    return this;
+  }
+
+  public ProgramDtoDataBuilder withPeriodsSkippable(Boolean periodsSkippable) {
+    this.periodsSkippable = periodsSkippable;
+    return this;
+  }
+
+  public ProgramDtoDataBuilder withShowNonFullSupplyTab(Boolean showNonFullSupplyTab) {
+    this.showNonFullSupplyTab = showNonFullSupplyTab;
     return this;
   }
 }

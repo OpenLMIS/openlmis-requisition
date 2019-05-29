@@ -35,6 +35,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(MockitoJUnitRunner.class)
@@ -55,16 +56,16 @@ public class RequisitionStatusProcessorTest {
   @Mock
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  private SupervisoryNodeDto supervisoryNodeDto = new SupervisoryNodeDto();
-  private UUID supervisoryNodeId = UUID.randomUUID();
+  private SupervisoryNodeDto supervisoryNodeDto;
   private Locale locale = Locale.ENGLISH;
+
 
   @InjectMocks
   private DefaultRequisitionStatusProcessor requisitionStatusProcessor;
 
   @Before
   public void setUp() {
-    supervisoryNodeDto.setId(supervisoryNodeId);
+    supervisoryNodeDto = new SupervisoryNodeDtoDataBuilder().buildAsDto();
 
     doReturn(supervisoryNodeDto).when(supervisoryNodeReferenceDataService)
         .findSupervisoryNode(any(UUID.class), any(UUID.class));

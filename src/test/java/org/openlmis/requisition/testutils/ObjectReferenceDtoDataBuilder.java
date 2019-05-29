@@ -17,8 +17,9 @@ package org.openlmis.requisition.testutils;
 
 import java.util.UUID;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class ObjectReferenceDtoDataBuilder {
+public class ObjectReferenceDtoDataBuilder implements DtoDataBuilder<ObjectReferenceDto> {
 
   private UUID id;
   private String serviceUrl;
@@ -37,7 +38,7 @@ public class ObjectReferenceDtoDataBuilder {
    * Creates new instance of {@link ObjectReferenceDto} with properties.
    * @return created object reference.
    */
-  public ObjectReferenceDto build() {
+  public ObjectReferenceDto buildAsDto() {
     return new ObjectReferenceDto(id, serviceUrl, path);
   }
 

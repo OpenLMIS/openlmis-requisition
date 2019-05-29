@@ -18,8 +18,9 @@ package org.openlmis.requisition.testutils;
 import java.util.UUID;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
+import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
-public class IdealStockAmountDtoDataBuilder {
+public class IdealStockAmountDtoDataBuilder implements DtoDataBuilder<IdealStockAmountDto> {
   private UUID id = UUID.randomUUID();
   private ObjectReferenceDto facility = new ObjectReferenceDto(UUID.randomUUID());
   private ObjectReferenceDto commodityType = new ObjectReferenceDto(UUID.randomUUID());
@@ -34,7 +35,7 @@ public class IdealStockAmountDtoDataBuilder {
   /**
    * Create new instance of {@link IdealStockAmountDto}.
    */
-  public IdealStockAmountDto build() {
+  public IdealStockAmountDto buildAsDto() {
     IdealStockAmountDto dto = new IdealStockAmountDto(
         facility, commodityType, processingPeriod, amount
     );

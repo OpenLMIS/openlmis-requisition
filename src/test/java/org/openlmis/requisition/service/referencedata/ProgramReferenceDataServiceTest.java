@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 
 public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTest<ProgramDto> {
 
@@ -35,7 +36,7 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
 
   @Override
   protected ProgramDto generateInstance() {
-    return new ProgramDto();
+    return new ProgramDtoDataBuilder().buildAsDto();
   }
 
   @Override

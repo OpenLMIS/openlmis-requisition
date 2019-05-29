@@ -218,8 +218,9 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldFacilityTypeIdsShouldNotContainNullValue() {
-    RequisitionTemplate template = new RequisitionTemplate();
-    template.addAssignment(UUID.randomUUID(), null);
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAssignment(UUID.randomUUID(), null)
+        .build();
 
     assertThat(template.getFacilityTypeIds(), hasSize(0));
   }
