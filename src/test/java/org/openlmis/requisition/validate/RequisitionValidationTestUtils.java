@@ -19,6 +19,7 @@ import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
@@ -112,6 +113,10 @@ public class RequisitionValidationTestUtils {
     columns.put(
         CALCULATED_ORDER_QUANTITY_ISA,
         generateTemplateColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED)
+    );
+    columns.put(
+        AVERAGE_CONSUMPTION,
+        generateTemplateColumn(AVERAGE_CONSUMPTION, "P", CALCULATED)
     );
 
     RequisitionTemplateColumn column = generateTemplateColumn(ADDITIONAL_QUANTITY_REQUIRED,

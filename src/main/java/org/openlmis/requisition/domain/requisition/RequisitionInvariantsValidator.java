@@ -172,8 +172,15 @@ class RequisitionInvariantsValidator
     requisitionUpdater
         .getFullSupplyRequisitionLineItems()
         .forEach(line -> {
+
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);
+
+          if (!requisitionToUpdate.getTemplate().isColumnDisplayed(columnName)
+              && newValue == null) {
+            setColumnValue(line, columnName, currentValue);
+            return;
+          }
 
           if (!Objects.equals(currentValue, newValue)) {
             errors.put(
@@ -206,6 +213,14 @@ class RequisitionInvariantsValidator
       Object savedValue, String field) {
     if (value != null && savedValue != null && !savedValue.equals(value)) {
       errors.put(field, new Message(ERROR_IS_INVARIANT, field));
+    }
+  }
+
+  private void setColumnValue(RequisitionLineItem lineItem, String columnName, Object value) {
+    try {
+      PropertyUtils.setProperty(lineItem, columnName, value);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
+      throw new IllegalStateException(exp);
     }
   }
 

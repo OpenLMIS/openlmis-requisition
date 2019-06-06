@@ -16,6 +16,7 @@
 package org.openlmis.requisition.domain;
 
 import static org.javers.common.collections.Sets.asSet;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
@@ -187,6 +188,15 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   }
 
   /**
+   * Set all initiate columns and hide average consumption column.
+   */
+  public RequisitionTemplateDataBuilder withAdditionalAverageConsumptionColumnHidden() {
+    withAllColumns();
+    columnsMap.get(RequisitionLineItem.AVERAGE_CONSUMPTION).setIsDisplayed(false);
+    return this;
+  }
+
+  /**
    * Set populateStockOnHandFromStockCards flag. If builder contains stock based columns,
    * the method will modify the source to {@link SourceType#STOCK_CARDS}.
    */
@@ -195,7 +205,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
 
     for (String stockColumn : Arrays.asList(
         BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY, TOTAL_RECEIVED_QUANTITY,
-        TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS)) {
+        TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, AVERAGE_CONSUMPTION)) {
       if (columnsMap.containsKey(stockColumn)) {
         columnsMap.get(stockColumn).setSource(SourceType.STOCK_CARDS);
       }
