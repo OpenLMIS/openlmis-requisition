@@ -16,18 +16,22 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
+import static org.openlmis.requisition.utils.RequisitionHelper.getColumnValue;
+import static org.openlmis.requisition.utils.RequisitionHelper.setColumnValue;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -56,6 +60,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.utils.RequisitionHelper;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +89,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Controller
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
+
   private static final String BUILD_DTO_LIST = "BUILD_DTO_LIST";
 
   @Autowired
@@ -104,9 +110,9 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Allows creating new requisitions.
    *
-   * @param programId       UUID of Program.
-   * @param facilityId      UUID of Facility.
-   * @param emergency       Emergency status.
+   * @param programId UUID of Program.
+   * @param facilityId UUID of Facility.
+   * @param emergency Emergency status.
    * @param suggestedPeriod Period for requisition.
    * @return created requisition.
    */
@@ -180,8 +186,8 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Returns processing periods for unprocessed requisitions.
    *
-   * @param programId   UUID of the Program.
-   * @param facilityId  UUID of the Facility.
+   * @param programId UUID of the Program.
+   * @param facilityId UUID of the Facility.
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
    * @return processing periods.
    */
@@ -288,16 +294,16 @@ public class RequisitionController extends BaseRequisitionController {
    * Allows updating requisitions.
    *
    * @param requisitionDto A requisitionDto bound to the request body.
-   * @param requisitionId  UUID of requisition which we want to update.
+   * @param requisitionId UUID of requisition which we want to update.
    * @return updated requisition.
    */
   @PutMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
-                                          @PathVariable("id") UUID requisitionId,
-                                          HttpServletRequest request,
-                                          HttpServletResponse response) {
+      @PathVariable("id") UUID requisitionId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
     if (null != requisitionDto.getId() && !Objects.equals(requisitionDto.getId(), requisitionId)) {
@@ -332,6 +338,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 
+    checkNullValuesForNotDisplayedStockColumns(requisitionToUpdate, requisition);
+
     profiler.start("VALIDATE_CAN_BE_UPDATED");
     validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program)
         .throwExceptionIfHasErrors();
@@ -360,7 +368,7 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId,
-                                       HttpServletResponse response) {
+      HttpServletResponse response) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
@@ -536,8 +544,8 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicRequisitionDto> requisitionsForApproval(
-          @RequestParam(value = "program", required = false) UUID programId,
-          Pageable pageable) {
+      @RequestParam(value = "program", required = false) UUID programId,
+      Pageable pageable) {
     Profiler profiler = getProfiler("REQUISITIONS_FOR_APPROVAL", programId, pageable);
     UserDto user = getCurrentUser(profiler);
 
@@ -637,7 +645,7 @@ public class RequisitionController extends BaseRequisitionController {
   /**
    * Get approved requisitions matching all of provided parameters.
    *
-   * @param programId  UUID of the program to be used as filter
+   * @param programId UUID of the program to be used as filter
    * @param facilityId UUID of the facility to be used as filter
    * @param pageable   Pageable object that allows client to optionally add "page" (page number)
    *                   and "size" (page size) query parameters to the request.
@@ -702,7 +710,7 @@ public class RequisitionController extends BaseRequisitionController {
   }
 
   private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,
-                                                                FacilityDto facilityDto) {
+      FacilityDto facilityDto) {
     List<ValidReasonDto> validReasons =
         validReasonStockmanagementService
             .search(programId, facilityDto.getType().getId());
@@ -712,5 +720,37 @@ public class RequisitionController extends BaseRequisitionController {
         .collect(Collectors.toList());
 
     return StockAdjustmentReason.newInstance(reasonDtos);
+  }
+
+  private void checkNullValuesForNotDisplayedStockColumns(Requisition requisitionToUpdate,
+      Requisition requisitionUpdater) {
+    RequisitionTemplate template = requisitionToUpdate.getTemplate();
+    Map<String, RequisitionTemplateColumn> columns = template.viewColumns();
+
+    for (Entry<String, RequisitionTemplateColumn> column : columns.entrySet()) {
+      if (column.getValue().getSource().isStockSource() && !column.getValue().getIsDisplayed()) {
+        setPreviousValuesForNotDisplayedColumns(requisitionToUpdate, requisitionUpdater,
+            column.getKey());
+      }
+    }
+  }
+
+  private void setPreviousValuesForNotDisplayedColumns(Requisition requisitionToUpdate,
+      Requisition requisitionUpdater, String columnName) {
+    Map<UUID, Object> columnValues = RequisitionHelper
+        .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
+
+    requisitionUpdater
+        .getRequisitionLineItems()
+        .forEach(line -> {
+
+          Object currentValue = columnValues.get(line.getOrderableId());
+          Object newValue = getColumnValue(line, columnName);
+
+          if (!requisitionToUpdate.getTemplate().isColumnDisplayed(columnName)
+              && newValue == null) {
+            setColumnValue(line, columnName, currentValue);
+          }
+        });
   }
 }

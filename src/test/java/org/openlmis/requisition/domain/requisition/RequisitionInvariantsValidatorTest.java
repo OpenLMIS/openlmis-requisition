@@ -17,7 +17,6 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
@@ -40,7 +39,6 @@ import java.util.UUID;
 import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
@@ -237,32 +235,5 @@ public class RequisitionInvariantsValidatorTest {
     validator.validateCanUpdate(errors);
 
     assertThat(errors, hasEntry(EXTRA_DATA_ORIGINAL_REQUISITION, new Message(ERROR_IS_INVARIANT)));
-  }
-
-  @Test
-  public void shouldNotRejectAndNotChangeIfValueOfHiddenColumnIsNull()
-      throws Exception {
-    final Integer averageConsumptionValue = 0;
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
-        .withAverageConsumption(averageConsumptionValue)
-        .build();
-    RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
-        .withAdditionalAverageConsumptionColumnHidden()
-        .withPopulateStockOnHandFromStockCards()
-        .build();
-    requisitionToUpdate.setTemplate(requisitionTemplate);
-    requisitionUpdater.setTemplate(requisitionTemplate);
-    requisitionToUpdate.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
-    requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(
-        (RequisitionLineItem) BeanUtils.cloneBean(requisitionLineItem)));
-
-    requisitionUpdater.getRequisitionLineItems().get(0).setAverageConsumption(null);
-
-    validator.validateCanUpdate(errors);
-
-    assertThat(errors.entrySet(), hasSize(0));
-    assertEquals(requisitionUpdater.getRequisitionLineItems().get(0).getAverageConsumption(),
-        requisitionToUpdate.getRequisitionLineItems().get(0).getAverageConsumption());
-
   }
 }

@@ -32,7 +32,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +45,7 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.utils.RequisitionHelper;
 
 @AllArgsConstructor
 class RequisitionInvariantsValidator
@@ -160,14 +160,8 @@ class RequisitionInvariantsValidator
   }
 
   private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
-    Map<UUID, Object> columnValues = requisitionToUpdate
-        .getFullSupplyRequisitionLineItems()
-        .stream()
-        .collect(
-            HashMap::new,
-            (map, line) -> map.put(line.getOrderableId(), getColumnValue(line, columnName)),
-            HashMap::putAll
-        );
+    Map<UUID, Object> columnValues = RequisitionHelper
+        .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
 
     requisitionUpdater
         .getFullSupplyRequisitionLineItems()
@@ -175,12 +169,6 @@ class RequisitionInvariantsValidator
 
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);
-
-          if (!requisitionToUpdate.getTemplate().isColumnDisplayed(columnName)
-              && newValue == null) {
-            setColumnValue(line, columnName, currentValue);
-            return;
-          }
 
           if (!Objects.equals(currentValue, newValue)) {
             errors.put(
@@ -213,14 +201,6 @@ class RequisitionInvariantsValidator
       Object savedValue, String field) {
     if (value != null && savedValue != null && !savedValue.equals(value)) {
       errors.put(field, new Message(ERROR_IS_INVARIANT, field));
-    }
-  }
-
-  private void setColumnValue(RequisitionLineItem lineItem, String columnName, Object value) {
-    try {
-      PropertyUtils.setProperty(lineItem, columnName, value);
-    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
-      throw new IllegalStateException(exp);
     }
   }
 

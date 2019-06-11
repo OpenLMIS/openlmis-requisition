@@ -17,19 +17,27 @@ package org.openlmis.requisition.utils;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.exception.ValidationMessageException;
 
 public class RequisitionHelper {
+
+  private RequisitionHelper() {
+    throw new UnsupportedOperationException("Utility class");
+  }
 
   /**
    * Check if all required fields for template are not filled.
@@ -60,7 +68,7 @@ public class RequisitionHelper {
    * Finds {@link RequisitionLineItem} that have productId equal to the given one.
    */
   public static List<RequisitionLineItem> findByProductId(List<RequisitionLineItem> list,
-                                                          UUID productId) {
+      UUID productId) {
     return list.stream()
         .filter(line -> productId.equals(line.getOrderableId()))
         .collect(Collectors.toList());
@@ -77,8 +85,8 @@ public class RequisitionHelper {
   }
 
   /**
-   * Retrieves values of Adjusted Consumption from each {@link RequisitionLineItem} and returns
-   * them in the list.
+   * Retrieves values of Adjusted Consumption from each {@link RequisitionLineItem} and returns them
+   * in the list.
    */
   public static List<Integer> mapToAdjustedConsumptions(List<RequisitionLineItem> list) {
     return list
@@ -92,7 +100,45 @@ public class RequisitionHelper {
    * Executes the given consumer only if the given list is not null.
    */
   public static void forEachLine(List<RequisitionLineItem> items,
-                                 Consumer<RequisitionLineItem> consumer) {
+      Consumer<RequisitionLineItem> consumer) {
     Optional.ofNullable(items).ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Gets all requisition line items values for given column name.
+   * @return Map of line item orderable id as a key and column value
+   */
+  public static Map<UUID, Object> getAllColumnsValuesByColumnName(Requisition requisition,
+      String columnName) {
+    return requisition
+        .getRequisitionLineItems()
+        .stream()
+        .collect(
+            HashMap::new,
+            (map, line) -> map.put(line.getOrderableId(), getColumnValue(line, columnName)),
+            HashMap::putAll
+        );
+  }
+
+  /**
+   * Gets column value for given column name.
+   */
+  public static Object getColumnValue(RequisitionLineItem lineItem, String columnName) {
+    try {
+      return PropertyUtils.getProperty(lineItem, columnName);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
+      throw new IllegalStateException(exp);
+    }
+  }
+
+  /**
+   * Sets column value for given column name.
+   */
+  public static void setColumnValue(RequisitionLineItem lineItem, String columnName, Object value) {
+    try {
+      PropertyUtils.setProperty(lineItem, columnName, value);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
+      throw new IllegalStateException(exp);
+    }
   }
 }
