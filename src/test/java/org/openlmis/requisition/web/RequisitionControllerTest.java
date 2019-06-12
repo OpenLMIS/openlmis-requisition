@@ -615,8 +615,6 @@ public class RequisitionControllerTest {
         eq(initiatedRequsition));
     assertEquals(initiatedRequsition.getRequisitionLineItems().get(0).getAverageConsumption(),
         averageConsumption);
-
-
   }
 
   @Test
