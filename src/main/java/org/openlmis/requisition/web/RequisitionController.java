@@ -338,7 +338,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 
-    checkNullValuesForNotDisplayedStockColumns(requisitionToUpdate, requisition);
+    changeNullValuesForNotDisplayedStockColumns(requisitionToUpdate, requisition);
 
     profiler.start("VALIDATE_CAN_BE_UPDATED");
     validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program)
@@ -722,7 +722,7 @@ public class RequisitionController extends BaseRequisitionController {
     return StockAdjustmentReason.newInstance(reasonDtos);
   }
 
-  private void checkNullValuesForNotDisplayedStockColumns(Requisition requisitionToUpdate,
+  private void changeNullValuesForNotDisplayedStockColumns(Requisition requisitionToUpdate,
       Requisition requisitionUpdater) {
     RequisitionTemplate template = requisitionToUpdate.getTemplate();
     Map<String, RequisitionTemplateColumn> columns = template.viewColumns();
