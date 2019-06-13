@@ -68,7 +68,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -657,7 +656,7 @@ public class RequisitionController extends BaseRequisitionController {
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) UUID programId,
       @RequestParam(required = false) UUID facilityId,
-      @PageableDefault() @SortDefault.SortDefaults({
+      @SortDefault.SortDefaults({
           @SortDefault(sort = {"emergency"}, direction = Direction.DESC),
           @SortDefault(sort = {"programId"}, direction = Direction.ASC)
       }) Pageable pageable) {
