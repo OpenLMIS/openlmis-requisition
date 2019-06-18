@@ -27,17 +27,22 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.RequestParameters;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -63,6 +68,12 @@ public class RequisitionForConvertBuilderTest {
   @Mock
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
+  @Mock
+  private RequisitionRepository requisitionRepository;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
+
   @InjectMocks
   private RequisitionForConvertBuilder requisitionForConvertBuilder =
       new RequisitionForConvertBuilder();
@@ -75,6 +86,8 @@ public class RequisitionForConvertBuilderTest {
   private SupplyLineDto supplyLine1;
   private SupplyLineDto supplyLine2;
   private SupplyLineDto supplyLine3;
+  private SupplyLineDto supplyLine4;
+  private RequisitionDto requisitionDto;
 
   @Before
   public void setUp() {
@@ -123,6 +136,18 @@ public class RequisitionForConvertBuilderTest {
         .withSupervisoryNode(supervisoryNode2)
         .withSupplyingFacility(facility2)
         .buildAsDto();
+    supplyLine4 = new SupplyLineDtoDataBuilder()
+        .withProgram(program1)
+        .withSupervisoryNode(supervisoryNode1)
+        .withSupplyingFacility(facility2)
+        .buildAsDto();
+
+    requisitionDto = new RequisitionDataBuilder()
+            .withId(requisition1.getId())
+            .withProgramId(program1.getId())
+            .withSupervisoryNodeId(supervisoryNode1.getId())
+            .buildAsDto();
+    requisitionDto.setFacility(facility1);
 
     when(facilityReferenceDataService.search(
         asSet(facility.getId(), facility1.getId(), facility2.getId())))
@@ -161,5 +186,20 @@ public class RequisitionForConvertBuilderTest {
         asSet(facility1.getId(), facility2.getId()), null);
 
     verify(supplyLineReferenceDataService).getPage(any(RequestParameters.class));
+  }
+
+  @Test
+  public void shouldGetAvailableSupplyingDepots() {
+    when(requisitionRepository.findOne(requisitionDto.getId()))
+            .thenReturn(requisition1);
+    when(supplyLineReferenceDataService
+            .search(requisition1.getProgramId(), requisition1.getSupervisoryNodeId()))
+            .thenReturn(asList(supplyLine1, supplyLine4));
+
+    List<FacilityDto> result = requisitionForConvertBuilder
+            .getAvailableSupplyingDepots(requisitionDto.getId());
+
+    assertEquals(2, result.size());
+    assertEquals(requisitionDto.getFacility().getId(), result.get(0).getId());
   }
 }
