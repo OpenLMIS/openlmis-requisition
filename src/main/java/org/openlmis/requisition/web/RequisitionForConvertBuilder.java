@@ -20,15 +20,15 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -130,10 +130,13 @@ public class RequisitionForConvertBuilder {
   }
 
   private List<FacilityDto> getAvailableSupplyingDepotsForRequisition(Requisition requisition) {
-    Collection<FacilityDto> facilityDtos = facilityReferenceDataService
-        .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId());
+    List<SupplyLineDto> supplyLines = supplyLineReferenceDataService
+            .search(requisition.getProgramId(), requisition.getSupervisoryNodeId());
 
-    return Lists.newArrayList(facilityDtos);
+    return supplyLines
+            .stream()
+            .map(SupplyLineDto::getSupplyingFacility)
+            .collect(Collectors.toList());
   }
 
   private Map<UUID, FacilityDto> getFacilities(List<Requisition> requisitions,

@@ -79,22 +79,6 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     return getBasicFacilityPage("search", RequestParameters.init(), requestBody).getContent();
   }
 
-  /**
-   * Retrieves supply lines from reference data service by program and supervisory node.
-   *
-   * @param programId         UUID of the program
-   * @param supervisoryNodeId UUID of the supervisory node
-   * @return A list of supply lines matching search criteria
-   */
-  public List<FacilityDto> searchSupplyingDepots(UUID programId, UUID supervisoryNodeId) {
-    RequestParameters parameters = RequestParameters
-        .init()
-        .set("programId", programId)
-        .set("supervisoryNodeId", supervisoryNodeId);
-
-    return findAll("supplying", parameters);
-  }
-
   protected Page<MinimalFacilityDto> getBasicFacilityPage(String resourceUrl,
                                                           RequestParameters parameters,
                                                           Object payload) {

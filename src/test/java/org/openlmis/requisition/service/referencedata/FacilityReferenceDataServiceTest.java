@@ -150,26 +150,4 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
         .hasBody(expectedBody);
   }
 
-  @Test
-  public void shouldSearchForSupplyingDepots() {
-    // given
-    UUID program = UUID.randomUUID();
-    UUID supervisoryNode = UUID.randomUUID();
-
-    // when
-    FacilityDto dto = mockArrayResponseEntityAndGetDto();
-    List<FacilityDto> result = service
-        .searchSupplyingDepots(program, supervisoryNode);
-
-    // then
-    assertThat(result, hasSize(1));
-    assertTrue(result.contains(dto));
-
-    verifyArrayRequest()
-        .isGetRequest()
-        .hasAuthHeader()
-        .hasEmptyBody()
-        .hasQueryParameter("programId", program)
-        .hasQueryParameter("supervisoryNodeId", supervisoryNode);
-  }
 }

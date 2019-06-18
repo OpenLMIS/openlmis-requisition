@@ -1446,9 +1446,6 @@ public class RequisitionServiceTest {
 
       when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
-      when(facilityReferenceDataService
-          .searchSupplyingDepots(requisition.getProgramId(), requisition.getSupervisoryNodeId()))
-          .thenReturn(singletonList(facility));
 
       result.add(new ReleasableRequisitionDto(requisition.getId(), facility.getId()));
     }
