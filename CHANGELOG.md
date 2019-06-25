@@ -4,6 +4,7 @@
 Improvements:
 * [OLMIS-6332](https://openlmis.atlassian.net/browse/OLMIS-6332): Changed default page size to max integer.
 * [OLMIS-6382](https://openlmis.atlassian.net/browse/OLMIS-6382): Removed usage deprecated endpoint `GET api/facilities/supplying` and use instead `GET /api/supplyLines` endpoint.
+* [OLMIS-6374](https://openlmis.atlassian.net/browse/OLMIS-6374): Add new profile for audit logging.
 
 Bug fixes:
 * [OLMIS-6230](https://openlmis.atlassian.net/browse/OLMIS-6230): Fixed bug with null value of average consumption when column is not selected in template.
