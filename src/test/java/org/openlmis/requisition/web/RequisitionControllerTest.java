@@ -59,10 +59,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -75,15 +72,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
-import org.openlmis.requisition.domain.SourceType;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
-import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.*;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -94,7 +84,6 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
@@ -128,7 +117,6 @@ import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanageme
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
-import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
@@ -533,6 +521,7 @@ public class RequisitionControllerTest {
     when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
+
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
     when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
@@ -557,64 +546,6 @@ public class RequisitionControllerTest {
     verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
         eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
-  }
-
-  @Test
-  public void shouldSetPreviousValueToNotDisplayedColumnValue() {
-    RequisitionDto requisitionDto = mock(RequisitionDto.class);
-    when(requisitionDto.getId()).thenReturn(uuid1);
-    when(requisitionDto.getFacility()).thenReturn(new FacilityDto());
-    when(requisitionDto.getProgram()).thenReturn(new ProgramDto());
-    when(requisitionDto.getProcessingPeriod()).thenReturn(new ProcessingPeriodDto());
-    when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
-
-    when(template.isColumnDisplayed("averageConsumption")).thenReturn(false);
-
-    Map<String, RequisitionTemplateColumn> lineItems = new HashMap<>();
-    lineItems.put("averageConsumption", new RequisitionTemplateColumnDataBuilder()
-        .withDisplay(false).withSource(SourceType.STOCK_CARDS).build());
-    when(template.viewColumns()).thenReturn(lineItems);
-
-    RequisitionLineItemDto lineItemDto = mock(RequisitionLineItemDto.class);
-    when(lineItemDto.getAverageConsumption()).thenReturn(null);
-    when(lineItemDto.getOrderable())
-        .thenReturn(new OrderableDtoDataBuilder().withId(uuid2).buildAsDto());
-    when(orderableReferenceDataService.findByIds(any()))
-        .thenReturn(singletonList(new OrderableDtoDataBuilder().withId(uuid2)
-            .withProgramOrderable(programUuid, true)
-            .buildAsDto()));
-
-    when(requisitionDto.getRequisitionLineItems()).thenReturn(
-        Collections.singletonList(lineItemDto));
-    when(initiatedRequsition.getTemplate()).thenReturn(template);
-    when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
-    when(initiatedRequsition.getId()).thenReturn(uuid1);
-    when(initiatedRequsition.getAllOrderableIds()).thenReturn(new HashSet<>(singletonList(uuid2)));
-    when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
-        .thenReturn(ValidationResult.success());
-    final Integer averageConsumption = 50;
-    when(initiatedRequsition.getRequisitionLineItems())
-        .thenReturn(singletonList(new RequisitionLineItemDataBuilder()
-            .withAverageConsumption(averageConsumption).build()));
-
-    when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
-        .thenReturn(ValidationResult.success());
-    when(requisitionVersionValidator.validateEtagVersionIfPresent(
-        any(HttpServletRequest.class), any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
-        new ProgramDtoDataBuilder().buildAsDto());
-    when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
-        DtoGenerator.of(FacilityDto.class));
-
-    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
-
-    assertEquals(template, initiatedRequsition.getTemplate());
-    verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
-        eq(initiatedRequsition));
-    assertEquals(initiatedRequsition.getRequisitionLineItems().get(0).getAverageConsumption(),
-        averageConsumption);
   }
 
   @Test

@@ -16,22 +16,18 @@
 package org.openlmis.requisition.web;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
-import static org.openlmis.requisition.utils.RequisitionHelper.getColumnValue;
-import static org.openlmis.requisition.utils.RequisitionHelper.setColumnValue;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.RequisitionTemplate;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -60,7 +56,6 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.utils.RequisitionHelper;
 import org.openlmis.requisition.validate.ReasonsValidator;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -336,8 +331,6 @@ public class RequisitionController extends BaseRequisitionController {
     requisition.setId(requisitionId);
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
-
-    changeNullValuesForNotDisplayedStockColumns(requisitionToUpdate, requisition);
 
     profiler.start("VALIDATE_CAN_BE_UPDATED");
     validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program)
@@ -721,35 +714,4 @@ public class RequisitionController extends BaseRequisitionController {
     return StockAdjustmentReason.newInstance(reasonDtos);
   }
 
-  private void changeNullValuesForNotDisplayedStockColumns(Requisition requisitionToUpdate,
-      Requisition requisitionUpdater) {
-    RequisitionTemplate template = requisitionToUpdate.getTemplate();
-    Map<String, RequisitionTemplateColumn> columns = template.viewColumns();
-
-    for (Entry<String, RequisitionTemplateColumn> column : columns.entrySet()) {
-      if (column.getValue().getSource().isStockSource() && !column.getValue().getIsDisplayed()) {
-        setPreviousValuesForNotDisplayedColumns(requisitionToUpdate, requisitionUpdater,
-            column.getKey());
-      }
-    }
-  }
-
-  private void setPreviousValuesForNotDisplayedColumns(Requisition requisitionToUpdate,
-      Requisition requisitionUpdater, String columnName) {
-    Map<UUID, Object> columnValues = RequisitionHelper
-        .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
-
-    requisitionUpdater
-        .getRequisitionLineItems()
-        .forEach(line -> {
-
-          Object currentValue = columnValues.get(line.getOrderableId());
-          Object newValue = getColumnValue(line, columnName);
-
-          if (!requisitionToUpdate.getTemplate().isColumnDisplayed(columnName)
-              && newValue == null) {
-            setColumnValue(line, columnName, currentValue);
-          }
-        });
-  }
 }
