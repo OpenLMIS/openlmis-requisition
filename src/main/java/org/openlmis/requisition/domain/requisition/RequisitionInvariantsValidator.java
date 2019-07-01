@@ -154,12 +154,13 @@ class RequisitionInvariantsValidator
 
     for (Entry<String, RequisitionTemplateColumn> column : columns.entrySet()) {
       if (column.getValue().getSource().isStockSource()) {
-        validateRegularLineItemStockField(errors, column.getKey());
+        validateRegularLineItemStockField(template, errors, column.getKey());
       }
     }
   }
 
-  private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
+  private void validateRegularLineItemStockField(RequisitionTemplate template,
+                                                 Map<String, Message> errors, String columnName) {
     Map<UUID, Object> columnValues = RequisitionHelper
         .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
 
@@ -171,7 +172,7 @@ class RequisitionInvariantsValidator
           Object newValue = getColumnValue(line, columnName);
 
           if (!(newValue == null
-                  && !line.getRequisition().getTemplate().isColumnDisplayed(columnName)
+                  && !template.isColumnDisplayed(columnName)
                   || Objects.equals(currentValue, newValue))) {
             errors.put(
                 REQUISITION_LINE_ITEMS,
