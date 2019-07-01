@@ -154,13 +154,12 @@ class RequisitionInvariantsValidator
 
     for (Entry<String, RequisitionTemplateColumn> column : columns.entrySet()) {
       if (column.getValue().getSource().isStockSource()) {
-        validateRegularLineItemStockField(template, errors, column.getKey());
+        validateRegularLineItemStockField(errors, column.getKey());
       }
     }
   }
 
-  private void validateRegularLineItemStockField(RequisitionTemplate template,
-                                                 Map<String, Message> errors, String columnName) {
+  private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
     Map<UUID, Object> columnValues = RequisitionHelper
         .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
 
@@ -171,9 +170,7 @@ class RequisitionInvariantsValidator
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);
 
-          if (!(newValue == null
-                  && !template.isColumnDisplayed(columnName)
-                  || Objects.equals(currentValue, newValue))) {
+          if (isColumnValueChanged(columnName, currentValue, newValue)) {
             errors.put(
                 REQUISITION_LINE_ITEMS,
                 new Message(
@@ -183,6 +180,12 @@ class RequisitionInvariantsValidator
             );
           }
         });
+  }
+
+  private boolean isColumnValueChanged(String columnName, Object currentValue, Object newValue) {
+    return !(newValue == null
+            && !requisitionToUpdate.getTemplate().isColumnDisplayed(columnName)
+            || Objects.equals(currentValue, newValue));
   }
 
   private void validateExtraData(Map<String, Message> errors) {
