@@ -8,6 +8,7 @@ Improvements:
 
 Bug fixes:
 * [OLMIS-6230](https://openlmis.atlassian.net/browse/OLMIS-6230): Fixed bug with null value of average consumption when column is not selected in template.
+* [OLMIS-6379](https://openlmis.atlassian.net/browse/OLMIS-6379): Fixed bug with submit requisition when column is hidden and source is stock cards.
 
 8.0.0 / 2019-05-27
 ==================
