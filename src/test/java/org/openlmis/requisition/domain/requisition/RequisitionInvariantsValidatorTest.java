@@ -195,6 +195,35 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
+  public void shouldValidateIfNewValueIsNullAndColumnIsHidden() throws Exception {
+    requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
+            .withAllColumns()
+            .withPopulateStockOnHandFromStockCards()
+            .build()
+    );
+    requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
+    requisitionUpdater.getTemplate().changeColumnDisplay("totalReceivedQuantity", false);
+
+    List<RequisitionLineItem> lineItems = requisitionToUpdate.getRequisitionLineItems();
+    for (int i = 0, size = lineItems.size(); i < size; ++i) {
+      lineItems.get(i).setTotalReceivedQuantity(5000);
+
+      requisitionUpdater
+              .getRequisitionLineItems()
+              .set(i, (RequisitionLineItem) BeanUtils.cloneBean(lineItems.get(i)));
+      requisitionUpdater
+              .getRequisitionLineItems()
+              .get(i)
+              .setTotalReceivedQuantity(null);
+
+    }
+
+    validator.validateCanUpdate(errors);
+
+    assertThat(errors.entrySet(), hasSize(0));
+  }
+
+  @Test
   public void shouldNotRejectIfValueWasChangedInNotFullSupplyForStockColumn() throws Exception {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
         .withNonFullSupplyFlag()

@@ -170,7 +170,9 @@ class RequisitionInvariantsValidator
           Object currentValue = columnValues.get(line.getOrderableId());
           Object newValue = getColumnValue(line, columnName);
 
-          if (!Objects.equals(currentValue, newValue)) {
+          if (!(newValue == null
+                  && !line.getRequisition().getTemplate().isColumnDisplayed(columnName)
+                  || Objects.equals(currentValue, newValue))) {
             errors.put(
                 REQUISITION_LINE_ITEMS,
                 new Message(
