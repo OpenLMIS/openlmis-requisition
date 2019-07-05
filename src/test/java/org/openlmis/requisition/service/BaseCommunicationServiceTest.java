@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -391,7 +392,7 @@ public abstract class BaseCommunicationServiceTest<T> {
       this.uri = uri.toString();
       this.method = method;
       this.entity = entity;
-      this.queryParams = URLEncodedUtils.parse(uri, "UTF-8");
+      this.queryParams = URLEncodedUtils.parse(uri, Charset.forName("UTF-8"));
     }
 
     public RequestSummary isGetRequest() {

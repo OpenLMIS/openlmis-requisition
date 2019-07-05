@@ -43,7 +43,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -52,11 +51,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 @SpringBootApplication
-@ImportResource("applicationContext.xml")
 @EntityScan(basePackageClasses = {BaseEntity.class})
 @EnableScheduling
 @EnableAsync
@@ -219,6 +218,11 @@ public class Application {
     RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(factory);
     return redisTemplate;
+  }
+
+  @Bean
+  public LocalValidatorFactoryBean validator() {
+    return new LocalValidatorFactoryBean();
   }
 
   /**

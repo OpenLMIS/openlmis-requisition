@@ -62,7 +62,6 @@ import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.FacilityOperatorDtoDataBuilder;
@@ -87,9 +86,6 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
-
-  @MockBean
-  private RequisitionRepository requisitionRepository;
 
   @MockBean
   private OrderableReferenceDataService orderableReferenceDataService;

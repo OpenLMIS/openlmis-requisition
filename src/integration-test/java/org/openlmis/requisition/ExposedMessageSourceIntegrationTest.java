@@ -33,13 +33,13 @@ import org.openlmis.requisition.i18n.ExposedMessageSource;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
 @ActiveProfiles("test")
-@SpringApplicationConfiguration(Application.class)
 public class ExposedMessageSourceIntegrationTest {
 
   @Autowired

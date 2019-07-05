@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
@@ -41,6 +42,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class Resource2DbTest {
+  private static final Charset CHARSET = Charset.forName("UTF-8");
 
   @Mock
   private JdbcTemplate template;
@@ -52,7 +54,7 @@ public class Resource2DbTest {
   public void updateDbFromSqlShouldCloseInputStream() throws IOException {
     // given
     Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("some data"));
+    InputStream inputStream = spy(IOUtils.toInputStream("some data", CHARSET));
     when(resource.getInputStream()).thenReturn(inputStream);
     when(template.batchUpdate(any(String.class))).thenReturn(new int[]{1});
 
@@ -68,7 +70,7 @@ public class Resource2DbTest {
   public void updateDbFromSqlSingleShouldCloseInputStream() throws IOException {
     // given
     Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("some data"));
+    InputStream inputStream = spy(IOUtils.toInputStream("some data", CHARSET));
     when(resource.getInputStream()).thenReturn(inputStream);
     when(template.batchUpdate(any(String.class))).thenReturn(new int[]{1});
 
@@ -84,7 +86,7 @@ public class Resource2DbTest {
   public void insertToDbFromCsvShouldCloseInputStream() throws IOException {
     // given
     Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("some data"));
+    InputStream inputStream = spy(IOUtils.toInputStream("some data", CHARSET));
     when(resource.getInputStream()).thenReturn(inputStream);
     when(template.batchUpdate(any(String.class), any(List.class))).thenReturn(new int[]{1});
 
@@ -132,7 +134,7 @@ public class Resource2DbTest {
   public void resourceCsvToBatchedPairShouldReturnListPair() throws IOException {
     // given
     Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("Col1,Col2\na,b"));
+    InputStream inputStream = spy(IOUtils.toInputStream("Col1,Col2\na,b", CHARSET));
     when(resource.getInputStream()).thenReturn(inputStream);
 
     // when
@@ -157,7 +159,7 @@ public class Resource2DbTest {
       throws IOException {
     // given
     Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("Col1,Col2\na,b,c"));
+    InputStream inputStream = spy(IOUtils.toInputStream("Col1,Col2\na,b,c", CHARSET));
     when(resource.getInputStream()).thenReturn(inputStream);
 
     // when
