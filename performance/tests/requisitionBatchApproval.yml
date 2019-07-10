@@ -1,55 +1,55 @@
-execution:
-  - concurrency: 1
-    iterations: 1
-    scenario: batch-workflow
-
-scenarios:
-  search-requisitions:
-    requests:
-      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}
-        method: GET
-        label: SearchRequisitions
-        headers:
-          Authorization: Bearer ${access_token}
-          Content-Type: application/json
-        extract-jsonpath:
-          requisitions_size: $.numberOfElements
-        jsr223:
-          script-text: |
-            import groovy.json.JsonSlurper;
-            def response = prev.getResponseDataAsString();
-            log.info(prev.getUrlAsString())
-            log.info("response " + response)
-            def requisitions_id = [];
-            def data = new JsonSlurper().parseText(response);
-            def builder = new StringBuilder();
-            for (def i=0; i<data.content.size(); i++) {
-              builder.append("&id=")
-              def id = data.content[i].id
-              builder.append(id)
-              vars.put("reqid_" + (i + 1), id)
-            }
-            vars.put("requisitions_id", builder.toString())
-  approve-requisitions:
-    requests:
-      - if: '"${requisitions_size}" > "0"'
-        then:
-          - url: ${__P(base-uri)}/api/requisitions?approveAll${requisitions_id}
-            method: POST
-            label: ApproveRequisitions
-            headers:
-              Authorization: Bearer ${access_token}
-            jsr223:
-              script-text: |
-                log.info(prev.getUrlAsString())
-                log.info(prev.getResponseDataAsString())
-  batch-workflow:
-    variables:
-      # Essential Meds
-      program_id: 10845cb9-d365-4aaa-badd-b4fa39c6a26a
-      number_of_req: 10
-      status: IN_APPROVAL
-    requests:
-      - include-scenario: get-user-token
-      - include-scenario: search-requisitions
-      - include-scenario: approve-requisitions
+#execution:
+#  - concurrency: 1
+#    iterations: 1
+#    scenario: batch-workflow
+#
+#scenarios:
+#  search-requisitions:
+#    requests:
+#      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}
+#        method: GET
+#        label: SearchRequisitions
+#        headers:
+#          Authorization: Bearer ${access_token}
+#          Content-Type: application/json
+#        extract-jsonpath:
+#          requisitions_size: $.numberOfElements
+#        jsr223:
+#          script-text: |
+#            import groovy.json.JsonSlurper;
+#            def response = prev.getResponseDataAsString();
+#            log.info(prev.getUrlAsString())
+#            log.info("response " + response)
+#            def requisitions_id = [];
+#            def data = new JsonSlurper().parseText(response);
+#            def builder = new StringBuilder();
+#            for (def i=0; i<data.content.size(); i++) {
+#              builder.append("&id=")
+#              def id = data.content[i].id
+#              builder.append(id)
+#              vars.put("reqid_" + (i + 1), id)
+#            }
+#            vars.put("requisitions_id", builder.toString())
+#  approve-requisitions:
+#    requests:
+#      - if: '"${requisitions_size}" > "0"'
+#        then:
+#          - url: ${__P(base-uri)}/api/requisitions?approveAll${requisitions_id}
+#            method: POST
+#            label: ApproveRequisitions
+#            headers:
+#              Authorization: Bearer ${access_token}
+#            jsr223:
+#              script-text: |
+#                log.info(prev.getUrlAsString())
+#                log.info(prev.getResponseDataAsString())
+#  batch-workflow:
+#    variables:
+#      # Essential Meds
+#      program_id: 10845cb9-d365-4aaa-badd-b4fa39c6a26a
+#      number_of_req: 10
+#      status: IN_APPROVAL
+#    requests:
+#      - include-scenario: get-user-token
+#      - include-scenario: search-requisitions
+#      - include-scenario: approve-requisitions
