@@ -18,7 +18,6 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +25,6 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +60,6 @@ import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.FacilityOperatorDtoDataBuilder;
 import org.openlmis.requisition.testutils.FacilityTypeDtoDataBuilder;
@@ -87,14 +84,9 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
 
-  @MockBean
-  private OrderableReferenceDataService orderableReferenceDataService;
-
   @Before
   public void setUp() {
     mockUserAuthenticated();
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class))).willReturn(
-            Collections.emptyList());
     doReturn(ValidationResult.success()).when(permissionService).canViewRequisition(anyUuid());
   }
 
@@ -200,7 +192,8 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
     UserDto user = generateValidUserDto();
     RequisitionDto requisition = generateValidRequisitionDto(programId, items);
-    RequisitionReportDto reportDto = new RequisitionReportDtoDataBuilder()
+
+    return new RequisitionReportDtoDataBuilder()
         .withRequisition(requisition)
         .withFullSupply(fullSupply)
         .withNonFullSupply(nonFullSupply)
@@ -214,13 +207,10 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .withAuthorizedBy(user)
         .withAuthorizedDate(ZonedDateTime.now())
         .buildAsDto();
-
-    return reportDto;
   }
 
   private UserDto generateValidUserDto() {
-    UserDto user = new UserDtoDataBuilder().buildAsDto();
-    return user;
+    return new UserDtoDataBuilder().buildAsDto();
   }
 
   private RequisitionDto generateValidRequisitionDto(
@@ -240,26 +230,25 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private ProcessingPeriodDto generateValidProcessingPeriodDto() {
-    ProcessingPeriodDto period = new ProcessingPeriodDtoDataBuilder()
+    return new ProcessingPeriodDtoDataBuilder()
         .withDurationInMonths(5)
         .buildAsDto();
-
-    return period;
   }
 
   private ProgramDto generateValidProgramDto(UUID programId) {
-    ProgramDto program = new ProgramDtoDataBuilder()
+    return new ProgramDtoDataBuilder()
         .withId(programId)
         .withActive(true)
         .withPeriodsSkippable(false)
         .withShowNonFullSupplyTab(true)
         .buildAsDto();
-
-    return program;
   }
 
   private RequisitionLineItemDto generateValidRequisitionLineItemDto(UUID programId) {
     RequisitionLineItemDto item = new RequisitionLineItemDataBuilder()
+        .withRequisition(new RequisitionDataBuilder()
+            .withProgramId(programId)
+            .build())
         .buildAsDto();
     item.setOrderable(generateValidOrderableDto(programId));
 
@@ -279,7 +268,8 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     List<SupportedProgramDto> programs = Stream.of(supportedPrograms)
         .map(this::generateValidSupportedProgramDto)
         .collect(Collectors.toList());
-    FacilityDto facility = new FacilityDtoDataBuilder()
+
+    return new FacilityDtoDataBuilder()
         .withGoLiveDate(LocalDate.MIN)
         .withGoDownDate(LocalDate.MAX)
         .withEnabled(true)
@@ -288,12 +278,10 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .withOperator(operator)
         .withType(type)
         .buildAsDto();
-
-    return facility;
   }
 
   private SupportedProgramDto generateValidSupportedProgramDto(UUID id) {
-    SupportedProgramDto program = new SupportedProgramDtoDataBuilder()
+    return new SupportedProgramDtoDataBuilder()
         .withId(id)
         .withProgramActive(true)
         .withPeriodsSkippable(false)
@@ -301,8 +289,6 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .withSupportActive(true)
         .withSupportStartDate(LocalDate.MAX)
         .buildAsDto();
-
-    return program;
   }
 
   private OrderableDto generateValidOrderableDto(UUID... programs) {
@@ -310,13 +296,14 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .map(this::generateValidProgramOrderableDto)
         .collect(Collectors.toSet());
 
-    OrderableDto orderable = new OrderableDtoDataBuilder()
+    return new OrderableDtoDataBuilder()
         .withPrograms(products)
         .buildAsDto();
-    return orderable;
   }
 
   private ProgramOrderableDto generateValidProgramOrderableDto(UUID programId) {
-    return new ProgramOrderableDtoDataBuilder().buildAsDto();
+    return new ProgramOrderableDtoDataBuilder()
+        .withProgramId(programId)
+        .buildAsDto();
   }
 }

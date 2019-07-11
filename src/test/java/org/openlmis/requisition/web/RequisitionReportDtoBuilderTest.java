@@ -15,20 +15,21 @@
 
 package org.openlmis.requisition.web;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.junit.Before;
@@ -38,18 +39,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
 
@@ -57,9 +63,9 @@ import org.openlmis.requisition.utils.RequisitionExportHelper;
 public class RequisitionReportDtoBuilderTest {
 
   private static final String SYSTEM = "SYSTEM";
-  private static final Money TOTAL_COST = Money.of(CurrencyUnit.EUR, 15.6);
-  private static final Money FS_TOTAL_COST = Money.of(CurrencyUnit.EUR, 3);
-  private static final Money NFS_TOTAL_COST = Money.of(CurrencyUnit.EUR, 22.8);
+  private static final Money FS_TOTAL_COST = Money.of(CurrencyUnit.USD, 10);
+  private static final Money NFS_TOTAL_COST = Money.of(CurrencyUnit.USD, 20);
+  private static final Money TOTAL_COST = FS_TOTAL_COST.plus(NFS_TOTAL_COST);
 
   @Mock
   private RequisitionExportHelper exportHelper;
@@ -71,53 +77,74 @@ public class RequisitionReportDtoBuilderTest {
   private RequisitionDtoBuilder requisitionDtoBuilder;
 
   @Mock
+  private OrderableReferenceDataService orderableReferenceDataService;
+
+  @Mock
   private MessageService messageService;
-
-  @Mock
-  private Requisition requisition;
-
-  @Mock
-  private RequisitionDto requisitionDto;
-
-  private UserDto user1 = DtoGenerator.of(UserDto.class, 2).get(0);
-  private UserDto user2 = DtoGenerator.of(UserDto.class, 2).get(1);
-
-  @Mock
-  private List<RequisitionLineItem> fullSupply;
-
-  @Mock
-  private List<RequisitionLineItem> nonFullSupply;
 
   @InjectMocks
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder =
       new RequisitionReportDtoBuilder();
 
-  private List<RequisitionLineItemDto> fullSupplyDtos = new ArrayList<>();
-  private List<RequisitionLineItemDto> nonFullSupplyLineDtos = new ArrayList<>();
-  private UUID programId = UUID.randomUUID();
+  private Requisition requisition;
+  private RequisitionLineItem fullSupply;
+  private RequisitionLineItem nonFullSupply;
+
+  private Map<VersionIdentityDto, OrderableDto> orderables = Maps.newHashMap();
+
+  private RequisitionDto requisitionDto;
+  private RequisitionLineItemDto fullSupplyDtos;
+  private RequisitionLineItemDto nonFullSupplyDtos;
+
+  private UserDto user1 = DtoGenerator.of(UserDto.class, 2).get(0);
+  private UserDto user2 = DtoGenerator.of(UserDto.class, 2).get(1);
 
   @Before
   public void setUp() {
+    fullSupply = new RequisitionLineItemDataBuilder().build();
+    nonFullSupply = new RequisitionLineItemDataBuilder().build();
+    requisition = new RequisitionDataBuilder()
+        .addLineItem(fullSupply, false)
+        .addLineItem(nonFullSupply, true)
+        .build();
+
+    final OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(fullSupply.getOrderable().getId())
+        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true, Money.of(CurrencyUnit.USD, 1), 2)
+        .buildAsDto();
+    final OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(nonFullSupply.getOrderable().getId())
+        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), false, Money.of(CurrencyUnit.USD, 2), 3)
+        .buildAsDto();
+
+    fullSupplyDtos = new RequisitionLineItemDto();
+    fullSupply.export(fullSupplyDtos, fullSupplyOrderable);
+
+    nonFullSupplyDtos = new RequisitionLineItemDto();
+    nonFullSupply.export(nonFullSupplyDtos, nonFullSupplyOrderable);
+
+    requisitionDto = new RequisitionDto();
+    requisition.export(requisitionDto);
+
+    orderables.put(fullSupplyOrderable.getIdentity(), fullSupplyOrderable);
+    orderables.put(nonFullSupplyOrderable.getIdentity(), nonFullSupplyOrderable);
+
     when(userReferenceDataService.findOne(user1.getId())).thenReturn(user1);
     when(userReferenceDataService.findOne(user2.getId())).thenReturn(user2);
+    when(orderableReferenceDataService.findByIdentities(anySet()))
+        .thenReturn(Lists.newArrayList(orderables.values()));
     when(requisitionDtoBuilder.build(requisition)).thenReturn(requisitionDto);
 
-    when(requisition.getNonSkippedFullSupplyRequisitionLineItems())
-        .thenReturn(fullSupply);
-    when(requisition.getNonSkippedNonFullSupplyRequisitionLineItems())
-        .thenReturn(nonFullSupply);
-    when(exportHelper.exportToDtos(fullSupply))
-        .thenReturn(fullSupplyDtos);
-    when(exportHelper.exportToDtos(nonFullSupply))
-        .thenReturn(nonFullSupplyLineDtos);
+    when(exportHelper.exportToDtos(Lists.newArrayList(fullSupply)))
+        .thenReturn(Lists.newArrayList(fullSupplyDtos));
+    when(exportHelper.exportToDtos(Lists.newArrayList(nonFullSupply)))
+        .thenReturn(Lists.newArrayList(nonFullSupplyDtos));
 
     Message msg = new Message(MessageKeys.STATUS_CHANGE_USER_SYSTEM);
     when(messageService.localize(msg))
       .thenReturn(msg. new LocalizedMessage(SYSTEM));
-
-    when(requisition.getTotalCost()).thenReturn(TOTAL_COST);
-    when(requisition.getFullSupplyTotalCost()).thenReturn(FS_TOTAL_COST);
-    when(requisition.getNonFullSupplyTotalCost()).thenReturn(NFS_TOTAL_COST);
   }
 
   @Test
@@ -154,7 +181,8 @@ public class RequisitionReportDtoBuilderTest {
     statusChanges.add(initStatusChange);
     statusChanges.add(submitStatusChange);
     statusChanges.add(authorizeStatusChange);
-    when(requisition.getStatusChanges()).thenReturn(statusChanges);
+
+    requisition.setStatusChanges(statusChanges);
 
     RequisitionReportDto dto = requisitionReportDtoBuilder.build(requisition);
 
@@ -174,7 +202,7 @@ public class RequisitionReportDtoBuilderTest {
     when(initStatusChange.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(initStatusChange.getCreatedDate()).thenReturn(now);
     List<StatusChange> statusChanges = Collections.singletonList(initStatusChange);
-    when(requisition.getStatusChanges()).thenReturn(statusChanges);
+    requisition.setStatusChanges(statusChanges);
 
     RequisitionReportDto dto = requisitionReportDtoBuilder.build(requisition);
 
@@ -194,11 +222,15 @@ public class RequisitionReportDtoBuilderTest {
 
   @Test
   public void shouldExportLineItemsToDtoAndSortByDisplayOrder() {
-    when(exportHelper.exportToDtos(fullSupply))
-        .thenReturn(prepareLineItemDtos());
+    RequisitionLineItemDto extra = new RequisitionLineItemDataBuilder()
+        .withRequisition(requisition)
+        .buildAsDto();
+
+    when(exportHelper.exportToDtos(Lists.newArrayList(fullSupply)))
+        .thenReturn(Lists.newArrayList(fullSupplyDtos, nonFullSupplyDtos, extra));
 
     List<RequisitionLineItemDto> lineItemDtos = requisitionReportDtoBuilder
-        .exportLinesToDtos(fullSupply, programId);
+        .exportLinesToDtos(Lists.newArrayList(fullSupply), requisition.getProgramId());
 
     assertTrue(getOrderableCategoryDisplayOrder(lineItemDtos.get(0))
         <= getOrderableCategoryDisplayOrder(lineItemDtos.get(1)));
@@ -206,27 +238,17 @@ public class RequisitionReportDtoBuilderTest {
         <= getOrderableCategoryDisplayOrder(lineItemDtos.get(2)));
   }
 
-  private List<RequisitionLineItemDto> prepareLineItemDtos() {
-    List<RequisitionLineItemDto> dtos = DtoGenerator.of(RequisitionLineItemDto.class, 3, true);
-    dtos.forEach(dto -> {
-      HashSet<ProgramOrderableDto> programs = newHashSet(
-          DtoGenerator.of(ProgramOrderableDto.class, 2, true));
-      programs.iterator().next().setProgramId(programId);
-      dto.getOrderable().setPrograms(programs);
-    });
-    return dtos;
-  }
-
   private Integer getOrderableCategoryDisplayOrder(RequisitionLineItemDto lineItemDto) {
-    return lineItemDto.getOrderable()
-        .findProgramOrderableDto(programId)
+    return lineItemDto
+        .getOrderable()
+        .getProgramOrderable(requisition.getProgramId())
         .getOrderableCategoryDisplayOrder();
   }
 
   private void commonReportDtoAsserts(RequisitionReportDto dto) {
     assertEquals(requisitionDto, dto.getRequisition());
-    assertEquals(fullSupplyDtos, dto.getFullSupply());
-    assertEquals(nonFullSupplyLineDtos, dto.getNonFullSupply());
+    assertEquals(fullSupplyDtos, dto.getFullSupply().get(0));
+    assertEquals(nonFullSupplyDtos, dto.getNonFullSupply().get(0));
     assertEquals(TOTAL_COST, dto.getTotalCost());
     assertEquals(FS_TOTAL_COST, dto.getFullSupplyTotalCost());
     assertEquals(NFS_TOTAL_COST, dto.getNonFullSupplyTotalCost());

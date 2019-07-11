@@ -111,7 +111,7 @@
 		<fieldDescription><![CDATA[idealStockAmount]]></fieldDescription>
 	</field>
 	<group name="OrderableDisplayCategory">
-		<groupExpression><![CDATA[$F{orderable}.findProgramOrderableDto($P{programId}).getOrderableCategoryDisplayName()]]></groupExpression>
+		<groupExpression><![CDATA[$F{orderable}.getProgramOrderable($P{programId}).getOrderableCategoryDisplayName()]]></groupExpression>
 		<groupHeader>
 			<band height="10">
 				<rectangle>
@@ -127,7 +127,7 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{orderable}.findProgramOrderableDto($P{programId}).getOrderableCategoryDisplayName()]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{orderable}.getProgramOrderable($P{programId}).getOrderableCategoryDisplayName()]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
