@@ -16,14 +16,16 @@
 package org.openlmis.requisition.domain.requisition;
 
 import java.util.Map;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 abstract class AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator
     extends AbstractRegularRequisitionFullSupplyLineItemValidator {
 
   AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator(
-      Requisition requisitionToValidate) {
-    super(requisitionToValidate);
+      Requisition requisitionToValidate, Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
   }
 
   protected void validateFullSupplyLineItemForUpdate(Map<String, Message> errors,

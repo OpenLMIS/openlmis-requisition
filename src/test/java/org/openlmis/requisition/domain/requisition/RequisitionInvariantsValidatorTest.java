@@ -36,10 +36,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.beanutils.BeanUtils;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -48,17 +52,18 @@ public class RequisitionInvariantsValidatorTest {
 
   private Requisition requisitionToUpdate;
   private Requisition requisitionUpdater;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
   private RequisitionInvariantsValidator validator;
   private Map<String, Message> errors;
 
   @Before
   public void setUp() {
     requisitionToUpdate = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
-        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
+        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build(), false)
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
+        .addLineItem(new RequisitionLineItemDataBuilder().withSkippedFlag().build(), false)
         .withSupervisoryNodeId(UUID.randomUUID())
         .withOriginalRequisitionId(UUID.randomUUID())
         .build();
@@ -68,13 +73,23 @@ public class RequisitionInvariantsValidatorTest {
         .withProgramId(requisitionToUpdate.getProgramId())
         .withProcessingPeriodId(requisitionToUpdate.getProcessingPeriodId())
         .withSupervisoryNodeId(requisitionToUpdate.getSupervisoryNodeId())
-        .withLineItems(requisitionToUpdate.getRequisitionLineItems())
+        .withLineItems(requisitionToUpdate.getRequisitionLineItems(), false)
         .withTemplate(requisitionToUpdate.getTemplate())
         .withOriginalRequisitionId(requisitionToUpdate.getOriginalRequisitionId())
         .build();
 
+    orderables = requisitionUpdater
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisitionUpdater.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
     validator = new RequisitionInvariantsValidator(
-        requisitionUpdater, requisitionToUpdate
+        requisitionUpdater, requisitionToUpdate, orderables
     );
 
     errors = new HashMap<>();
@@ -132,7 +147,7 @@ public class RequisitionInvariantsValidatorTest {
   }
 
   @Test
-  public void shouldRejectIfOrderableIdHasBeenChanged() {
+  public void shouldRejectIfOrderableIdentityHasBeenChanged() {
     requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(
         new RequisitionLineItemDataBuilder()
             .withId(requisitionToUpdate.getRequisitionLineItems().get(0).getId())
@@ -155,9 +170,18 @@ public class RequisitionInvariantsValidatorTest {
 
   @Test
   public void shouldRejectIfNewFullSupplyLineWasAddedForRegularRequisition() {
-    requisitionUpdater
-        .getRequisitionLineItems()
-        .add(new RequisitionLineItemDataBuilder().build());
+    RequisitionLineItem newLineItem = new RequisitionLineItemDataBuilder().build();
+    OrderableDto newOrderable = new OrderableDtoDataBuilder()
+        .withId(newLineItem.getOrderable().getId())
+        .withVersionId(newLineItem.getOrderable().getVersionId())
+        .withProgramOrderable(requisitionUpdater.getProgramId(), true)
+        .buildAsDto();
+
+    orderables.put(newOrderable.getIdentity(), newOrderable);
+    requisitionUpdater.getRequisitionLineItems().add(newLineItem);
+    validator = new RequisitionInvariantsValidator(
+        requisitionUpdater, requisitionToUpdate, orderables
+    );
 
     validator.validateCanUpdate(errors);
 
@@ -177,13 +201,11 @@ public class RequisitionInvariantsValidatorTest {
     for (int i = 0, size = lineItems.size(); i < size; ++i) {
       lineItems.get(i).setStockOnHand(i % 2 == 0 ? 1000 : null);
 
-      requisitionUpdater
-          .getRequisitionLineItems()
-          .set(i, (RequisitionLineItem) BeanUtils.cloneBean(lineItems.get(i)));
-      requisitionUpdater
-          .getRequisitionLineItems()
-          .get(i)
-          .setStockOnHand(5000);
+      RequisitionLineItem element = new RequisitionLineItem(lineItems.get(i));
+      element.setRequisition(requisitionUpdater);
+      element.setStockOnHand(5000);
+
+      requisitionUpdater.getRequisitionLineItems().set(i, element);
     }
 
     validator.validateCanUpdate(errors);
@@ -208,14 +230,11 @@ public class RequisitionInvariantsValidatorTest {
     for (int i = 0, size = lineItems.size(); i < size; ++i) {
       lineItems.get(i).setTotalReceivedQuantity(5000);
 
-      requisitionUpdater
-              .getRequisitionLineItems()
-              .set(i, (RequisitionLineItem) BeanUtils.cloneBean(lineItems.get(i)));
-      requisitionUpdater
-              .getRequisitionLineItems()
-              .get(i)
-              .setTotalReceivedQuantity(null);
+      RequisitionLineItem element = new RequisitionLineItem(lineItems.get(i));
+      element.setRequisition(requisitionUpdater);
+      element.setTotalReceivedQuantity(null);
 
+      requisitionUpdater.getRequisitionLineItems().set(i, element);
     }
 
     validator.validateCanUpdate(errors);
@@ -225,22 +244,34 @@ public class RequisitionInvariantsValidatorTest {
 
   @Test
   public void shouldNotRejectIfValueWasChangedInNotFullSupplyForStockColumn() throws Exception {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
-        .withNonFullSupplyFlag()
+    RequisitionLineItem newLineItem = new RequisitionLineItemDataBuilder()
         .withStockOnHand(1000)
         .build();
+    OrderableDto newOrderable = new OrderableDtoDataBuilder()
+        .withId(newLineItem.getOrderable().getId())
+        .withVersionId(newLineItem.getOrderable().getVersionId())
+        .withProgramOrderable(requisitionUpdater.getProgramId(), false)
+        .buildAsDto();
+
+    orderables.put(newOrderable.getIdentity(), newOrderable);
 
     requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
         .withAllColumns()
         .withPopulateStockOnHandFromStockCards()
         .build()
     );
-    requisitionToUpdate.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
+    requisitionToUpdate.setRequisitionLineItems(Lists.newArrayList(newLineItem));
 
     requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
-    requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(
-        (RequisitionLineItem) BeanUtils.cloneBean(requisitionLineItem)));
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItem(newLineItem);
+    requisitionLineItem.setRequisition(requisitionUpdater);
+
+    requisitionUpdater.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
     requisitionUpdater.getRequisitionLineItems().get(0).setStockOnHand(5000);
+
+    validator = new RequisitionInvariantsValidator(
+        requisitionUpdater, requisitionToUpdate, orderables
+    );
 
     validator.validateCanUpdate(errors);
 

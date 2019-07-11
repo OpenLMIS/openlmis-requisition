@@ -30,7 +30,7 @@ public class StockAdjustmentReasonsValidatorTest {
   @Test
   public void shouldPassValidationIfNoAdjustment() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
     StockAdjustmentReasonsValidator validator =
@@ -47,7 +47,7 @@ public class StockAdjustmentReasonsValidatorTest {
     UUID reasonId = UUID.randomUUID();
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .addStockAdjustment(new StockAdjustment(reasonId, 10)).build())
+            .addStockAdjustment(new StockAdjustment(reasonId, 10)).build(), false)
         .build();
     Requisition savedRequisition = new RequisitionDataBuilder()
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
@@ -68,7 +68,7 @@ public class StockAdjustmentReasonsValidatorTest {
     UUID reasonId = UUID.randomUUID();
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .addStockAdjustment(new StockAdjustment(reasonId, 10)).build())
+            .addStockAdjustment(new StockAdjustment(reasonId, 10)).build(), false)
         .build();
     Requisition savedRequisition = new RequisitionDataBuilder()
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder().build())

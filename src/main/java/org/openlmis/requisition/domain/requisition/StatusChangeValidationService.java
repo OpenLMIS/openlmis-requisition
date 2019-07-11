@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
@@ -39,24 +41,29 @@ public class StatusChangeValidationService {
    * Constructs new requisition validation service.
    */
   public StatusChangeValidationService(Requisition requisition, LocalDate currentDate,
-                                       boolean isDatePhysicalStockCountCompletedEnabled) {
+      boolean isDatePhysicalStockCountCompletedEnabled,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     this.requisition = requisition;
-    validators.add(new RequisitionInvariantsValidator(requisition, requisition));
+    validators.add(new RequisitionInvariantsValidator(requisition, requisition, orderables));
     validators.add(new ApprovalFieldsValidator(requisition, requisition));
     validators.add(new DatePhysicalStockCountCompletedValidator(
         requisition.getDatePhysicalStockCountCompleted(), requisition, currentDate,
         isDatePhysicalStockCountCompletedEnabled));
-    validators.add(new StockOnHandValidator(requisition, requisition.getTemplate()));
-    validators.add(new TotalConsumedQuantityValidator(requisition, requisition.getTemplate()));
-    validators.add(new StockOutDaysValidator(
-        requisition, requisition.getNumberOfMonthsInPeriod(), requisition.getTemplate()));
-    validators.add(new BeginningBalanceValidator(requisition, requisition.getTemplate()));
-    validators.add(new CalculatedFieldsValidator(requisition, requisition.getTemplate()));
-    validators.add(new NumberOfNewPatientsAddedValidator(requisition));
-    validators.add(new RequestedQuantityValidator(requisition));
-    validators.add(new StockAdjustmentsValidator(requisition));
-    validators.add(new TotalFieldValidator(requisition, requisition.getTemplate()));
-    validators.add(new TotalReceivedQuantityValidator(requisition, requisition.getTemplate()));
+    validators.add(new StockOnHandValidator(requisition, requisition.getTemplate(), orderables));
+    validators.add(new TotalConsumedQuantityValidator(requisition,
+        requisition.getTemplate(), orderables));
+    validators.add(new StockOutDaysValidator(requisition, requisition.getNumberOfMonthsInPeriod(),
+        requisition.getTemplate(), orderables));
+    validators.add(new BeginningBalanceValidator(requisition,
+        requisition.getTemplate(), orderables));
+    validators.add(new CalculatedFieldsValidator(requisition,
+        requisition.getTemplate(), orderables));
+    validators.add(new NumberOfNewPatientsAddedValidator(requisition, orderables));
+    validators.add(new RequestedQuantityValidator(requisition, orderables));
+    validators.add(new StockAdjustmentsValidator(requisition, orderables));
+    validators.add(new TotalFieldValidator(requisition, requisition.getTemplate(), orderables));
+    validators.add(new TotalReceivedQuantityValidator(requisition,
+        requisition.getTemplate(), orderables));
   }
 
   /**

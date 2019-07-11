@@ -21,7 +21,13 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class TotalReceivedQuantityValidatorTest {
@@ -29,11 +35,10 @@ public class TotalReceivedQuantityValidatorTest {
   @Test
   public void shouldPassValidation() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
-    TotalReceivedQuantityValidator validator =
-        new TotalReceivedQuantityValidator(requisition, requisition.getTemplate());
+    TotalReceivedQuantityValidator validator = getTotalReceivedQuantityValidator(requisition);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -55,7 +60,7 @@ public class TotalReceivedQuantityValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsNullDuringStatusChange() {
-    TotalReceivedQuantityValidator validator = getTotalReceivedQuantityValidator(null);
+    TotalReceivedQuantityValidator validator = getTotalReceivedQuantityValidator((Integer) null);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -70,10 +75,26 @@ public class TotalReceivedQuantityValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withTotalReceivedQuantity(totalReceivedQuantity)
-            .build())
+            .build(), false)
         .build();
 
-    return new TotalReceivedQuantityValidator(requisition, requisition.getTemplate());
+    return getTotalReceivedQuantityValidator(requisition);
+  }
+
+  private TotalReceivedQuantityValidator getTotalReceivedQuantityValidator(
+      Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new TotalReceivedQuantityValidator(requisition,
+        requisition.getTemplate(), orderables);
   }
 
 }

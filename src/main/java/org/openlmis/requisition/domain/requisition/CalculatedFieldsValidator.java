@@ -27,6 +27,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import java.util.Map;
 import java.util.Objects;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 class CalculatedFieldsValidator
@@ -36,8 +38,9 @@ class CalculatedFieldsValidator
 
 
   CalculatedFieldsValidator(Requisition requisitionToValidate,
-                            RequisitionTemplate requisitionTemplate) {
-    super(requisitionToValidate);
+      RequisitionTemplate requisitionTemplate,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
     this.requisitionTemplate = requisitionTemplate;
   }
 

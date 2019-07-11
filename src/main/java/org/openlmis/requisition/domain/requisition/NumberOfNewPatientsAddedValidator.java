@@ -18,13 +18,16 @@ package org.openlmis.requisition.domain.requisition;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 
 import java.util.Map;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 class NumberOfNewPatientsAddedValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
-  NumberOfNewPatientsAddedValidator(Requisition requisitionToValidate) {
-    super(requisitionToValidate);
+  NumberOfNewPatientsAddedValidator(Requisition requisitionToValidate,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
   }
 
   @Override

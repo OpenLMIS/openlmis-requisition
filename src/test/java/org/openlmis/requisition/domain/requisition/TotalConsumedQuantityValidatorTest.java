@@ -24,9 +24,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class TotalConsumedQuantityValidatorTest {
@@ -34,11 +39,10 @@ public class TotalConsumedQuantityValidatorTest {
   @Test
   public void shouldPassValidation() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
-    TotalConsumedQuantityValidator validator =
-        new TotalConsumedQuantityValidator(requisition, requisition.getTemplate());
+    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator(requisition);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -60,7 +64,7 @@ public class TotalConsumedQuantityValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsNullDuringStatusChange() {
-    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator(null);
+    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator((Integer) null);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -73,15 +77,14 @@ public class TotalConsumedQuantityValidatorTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(
             new RequisitionTemplateDataBuilder()
                 .withAllColumnsExceptTotalConsumedQuantity()
                 .build())
         .build();
 
-    TotalConsumedQuantityValidator validator =
-        new TotalConsumedQuantityValidator(requisition, requisition.getTemplate());
+    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator(requisition);
 
     validator.validateCanChangeStatus(new HashMap<>());
   }
@@ -89,12 +92,11 @@ public class TotalConsumedQuantityValidatorTest {
   @Test
   public void shouldNotThrowExceptionWhenColumnDoesExist() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
-    TotalConsumedQuantityValidator validator =
-        new TotalConsumedQuantityValidator(requisition, requisition.getTemplate());
+    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator(requisition);
 
     validator.validateCanChangeStatus(new HashMap<>());
   }
@@ -102,13 +104,12 @@ public class TotalConsumedQuantityValidatorTest {
   @Test
   public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(
             new RequisitionTemplateDataBuilder().withTotalConsumedQuantityColumnHidden().build())
         .build();
 
-    TotalConsumedQuantityValidator validator =
-        new TotalConsumedQuantityValidator(requisition, requisition.getTemplate());
+    TotalConsumedQuantityValidator validator = getTotalConsumedQuantityValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -123,10 +124,26 @@ public class TotalConsumedQuantityValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withTotalConsumedQuantity(totalConsumedQuantity)
-            .build())
+            .build(), false)
         .build();
 
-    return new TotalConsumedQuantityValidator(requisition, requisition.getTemplate());
+    return getTotalConsumedQuantityValidator(requisition);
+  }
+
+  private TotalConsumedQuantityValidator getTotalConsumedQuantityValidator(
+      Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new TotalConsumedQuantityValidator(requisition,
+        requisition.getTemplate(), orderables);
   }
 
 }

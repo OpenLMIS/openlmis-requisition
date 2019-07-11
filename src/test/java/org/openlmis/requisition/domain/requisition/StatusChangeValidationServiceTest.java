@@ -21,17 +21,33 @@ import static org.junit.Assert.assertFalse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class StatusChangeValidationServiceTest {
 
   private Requisition requisition = new RequisitionDataBuilder()
-      .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
+      .addLineItem(new RequisitionLineItemDataBuilder()
+          .buildForInitiatedRegularRequisition(), false)
       .buildInitiatedRegularRequisition();
+
+  private Map<VersionIdentityDto, OrderableDto> orderables = requisition
+      .getRequisitionLineItems()
+      .stream()
+      .map(line -> new OrderableDtoDataBuilder()
+          .withId(line.getOrderable().getId())
+          .withVersionId(line.getOrderable().getVersionId())
+          .withProgramOrderable(requisition.getProgramId(), true)
+          .buildAsDto())
+      .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
   private Class[] expectedClasses = {
       RequisitionInvariantsValidator.class,
       ApprovalFieldsValidator.class,
@@ -51,7 +67,7 @@ public class StatusChangeValidationServiceTest {
   @Test
   public void shouldPassValidations() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
 
     ValidationResult validationResult =
         statusChangeValidationService.validateRequisitionCanChangeStatus();
@@ -67,7 +83,8 @@ public class StatusChangeValidationServiceTest {
   @Test
   public void shouldNotCallValidatorsNotForApprovalDuringApprove() {
     requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().buildForInitiatedRegularRequisition())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .buildForInitiatedRegularRequisition(), false)
         .withStatus(RequisitionStatus.AUTHORIZED)
         .build();
     addValidatorForApprovalAndCallValidationService();
@@ -76,7 +93,7 @@ public class StatusChangeValidationServiceTest {
   @Test
   public void shouldUseAllRequiredValidators() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
 
     List<RequisitionStatusChangeDomainValidator> validators =
         (List<RequisitionStatusChangeDomainValidator>)
@@ -91,7 +108,7 @@ public class StatusChangeValidationServiceTest {
 
   private void addValidatorForApprovalAndCallValidationService() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
 
     List<RequisitionStatusChangeDomainValidator> validators =
         (List<RequisitionStatusChangeDomainValidator>)

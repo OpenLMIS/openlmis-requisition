@@ -19,6 +19,8 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 
 import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 
@@ -28,8 +30,9 @@ class TotalFieldValidator
   private final RequisitionTemplate requisitionTemplate;
 
   TotalFieldValidator(Requisition requisitionToValidate,
-                            RequisitionTemplate requisitionTemplate) {
-    super(requisitionToValidate);
+      RequisitionTemplate requisitionTemplate,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
     this.requisitionTemplate = requisitionTemplate;
   }
 

@@ -32,32 +32,61 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequestedQuantityValidatorTest {
   private static final String EXPLANATION = "test";
 
-  private RequisitionLineItem fullSupply = new RequisitionLineItemDataBuilder().build();
-  private RequisitionLineItem nonFullSupply = new RequisitionLineItemDataBuilder()
-      .withNonFullSupplyFlag()
-      .build();
+  private RequisitionLineItem fullSupply;
+  private RequisitionLineItem nonFullSupply;
 
-  private Requisition requisitionToValidate = new RequisitionDataBuilder()
-      .addLineItem(fullSupply)
-      .addLineItem(nonFullSupply)
-      .build();
+  private Requisition requisitionToValidate;
 
-  private RequisitionTemplate template = requisitionToValidate.getTemplate();
+  private RequisitionTemplate template;
 
-  private RequestedQuantityValidator validator = new RequestedQuantityValidator(
-      requisitionToValidate
-  );
+  private RequestedQuantityValidator validator;
 
-  private Map<String, Message> errors = new HashMap<>();
+  private Map<String, Message> errors;
+
+  @Before
+  public void setUp() {
+    fullSupply = new RequisitionLineItemDataBuilder().build();
+    nonFullSupply = new RequisitionLineItemDataBuilder().build();
+
+    requisitionToValidate = new RequisitionDataBuilder()
+        .addLineItem(fullSupply, false)
+        .addLineItem(nonFullSupply, true)
+        .build();
+
+    Map<VersionIdentityDto, OrderableDto> orderables = Stream
+        .of(new OrderableDtoDataBuilder()
+                .withId(fullSupply.getOrderable().getId())
+                .withVersionId(fullSupply.getOrderable().getVersionId())
+                .withProgramOrderable(requisitionToValidate.getProgramId(), true)
+                .buildAsDto(),
+            new OrderableDtoDataBuilder()
+                .withId(nonFullSupply.getOrderable().getId())
+                .withVersionId(nonFullSupply.getOrderable().getVersionId())
+                .withProgramOrderable(requisitionToValidate.getProgramId(), false)
+                .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    template = requisitionToValidate.getTemplate();
+    validator = new RequestedQuantityValidator(requisitionToValidate, orderables);
+
+    errors = new HashMap<>();
+  }
 
   @Test
   public void shouldValidate() {

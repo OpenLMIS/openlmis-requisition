@@ -24,13 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 class StockAdjustmentsValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
-  StockAdjustmentsValidator(Requisition requisitionToValidate) {
-    super(requisitionToValidate);
+  StockAdjustmentsValidator(Requisition requisitionToValidate,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
   }
 
   protected void validateFullSupplyLineItem(Map<String, Message> errors,

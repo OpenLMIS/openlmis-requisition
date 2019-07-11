@@ -21,7 +21,13 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_NON_NEGATI
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTERED;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class TotalFieldValidatorTest {
@@ -29,11 +35,10 @@ public class TotalFieldValidatorTest {
   @Test
   public void shouldPassValidation() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
-    TotalFieldValidator validator =
-        new TotalFieldValidator(requisition, requisition.getTemplate());
+    TotalFieldValidator validator = getTotalFieldValidator(requisition);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -55,7 +60,7 @@ public class TotalFieldValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsNullDuringStatusChange() {
-    TotalFieldValidator validator = getTotalFieldValidator(null);
+    TotalFieldValidator validator = getTotalFieldValidator((Integer) null);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -69,10 +74,24 @@ public class TotalFieldValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withTotal(beginningBalance)
-            .build())
+            .build(), false)
         .build();
 
-    return new TotalFieldValidator(requisition, requisition.getTemplate());
+    return getTotalFieldValidator(requisition);
+  }
+
+  private TotalFieldValidator getTotalFieldValidator(Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new TotalFieldValidator(requisition, requisition.getTemplate(), orderables);
   }
 
 }

@@ -25,7 +25,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class StockOutDaysValidatorTest {
@@ -33,11 +38,10 @@ public class StockOutDaysValidatorTest {
   @Test
   public void shouldPassValidation() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
-    StockOutDaysValidator validator = new StockOutDaysValidator(requisition, 3,
-        requisition.getTemplate());
+    StockOutDaysValidator validator =  getStockOutDaysValidator(requisition);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -96,11 +100,24 @@ public class StockOutDaysValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withTotalStockoutDays(totalStockoutDays)
-            .build())
+            .build(), false)
         .build();
 
-    return new StockOutDaysValidator(requisition, 3,
-        requisition.getTemplate());
+    return getStockOutDaysValidator(requisition);
+  }
+
+  private StockOutDaysValidator getStockOutDaysValidator(Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new StockOutDaysValidator(requisition, 3, requisition.getTemplate(), orderables);
   }
 
 }

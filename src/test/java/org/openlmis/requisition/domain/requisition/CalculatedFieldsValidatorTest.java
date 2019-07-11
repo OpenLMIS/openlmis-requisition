@@ -24,7 +24,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class CalculatedFieldsValidatorTest {
@@ -32,11 +37,10 @@ public class CalculatedFieldsValidatorTest {
   @Test
   public void shouldPassValidation() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
-    CalculatedFieldsValidator validator =
-        new CalculatedFieldsValidator(requisition, requisition.getTemplate());
+    CalculatedFieldsValidator validator = getCalculatedFieldsValidator(requisition);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -49,11 +53,10 @@ public class CalculatedFieldsValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withIncorrectMaximumStockQuantity()
-            .build())
+            .build(), false)
         .build();
 
-    CalculatedFieldsValidator validator =
-        new CalculatedFieldsValidator(requisition, requisition.getTemplate());
+    CalculatedFieldsValidator validator = getCalculatedFieldsValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -69,11 +72,10 @@ public class CalculatedFieldsValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withIncorrectCalculatedOrderQuantityIsa()
-            .build())
+            .build(), false)
         .build();
 
-    CalculatedFieldsValidator validator =
-        new CalculatedFieldsValidator(requisition, requisition.getTemplate());
+    CalculatedFieldsValidator validator = getCalculatedFieldsValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -89,11 +91,10 @@ public class CalculatedFieldsValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withIncorrectCalculatedOrderQuantityIsa()
-            .build())
+            .build(), false)
         .build();
 
-    CalculatedFieldsValidator validator =
-        new CalculatedFieldsValidator(requisition, requisition.getTemplate());
+    CalculatedFieldsValidator validator = getCalculatedFieldsValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -103,6 +104,20 @@ public class CalculatedFieldsValidatorTest {
         .containsEntry(REQUISITION_LINE_ITEMS,
             new Message(ERROR_VALUE_DOES_NOT_MATCH_CALCULATED_VALUE,
                 CALCULATED_ORDER_QUANTITY_ISA));
+  }
+
+  private CalculatedFieldsValidator getCalculatedFieldsValidator(Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new CalculatedFieldsValidator(requisition, requisition.getTemplate(), orderables);
   }
 
 }

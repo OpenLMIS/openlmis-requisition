@@ -17,6 +17,8 @@ package org.openlmis.requisition.domain.requisition;
 
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 @AllArgsConstructor
@@ -24,6 +26,7 @@ abstract class AbstractRegularRequisitionFullSupplyLineItemValidator
     implements RequisitionUpdateDomainValidator, RequisitionStatusChangeDomainValidator {
 
   protected final Requisition requisitionToValidate;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
 
   @Override
   public boolean isForRegularOnly() {
@@ -32,13 +35,13 @@ abstract class AbstractRegularRequisitionFullSupplyLineItemValidator
 
   @Override
   public void validateCanUpdate(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
+    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(i -> validateFullSupplyLineItemForUpdate(errors, i));
   }
 
   @Override
   public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
+    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(i -> validateFullSupplyLineItem(errors, i));
   }
 

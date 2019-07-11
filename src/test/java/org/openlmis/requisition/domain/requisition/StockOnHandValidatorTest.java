@@ -28,9 +28,14 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_MUST_BE_ENTE
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
 public class StockOnHandValidatorTest {
@@ -49,7 +54,7 @@ public class StockOnHandValidatorTest {
 
   @Test
   public void shouldRejectIfValueIsNullDuringStatusChange() {
-    StockOnHandValidator validator = getStockOnHandValidator(null);
+    StockOnHandValidator validator = getStockOnHandValidator((Integer) null);
 
     HashMap<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -62,14 +67,13 @@ public class StockOnHandValidatorTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenColumnDoesNotExist() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder()
             .withAllColumnsExceptStockOnHand()
             .build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     validator.validateCanChangeStatus(new HashMap<>());
   }
@@ -77,12 +81,11 @@ public class StockOnHandValidatorTest {
   @Test
   public void shouldNotThrowExceptionWhenColumnDoesExist() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     validator.validateCanChangeStatus(new HashMap<>());
   }
@@ -90,12 +93,11 @@ public class StockOnHandValidatorTest {
   @Test
   public void shouldRejectIfColumnIsHiddenAndValueNotEmpty() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder().withStockOnHandColumnHiden().build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -108,12 +110,13 @@ public class StockOnHandValidatorTest {
   @Test
   public void shouldRejectIfStockOnHandIsIncorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withIncorrectStockOnHand().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withIncorrectStockOnHand()
+            .build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -127,15 +130,16 @@ public class StockOnHandValidatorTest {
   @Test
   public void shouldNotRejectIfStockOnHandIsIncorrectlyCalculatedAndPopulatedFromStockCards() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withIncorrectStockOnHand().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withIncorrectStockOnHand()
+            .build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder()
             .withAllColumns()
             .withPopulateStockOnHandFromStockCards()
             .build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -146,12 +150,11 @@ public class StockOnHandValidatorTest {
   @Test
   public void shouldNotRejectIfStockOnHandIsCorrectlyCalculated() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder().withAllColumns().build())
         .build();
 
-    StockOnHandValidator validator =
-        new StockOnHandValidator(requisition, requisition.getTemplate());
+    StockOnHandValidator validator = getStockOnHandValidator(requisition);
 
     Map<String, Message> errors = new HashMap<>();
     validator.validateCanChangeStatus(errors);
@@ -163,15 +166,14 @@ public class StockOnHandValidatorTest {
   public void shouldRejectIfColumnIsCalculatedAndValueNotEmpty() {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .build())
+            .build(), false)
         .withTemplate(new RequisitionTemplateDataBuilder()
             .withStockOnHandColumnCalculated()
             .build())
         .build();
 
     Map<String, Message> errors = new HashMap<>();
-    new StockOnHandValidator(requisition, requisition.getTemplate())
-        .validateCanUpdate(errors);
+    getStockOnHandValidator(requisition).validateCanUpdate(errors);
 
     assertThat(errors).hasSize(1);
     assertThat(errors)
@@ -180,10 +182,26 @@ public class StockOnHandValidatorTest {
 
   private StockOnHandValidator getStockOnHandValidator(Integer stockOnHand) {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withStockOnHand(stockOnHand).build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withStockOnHand(stockOnHand)
+            .build(), false)
         .build();
 
-    return new StockOnHandValidator(requisition, requisition.getTemplate());
+    return getStockOnHandValidator(requisition);
+  }
+
+  private StockOnHandValidator getStockOnHandValidator(Requisition requisition) {
+    Map<VersionIdentityDto, OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return new StockOnHandValidator(requisition, requisition.getTemplate(), orderables);
   }
 
 }

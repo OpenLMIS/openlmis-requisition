@@ -32,7 +32,7 @@ public class ApprovalFieldsValidatorTest {
   @Test
   public void shouldPassValidations() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().build())
+        .addLineItem(new RequisitionLineItemDataBuilder().build(), false)
         .build();
 
     ApprovalFieldsValidator validator = new ApprovalFieldsValidator(requisition, requisition);
@@ -98,7 +98,7 @@ public class ApprovalFieldsValidatorTest {
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withApprovedQuantity(null)
             .withSkippedFlag()
-            .build())
+            .build(), false)
         .withStatus(RequisitionStatus.IN_APPROVAL)
         .build();
 
@@ -114,7 +114,9 @@ public class ApprovalFieldsValidatorTest {
   @Test
   public void shouldRejectIfNotDuringApprovalAndApprovedQuantityNotNull() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withApprovedQuantity().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withApprovedQuantity()
+            .build(), false)
         .withStatus(RequisitionStatus.INITIATED)
         .build();
 
@@ -131,7 +133,9 @@ public class ApprovalFieldsValidatorTest {
   @Test
   public void shouldNotRejectIfDuringApprovalAndApprovedQuantityNotNull() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withApprovedQuantity().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withApprovedQuantity()
+            .build(), false)
         .withStatus(RequisitionStatus.IN_APPROVAL)
         .build();
 
@@ -146,7 +150,9 @@ public class ApprovalFieldsValidatorTest {
   @Test
   public void shouldRejectIfNotDuringApprovalAndRemarksNotNull() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withRemarks().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withRemarks()
+            .build(), false)
         .withStatus(RequisitionStatus.INITIATED)
         .build();
 
@@ -163,7 +169,9 @@ public class ApprovalFieldsValidatorTest {
   @Test
   public void shouldNotRejectIfDuringApprovalAndRemarksNotNull() {
     Requisition requisition = new RequisitionDataBuilder()
-        .addLineItem(new RequisitionLineItemDataBuilder().withRemarks().build())
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withRemarks()
+            .build(), false)
         .withStatus(RequisitionStatus.IN_APPROVAL)
         .build();
 
@@ -180,7 +188,7 @@ public class ApprovalFieldsValidatorTest {
     Requisition requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
             .withApprovedQuantity(approvedQuantity)
-            .build())
+            .build(), false)
         .withStatus(status)
         .build();
 

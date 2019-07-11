@@ -21,6 +21,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_STOCKOUT_DAYS_CANT
 
 import java.util.Map;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 class StockOutDaysValidator extends AbstractRegularRequisitionFullSupplyLineItemValidator {
@@ -30,10 +32,9 @@ class StockOutDaysValidator extends AbstractRegularRequisitionFullSupplyLineItem
   private final Integer numberOfMonthsInPeriod;
   private final RequisitionTemplate requisitionTemplate;
 
-  StockOutDaysValidator(Requisition requisitionToValidate,
-                        Integer numberOfMonthsInPeriod,
-                        RequisitionTemplate requisitionTemplate) {
-    super(requisitionToValidate);
+  StockOutDaysValidator(Requisition requisitionToValidate, Integer numberOfMonthsInPeriod,
+      RequisitionTemplate requisitionTemplate, Map<VersionIdentityDto, OrderableDto> orderables) {
+    super(requisitionToValidate, orderables);
     this.numberOfMonthsInPeriod = numberOfMonthsInPeriod;
     this.requisitionTemplate = requisitionTemplate;
   }

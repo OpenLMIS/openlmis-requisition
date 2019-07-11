@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain.requisition;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
 import static org.openlmis.requisition.domain.requisition.Requisition.NUMBER_OF_MONTHS_IN_PERIOD;
@@ -44,8 +45,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RequisitionHelper;
 
 @AllArgsConstructor
 class RequisitionInvariantsValidator
@@ -55,6 +57,7 @@ class RequisitionInvariantsValidator
 
   private Requisition requisitionUpdater;
   private Requisition requisitionToUpdate;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
 
   @Override
   public boolean isForRegularOnly() {
@@ -81,7 +84,7 @@ class RequisitionInvariantsValidator
     rejectIfValueChanged(errors, requisitionUpdater.getNumberOfMonthsInPeriod(),
         requisitionToUpdate.getNumberOfMonthsInPeriod(), NUMBER_OF_MONTHS_IN_PERIOD);
 
-    if (isNotTrue(requisitionToUpdate.getEmergency())) {
+    if (errors.isEmpty() && isNotTrue(requisitionToUpdate.getEmergency())) {
       validateRegularLineItemSize(errors);
     }
 
@@ -90,7 +93,7 @@ class RequisitionInvariantsValidator
     }
 
     validateExtraData(errors);
-    validateIfOrderableIdChanged(errors);
+    validateIfOrderableChanged(errors);
   }
 
   @Override
@@ -101,7 +104,7 @@ class RequisitionInvariantsValidator
     }
   }
 
-  private void validateIfOrderableIdChanged(Map<String, Message> errors) {
+  private void validateIfOrderableChanged(Map<String, Message> errors) {
     Map<UUID, RequisitionLineItem> existingLineItems = requisitionToUpdate
         .getRequisitionLineItems()
         .stream()
@@ -120,8 +123,8 @@ class RequisitionInvariantsValidator
       RequisitionLineItem current = currentLineItems.get(entry.getKey());
 
       if (null != current) {
-        rejectIfValueChanged(errors, current.getOrderableId(),
-            existing.getOrderableId(), REQUISITION_LINE_ITEMS);
+        rejectIfValueChanged(errors, current.getOrderable(), existing.getOrderable(),
+            REQUISITION_LINE_ITEMS);
       }
     }
   }
@@ -130,14 +133,21 @@ class RequisitionInvariantsValidator
     List<UUID> currentIds = requisitionUpdater
         .getRequisitionLineItems()
         .stream()
-        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> orderables.containsKey(new VersionIdentityDto(line.getOrderable())))
+        .filter(line -> isTrue(orderables
+            .get(new VersionIdentityDto(line.getOrderable()))
+            .getProgramOrderable(requisitionUpdater.getProgramId())
+            .getFullSupply()))
         .map(BaseEntity::getId)
         .collect(toList());
 
     List<UUID> existingIds = requisitionToUpdate
         .getRequisitionLineItems()
         .stream()
-        .filter(line -> !line.isNonFullSupply())
+        .filter(line -> isTrue(orderables
+            .get(new VersionIdentityDto(line.getOrderable()))
+            .getProgramOrderable(requisitionToUpdate.getProgramId())
+            .getFullSupply()))
         .map(BaseEntity::getId)
         .collect(toList());
 
@@ -160,14 +170,14 @@ class RequisitionInvariantsValidator
   }
 
   private void validateRegularLineItemStockField(Map<String, Message> errors, String columnName) {
-    Map<UUID, Object> columnValues = RequisitionHelper
-        .getAllColumnsValuesByColumnName(requisitionToUpdate, columnName);
+    Map<VersionEntityReference, Object> columnValues = requisitionToUpdate
+        .getAllColumnsValuesByColumnName(columnName);
 
     requisitionUpdater
-        .getFullSupplyRequisitionLineItems()
+        .getFullSupplyRequisitionLineItems(orderables)
         .forEach(line -> {
 
-          Object currentValue = columnValues.get(line.getOrderableId());
+          Object currentValue = columnValues.get(line.getOrderable());
           Object newValue = getColumnValue(line, columnName);
 
           if (isColumnValueChanged(columnName, currentValue, newValue)) {

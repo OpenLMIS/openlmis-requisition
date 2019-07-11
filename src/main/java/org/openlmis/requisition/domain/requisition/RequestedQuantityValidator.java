@@ -25,17 +25,20 @@ import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.BooleanUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
 
 @AllArgsConstructor
 class RequestedQuantityValidator implements RequisitionStatusChangeDomainValidator {
   private final Requisition requisitionToValidate;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
 
   @Override
   public void validateCanChangeStatus(Map<String, Message> errors) {
-    requisitionToValidate.getNonSkippedNonFullSupplyRequisitionLineItems()
+    requisitionToValidate.getNonSkippedNonFullSupplyRequisitionLineItems(orderables)
         .forEach(i -> validateNonFullSupplyLineItem(errors, i));
-    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems()
+    requisitionToValidate.getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(i -> validateFullSupplyLineItem(errors, i));
   }
 

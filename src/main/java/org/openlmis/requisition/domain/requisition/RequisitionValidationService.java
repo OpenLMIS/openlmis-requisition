@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
@@ -44,19 +46,22 @@ public class RequisitionValidationService {
    * Constructs new requisition validation service.
    */
   public RequisitionValidationService(Requisition requisition, Requisition savedRequisition,
+                                      Map<VersionIdentityDto, OrderableDto> orderables,
                                       LocalDate currentDate,
                                       boolean isDatePhysicalStockCountCompletedEnabled) {
     this.savedRequisition = savedRequisition;
-    validators.add(new RequisitionInvariantsValidator(requisition, savedRequisition));
+    validators.add(new RequisitionInvariantsValidator(requisition, savedRequisition, orderables));
     validators.add(new ApprovalFieldsValidator(requisition, savedRequisition));
     validators.add(new StockAdjustmentReasonsValidator(requisition, savedRequisition));
     validators.add(new DatePhysicalStockCountCompletedValidator(
         requisition.getDatePhysicalStockCountCompleted(), savedRequisition, currentDate,
         isDatePhysicalStockCountCompletedEnabled));
-    validators.add(new StockOnHandValidator(requisition, savedRequisition.getTemplate()));
-    validators.add(new TotalConsumedQuantityValidator(requisition, savedRequisition.getTemplate()));
-    validators.add(new StockOutDaysValidator(
-        requisition, savedRequisition.getNumberOfMonthsInPeriod(), savedRequisition.getTemplate()));
+    validators.add(new StockOnHandValidator(requisition,
+        savedRequisition.getTemplate(), orderables));
+    validators.add(new TotalConsumedQuantityValidator(requisition,
+        savedRequisition.getTemplate(), orderables));
+    validators.add(new StockOutDaysValidator(requisition,
+        savedRequisition.getNumberOfMonthsInPeriod(), savedRequisition.getTemplate(), orderables));
   }
 
   /**
