@@ -18,8 +18,12 @@ package org.openlmis.requisition.service.referencedata;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -59,5 +63,24 @@ public class OrderableReferenceDataService
       return Collections.emptyList();
     }
     return getPage(RequestParameters.init().set("id", ids)).getContent();
+  }
+
+  /**
+   * Finds orderables by their identities.
+   */
+  public List<OrderableDto> findByIdentities(Set<VersionEntityReference> references) {
+    if (CollectionUtils.isEmpty(references)) {
+      return Collections.emptyList();
+    }
+
+    List<VersionIdentityDto> identities = references
+        .stream()
+        .map(ref -> new VersionIdentityDto(ref.getId(), ref.getVersionId()))
+        .collect(Collectors.toList());
+
+    OrderableSearchParams payload = new OrderableSearchParams(
+        null, null, null, identities, 0, identities.size());
+
+    return getPage("/search", RequestParameters.init(), payload).getContent();
   }
 }

@@ -20,12 +20,15 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceTest<OrderableDto> {
@@ -51,24 +54,26 @@ public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceT
   }
 
   @Test
-  public void shouldReturnOrderablesById() {
+  public void shouldReturnOrderablesByIdentity() {
     // given
-    UUID orderableId = UUID.randomUUID();
+    VersionEntityReference reference = new VersionEntityReference(UUID.randomUUID(), 1L);
+
+    OrderableSearchParams searchParams = new OrderableSearchParams(null, null, null,
+        Lists.newArrayList(new VersionIdentityDto(reference)), 0, 1);
 
     // when
     OrderableDto product = mockPageResponseEntityAndGetDto();
-    List<OrderableDto> response = service.findByIds(Collections.singleton(orderableId));
+    List<OrderableDto> response = service.findByIdentities(Collections.singleton(reference));
 
     // then
     assertThat(response, hasSize(1));
     assertThat(response, hasItem(product));
 
     verifyPageRequest()
-        .isGetRequest()
+        .isPostRequest()
         .hasAuthHeader()
-        .hasEmptyBody()
         .isUriStartsWith(service.getServiceUrl() + service.getUrl())
-        .hasQueryParameter("id", orderableId);
+        .hasBody(searchParams);
   }
 
   @Test
@@ -77,7 +82,7 @@ public class OrderableReferenceDataServiceTest extends BaseReferenceDataServiceT
     disableAuthCheck();
 
     // when
-    List<OrderableDto> response = service.findByIds(Collections.emptyList());
+    List<OrderableDto> response = service.findByIdentities(Collections.emptySet());
 
     // then
     assertTrue(response.isEmpty());

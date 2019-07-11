@@ -34,6 +34,7 @@ public class BasicOrderableDto {
   private long netContent;
   private long packRoundingThreshold;
   private boolean roundToZero;
+  private MetadataDto meta = new MetadataDto();
 
   /**
    * Returns the number of packs to order. For this Orderable given a desired number of
@@ -59,5 +60,13 @@ public class BasicOrderableDto {
     }
 
     return packsToOrder;
+  }
+
+  public Long getVersionId() {
+    return Long.valueOf(meta.getVersionId());
+  }
+
+  public VersionIdentityDto getIdentity() {
+    return new VersionIdentityDto(getId(), getVersionId());
   }
 }
