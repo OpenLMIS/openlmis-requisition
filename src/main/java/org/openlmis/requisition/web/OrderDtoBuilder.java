@@ -18,18 +18,25 @@ package org.openlmis.requisition.web;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.StatusChangeDto;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.service.referencedata.BaseReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -85,14 +92,26 @@ public class OrderDtoBuilder {
     order.setProgram(getIfPresent(programs, requisition.getProgramId()));
     order.setStatusMessages(getStatusMessages(requisition));
 
+    Set<VersionEntityReference> orderableIdentities = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(RequisitionLineItem::getOrderable)
+        .collect(Collectors.toSet());
+
+    Map<VersionIdentityDto, OrderableDto> orderables = products
+        .findByIdentities(orderableIdentities)
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
     order.setOrderLineItems(
         requisition
             .getRequisitionLineItems()
             .stream()
             .filter(line -> !line.isLineSkipped())
-            .map(line -> OrderLineItemDto.newOrderLineItem(
-                line, getIfPresent(products, line.getOrderableId())
-            ))
+            .map(line ->
+                OrderLineItemDto.newOrderLineItem(
+                    line, orderables.get(new VersionIdentityDto(line.getOrderable())))
+            )
             .collect(Collectors.toList())
     );
 

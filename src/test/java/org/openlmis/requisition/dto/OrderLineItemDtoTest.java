@@ -20,15 +20,23 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 
 public class OrderLineItemDtoTest {
 
   @Test
   public void shouldCreateOrderLineItemBasedOnRequisitionLineItem() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder().build();
-    OrderableDto product = new OrderableDto();
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withRequisition(new RequisitionDataBuilder()
+            .build())
+        .build();
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(requisitionLineItem.getOrderable().getId())
+        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .buildAsDto();
 
     OrderLineItemDto orderLineItem = OrderLineItemDto.newOrderLineItem(
         requisitionLineItem, product
@@ -38,7 +46,7 @@ public class OrderLineItemDtoTest {
     assertThat(orderLineItem.getOrderable(), is(product));
     assertThat(
         orderLineItem.getOrderedQuantity(),
-        is(requisitionLineItem.getPacksToShip())
+        is(product.packsToOrder(requisitionLineItem.getOrderQuantity()))
     );
   }
 
