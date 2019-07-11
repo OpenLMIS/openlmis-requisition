@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -62,10 +63,12 @@ public class BasicOrderableDto {
     return packsToOrder;
   }
 
+  @JsonIgnore
   public Long getVersionId() {
     return Long.valueOf(meta.getVersionId());
   }
 
+  @JsonIgnore
   public VersionIdentityDto getIdentity() {
     return new VersionIdentityDto(getId(), getVersionId());
   }
