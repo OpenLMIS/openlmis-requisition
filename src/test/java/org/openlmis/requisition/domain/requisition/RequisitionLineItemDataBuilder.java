@@ -20,14 +20,12 @@ import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.api.DataBuilder;
@@ -38,8 +36,8 @@ import org.openlmis.requisition.testutils.api.RepositoryDataBuilder;
 public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLineItem>,
     RepositoryDataBuilder<RequisitionLineItem>, DtoDataBuilder<RequisitionLineItemDto> {
   private UUID id = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
-  private Requisition requisition = new Requisition();
+  private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
+  private Requisition requisition = new RequisitionDataBuilder().build();
   private Integer beginningBalance = 100;
   private Integer totalReceivedQuantity = 50;
   private Integer totalLossesAndAdjustments = 0;
@@ -51,10 +49,7 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   private String remarks;
   private Integer approvedQuantity;
   private Integer totalStockoutDays = 0;
-  private Long packsToShip = 5L;
   private Boolean skipped = false;
-  private Money pricePerPack = asMoney(12);
-  private Money totalCost = asMoney(60);
   private Integer numberOfNewPatientsAdded = 0;
   private Integer adjustedConsumption = 100;
   private List<Integer> previousAdjustedConsumptions = Lists.emptyList();
@@ -65,7 +60,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   private Integer calculatedOrderQuantity = 250;
   private List<StockAdjustment> stockAdjustments = new ArrayList<>();
   private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
-  private boolean nonFullSupply = false;
   private Integer idealStockAmount = 100;
   //this needs to be always idealStockAmount - stockOnHand
   private Integer calculatedOrderQuantityIsa = 50;
@@ -103,8 +97,14 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   @Override
   public RequisitionLineItemDto buildAsDto() {
     RequisitionLineItem requisitionLineItem = build();
+
+    OrderableDto orderableDto = new OrderableDtoDataBuilder()
+        .withId(requisitionLineItem.getOrderable().getId())
+        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true, Money.of(CurrencyUnit.USD, 0), 1)
+        .buildAsDto();
+
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
-    OrderableDto orderableDto = new OrderableDtoDataBuilder().buildAsDto();
     requisitionLineItem.export(requisitionLineItemDto, orderableDto);
     return requisitionLineItemDto;
   }
@@ -114,12 +114,12 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
    */
   public RequisitionLineItem buildForInitiatedRegularRequisition() {
     RequisitionLineItem lineItem = new RequisitionLineItem(
-        orderableId, requisition, beginningBalance, totalReceivedQuantity,
+        orderable, requisition, beginningBalance, totalReceivedQuantity,
         totalLossesAndAdjustments, stockOnHand, requestedQuantity, totalConsumedQuantity, total,
-        requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays, packsToShip,
-        skipped, pricePerPack, totalCost, numberOfNewPatientsAdded, additionalQuantityRequired,
+        requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays,
+        skipped, numberOfNewPatientsAdded, additionalQuantityRequired,
         adjustedConsumption, previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
-        calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock, nonFullSupply,
+        calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock,
         idealStockAmount, calculatedOrderQuantityIsa
     );
     lineItem.setId(id);
@@ -129,11 +129,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
 
   public RequisitionLineItemDataBuilder withId(UUID id) {
     this.id = id;
-    return this;
-  }
-
-  public RequisitionLineItemDataBuilder withNonFullSupplyFlag() {
-    this.nonFullSupply = true;
     return this;
   }
 
@@ -218,16 +213,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
-  public RequisitionLineItemDataBuilder withPricePerPack(Money pricePerPack) {
-    this.pricePerPack = pricePerPack;
-    return this;
-  }
-
-  public RequisitionLineItemDataBuilder withPacksToShip(Long packsToShip) {
-    this.packsToShip = packsToShip;
-    return this;
-  }
-
   public RequisitionLineItemDataBuilder withMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock) {
     this.maxPeriodsOfStock = maxPeriodsOfStock;
     return this;
@@ -252,18 +237,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
    */
   public RequisitionLineItemDataBuilder withApprovedProduct(ApprovedProductDto approvedProduct) {
     this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
-
     OrderableDto orderable = approvedProduct.getOrderable();
-    ProgramOrderableDto programOrderable = orderable
-        .findProgramOrderableDto(requisition.getProgramId());
-
-    this.orderableId = orderable.getId();
-
-    if (null != programOrderable) {
-      this.pricePerPack = Optional
-          .ofNullable(programOrderable.getPricePerPack())
-          .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), BigDecimal.ZERO));
-    }
+    this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionId());
 
     return this;
   }
@@ -290,11 +265,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
-  public RequisitionLineItemDataBuilder withTotalCost(Money totalCost) {
-    this.totalCost = totalCost;
-    return this;
-  }
-
   public RequisitionLineItemDataBuilder withNumberOfNewPatientsAdded(
       Integer numberOfNewPatientsAdded) {
     this.numberOfNewPatientsAdded = numberOfNewPatientsAdded;
@@ -307,8 +277,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
-  public RequisitionLineItemDataBuilder withOrderableId(UUID orderableId) {
-    this.orderableId = orderableId;
+  public RequisitionLineItemDataBuilder withOrderable(UUID orderableId, Long versionId) {
+    this.orderable = new VersionEntityReference(orderableId, versionId);
     return this;
   }
 
@@ -352,16 +322,12 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     total = null;
     approvedQuantity = null;
     totalStockoutDays = null;
-    packsToShip = null;
-    pricePerPack = null;
-    totalCost = null;
     numberOfNewPatientsAdded = null;
     adjustedConsumption = null;
     averageConsumption = null;
     maximumStockQuantity = null;
     calculatedOrderQuantity = null;
     maxPeriodsOfStock = null;
-    nonFullSupply = false;
     idealStockAmount = null;
     calculatedOrderQuantityIsa = null;
     additionalQuantityRequired = null;

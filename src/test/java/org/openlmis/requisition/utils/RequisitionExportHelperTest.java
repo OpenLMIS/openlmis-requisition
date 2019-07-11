@@ -16,9 +16,12 @@
 package org.openlmis.requisition.utils;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -30,8 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -53,6 +55,7 @@ import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 
 
@@ -60,7 +63,6 @@ import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionExportHelperTest {
 
-  private static final Money PRICE_PER_PACK = Money.of(CurrencyUnit.USD, 9);
   private static final long PACK_SIZE = 2;
 
   private Requisition requisition;
@@ -85,7 +87,7 @@ public class RequisitionExportHelperTest {
   private RequisitionExportHelper requisitionExportHelper;
 
   @Captor
-  private ArgumentCaptor<Set<UUID>> argumentCaptor;
+  private ArgumentCaptor<Set<VersionEntityReference>> argumentCaptor;
 
   private UUID program = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
@@ -104,7 +106,7 @@ public class RequisitionExportHelperTest {
     RequisitionLineItem requisitionLineItem =
         generateRequisitionLineItemToExport(orderableDto.getId());
 
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
+    when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
         .thenReturn(Collections.singletonList(orderableDto));
 
     List<RequisitionLineItemDto> items =
@@ -112,7 +114,7 @@ public class RequisitionExportHelperTest {
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), requisitionLineItem.getId());
-    assertEquals(item.getOrderable().getId(), requisitionLineItem.getOrderableId());
+    assertEquals(item.getOrderable().getId(), requisitionLineItem.getOrderable().getId());
     assertEquals(item.getBeginningBalance(), requisitionLineItem.getBeginningBalance());
     assertEquals(item.getTotalReceivedQuantity(), requisitionLineItem.getTotalReceivedQuantity());
     assertEquals(item.getTotalLossesAndAdjustments(),
@@ -126,18 +128,18 @@ public class RequisitionExportHelperTest {
     assertEquals(item.getApprovedQuantity(), requisitionLineItem.getApprovedQuantity());
     assertEquals(item.getTotalStockoutDays(), requisitionLineItem.getTotalStockoutDays());
     assertEquals(item.getTotal(), requisitionLineItem.getTotal());
-    assertEquals(PRICE_PER_PACK, item.getPricePerPack());
     assertEquals(item.getNumberOfNewPatientsAdded(),
         requisitionLineItem.getNumberOfNewPatientsAdded());
 
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
-    assertTrue(searchedIds.size() == 1);
+    Set<VersionEntityReference> searchedIdentities = argumentCaptor.getValue();
+    assertThat(searchedIdentities, hasSize(1));
+    assertThat(searchedIdentities,
+        hasItem(new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId())));
   }
 
   @Test
   public void exportShouldNotSetOrderableIfNoneReturned() {
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
+    when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
         .thenReturn(Collections.emptyList());
 
     RequisitionLineItem requisitionLineItem =
@@ -147,11 +149,12 @@ public class RequisitionExportHelperTest {
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
 
-    assertEquals(item.getOrderable(), null);
+    assertNull(item.getOrderable());
 
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
-    assertTrue(searchedIds.size() == 1);
+    Set<VersionEntityReference> searchedIdentities = argumentCaptor.getValue();
+    assertThat(searchedIdentities, hasSize(1));
+    assertThat(searchedIdentities,
+        hasItem(new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId())));
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
@@ -162,9 +165,9 @@ public class RequisitionExportHelperTest {
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);
 
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+    return new RequisitionLineItemDataBuilder()
         .withRequisition(requisition)
-        .withOrderableId(orderableDtoUuid)
+        .withOrderable(orderableDtoUuid, 1L)
         .withId(UUID.randomUUID())
         .withBeginningBalance(3)
         .withTotalReceivedQuantity(4)
@@ -175,11 +178,8 @@ public class RequisitionExportHelperTest {
         .withTotal(7)
         .withApprovedQuantity(5)
         .withTotalStockoutDays(6)
-        .withPricePerPack(PRICE_PER_PACK)
         .withNumberOfNewPatientsAdded(8)
         .build();
-
-    return requisitionLineItem;
   }
 
   private void generateInstances() {
@@ -191,35 +191,33 @@ public class RequisitionExportHelperTest {
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         singletonList(requisitionLineItem)));
-    orderableDto = new OrderableDto();
-    orderableDto.setId(UUID.randomUUID());
-    orderableDto.setNetContent(PACK_SIZE);
+    orderableDto = new OrderableDtoDataBuilder()
+        .withVersionId(1L)
+        .withNetContent(PACK_SIZE)
+        .buildAsDto();
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
                                             UUID program, RequisitionStatus requisitionStatus) {
-    Requisition requisition = new RequisitionDataBuilder()
+    return new RequisitionDataBuilder()
         .withFacilityId(facility)
         .withProgramId(program)
         .withProcessingPeriodId(period)
         .withStatus(requisitionStatus)
         .withEmergency(false)
         .build();
-    return requisition;
   }
 
   private RequisitionLineItem createTestRequisitionLineItem(Integer quantityRequested,
                                                             Integer stockOnHand,
                                                             Requisition requisition) {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+    return new RequisitionLineItemDataBuilder()
         .withId(UUID.randomUUID())
         .withRequestedQuantity(quantityRequested)
         .withStockOnHand(stockOnHand)
         .withRequisition(requisition)
-        .withOrderableId(productId)
-        .withPricePerPack(PRICE_PER_PACK)
+        .withOrderable(productId, 1L)
         .build();
-    return requisitionLineItem;
   }
 
   private void mockRepositories() {

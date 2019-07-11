@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NULL_ID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
 
@@ -62,28 +61,25 @@ public final class RequisitionBuilder {
    */
   public static Requisition newRequisition(
       Requisition.Importer importer, RequisitionTemplate template, UUID programId,
-      RequisitionStatus requisitionStatus, Map<UUID, OrderableDto> orderables) {
+      RequisitionStatus requisitionStatus, Map<VersionIdentityDto, OrderableDto> orderables) {
     Requisition requisition = new Requisition();
+    requisition.setProgramId(programId);
     requisition.setRequisitionLineItems(new ArrayList<>());
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
-        OrderableDto orderable = orderables.get(item.getOrderableId());
+        OrderableDto orderable = orderables.get(new VersionIdentityDto(item.getOrderable()));
 
         if (null == orderable) {
           throw new ValidationMessageException(
-              new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, item.getOrderableId()));
+              new Message(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST, item.getOrderable().getId()));
         }
 
-        ProgramOrderableDto programOrderable = orderable.findProgramOrderableDto(programId);
+        orderable
+            .findProgramOrderable(programId)
+            .orElseThrow(() -> new ValidationMessageException(ERROR_PROGRAM_NOT_FOUND, programId));
 
-        if (programOrderable != null) {
-          item.setNonFullSupply(isFalse(programOrderable.getFullSupply()));
-          item.setPricePerPack(programOrderable.getPricePerPack());
-        } else {
-          throw new ValidationMessageException(ERROR_PROGRAM_NOT_FOUND, programId);
-        }
         if (isSkipped(requisitionLineItem) && requisitionStatus.isPreAuthorize()) {
           item.skipLineItem(template);
         }

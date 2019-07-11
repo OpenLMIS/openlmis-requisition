@@ -47,6 +47,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -56,6 +57,7 @@ import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -115,6 +117,7 @@ public class RequisitionDtoBuilderTest {
     requisition = buildRequisition();
     orderableDto = new OrderableDtoDataBuilder()
         .withId(orderableId)
+        .withVersionId(1L)
         .withProgramOrderable(program.getId(), false)
         .buildAsDto();
   }
@@ -126,10 +129,10 @@ public class RequisitionDtoBuilderTest {
     when(periodService.getPeriod(processingPeriod.getId())).thenReturn(processingPeriod);
     when(requisitionExportHelper.exportToDtos(
         Collections.singletonList(requisitionLineItem),
-        ImmutableMap.of(orderableId, orderableDto), false))
+        ImmutableMap.of(orderableDto.getIdentity(), orderableDto), false))
         .thenReturn(lineItemDtos);
     when(orderableReferenceDataService
-        .findByIds(requisition.getAllOrderableIds()))
+        .findByIdentities(requisition.getAllOrderables()))
         .thenReturn(Collections.singletonList(orderableDto));
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
@@ -173,7 +176,7 @@ public class RequisitionDtoBuilderTest {
         .buildAsDto();
 
     when(orderableReferenceDataService
-        .findByIds(anySetOf(UUID.class)))
+        .findByIdentities(anySetOf(VersionEntityReference.class)))
         .thenReturn(Lists.newArrayList(fs1, fs2, nfs1, nfs2, differentProgram));
 
     RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
@@ -191,7 +194,7 @@ public class RequisitionDtoBuilderTest {
 
   @Test
   public void shouldBuildBatchDtoFromRequisition() {
-    Map<UUID, OrderableDto> orderables = Collections.singletonMap(UUID.randomUUID(), orderableDto);
+    Map<VersionIdentityDto, OrderableDto> orderables = Collections.singletonMap(null, orderableDto);
     when(requisitionExportHelper
         .exportToDtos(Collections.singletonList(requisitionLineItem), orderables, true))
         .thenReturn(lineItemDtos);
@@ -247,7 +250,7 @@ public class RequisitionDtoBuilderTest {
     requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
     requisition.setDatePhysicalStockCountCompleted(
         new DatePhysicalStockCountCompleted(LocalDate.now()));
-    requisition.setAvailableProducts(Collections.singleton(orderableId));
+    requisition.setAvailableProducts(Collections.singleton(null));
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
     requisition.setStockAdjustmentReasons(Collections.singletonList(reason));

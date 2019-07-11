@@ -56,6 +56,7 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -68,6 +69,7 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -240,7 +242,7 @@ public class RequisitionService {
       stockCardRangeSummaryDtos =
           stockCardRangeSummaryStockManagementService
               .search(program.getId(), facility.getId(),
-                  approvedProducts.getOrderableIds(), null,
+                  approvedProducts.getOrderableIdentities(), null,
                   period.getStartDate(), period.getEndDate());
 
       profiler.start("GET_PREVIOUS_PERIODS");
@@ -252,7 +254,7 @@ public class RequisitionService {
         stockCardRangeSummariesToAverage =
             stockCardRangeSummaryStockManagementService
                 .search(program.getId(), facility.getId(),
-                    approvedProducts.getOrderableIds(), null,
+                    approvedProducts.getOrderableIdentities(), null,
                     previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
                     period.getEndDate());
       } else {
@@ -278,11 +280,15 @@ public class RequisitionService {
         stockCardRangeSummariesToAverage, previousPeriods);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
-    if (emergency) {
-      requisition.setAvailableProducts(approvedProducts.getOrderableIds());
-    } else {
-      requisition.setAvailableProducts(approvedProducts.getNonFullSupplyOrderableIds());
-    }
+    Set<VersionIdentityDto> availableProductIdentities = emergency
+        ? approvedProducts.getOrderableIdentities()
+        : approvedProducts.getNonFullSupplyOrderableIdentities();
+
+    requisition.setAvailableProducts(
+        availableProductIdentities
+            .stream()
+            .map(id -> new VersionEntityReference(id.getId(), id.getVersionId()))
+            .collect(toSet()));
 
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
@@ -317,7 +323,8 @@ public class RequisitionService {
    *
    * @param requisition Requisition to be rejected.
    */
-  public Requisition reject(Requisition requisition, Map<UUID, OrderableDto> orderables) {
+  public Requisition reject(Requisition requisition,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
@@ -714,7 +721,8 @@ public class RequisitionService {
    * @param supplyLines supplyLineDtos of the supervisoryNode that has a supply line for the
    *                    requisition's program.
    */
-  public void doApprove(UUID parentNodeId, UserDto currentUser, Map<UUID, OrderableDto> orderables,
+  public void doApprove(UUID parentNodeId, UserDto currentUser,
+      Map<VersionIdentityDto, OrderableDto> orderables,
       Requisition requisition, List<SupplyLineDto> supplyLines) {
     requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
 

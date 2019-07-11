@@ -54,8 +54,6 @@ import javax.persistence.PersistenceException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -70,23 +68,15 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
-import org.openlmis.requisition.domain.requisition.StockData;
-import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
-import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.DefaultRequisitionSearchParamsDataBuilder;
-import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
-import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -101,9 +91,6 @@ public class RequisitionRepositoryIntegrationTest
   
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
-
-  @Value("${currencyCode}")
-  private String currencyCode;
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
@@ -491,44 +478,6 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldPersistWithMoney() {
-    UUID programId = UUID.randomUUID();
-    Money pricePerPack = Money.of(CurrencyUnit.of(currencyCode), 14.57);
-
-    ProgramDto program = new ProgramDtoDataBuilder()
-        .withId(programId)
-        .buildAsDto();
-
-    ProgramOrderableDto programOrderable = new ProgramOrderableDtoDataBuilder()
-        .withPricePerPack(pricePerPack)
-        .withProgramId(program.getId())
-        .buildAsDto();
-
-    OrderableDto orderable = new OrderableDtoDataBuilder()
-        .withId(UUID.randomUUID())
-        .withPrograms(Sets.newHashSet(programOrderable))
-        .buildAsDto();
-
-    ApprovedProductDto ftap = new ApprovedProductDtoDataBuilder()
-        .withOrderable(orderable)
-        .withProgram(program)
-        .withMaxPeriodsOfStock(7.25)
-        .buildAsDto();
-
-    Requisition requisition = new RequisitionDataBuilder()
-        .withProgramId(programId)
-        .buildAsNew();
-    requisition.initiate(setUpTemplateWithBeginningBalance(), singleton(ftap),
-        Collections.emptyList(), 0, null, emptyMap(), UUID.randomUUID(), new StockData(),
-        null, null, null);
-
-    requisition = repository.save(requisition);
-    requisition = repository.findOne(requisition.getId());
-
-    assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
-  }
-
-  @Test
   public void shouldPersistWithPreviousRequisitions() {
     Requisition requisition = new RequisitionDataBuilder()
         .buildAsNew();
@@ -673,7 +622,7 @@ public class RequisitionRepositoryIntegrationTest
     UUID programId = UUID.randomUUID();
     UUID supervisoryNodeId = UUID.randomUUID();
     final UUID user = UUID.randomUUID();
-    final Map<UUID, OrderableDto> products = emptyMap();
+    final Map<VersionIdentityDto, OrderableDto> products = emptyMap();
 
     Requisition matchingRequisition1 = requisitions.get(0);
     matchingRequisition1.setProgramId(programId);

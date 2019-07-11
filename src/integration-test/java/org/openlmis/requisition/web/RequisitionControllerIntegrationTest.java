@@ -63,11 +63,13 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
@@ -79,6 +81,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -95,6 +98,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -113,6 +117,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReasonDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
@@ -687,8 +692,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .body(MESSAGE, is(getMessage(ERROR_PERIOD_END_DATE_WRONG, period.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
-        anyBoolean());
+    verify(requisition, never()).submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid(), anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -713,8 +718,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
-        anyBoolean());
+    verify(requisition, never()).submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid(), anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1095,9 +1100,21 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     when(requisition.isApprovable()).thenReturn(true);
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
-        .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+
+    List<OrderableDto> orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willReturn(orderables);
+    doNothing().when(requisition).authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -1114,7 +1131,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     verify(requisition, atLeastOnce())
-        .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+        .authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class), anyUuid());
     verify(supervisoryNodeReferenceDataService)
         .findSupervisoryNode(requisition.getProgramId(), requisition.getFacilityId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -1124,9 +1141,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldAuthorizeRequisitionWithIdempotencyKey() {
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     when(requisition.isApprovable()).thenReturn(true);
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -1146,7 +1164,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
 
     verify(requisition, atLeastOnce())
-        .authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+        .authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class), anyUuid());
     verify(supervisoryNodeReferenceDataService)
         .findSupervisoryNode(requisition.getProgramId(), requisition.getFacilityId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -1156,9 +1174,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotAuthorizeRequisitionWithUsedIdempotencyKey() {
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     when(requisition.isApprovable()).thenReturn(true);
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -1182,9 +1201,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotAuthorizeRequisitionWithIdempotencyKeyInWrongFormat() {
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
     when(requisition.isApprovable()).thenReturn(true);
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -1207,9 +1227,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotAuthorizeRequisitionWhenPeriodEndDateIsInFuture() {
     // given
     Requisition requisition = spyRequisitionAndStubRepository(RequisitionStatus.SUBMITTED);
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
-    doNothing().when(requisition).authorize(anyMapOf(UUID.class, OrderableDto.class), anyUuid());
+    doNothing().when(requisition).authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid());
     doReturn(ValidationResult.success()).when(permissionService)
         .canAuthorizeRequisition(requisition);
     mockValidationSuccess();
@@ -1226,8 +1247,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .body(MESSAGE, is(getMessage(ERROR_PERIOD_END_DATE_WRONG, period.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
-        anyBoolean());
+    verify(requisition, never()).submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyUuid(), anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1253,7 +1274,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     verify(requisition, never())
-        .authorize(anyMapOf(UUID.class, OrderableDto.class), any(UUID.class));
+        .authorize(anyMapOf(VersionIdentityDto.class, OrderableDto.class), any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1572,7 +1593,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
-    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    doNothing().when(requisition).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
@@ -1602,7 +1624,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
-    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    doNothing().when(requisition).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
@@ -1632,7 +1655,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
-    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    doNothing().when(requisition).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
@@ -1660,7 +1684,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(requisitionService).validateCanApproveRequisition(any(Requisition.class),
         anyUuid());
-    doNothing().when(requisition).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    doNothing().when(requisition).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
 
     mockExternalServiceCalls();
@@ -1680,7 +1705,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
             MESSAGE, containsString(ISO_DATE.format(period.getEndDate())));
 
     // then
-    verify(requisition, never()).submit(anyMapOf(UUID.class, OrderableDto.class), anyUuid(),
+    verify(requisition, never())
+        .submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class), anyUuid(),
         anyBoolean());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1706,7 +1732,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    verify(requisition, never()).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1734,7 +1761,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
             requisitionId, "")));
 
     // then
-    verify(requisition, never()).approve(anyUuid(), anyMapOf(UUID.class, OrderableDto.class),
+    verify(requisition, never()).approve(anyUuid(),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyCollectionOf(SupplyLineDto.class), anyUuid());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1744,9 +1772,24 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldGetSubmittedRequisitions() {
     // given
     Requisition[] requisitions = {generateRequisition(), generateRequisition()};
+
+    List<OrderableDto> orderables = Arrays
+        .stream(requisitions)
+        .map(Requisition::getRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(line.getRequisition().getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toList());
+
     given(requisitionService.searchRequisitions(
         any(QueryRequisitionSearchParams.class), any(Pageable.class)))
         .willReturn(Pagination.getPage(Arrays.asList(requisitions), FIRST_PAGE));
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willReturn(orderables);
 
     // when
     PageDto response = restAssured.given()
@@ -2151,7 +2194,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   }
 
   private void mockExternalServiceCalls() {
-    given(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
     given(supervisoryNodeReferenceDataService.findOne(anyUuid()))
         .willReturn(new SupervisoryNodeDto());

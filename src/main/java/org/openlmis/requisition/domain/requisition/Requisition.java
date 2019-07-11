@@ -18,31 +18,33 @@ package org.openlmis.requisition.domain.requisition;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_DOES_NOT_ALLOW_SKIP;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_STATUS;
-import static org.openlmis.requisition.utils.RequisitionHelper.validateAreRequiredRegularRequisitionFieldsNotFilled;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,12 +75,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.ExtraDataEntity;
 import org.openlmis.requisition.domain.ExtraDataEntity.ExtraDataExporter;
@@ -91,16 +92,17 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.utils.RequisitionHelper;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -223,15 +225,14 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Requisition> previousRequisitions;
 
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = UUID.class)
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = VersionEntityReference.class)
   @Column(name = "value")
   @CollectionTable(
       name = "available_products",
       joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
-  @Type(type = UUID_TYPE)
-  private Set<UUID> availableProducts;
+  private Set<VersionEntityReference> availableProducts;
 
   @Getter
   @Setter
@@ -332,21 +333,22 @@ public class Requisition extends BaseTimestampedEntity {
    * Validates if requisition can be change status.
    */
   public ValidationResult validateCanChangeStatus(LocalDate currentDate,
-                                                boolean isDatePhysicalStockCountCompletedEnabled) {
+      boolean isDatePhysicalStockCountCompletedEnabled,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     return new StatusChangeValidationService(this, currentDate,
-        isDatePhysicalStockCountCompletedEnabled)
+        isDatePhysicalStockCountCompletedEnabled, orderables)
         .validateRequisitionCanChangeStatus();
   }
 
   /**
    * Returns a set of all orderable IDs in this requisition.
    */
-  public Set<UUID> getAllOrderableIds() {
-    Set<UUID> orderableIds = Optional
+  public Set<VersionEntityReference> getAllOrderables() {
+    Set<VersionEntityReference> orderableIds = Optional
         .ofNullable(requisitionLineItems)
         .orElse(Collections.emptyList())
         .stream()
-        .map(RequisitionLineItem::getOrderableId)
+        .map(RequisitionLineItem::getOrderable)
         .collect(Collectors.toSet());
 
     Optional.ofNullable(availableProducts).ifPresent(orderableIds::addAll);
@@ -360,7 +362,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param requisition            Requisition with new values.
    * @param products               Collection of orderables.
    */
-  public void updateFrom(Requisition requisition, Map<UUID, OrderableDto> products,
+  public void updateFrom(Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
       boolean isDatePhysicalStockCountCompletedEnabled) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
@@ -373,10 +375,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-    calculateAndValidateTemplateFields(this.template);
-
-    profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
-    updateTotalCostAndPacksToShip(products);
+    calculateAndValidateTemplateFields(this.template, products);
 
     if (isDatePhysicalStockCountCompletedEnabled) {
       profiler.start("SET_DATE_PHYSICAL_STOCK_COUNT_COMPLETED");
@@ -451,16 +450,18 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void copySkippedValuesFromPreviousRequisition() {
     if (!previousRequisitions.isEmpty() && null != previousRequisitions.get(0)) {
-      Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions.get(0)
-          .getRequisitionLineItems().stream().collect(
-              toMap(RequisitionLineItem::getOrderableId, identity(),
+      Map<VersionEntityReference, RequisitionLineItem> productIdToPreviousLine =
+          previousRequisitions
+              .get(0)
+              .getRequisitionLineItems()
+              .stream()
+              .collect(toMap(RequisitionLineItem::getOrderable, identity(),
                   (item1, item2) -> item1));
 
-      getFullSupplyRequisitionLineItems().forEach(currentLine -> {
-        RequisitionLineItem previousLine = productIdToPreviousLine.getOrDefault(
-            currentLine.getOrderableId(), null);
-        currentLine.setSkipped(
-            LineItemFieldsCalculator.canSkipLineItem(currentLine, previousLine));
+      requisitionLineItems.forEach(currentLine -> {
+        RequisitionLineItem previousLine = productIdToPreviousLine
+            .getOrDefault(currentLine.getOrderable(), null);
+        currentLine.setSkipped(LineItemFieldsCalculator.canSkipLineItem(currentLine, previousLine));
       });
     }
   }
@@ -485,10 +486,10 @@ public class Requisition extends BaseTimestampedEntity {
         lineItem.setStockOnHand(stockData.getStockOnHand(orderableId));
         lineItem.setBeginningBalance(stockData.getBeginningBalance(orderableId));
 
-        StockCardRangeSummaryDto summary =
-            findStockCardRangeSummary(stockCardRangeSummaries, lineItem.getOrderableId());
-        StockCardRangeSummaryDto summaryToAverage =
-            findStockCardRangeSummary(stockCardRangeSummariesToAverage, lineItem.getOrderableId());
+        StockCardRangeSummaryDto summary = findStockCardRangeSummary(
+            stockCardRangeSummaries, lineItem.getOrderable().getId());
+        StockCardRangeSummaryDto summaryToAverage = findStockCardRangeSummary(
+            stockCardRangeSummariesToAverage, lineItem.getOrderable().getId());
 
         lineItem.calculateAndSetStockBasedTotalReceivedQuantity(template, summary);
         lineItem.calculateAndSetStockBasedTotalStockoutDays(summary, numberOfMonthsInPeriod);
@@ -518,23 +519,29 @@ public class Requisition extends BaseTimestampedEntity {
 
     profiler.start("GET_PREV_BEGINNING_BALANCE");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
+    Map<VersionIdentityDto, OrderableDto> orderables = fullSupplyProducts
+        .stream()
+        .map(ApprovedProductDto::getOrderable)
+        .collect(toMap(OrderableDto::getIdentity, identity()));
+
     // Firstly, if we display the column ...
     // ... and if the previous requisition exists ...
     if (!previousRequisitions.isEmpty()
         && null != previousRequisitions.get(0)
         && template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)) {
       // .. for each line from the current requisition ...
-      nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems();
+      nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems(orderables);
 
-      Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions.get(0)
-          .getRequisitionLineItems().stream().collect(
-              toMap(RequisitionLineItem::getOrderableId, identity(),
-                  (item1, item2) -> item1));
+      Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions
+          .get(0)
+          .getRequisitionLineItems()
+          .stream()
+          .collect(toMap(rli -> rli.getOrderable().getId(), identity(), (item1, item2) -> item1));
 
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(currentLine -> {
+      nonSkippedFullSupplyItems.forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
         RequisitionLineItem previousLine = productIdToPreviousLine.getOrDefault(
-            currentLine.getOrderableId(), null);
+            currentLine.getOrderable().getId(), null);
 
         // ... and in the end we use it to calculate beginning balance in a new line.
         currentLine.setBeginningBalance(
@@ -547,7 +554,7 @@ public class Requisition extends BaseTimestampedEntity {
     if (null != proofOfDelivery && proofOfDelivery.isSubmitted()) {
       // .. for each line from the current requisition ...
       if (nonSkippedFullSupplyItems == null) {
-        nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems();
+        nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems(orderables);
       }
 
       Map<UUID, ProofOfDeliveryLineItemDto> productIdToPodLine = proofOfDelivery
@@ -559,7 +566,7 @@ public class Requisition extends BaseTimestampedEntity {
       nonSkippedFullSupplyItems.forEach(requisitionLine -> {
         // ... we try to find line in POD for the same product ...
         ProofOfDeliveryLineItemDto proofOfDeliveryLine = productIdToPodLine.getOrDefault(
-            requisitionLine.getOrderableId(), null);
+            requisitionLine.getOrderable().getId(), null);
 
         // ... and if line exists we set value for Total Received Quantity (B) column
         if (null != proofOfDeliveryLine) {
@@ -582,21 +589,35 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Submits this requisition.
    *
-   * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void submit(Map<UUID, OrderableDto> products, UUID submitter, boolean skipAuthorize) {
+  public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
+      boolean skipAuthorize) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
     }
 
     if (isNotTrue(emergency)) {
-      validateAreRequiredRegularRequisitionFieldsNotFilled(template,
-          getNonSkippedFullSupplyRequisitionLineItems(), getId());
+      getNonSkippedFullSupplyRequisitionLineItems(products)
+          .forEach(line -> {
+            if (template.isColumnCalculated(Requisition.TOTAL_CONSUMED_QUANTITY)
+                && line.allRequiredCalcFieldsNotFilled(Requisition.TOTAL_CONSUMED_QUANTITY)) {
+              throw new ValidationMessageException(
+                  new Message(ERROR_FIELD_MUST_HAVE_VALUES, id,
+                      Requisition.STOCK_ON_HAND,
+                      Requisition.TOTAL_CONSUMED_QUANTITY));
+            }
+
+            if (template.isColumnCalculated(Requisition.STOCK_ON_HAND)
+                && line.allRequiredCalcFieldsNotFilled(Requisition.STOCK_ON_HAND)) {
+              throw new ValidationMessageException(
+                  new Message(ERROR_FIELD_MUST_HAVE_VALUES, id,
+                      Requisition.TOTAL_CONSUMED_QUANTITY, Requisition.STOCK_ON_HAND));
+            }
+          });
     }
 
-    updateConsumptions();
-    updateTotalCostAndPacksToShip(products);
+    updateConsumptions(products);
 
     status = RequisitionStatus.SUBMITTED;
     statusChanges.add(StatusChange.newStatusChange(this, submitter));
@@ -611,16 +632,14 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Authorize this Requisition.
    *
-   * @param products orderable products that will be used by line items to update packs to ship.
    */
-  public void authorize(Map<UUID, OrderableDto> products, UUID authorizer) {
+  public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer) {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptions();
-    updateTotalCostAndPacksToShip(products);
+    updateConsumptions(products);
     prepareRequisitionForApproval(authorizer);
     setModifiedDate(ZonedDateTime.now());
   }
@@ -651,7 +670,7 @@ public class Requisition extends BaseTimestampedEntity {
    *                    a supply line for the requisition's program.
    * @param approver    user who approves this requisition.
    */
-  public void approve(UUID nodeId, Map<UUID, OrderableDto> products,
+  public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
       Collection<SupplyLineDto> supplyLines, UUID approver) {
     if (isTrue(reportOnly)) {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
@@ -664,8 +683,7 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
 
-    updateConsumptions();
-    updateTotalCostAndPacksToShip(products);
+    updateConsumptions(products);
     setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, approver));
@@ -674,10 +692,9 @@ public class Requisition extends BaseTimestampedEntity {
   /**
    * Rejects given requisition.
    */
-  public void reject(Map<UUID, OrderableDto> products, UUID rejector) {
+  public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector) {
     status = RequisitionStatus.REJECTED;
-    updateConsumptions();
-    updateTotalCostAndPacksToShip(products);
+    updateConsumptions(products);
     setModifiedDate(ZonedDateTime.now());
     supervisoryNodeId = null;
 
@@ -733,18 +750,21 @@ public class Requisition extends BaseTimestampedEntity {
    * Finds first RequisitionLineItem that have productId property equals to the given productId
    * argument.
    *
-   * @param productId UUID of orderable product
+   * @param productId orderable id
+   * @param productVersionId orderable version id
    * @return first RequisitionLineItem that have productId property equals to the given productId
    *         argument; otherwise null;
    */
-  public RequisitionLineItem findLineByProductId(UUID productId) {
+  public RequisitionLineItem findLineByProduct(UUID productId, Long productVersionId) {
     if (null == requisitionLineItems) {
       return null;
     }
 
+    VersionEntityReference arg = new VersionEntityReference(productId, productVersionId);
+
     return requisitionLineItems
         .stream()
-        .filter(e -> Objects.equals(productId, e.getOrderableId()))
+        .filter(e -> Objects.equals(arg, e.getOrderable()))
         .findFirst()
         .orElse(null);
   }
@@ -763,7 +783,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @return requisitionLineItems that are not skipped
    */
   public List<RequisitionLineItem> getNonSkippedRequisitionLineItems() {
-    return filterLineItems(false, null);
+    return filterLineItems(false, null, null);
   }
 
   /**
@@ -771,8 +791,9 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return non-skipped full supply requisition line items
    */
-  public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems() {
-    return filterLineItems(false, false);
+  public List<RequisitionLineItem> getNonSkippedFullSupplyRequisitionLineItems(
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    return filterLineItems(false, false, orderables);
   }
 
   /**
@@ -780,8 +801,9 @@ public class Requisition extends BaseTimestampedEntity {
    *
    * @return non-skipped non-full supply requisition line items
    */
-  public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems() {
-    return filterLineItems(false, true);
+  public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems(
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    return filterLineItems(false, true, orderables);
   }
 
   /**
@@ -790,50 +812,40 @@ public class Requisition extends BaseTimestampedEntity {
    * @return requisitionLineItems that are skipped
    */
   List<RequisitionLineItem> getSkippedRequisitionLineItems() {
-    return filterLineItems(true, null);
+    return filterLineItems(true, null, null);
   }
 
-  List<RequisitionLineItem> getFullSupplyRequisitionLineItems() {
-    return filterLineItems(null, false);
+  List<RequisitionLineItem> getFullSupplyRequisitionLineItems(
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    return filterLineItems(null, false, orderables);
   }
 
-  private List<RequisitionLineItem> filterLineItems(Boolean skipped, Boolean nonFullSupply) {
-    return Optional
-        .ofNullable(requisitionLineItems)
-        .orElse(Collections.emptyList())
-        .stream()
-        .filter(line ->
-            null == skipped || Objects.equals(skipped, line.isLineSkipped()))
-        .filter(line ->
-            null == nonFullSupply || Objects.equals(nonFullSupply, line.isNonFullSupply()))
-        .collect(toList());
-  }
+  private List<RequisitionLineItem> filterLineItems(Boolean skipped, Boolean nonFullSupply,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    List<RequisitionLineItem> list = new ArrayList<>();
 
-  /**
-   * Calculates combined cost of all requisition line items.
-   *
-   * @return sum of total costs.
-   */
-  public Money getTotalCost() {
-    return calculateTotalCostForLines(requisitionLineItems);
-  }
+    if (null == requisitionLineItems) {
+      return list;
+    }
 
-  /**
-   * Calculates combined cost of non-full supply non-skipped requisition line items.
-   *
-   * @return sum of total costs.
-   */
-  public Money getNonFullSupplyTotalCost() {
-    return calculateTotalCostForLines(getNonSkippedNonFullSupplyRequisitionLineItems());
-  }
+    for (RequisitionLineItem line : requisitionLineItems) {
+      if (null != skipped && !Objects.equals(skipped, line.isLineSkipped())) {
+        continue;
+      }
 
-  /**
-   * Calculates combined cost of full supply non-skipped requisition line items.
-   *
-   * @return sum of total costs.
-   */
-  public Money getFullSupplyTotalCost() {
-    return calculateTotalCostForLines(getNonSkippedFullSupplyRequisitionLineItems());
+      if (null != nonFullSupply) {
+        OrderableDto orderable = orderables.get(new VersionIdentityDto(line.getOrderable()));
+        ProgramOrderableDto programOrderable = orderable.getProgramOrderable(programId);
+
+        if (Objects.equals(nonFullSupply, isFalse(programOrderable.getFullSupply()))) {
+          list.add(line);
+        }
+      } else {
+        list.add(line);
+      }
+    }
+
+    return list;
   }
 
   /**
@@ -902,69 +914,67 @@ public class Requisition extends BaseTimestampedEntity {
    * each {@link RequisitionLineItem}.
    */
   void setPreviousAdjustedConsumptions(int numberOfPreviousPeriodsToAverage) {
-    List<RequisitionLineItem> previousRequisitionLineItems = RequisitionHelper
-        .getNonSkippedLineItems(previousRequisitions.subList(0, numberOfPreviousPeriodsToAverage));
+    Map<VersionEntityReference, List<RequisitionLineItem>> orderables = previousRequisitions
+        .subList(0, numberOfPreviousPeriodsToAverage)
+        .stream()
+        .map(Requisition::getNonSkippedRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .collect(Collectors.groupingBy(RequisitionLineItem::getOrderable));
 
-    RequisitionHelper.forEachLine(requisitionLineItems,
-        line -> {
-          List<RequisitionLineItem> withProductId = RequisitionHelper
-              .findByProductId(previousRequisitionLineItems, line.getOrderableId());
-          List<Integer> adjustedConsumptions = RequisitionHelper
-              .mapToAdjustedConsumptions(withProductId);
+    requisitionLineItems
+        .forEach(line -> line.setPreviousAdjustedConsumptions(Optional
+              .ofNullable(orderables.get(line.getOrderable()))
+              .orElse(Collections.emptyList())
+              .stream()
+              .map(RequisitionLineItem::getAdjustedConsumption)
+              .filter(Objects::nonNull)
+              .collect(toList())));
+  }
 
-          line.setPreviousAdjustedConsumptions(adjustedConsumptions);
-        });
+  Map<VersionEntityReference, Object> getAllColumnsValuesByColumnName(String columnName) {
+    return requisitionLineItems
+        .stream()
+        .collect(
+            HashMap::new,
+            (map, line) -> map.put(line.getOrderable(), getColumnValue(line, columnName)),
+            HashMap::putAll);
+  }
+
+  private static Object getColumnValue(RequisitionLineItem lineItem, String columnName) {
+    try {
+      return PropertyUtils.getProperty(lineItem, columnName);
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
+      throw new IllegalStateException(exp);
+    }
   }
 
   private void prepareRequisitionForApproval(UUID user) {
     populateApprovedQuantity();
-    RequisitionHelper.forEachLine(getSkippedRequisitionLineItems(),
-        RequisitionLineItem::resetData);
+    getSkippedRequisitionLineItems().forEach(RequisitionLineItem::resetData);
     status = RequisitionStatus.AUTHORIZED;
     statusChanges.add(StatusChange.newStatusChange(this, user));
   }
 
-  private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
-    Money defaultValue = Money.of(CurrencyUnit.of(currencyCode), 0);
-
-    if (requisitionLineItems.isEmpty()) {
-      return defaultValue;
-    }
-
-    Optional<Money> money = requisitionLineItems.stream()
-        .map(RequisitionLineItem::getTotalCost).filter(Objects::nonNull).reduce(Money::plus);
-
-    return money.orElse(defaultValue);
-  }
-
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template) {
-    getNonSkippedFullSupplyRequisitionLineItems()
+  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(line ->
             line.calculateAndSetFields(template, stockAdjustmentReasons, numberOfMonthsInPeriod));
   }
 
-  private void updateConsumptions() {
-
-
+  private void updateConsumptions(Map<VersionIdentityDto, OrderableDto> orderables) {
     if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(line -> line.setAdjustedConsumption(
-          LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod,
-              this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
-      ));
+      getNonSkippedFullSupplyRequisitionLineItems(orderables)
+          .forEach(line -> line.setAdjustedConsumption(
+              LineItemFieldsCalculator.calculateAdjustedConsumption(line, numberOfMonthsInPeriod,
+                  this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
+          ));
     }
 
     if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems().forEach(
+      getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
-  }
-
-  private void updateTotalCostAndPacksToShip(Map<UUID, OrderableDto> products) {
-    getNonSkippedRequisitionLineItems().forEach(line -> {
-      line.updatePacksToShip(products.get(line.getOrderableId()));
-      line.setTotalCost(LineItemFieldsCalculator
-          .calculateTotalCost(line, CurrencyUnit.of(currencyCode)));
-    });
   }
 
   private void populateApprovedQuantity() {
@@ -1016,11 +1026,11 @@ public class Requisition extends BaseTimestampedEntity {
     requisitionLineItems.addAll(updatedList);
   }
 
-  private static StockCardRangeSummaryDto findStockCardRangeSummary(
+  private StockCardRangeSummaryDto findStockCardRangeSummary(
       List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos, UUID orderableId) {
-    return stockCardRangeSummaryDtos.stream()
-        .filter(stockCardRangeSummaryDto ->
-            stockCardRangeSummaryDto.getOrderable().getId().equals(orderableId))
+    return stockCardRangeSummaryDtos
+        .stream()
+        .filter(range -> range.getOrderable().getId().equals(orderableId))
         .findFirst()
         .orElse(null);
   }

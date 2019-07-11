@@ -22,11 +22,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.PRICE_PER_PACK_IF_NULL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_CHECK_RESULT;
 import static org.openlmis.requisition.web.utils.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
@@ -87,7 +87,6 @@ import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -110,7 +109,6 @@ public abstract class BaseWebIntegrationTest {
 
   static final String PERMISSION_ERROR_MESSAGE = ERROR_NO_FOLLOWING_PERMISSION;
   static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML definition.";
-  static final UUID LINE_ITEM_PRODUCT_ID = UUID.randomUUID();
 
   static final String SORT = "sort";
   static final String PAGE = "page";
@@ -152,9 +150,6 @@ public abstract class BaseWebIntegrationTest {
 
   @LocalServerPort
   private int serverPort;
-
-  @Value("${currencyCode}")
-  private String currencyCode;
 
   /**
    * Method called to initialize basic resources after the object is created.
@@ -261,10 +256,8 @@ public abstract class BaseWebIntegrationTest {
 
   private List<RequisitionLineItem> generateRequisitionLineItems(Requisition requisition) {
     RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
-        .withOrderableId(LINE_ITEM_PRODUCT_ID)
+        .withOrderable(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
-        .withPricePerPack(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL))
-        .withTotalCost(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL))
         .build();
 
     return Lists.newArrayList(lineItem);
@@ -312,7 +305,7 @@ public abstract class BaseWebIntegrationTest {
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisitionSpy);
     doReturn(ValidationResult.success())
-        .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+        .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
     return requisitionSpy;
   }
 

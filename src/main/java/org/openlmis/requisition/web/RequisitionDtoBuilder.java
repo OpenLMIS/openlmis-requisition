@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -33,9 +32,9 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -120,10 +119,10 @@ public class RequisitionDtoBuilder {
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_ORDERABLES");
-    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
-        .findByIds(requisition.getAllOrderableIds())
+    Map<VersionIdentityDto, OrderableDto> orderables = orderableReferenceDataService
+        .findByIdentities(requisition.getAllOrderables())
         .stream()
-        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
 
     profiler.start("CALL_REQUISITION_DTO_BUILD");
     RequisitionDto requisitionDto = build(requisition, orderables, facility, program, null);
@@ -140,7 +139,8 @@ public class RequisitionDtoBuilder {
    * @return new instance of {@link RequisitionDto}. {@code null} if passed argument is {@code
    * null}.
    */
-  public RequisitionDto build(Requisition requisition, Map<UUID, OrderableDto> orderables,
+  public RequisitionDto build(Requisition requisition,
+      Map<VersionIdentityDto, OrderableDto> orderables,
       FacilityDto facility, ProgramDto program, ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
@@ -190,7 +190,7 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto buildBatch(Requisition requisition, FacilityDto facility,
-                                   Map<UUID, OrderableDto> orderables,
+                                   Map<VersionIdentityDto, OrderableDto> orderables,
                                    ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility);
     if (null == requisition) {
@@ -245,23 +245,22 @@ public class RequisitionDtoBuilder {
   private void setAvailableProductsDto(RequisitionDto requisitionDto, Requisition requisition,
       Collection<OrderableDto> orderables) {
     Collection<OrderableDto> localOrderables = null == orderables
-        ? orderableReferenceDataService.findByIds(requisition.getAvailableProducts())
+        ? orderableReferenceDataService.findByIdentities(requisition.getAvailableProducts())
         : orderables;
 
     Set<OrderableDto> availableFullSupply = new HashSet<>();
     Set<OrderableDto> availableNonFullSupply = new HashSet<>();
 
     for (OrderableDto orderableDto : localOrderables) {
-      ProgramOrderableDto poDto = orderableDto.findProgramOrderableDto(requisition.getProgramId());
-      if (poDto == null) {
-        continue;
-      }
-
-      if (poDto.getFullSupply()) {
-        availableFullSupply.add(orderableDto);
-      } else {
-        availableNonFullSupply.add(orderableDto);
-      }
+      orderableDto
+          .findProgramOrderable(requisition.getProgramId())
+          .ifPresent(po -> {
+            if (po.getFullSupply()) {
+              availableFullSupply.add(orderableDto);
+            } else {
+              availableNonFullSupply.add(orderableDto);
+            }
+          });
     }
 
     requisitionDto.setAvailableFullSupplyProducts(availableFullSupply);

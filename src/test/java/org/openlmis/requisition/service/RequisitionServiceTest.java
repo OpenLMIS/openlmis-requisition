@@ -72,8 +72,11 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -97,6 +100,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -115,6 +119,7 @@ import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.openlmis.requisition.errorhandling.FailureType;
@@ -173,8 +178,11 @@ public class RequisitionServiceTest {
   private static final UUID COMMODITY_TYPE_ID = UUID.randomUUID();
 
   private static final UUID PERIOD_ID = UUID.randomUUID();
+  private RequisitionLineItem lineItem1;
+  private RequisitionLineItem lineItem2;
   private Requisition requisition;
   private RequisitionDto requisitionDto;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -184,12 +192,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private StatusChange statusChange;
-
-  @Mock
-  private RequisitionLineItem lineItem1;
-
-  @Mock
-  private RequisitionLineItem lineItem2;
 
   @Mock
   private RequisitionRepository requisitionRepository;
@@ -421,7 +423,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -434,7 +436,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
@@ -483,7 +485,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
@@ -497,7 +499,7 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, emptyMap());
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
 
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     assertNull(returnedRequisition.getSupervisoryNodeId());
@@ -885,9 +887,9 @@ public class RequisitionServiceTest {
         this.program, facility, processingPeriod, false,
         stockAdjustmentReasons, requisitionTemplate);
 
-    Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
+    Set<VersionEntityReference> availableProducts = initiatedRequisition.getAvailableProducts();
     assertThat(availableProducts, hasSize(1));
-    assertThat(availableProducts, hasItems(NON_FULL_PRODUCT_ID));
+    assertThat(availableProducts, hasItems(new VersionEntityReference(NON_FULL_PRODUCT_ID, 1L)));
   }
 
   @Test
@@ -899,9 +901,11 @@ public class RequisitionServiceTest {
         this.program, facility, processingPeriod, true,
         stockAdjustmentReasons, requisitionTemplate);
 
-    Set<UUID> availableProducts = initiatedRequisition.getAvailableProducts();
+    Set<VersionEntityReference> availableProducts = initiatedRequisition.getAvailableProducts();
     assertThat(availableProducts, hasSize(2));
-    assertThat(availableProducts, hasItems(PRODUCT_ID, NON_FULL_PRODUCT_ID));
+    assertThat(availableProducts, hasItems(
+        new VersionEntityReference(PRODUCT_ID, 1L),
+        new VersionEntityReference(NON_FULL_PRODUCT_ID, 1L)));
   }
 
   @Test
@@ -1056,18 +1060,18 @@ public class RequisitionServiceTest {
   public void shouldCallApproveRequisition() {
     OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder().buildAsDto();
     SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().buildAsDto();
-    when(orderableReferenceDataService.findByIds(any())).thenReturn(
+    when(orderableReferenceDataService.findByIdentities(any())).thenReturn(
         singletonList(fullSupplyOrderable));
 
     UUID parentId = UUID.randomUUID();
 
     requisitionService.doApprove(
-        parentId, user, ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable),
+        parentId, user, ImmutableMap.of(fullSupplyOrderable.getIdentity(), fullSupplyOrderable),
         requisitionMock, singletonList(supplyLineDto)
     );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
-        eq(ImmutableMap.of(fullSupplyOrderable.getId(), fullSupplyOrderable)),
+        eq(ImmutableMap.of(fullSupplyOrderable.getIdentity(), fullSupplyOrderable)),
         eq(singletonList(supplyLineDto)), eq(user.getId()));
   }
 
@@ -1454,7 +1458,10 @@ public class RequisitionServiceTest {
   }
 
   private Requisition generateRequisition() {
-    return new RequisitionDataBuilder()
+    lineItem1 = new RequisitionLineItemDataBuilder().build();
+    lineItem2 = new RequisitionLineItemDataBuilder().build();
+
+    Requisition requisition = new RequisitionDataBuilder()
         .withCreatedDate(ZonedDateTime.now())
         .withModifiedDate(ZonedDateTime.now())
         .withSupplyingFacilityId(facility.getId())
@@ -1465,6 +1472,18 @@ public class RequisitionServiceTest {
         .withSupervisoryNodeId(supervisoryNode.getId())
         .withStatus(AUTHORIZED)
         .build();
+
+    orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return requisition;
   }
 
   private RequisitionDto generateRequisitionDto() {
@@ -1521,7 +1540,7 @@ public class RequisitionServiceTest {
   private void mockPreviousRequisition() {
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItemDataBuilder()
         .withAdjustedConsumption(ADJUSTED_CONSUMPTION)
-        .withOrderableId(PRODUCT_ID)
+        .withOrderable(PRODUCT_ID, 1L)
         .build();
     previousRequisition = new RequisitionDataBuilder()
         .withRequisitionLineItems(singletonList(previousRequisitionLineItem))
@@ -1548,6 +1567,7 @@ public class RequisitionServiceTest {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(products[i])
+              .withVersionId(1L)
               .withFullProductName(productNamePrefix + i)
               .withIdentifier(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString())
               .withProgramOrderable(program.getId(), fullSupply[i])
@@ -1699,8 +1719,8 @@ public class RequisitionServiceTest {
 
   private OngoingStubbing<List<StockCardRangeSummaryDto>> whenGetStockCardRangeSummaries() {
     return when(stockCardRangeSummaryStockManagementService
-        .search(any(UUID.class), any(UUID.class), anySetOf(UUID.class), any(String.class),
-            any(LocalDate.class), any(LocalDate.class)));
+        .search(any(UUID.class), any(UUID.class), anySetOf(VersionIdentityDto.class),
+            any(String.class), any(LocalDate.class), any(LocalDate.class)));
   }
 
   private void prepareForGetStockOnHandTest() {

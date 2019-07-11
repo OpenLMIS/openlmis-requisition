@@ -60,7 +60,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   private Long version = 1L;
   private UUID supervisoryNodeId = null;
   private List<Requisition> previousRequisitions = Lists.newArrayList();
-  private Set<UUID> availableProducts = Sets.newHashSet();
+  private Set<VersionEntityReference> availableProducts = Sets.newHashSet();
   private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted =
       new DatePhysicalStockCountCompleted(LocalDate.now().minusMonths(1));
   private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
@@ -161,11 +161,11 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
    * Add a requisition line item. Update available products list only if requisition is
    * emergency or line item is related with non full supply product.
    */
-  public RequisitionDataBuilder addLineItem(RequisitionLineItem lineItem) {
+  public RequisitionDataBuilder addLineItem(RequisitionLineItem lineItem, boolean nonFullSupply) {
     requisitionLineItems.add(lineItem);
 
-    if (emergency || lineItem.isNonFullSupply()) {
-      availableProducts.add(lineItem.getOrderableId());
+    if (emergency || nonFullSupply) {
+      availableProducts.add(lineItem.getOrderable());
     }
 
     return this;
@@ -223,9 +223,10 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   /**
    * Sets line item list.
    */
-  public RequisitionDataBuilder withLineItems(List<RequisitionLineItem> requisitionLineItems) {
+  public RequisitionDataBuilder withLineItems(List<RequisitionLineItem> requisitionLineItems,
+      boolean nonFullSupply) {
     this.requisitionLineItems.clear();
-    requisitionLineItems.forEach(this::addLineItem);
+    requisitionLineItems.forEach(line -> addLineItem(line, nonFullSupply));
 
     return this;
   }

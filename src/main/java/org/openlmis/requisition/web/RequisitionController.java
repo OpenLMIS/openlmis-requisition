@@ -46,6 +46,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.ValidReasonDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
@@ -166,7 +167,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     RequisitionDto requisitionDto = buildDto(
         profiler, newRequisition,
-        findOrderables(profiler, newRequisition::getAllOrderableIds),
+        findOrderables(profiler, newRequisition::getAllOrderables),
         facility, program, period
     );
 
@@ -236,7 +237,11 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateIdempotencyKey(request, profiler);
 
-    validateForStatusChange(requisition, profiler);
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIdentities(requisition)
+    );
+
+    validateForStatusChange(requisition, orderables, profiler);
 
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
     checkIfPeriodIsValid(requisition, period, profiler);
@@ -244,9 +249,6 @@ public class RequisitionController extends BaseRequisitionController {
     logger.debug("Submitting a requisition with id " + requisition.getId());
 
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
-    );
 
     profiler.start("SUBMIT");
     requisition.submit(orderables, getCurrentUser(profiler).getId(),
@@ -320,8 +322,8 @@ public class RequisitionController extends BaseRequisitionController {
     requisitionVersionValidator.validateEtagVersionIfPresent(request, requisitionToUpdate)
         .throwExceptionIfHasErrors();
 
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, requisitionToUpdate::getAllOrderableIds
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, requisitionToUpdate::getAllOrderables
     );
 
     profiler.start("BUILD_REQUISITION_UPDATER");
@@ -333,7 +335,7 @@ public class RequisitionController extends BaseRequisitionController {
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 
     profiler.start("VALIDATE_CAN_BE_UPDATED");
-    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program)
+    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program, orderables)
         .throwExceptionIfHasErrors();
 
     logger.debug("Updating requisition with id: {}", requisitionId);
@@ -366,7 +368,7 @@ public class RequisitionController extends BaseRequisitionController {
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
     RequisitionDto requisitionDto = buildDto(
         profiler, requisition,
-        findOrderables(profiler, requisition::getAllOrderableIds),
+        findOrderables(profiler, requisition::getAllOrderables),
         findFacility(requisition.getFacilityId(), profiler),
         findProgram(requisition.getProgramId(), profiler),
         null
@@ -459,8 +461,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateIdempotencyKey(request, profiler);
 
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
     profiler.start("REJECT");
@@ -501,10 +503,10 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateIdempotencyKey(request, profiler);
 
-    validateForStatusChange(requisition, profiler);
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(profiler, requisition);
+    validateForStatusChange(requisition, orderables, profiler);
 
     SupervisoryNodeDto supervisoryNodeDto = getSupervisoryNodeDto(profiler, requisition);
-    Map<UUID, OrderableDto> orderables = findOrderables(profiler, requisition);
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
     List<SupplyLineDto> supplyLines = period.isReportOnly()
         ? Collections.emptyList()
@@ -518,7 +520,7 @@ public class RequisitionController extends BaseRequisitionController {
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
 
     if (!requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      submitStockEvent(requisition, user.getId());
+      submitStockEvent(requisition, user.getId(), orderables);
     }
 
     addLocationHeader(request, response, requisitionDto.getId(), profiler);
@@ -605,16 +607,16 @@ public class RequisitionController extends BaseRequisitionController {
 
     validateIdempotencyKey(request, profiler);
 
-    validateForStatusChange(requisition, profiler);
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIdentities(requisition)
+    );
+
+    validateForStatusChange(requisition, orderables, profiler);
 
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
     checkIfPeriodIsValid(requisition, period, profiler);
 
     UserDto user = getCurrentUser(profiler);
-
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
-    );
 
     profiler.start("AUTHORIZE");
     requisition.authorize(orderables, user.getId());
@@ -689,10 +691,9 @@ public class RequisitionController extends BaseRequisitionController {
         .findOne(requisition.getSupervisoryNodeId());
   }
 
-  private Map<UUID, OrderableDto> findOrderables(Profiler profiler, Requisition requisition) {
-    return findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisition)
-    );
+  private Map<VersionIdentityDto, OrderableDto> findOrderables(Profiler profiler,
+      Requisition requisition) {
+    return findOrderables(profiler, () -> getLineItemOrderableIdentities(requisition));
   }
 
   private List<SupplyLineDto> getSupplyLineDtos(Profiler profiler, Requisition requisition) {

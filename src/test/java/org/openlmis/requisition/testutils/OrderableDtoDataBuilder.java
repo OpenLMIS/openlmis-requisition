@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.testutils;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.dto.DispensableDto;
+import org.openlmis.requisition.dto.MetadataDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.testutils.api.DtoDataBuilder;
@@ -32,6 +34,8 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
   private static int instanceNumber = 0;
 
   private UUID id;
+  private String versionId;
+  private ZonedDateTime lastUpdated;
   private String productCode;
   private String fullProductName;
   private long netContent;
@@ -48,6 +52,8 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     instanceNumber++;
 
     id = UUID.randomUUID();
+    versionId = "1";
+    lastUpdated = ZonedDateTime.now();
     productCode = "P" + instanceNumber;
     fullProductName = "Product " + instanceNumber;
     netContent = 10;
@@ -66,13 +72,18 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     return withProgramOrderable(programId, true, pricePerPack);
   }
 
+  public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply,
+      Money pricePerPack) {
+    return withProgramOrderable(programId, fullSupply, pricePerPack, 1);
+  }
+
   /**
    * Add program orderable with passed properties.
    */
   public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply,
-                                                      Money pricePerPack) {
+      Money pricePerPack, Integer orderableCategoryDisplayOrder) {
     this.programs.add(new ProgramOrderableDto(
-        programId, null, null, null, fullSupply, null, pricePerPack
+        programId, null, null, orderableCategoryDisplayOrder, fullSupply, null, pricePerPack
     ));
 
     return this;
@@ -85,6 +96,11 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
 
   public OrderableDtoDataBuilder withId(UUID id) {
     this.id = id;
+    return this;
+  }
+
+  public OrderableDtoDataBuilder withVersionId(Long versionId) {
+    this.versionId = versionId.toString();
     return this;
   }
 
@@ -124,6 +140,7 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     dto.setPrograms(programs);
     dto.setDispensable(dispensable);
     dto.setIdentifiers(identifiers);
+    dto.setMeta(new MetadataDto(versionId, lastUpdated));
 
     return dto;
   }

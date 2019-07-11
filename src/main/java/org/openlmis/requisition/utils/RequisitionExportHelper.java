@@ -20,13 +20,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.BatchApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -60,25 +61,26 @@ public class RequisitionExportHelper {
    * @return list of RequisitionLineItemDtos
    */
   public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems,
-                                                   Map<UUID, OrderableDto> orderables,
+                                                   Map<VersionIdentityDto, OrderableDto> orderables,
                                                    boolean batch) {
     XLOGGER.entry(requisitionLineItems);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEMS_TO_DTOS");
     profiler.setLogger(XLOGGER);
 
-    Map<UUID, OrderableDto> orderablesForLines;
+    Map<VersionIdentityDto, OrderableDto> orderablesForLines;
     if (orderables == null) {
       profiler.start("GET_ORDERABLE_IDS_FROM_LINE_ITEMS");
-      Set<UUID> orderableIds = new HashSet<>(requisitionLineItems.size());
+      Set<VersionEntityReference> orderableIds = new HashSet<>(requisitionLineItems.size());
       for (RequisitionLineItem lineItem : requisitionLineItems) {
-        orderableIds.add(lineItem.getOrderableId());
+        orderableIds.add(lineItem.getOrderable());
       }
 
       profiler.start("FIND_ORDERABLES_BY_IDS");
       orderablesForLines =
-          orderableReferenceDataService.findByIds(orderableIds)
+          orderableReferenceDataService
+              .findByIdentities(orderableIds)
               .stream()
-              .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
+              .collect(Collectors.toMap(BasicOrderableDto::getIdentity, orderable -> orderable));
 
     } else {
       orderablesForLines = orderables;
@@ -98,14 +100,15 @@ public class RequisitionExportHelper {
 
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
-                                             Map<UUID, OrderableDto> orderables,
+                                             Map<VersionIdentityDto, OrderableDto> orderables,
                                              boolean batch) {
     XLOGGER.entry(requisitionLineItem, orderables);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_LINE_ITEM_ORDERABLE_FROM_ORDERABLES");
-    final OrderableDto orderableDto = orderables.get(requisitionLineItem.getOrderableId());
+    final OrderableDto orderableDto = orderables
+        .get(new VersionIdentityDto(requisitionLineItem.getOrderable()));
 
     profiler.start("CONSTRUCT_REQUISITION_LINE_ITEM_DTO");
     RequisitionLineItemDto dto;

@@ -17,8 +17,12 @@ package org.openlmis.requisition.dto;
 
 import static org.apache.commons.collections.MapUtils.getString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -26,6 +30,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.requisition.exception.ValidationMessageException;
 
 @Getter
 @Setter
@@ -33,6 +38,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class OrderableDto extends BasicOrderableDto {
+
   public static final String COMMODITY_TYPE_IDENTIFIER = "commodityType";
 
   private Set<ProgramOrderableDto> programs;
@@ -40,25 +46,35 @@ public final class OrderableDto extends BasicOrderableDto {
   private Map<String, String> identifiers;
 
   /**
-   * Find ProgramOrderableDto in programs using programId.
+   * Gets ProgramOrderableDto in programs using programId. If it can't be found an exception will be
+   * thrown.
    *
-   * @param programId programId
-   * @return product
+   * @param programId program's UUID
+   * @throws ValidationMessageException if program orderable can't be found.
    */
-  public ProgramOrderableDto findProgramOrderableDto(UUID programId) {
-    if (programs != null) {
-      for (ProgramOrderableDto programOrderableDto : programs) {
-        if (programOrderableDto.getProgramId().equals(programId)) {
-          return programOrderableDto;
-        }
-      }
-    }
-    return null;
+  public ProgramOrderableDto getProgramOrderable(UUID programId) {
+    return findProgramOrderable(programId)
+        .orElseThrow(() ->
+            new ValidationMessageException(CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE));
   }
 
   /**
-   * Returns a value of commodity type identifier. The {@code null} value will be returned if
-   * value does not exist or if it is blank (whitespace, empty ("") or null).
+   * Tries to find ProgramOrderableDto in programs using programId.
+   *
+   * @param programId program's UUID
+   */
+  public Optional<ProgramOrderableDto> findProgramOrderable(UUID programId) {
+    return Optional
+        .ofNullable(programs)
+        .orElse(Collections.emptySet())
+        .stream()
+        .filter(po -> Objects.equals(programId, po.getProgramId()))
+        .findFirst();
+  }
+
+  /**
+   * Returns a value of commodity type identifier. The {@code null} value will be returned if value
+   * does not exist or if it is blank (whitespace, empty ("") or null).
    */
   public String getCommodityTypeIdentifier() {
     return defaultIfBlank(getString(identifiers, COMMODITY_TYPE_IDENTIFIER), null);

@@ -41,11 +41,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -187,39 +184,6 @@ public class LineItemFieldsCalculatorTest {
         .build();
 
     assertEquals(400, LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem));
-  }
-
-  @Test
-  public void shouldCalculateTotalCost() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
-        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
-        .withPacksToShip(40L)
-        .build();
-
-    Money totalCost =
-        LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-
-    assertEquals(Money.of(CurrencyUnit.USD, 130), totalCost);
-  }
-
-  @Test
-  public void shouldCalculateTotalCostAsZeroIfValuesAreMissing() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
-        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
-        .withPacksToShip(null)
-        .build();
-
-    Money totalCost =
-        LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
-
-    requisitionLineItem.setPricePerPack(null);
-    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
-
-    requisitionLineItem.setPacksToShip(20L);
-    totalCost = LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CurrencyUnit.USD);
-    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
   }
 
   @Test

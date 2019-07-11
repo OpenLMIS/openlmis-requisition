@@ -164,7 +164,7 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
   }
 
   @Test
-  public void shouldFindProgramOrderable() {
+  public void shouldGetProgramOrderable() {
     ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
         .withProgramId(program.getId())
         .buildAsDto();
@@ -172,8 +172,8 @@ public class OrderableDtoTest extends EqualsContractTest<OrderableDto> {
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);
 
-    ProgramOrderableDto programOrderableDtoAfterFind =
-        orderableDto.findProgramOrderableDto(program.getId());
+    ProgramOrderableDto programOrderableDtoAfterFind = orderableDto
+            .getProgramOrderable(program.getId());
 
     assertEquals(programOrderableDtoAfterFind, programOrderableDto);
     assertEquals(programOrderableDtoAfterFind.getProgramId(), programOrderableDto.getProgramId());

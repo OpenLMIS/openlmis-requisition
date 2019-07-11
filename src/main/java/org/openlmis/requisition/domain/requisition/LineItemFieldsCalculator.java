@@ -28,8 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -127,24 +125,6 @@ public final class LineItemFieldsCalculator {
       }
     }
     return totalLossesAndAdjustments;
-  }
-
-  /**
-   * Calculates the total cost of the requisition line item, by multiplying price per pack
-   * and packs to ship. If either one is null, zero will be returned.
-   *
-   * @param lineItem the line item to calculate the value for
-   * @return a {@link Money} object representing the total cost for this line
-   */
-  public static Money calculateTotalCost(RequisitionLineItem lineItem, CurrencyUnit currencyUnit) {
-    Money pricePerPack = lineItem.getPricePerPack();
-    if (pricePerPack == null) {
-      pricePerPack = Money.of(currencyUnit, RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
-    }
-
-    long packsToShip = zeroIfNull(lineItem.getPacksToShip());
-
-    return pricePerPack.multipliedBy(packsToShip);
   }
 
   /**

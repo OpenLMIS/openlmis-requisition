@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
 import org.openlmis.requisition.dto.SupplyPartnerDto;
 import org.openlmis.requisition.dto.TogglzFeatureDto;
@@ -88,10 +89,10 @@ class RequisitionSplitter {
       return new RequisitionSplitResult(requisition);
     }
 
-    Map<UUID, RequisitionLineItem> requisitionLineItems = requisition
+    Map<VersionEntityReference, RequisitionLineItem> requisitionLineItems = requisition
         .getNonSkippedRequisitionLineItems()
         .stream()
-        .collect(Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity()));
+        .collect(Collectors.toMap(RequisitionLineItem::getOrderable, Function.identity()));
 
     List<SupplyPartnerAssociationDto> associations = getAssociations(
         requisition, supervisoryNodeId, requisitionLineItems);
@@ -109,7 +110,8 @@ class RequisitionSplitter {
   }
 
   private List<SupplyPartnerAssociationDto> getAssociations(Requisition requisition,
-      UUID supervisoryNodeId, Map<UUID, RequisitionLineItem> requisitionLineItems) {
+      UUID supervisoryNodeId,
+      Map<VersionEntityReference, RequisitionLineItem> requisitionLineItems) {
     Set<UUID> programIds = Sets.newHashSet(requisition.getProgramId());
     Set<UUID> partnerNodeIds = supervisoryNodeReferenceDataService
         .findOne(supervisoryNodeId)
@@ -118,7 +120,7 @@ class RequisitionSplitter {
     Set<UUID> orderableIds = requisitionLineItems
         .values()
         .stream()
-        .map(RequisitionLineItem::getOrderableId)
+        .map(line -> line.getOrderable().getId())
         .collect(Collectors.toSet());
 
     return supplyPartnerReferenceDataService
@@ -147,12 +149,18 @@ class RequisitionSplitter {
 
   private void createPartnerRequisitions(Requisition requisition, List<Requisition> list,
       List<SupplyPartnerAssociationDto> associations,
-      Map<UUID, RequisitionLineItem> requisitionLineItems) {
+      Map<VersionEntityReference, RequisitionLineItem> requisitionLineItems) {
     for (SupplyPartnerAssociationDto association : associations) {
       List<RequisitionLineItem> partnerLineItems = association
           .getOrderableIds()
           .stream()
-          .map(requisitionLineItems::get)
+          .map(id -> requisitionLineItems
+              .keySet()
+              .stream()
+              .filter(elem -> id.equals(elem.getId()))
+              .findFirst()
+              .map(requisitionLineItems::get)
+              .orElse(null))
           .filter(Objects::nonNull)
           .map(this::createPartnerLineItem)
           .collect(Collectors.toList());
@@ -162,7 +170,7 @@ class RequisitionSplitter {
   }
 
   private void adjustOriginalRequisition(List<Requisition> partnerRequisitions,
-      Map<UUID, RequisitionLineItem> requisitionLineItems) {
+      Map<VersionEntityReference, RequisitionLineItem> requisitionLineItems) {
     String remarks = messageService
         .localize(new Message(LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER))
         .asMessage();
@@ -170,7 +178,7 @@ class RequisitionSplitter {
     for (Requisition partnerRequisition : partnerRequisitions) {
       for (RequisitionLineItem lineItem : partnerRequisition.getRequisitionLineItems()) {
         RequisitionLineItem originalLineItem = requisitionLineItems
-            .get(lineItem.getOrderableId());
+            .get(lineItem.getOrderable());
         originalLineItem.setSkipped(true);
         originalLineItem.setRequestedQuantity(null);
         originalLineItem.setRequestedQuantityExplanation(null);

@@ -47,6 +47,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -60,6 +61,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -174,8 +176,8 @@ public abstract class BaseRequisitionController extends BaseController {
 
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, requisitionToUpdate::getAllOrderableIds
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, requisitionToUpdate::getAllOrderables
     );
 
     ETagResource<RequisitionDto> dto = doUpdate(
@@ -187,7 +189,7 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   ETagResource<RequisitionDto> doUpdate(Requisition toUpdate, Requisition requisition,
-      Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
+      Map<VersionIdentityDto, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
       Profiler profiler) {
     profiler.start("UPDATE");
 
@@ -296,12 +298,13 @@ public abstract class BaseRequisitionController extends BaseController {
     callStatusChangeProcessor(profiler, requisition);
   }
 
-  void submitStockEvent(Requisition requisition, UUID currentUserId) {
+  void submitStockEvent(Requisition requisition, UUID currentUserId,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     Profiler profiler = getProfiler("SUBMIT_STOCK_EVENT", requisition, currentUserId);
-    if (requisition.getStatus().isApproved()
-        && isNotTrue(requisition.getEmergency())) {
+    if (requisition.getStatus().isApproved() && isNotTrue(requisition.getEmergency())) {
       profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
-      StockEventDto stockEventDto = stockEventBuilder.fromRequisition(requisition, currentUserId);
+      StockEventDto stockEventDto = stockEventBuilder
+          .fromRequisition(requisition, currentUserId, orderables);
 
       profiler.start("SUBMIT_STOCK_EVENT");
       stockEventStockManagementService.submit(stockEventDto);
@@ -309,15 +312,19 @@ public abstract class BaseRequisitionController extends BaseController {
     }
   }
 
-  Set<UUID> getLineItemOrderableIds(Requisition requisition) {
-    return requisition.getRequisitionLineItems().stream().map(
-        RequisitionLineItem::getOrderableId).collect(Collectors.toSet());
+  Set<VersionEntityReference> getLineItemOrderableIdentities(Requisition requisition) {
+    return requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(RequisitionLineItem::getOrderable)
+        .collect(Collectors.toSet());
   }
 
-  Set<UUID> getLineItemOrderableIds(Collection<Requisition> requisitions) {
-    return requisitions.stream()
-        .flatMap(r -> r.getRequisitionLineItems().stream())
-        .map(RequisitionLineItem::getOrderableId)
+  Set<VersionEntityReference> getLineItemOrderableIdentities(Collection<Requisition> requisitions) {
+    return requisitions
+        .stream()
+        .map(this::getLineItemOrderableIdentities)
+        .flatMap(Collection::stream)
         .collect(Collectors.toSet());
   }
 
@@ -335,24 +342,28 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   ValidationResult validateRequisitionCanBeUpdated(Requisition requisitionToUpdate,
-      Requisition requisition) {
+      Requisition requisition, Map<VersionIdentityDto, OrderableDto> orderables) {
     return requisitionToUpdate.validateCanBeUpdated(new RequisitionValidationService(
-        requisition, requisitionToUpdate,
+        requisition, requisitionToUpdate, orderables,
         dateHelper.getCurrentDateWithSystemZone(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(requisitionToUpdate.getProgramId())));
   }
 
   ValidationResult validateRequisitionCanBeUpdated(Requisition requisitionToUpdate,
-      Requisition requisition, ProgramDto program) {
+      Requisition requisition, ProgramDto program,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     return requisitionToUpdate.validateCanBeUpdated(new RequisitionValidationService(
-        requisition, requisitionToUpdate,
+        requisition, requisitionToUpdate, orderables, 
         dateHelper.getCurrentDateWithSystemZone(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(program)));
   }
 
-  ValidationResult getValidationResultForStatusChange(Requisition requisition) {
-    return requisition.validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
-        datePhysicalStockCountCompletedEnabledPredicate.exec(requisition.getProgramId()));
+  ValidationResult getValidationResultForStatusChange(Requisition requisition,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    return requisition.validateCanChangeStatus(
+        dateHelper.getCurrentDateWithSystemZone(),
+        datePhysicalStockCountCompletedEnabledPredicate.exec(requisition.getProgramId()),
+        orderables);
   }
 
   Profiler getProfiler(String name, Object... entryArgs) {
@@ -406,12 +417,13 @@ public abstract class BaseRequisitionController extends BaseController {
         });
   }
 
-  Map<UUID, OrderableDto> findOrderables(Profiler profiler, Supplier<Set<UUID>> supplier) {
+  Map<VersionIdentityDto, OrderableDto> findOrderables(Profiler profiler,
+      Supplier<Set<VersionEntityReference>> supplier) {
     profiler.start("GET_ORDERABLES");
     return orderableReferenceDataService
-        .findByIds(supplier.get())
+        .findByIdentities(supplier.get())
         .stream()
-        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
   }
 
   void checkPermission(Profiler profiler, Supplier<ValidationResult> supplier) {
@@ -419,9 +431,10 @@ public abstract class BaseRequisitionController extends BaseController {
     supplier.get().throwExceptionIfHasErrors();
   }
 
-  void validateForStatusChange(Requisition requisition, Profiler profiler) {
+  void validateForStatusChange(Requisition requisition,
+      Map<VersionIdentityDto, OrderableDto> orderables, Profiler profiler) {
     profiler.start("VALIDATE_CAN_CHANGE_STATUS");
-    getValidationResultForStatusChange(requisition)
+    getValidationResultForStatusChange(requisition, orderables)
         .throwExceptionIfHasErrors();
   }
 
@@ -480,7 +493,7 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,
-      Map<UUID, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
+      Map<VersionIdentityDto, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
       ProcessingPeriodDto period) {
     profiler.start("BUILD_REQUISITION_DTO");
     return requisitionDtoBuilder.build(requisition, orderables, facility, program, period);
@@ -496,7 +509,7 @@ public abstract class BaseRequisitionController extends BaseController {
   class ApproveParams {
     private UserDto user;
     private SupervisoryNodeDto supervisoryNode;
-    private Map<UUID, OrderableDto> orderables;
+    private Map<VersionIdentityDto, OrderableDto> orderables;
     private List<SupplyLineDto> supplyLines;
     private ProcessingPeriodDto period;
   }

@@ -19,15 +19,14 @@ import static java.util.Collections.emptyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
@@ -41,6 +40,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
@@ -77,18 +77,19 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
         .build(any(Requisition.class), any(FacilityDto.class), any(ProgramDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
-        .build(any(Requisition.class), anyMapOf(UUID.class, OrderableDto.class),
+        .build(any(Requisition.class), anyMapOf(VersionIdentityDto.class, OrderableDto.class),
             any(FacilityDto.class), any(ProgramDto.class), any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.buildBatch(any(Requisition.class), any(FacilityDto.class),
-        anyMapOf(UUID.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());
   }
 
   void mockStockEventServiceResponses() {
-    when(stockEventBuilder.fromRequisition(any(), any())).thenReturn(new StockEventDto());
+    when(stockEventBuilder.fromRequisition(any(), any(), anyMap()))
+        .thenReturn(new StockEventDto());
     doNothing().when(stockEventStockManagementService).submit(any(StockEventDto.class));
   }
 
@@ -120,8 +121,9 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
           .stream()
           .map(line -> {
             OrderableDto orderableDto = new OrderableDtoDataBuilder()
-                .withId(line.getOrderableId())
-                .withPrograms(Sets.newHashSet())
+                .withId(line.getOrderable().getId())
+                .withVersionId(line.getOrderable().getVersionId())
+                .withProgramOrderable(line.getRequisition().getProgramId(), true)
                 .withProductCode(RandomStringUtils.randomAlphanumeric(5))
                 .withFullProductName(RandomStringUtils.randomAlphanumeric(5))
                 .buildAsDto();

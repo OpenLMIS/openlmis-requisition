@@ -41,6 +41,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyPartnerAssociationDto;
@@ -112,15 +113,15 @@ public class RequisitionSplitterTest {
 
     requisition = new RequisitionDataBuilder()
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .withOrderableId(orderableId1)
-            .build())
+            .withOrderable(orderableId1, 1L)
+            .build(), false)
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .withOrderableId(orderableId2)
-            .build())
+            .withOrderable(orderableId2, 1L)
+            .build(), false)
         .addLineItem(new RequisitionLineItemDataBuilder()
-            .withOrderableId(orderableId3)
+            .withOrderable(orderableId3, 1L)
             .addStockAdjustment(stockAdjustment)
-            .build())
+            .build(), false)
         .addStockAdjustmentReason(new StockAdjustmentReasonDataBuilder()
             .withReasonId(stockAdjustment.getReasonId())
             .build())
@@ -349,15 +350,15 @@ public class RequisitionSplitterTest {
     assertThat(partnerRequisition.getRequisitionLineItems())
         .hasSize(1);
 
-    Map<UUID, RequisitionLineItem> originalLineItems = originalRequisition
+    Map<VersionEntityReference, RequisitionLineItem> originalLineItems = originalRequisition
         .getRequisitionLineItems()
         .stream()
-        .collect(Collectors.toMap(RequisitionLineItem::getOrderableId, Function.identity()));
+        .collect(Collectors.toMap(RequisitionLineItem::getOrderable, Function.identity()));
 
     assertThat(originalLineItems).hasSize(3);
 
     RequisitionLineItem partnerLineItem = partnerRequisition.getRequisitionLineItems().get(0);
-    RequisitionLineItem originalLineItem = originalLineItems.get(partnerLineItem.getOrderableId());
+    RequisitionLineItem originalLineItem = originalLineItems.get(partnerLineItem.getOrderable());
 
     assertThat(partnerLineItem)
         .isEqualToIgnoringGivenFields(
@@ -373,13 +374,14 @@ public class RequisitionSplitterTest {
         .hasFieldOrPropertyWithValue("reasonId", stockAdjustment.getReasonId())
         .hasFieldOrPropertyWithValue("quantity", stockAdjustment.getQuantity());
 
-    Set<UUID> keysWithoutHandledOrderable = Sets.newHashSet(originalLineItems.keySet());
-    keysWithoutHandledOrderable.remove(partnerLineItem.getOrderableId());
+    Set<VersionEntityReference> keysWithoutHandledOrderable = Sets
+        .newHashSet(originalLineItems.keySet());
+    keysWithoutHandledOrderable.remove(partnerLineItem.getOrderable());
 
     assertThat(keysWithoutHandledOrderable).hasSize(2);
 
-    for (UUID orderableId : keysWithoutHandledOrderable) {
-      RequisitionLineItem lineItem = originalLineItems.get(orderableId);
+    for (VersionEntityReference orderableIdentity : keysWithoutHandledOrderable) {
+      RequisitionLineItem lineItem = originalLineItems.get(orderableIdentity);
       assertThat(lineItem.getRemarks()).isNullOrEmpty();
     }
 

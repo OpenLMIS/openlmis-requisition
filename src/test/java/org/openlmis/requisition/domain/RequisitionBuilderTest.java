@@ -53,6 +53,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.testutils.DtoGenerator;
@@ -150,7 +151,7 @@ public class RequisitionBuilderTest {
             requisition.getDatePhysicalStockCountCompleted());
     assertNull(requisition.getId());
     assertNull(requisition.getFacilityId());
-    assertNull(requisition.getProgramId());
+    assertEquals(requisition.getProgramId(), program.getId());
     assertNull(requisition.getProcessingPeriodId());
     assertNull(requisition.getSupervisoryNodeId());
     assertNull(requisition.getStatus());
@@ -244,16 +245,6 @@ public class RequisitionBuilderTest {
         getOrderables());
   }
 
-  @Test
-  public void shouldCreateRequisitionWithPricePerPackFromProgramOrderable() {
-    prepareLineItem(new RequisitionLineItemDto());
-    Requisition requisition = RequisitionBuilder.newRequisition(
-        requisitionDto, requisitionTemplate, program.getId(), RequisitionStatus.INITIATED,
-        getOrderables());
-
-    assertEquals(pricePerPack, requisition.getRequisitionLineItems().get(0).getPricePerPack());
-  }
-
   private void prepareForTestSkipped() {
     when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
         .thenReturn(true);
@@ -271,11 +262,11 @@ public class RequisitionBuilderTest {
         .thenReturn(Collections.singletonList(lineItemDto));
   }
 
-  private Map<UUID, OrderableDto> getOrderables() {
+  private Map<VersionIdentityDto, OrderableDto> getOrderables() {
     return requisitionDto
         .getRequisitionLineItems()
         .stream()
         .map(RequisitionLineItem.Importer::getOrderable)
-        .collect(Collectors.toMap(OrderableDto::getId, Function.identity()));
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
   }
 }

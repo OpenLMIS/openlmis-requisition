@@ -36,7 +36,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
@@ -57,7 +56,6 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -69,8 +67,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.hamcrest.Matcher;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -87,6 +83,7 @@ import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
@@ -104,18 +101,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTest {
-  private static final UUID ORDERABLE_ID = UUID.randomUUID();
 
-  private static final CurrencyUnit CURRENCY_UNIT = CurrencyUnit.USD;
-  private static final Money PRICE_PER_PACK = Money.of(CURRENCY_UNIT, 9);
   private static final int ADJUSTED_CONSUMPTION = 1;
   private static final int AVERAGE_CONSUMPTION = 1;
-  private static final Money TOTAL_COST = Money.of(CURRENCY_UNIT, 5);
   private static final int MONTHS_IN_PERIOD = 1;
   private static final int CALCULATED_ORDER_QUANTITY = 5;
   private static final int REQUESTED_QUANTITY = 5;
   private static final int STOCK_ON_HAND_VALUE = 10;
-  private static final int STOCK_ON_HAND_2 = 11;
 
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
   private static final String CONSUMED_TAG = "consumed";
@@ -126,15 +118,9 @@ public class RequisitionTest {
   private RequisitionLineItem requisitionLineItem;
   private StockCardRangeSummaryDto stockCardRangeSummaryDto;
 
-  private UUID productId = UUID.randomUUID();
-  private UUID programId = UUID.randomUUID();
-  private UUID requisitionId = UUID.randomUUID();
-
-  private UUID productId1 = UUID.randomUUID();
-  private UUID productId2 = UUID.randomUUID();
-
-  private ApprovedProductDto product1;
-  private ApprovedProductDto product2;
+  private ApprovedProductDto product;
+  private OrderableDto orderable;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
 
   private ProcessingPeriodDto period;
 
@@ -158,37 +144,41 @@ public class RequisitionTest {
 
   @Before
   public void setUp() {
-    requisition = new Requisition();
-
     requisitionLineItem = new RequisitionLineItemDataBuilder()
         .withId(UUID.randomUUID())
         .withRequestedQuantity(REQUESTED_QUANTITY)
         .withStockOnHand(20)
-        .withPricePerPack(PRICE_PER_PACK)
-        .withOrderableId(productId)
+        .withOrderable(UUID.randomUUID(), 1L)
         .withCalculatedOrderQuantity(CALCULATED_ORDER_QUANTITY)
         .withRequisition(requisition)
         .build();
 
-    requisition.setId(requisitionId);
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
-    requisition.setNumberOfMonthsInPeriod(MONTHS_IN_PERIOD);
-    requisition.setStockAdjustmentReasons(Collections.emptyList());
-    requisition.setEmergency(false);
+    requisition = new RequisitionDataBuilder()
+        .addLineItem(requisitionLineItem, false)
+        .withNumberOfMonthsInPeriod(MONTHS_IN_PERIOD)
+        .withDatePhysicalStockCountCompleted((DatePhysicalStockCountCompleted) null)
+        .buildInitiatedRegularRequisition();
+
+    orderable = new OrderableDtoDataBuilder()
+        .withId(requisitionLineItem.getOrderable().getId())
+        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .buildAsDto();
+    orderables = Maps.newHashMap(ImmutableMap.of(orderable.getIdentity(), orderable));
 
     Map<String, Integer> tags = new HashMap<>();
     tags.put(RECEIVED_TAG, 100);
     tags.put(CONSUMED_TAG, -200);
     tags.put(ADJUSTMENT_TAG, -50);
     stockCardRangeSummaryDto = new StockCardRangeSummaryDtoDataBuilder()
-        .withOrderableId(requisitionLineItem.getOrderableId())
+        .withOrderableId(requisitionLineItem.getOrderable().getId())
         .withStockOutDays(3)
         .withTags(tags)
         .buildAsDto();
 
-    product1 = mockApprovedProduct(productId1);
-    product2 = mockApprovedProduct(productId2);
+    product = new ApprovedProductDtoDataBuilder()
+        .withOrderable(orderable)
+        .buildAsDto();
 
     period = new ProcessingPeriodDtoDataBuilder().buildAsDto();
   }
@@ -200,7 +190,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     // when
-    requisition.reject(Collections.emptyMap(), UUID.randomUUID());
+    requisition.reject(orderables, UUID.randomUUID());
 
     // then
     assertEquals(requisition.getStatus(), RequisitionStatus.REJECTED);
@@ -210,7 +200,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionIfItsStatusIsInitiated() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -219,7 +209,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionIfItsStatusIsRejected() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.REJECTED);
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -228,7 +218,7 @@ public class RequisitionTest {
   public void shouldSubmitRequisitionAndMarkAsAuthorizedWhenAuthorizeIsSkipped() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), true);
+    requisition.submit(orderables, UUID.randomUUID(), true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -236,12 +226,12 @@ public class RequisitionTest {
   @Test
   public void shouldNotSubmitRegularRequisitionIfRegularFieldsNotFilled() {
     prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
-    assertThatThrownBy(() -> requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false))
+    assertThatThrownBy(() -> requisition.submit(orderables, UUID.randomUUID(), false))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getRequiredFieldErrorMessage(STOCK_ON_HAND, TOTAL_CONSUMED_QUANTITY));
 
     prepareRequisitionToHaveRequiredFieldTotalConsumedQuantityNotFilled();
-    assertThatThrownBy(() -> requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false))
+    assertThatThrownBy(() -> requisition.submit(orderables, UUID.randomUUID(), false))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getRequiredFieldErrorMessage(TOTAL_CONSUMED_QUANTITY, STOCK_ON_HAND));
 
@@ -253,7 +243,7 @@ public class RequisitionTest {
     prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled();
     requisition.setEmergency(true);
 
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.SUBMITTED);
   }
@@ -262,7 +252,7 @@ public class RequisitionTest {
   public void shouldAuthorizeRequisitionIfItsStatusIsSubmitted() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
     requisition.setStatus(RequisitionStatus.SUBMITTED);
-    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+    requisition.authorize(orderables, UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
   }
@@ -273,7 +263,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), orderables, Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -285,7 +275,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.IN_APPROVAL);
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(UUID.randomUUID());
 
-    requisition.approve(parentNode.getId(), Collections.emptyMap(), Collections.emptyList(),
+    requisition.approve(parentNode.getId(), orderables, Collections.emptyList(),
         UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.IN_APPROVAL);
@@ -298,7 +288,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().buildAsDto();
 
-    requisition.approve(parentNode.getId(), Collections.emptyMap(),
+    requisition.approve(parentNode.getId(), orderables,
         Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
@@ -311,7 +301,7 @@ public class RequisitionTest {
     SupervisoryNodeDto parentNode = mockSupervisoryParentNode(null);
     SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder().buildAsDto();
 
-    requisition.approve(parentNode.getId(), Collections.emptyMap(),
+    requisition.approve(parentNode.getId(), orderables,
         Collections.singletonList(supplyLine), UUID.randomUUID());
 
     assertEquals(requisition.getStatus(), RequisitionStatus.APPROVED);
@@ -320,18 +310,20 @@ public class RequisitionTest {
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenAuthorizingRequisitionWithNotSubmittedStatus() {
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+    requisition.authorize(orderables, UUID.randomUUID());
   }
 
   @Test
   public void shouldCalculateStockOnHandForRequisitionLineItemsWhenAuthorizing() {
-    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
+    when(requisitionLineItem.getOrderable())
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
 
+    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(true);
     when(requisitionTemplate.isColumnCalculated("stockOnHand")).thenReturn(true);
     when(LineItemFieldsCalculator.calculateTotal(requisitionLineItem))
@@ -340,8 +332,8 @@ public class RequisitionTest {
     requisition.setTemplate(requisitionTemplate);
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
-    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
+    requisition.authorize(orderables, UUID.randomUUID());
+    requisition.updateFrom(new Requisition(), orderables, true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -357,7 +349,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
         requisitionLineItem.getApprovedQuantity());
@@ -378,7 +370,7 @@ public class RequisitionTest {
     requisitionLineItem.setRequestedQuantity(null);
     requisitionLineItem.setCalculatedOrderQuantityIsa(100);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(100), requisitionLineItem.getApprovedQuantity());
   }
@@ -393,7 +385,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.submit(Collections.emptyMap(), null, true);
+    requisition.submit(orderables, null, true);
 
     assertEquals(Integer.valueOf(CALCULATED_ORDER_QUANTITY),
         requisitionLineItem.getApprovedQuantity());
@@ -407,7 +399,7 @@ public class RequisitionTest {
     when(template.isColumnDisplayed(RequisitionLineItem.CALCULATED_ORDER_QUANTITY))
         .thenReturn(true);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -422,7 +414,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -441,7 +433,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -458,7 +450,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -472,9 +464,8 @@ public class RequisitionTest {
         .thenReturn(false);
 
     requisitionLineItem.setRequestedQuantity(REQUESTED_QUANTITY);
-    requisitionLineItem.setNonFullSupply(true);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertEquals(Integer.valueOf(REQUESTED_QUANTITY), requisitionLineItem.getApprovedQuantity());
   }
@@ -489,7 +480,7 @@ public class RequisitionTest {
 
     requisitionLineItem.setRequestedQuantity(null);
 
-    requisition.authorize(Collections.emptyMap(), null);
+    requisition.authorize(orderables, null);
 
     assertNull(requisitionLineItem.getApprovedQuantity());
   }
@@ -499,6 +490,8 @@ public class RequisitionTest {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
+    when(requisitionLineItem.getOrderable())
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
     when(LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem))
@@ -508,7 +501,7 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
+    requisition.updateFrom(new Requisition(), orderables, true);
     verifyStatic(times(1));
   }
 
@@ -517,45 +510,68 @@ public class RequisitionTest {
     requisition.setRequisitionLineItems(Lists.newArrayList());
     requisition.setEmergency(true);
 
-    RequisitionLineItem fullSupply = new RequisitionLineItem();
-    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
-    nonFullSupply.setNonFullSupply(true);
+    RequisitionLineItem fullSupply = new RequisitionLineItemDataBuilder().build();
+    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(fullSupply.getOrderable().getId())
+        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .buildAsDto();
+
+    orderables.put(fullSupplyOrderable.getIdentity(), fullSupplyOrderable);
+
+    RequisitionLineItem nonFullSupply = new RequisitionLineItemDataBuilder().build();
+    OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(nonFullSupply.getOrderable().getId())
+        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), false)
+        .buildAsDto();
+
+    orderables.put(nonFullSupplyOrderable.getIdentity(), nonFullSupplyOrderable);
 
     Requisition newRequisition = new Requisition();
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
+    requisition.updateFrom(newRequisition, orderables, true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(2));
-    assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(false));
-    assertThat(requisition.getRequisitionLineItems().get(1).isNonFullSupply(), is(true));
   }
 
   @Test
   public void shouldRemoveFullSupplyLinesForEmergencyRequisition() {
-    RequisitionLineItem fullSupply = new RequisitionLineItem();
-    fullSupply.setId(UUID.randomUUID());
+    RequisitionLineItem fullSupply = new RequisitionLineItemDataBuilder().build();
+    OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(fullSupply.getOrderable().getId())
+        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .buildAsDto();
+
+    orderables.put(fullSupplyOrderable.getIdentity(), fullSupplyOrderable);
 
     requisition.setRequisitionLineItems(Lists.newArrayList(fullSupply));
     requisition.setEmergency(true);
 
-    RequisitionLineItem nonFullSupply = new RequisitionLineItem();
-    nonFullSupply.setNonFullSupply(true);
+    RequisitionLineItem nonFullSupply = new RequisitionLineItemDataBuilder().build();
+    OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
+        .withId(nonFullSupply.getOrderable().getId())
+        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), false)
+        .buildAsDto();
+
+    orderables.put(nonFullSupplyOrderable.getIdentity(), nonFullSupplyOrderable);
 
     Requisition newRequisition = new Requisition();
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
+    requisition.updateFrom(newRequisition, orderables, true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
-    assertThat(requisition.getRequisitionLineItems().get(0).isNonFullSupply(), is(true));
   }
 
   @Test
   public void shouldFindRequisitionLineItemByProductId() {
-    RequisitionLineItem found = requisition.findLineByProductId(productId);
+    RequisitionLineItem found = requisition.findLineByProduct(orderable.getId(), 1L);
 
     assertNotNull(found);
     assertEquals(requisitionLineItem, found);
@@ -567,20 +583,17 @@ public class RequisitionTest {
     Requisition newRequisition = new Requisition();
 
     // existing line
-    RequisitionLineItem firstRequisitionLineItem = new RequisitionLineItem();
+    RequisitionLineItem firstRequisitionLineItem = new RequisitionLineItemDataBuilder().build();
     firstRequisitionLineItem.setId(requisitionLineItem.getId());
-    firstRequisitionLineItem.setOrderableId(requisitionLineItem.getOrderableId());
     firstRequisitionLineItem.setRequestedQuantity(10);
     firstRequisitionLineItem.setStockOnHand(20);
     firstRequisitionLineItem.setRequisition(newRequisition);
 
     // new line
-    RequisitionLineItem secondRequisitionLineItem = new RequisitionLineItem();
+    RequisitionLineItem secondRequisitionLineItem = new RequisitionLineItemDataBuilder().build();
     secondRequisitionLineItem.setRequestedQuantity(10);
     secondRequisitionLineItem.setStockOnHand(20);
     secondRequisitionLineItem.setRequisition(newRequisition);
-    secondRequisitionLineItem.setOrderableId(UUID.randomUUID());
-    secondRequisitionLineItem.setNonFullSupply(true);
 
     newRequisition.setId(UUID.randomUUID());
     newRequisition.setStatus(RequisitionStatus.INITIATED);
@@ -588,10 +601,20 @@ public class RequisitionTest {
         Lists.newArrayList(firstRequisitionLineItem, secondRequisitionLineItem)
     );
 
+    newRequisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .forEach(orderable -> orderables.put(orderable.getIdentity(), orderable));
+
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
+    requisition.updateFrom(newRequisition, orderables, true);
 
     // then
     requisition
@@ -610,7 +633,7 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), Collections.emptyMap(), true);
+    requisition.updateFrom(new Requisition(), orderables, true);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -631,73 +654,21 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldReturnZeroIfNoTotalCosts() {
-    // given;
-    requisition.setRequisitionLineItems(Collections.emptyList());
-
-    // when
-    Money result = requisition.getTotalCost();
-    BigDecimal amount = result.getAmount();
-
-    // then
-    assertEquals(0, 0, amount.doubleValue());
-  }
-
-  @Test
-  public void shouldGetTotalCost() {
-    // given;
-    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ONE);
-
-    // when
-    Money result = requisition.getTotalCost();
-    BigDecimal amount = result.getAmount();
-
-    // then
-    assertEquals(2, 0, amount.doubleValue());
-  }
-
-  @Test
-  public void shouldGetFullSupplyTotalCost() {
-    // given;
-    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ZERO);
-
-    // when
-    Money result = requisition.getFullSupplyTotalCost();
-    BigDecimal amount = result.getAmount();
-
-    // then
-    assertEquals(1, 0, amount.doubleValue());
-  }
-
-  @Test
-  public void shouldGetNonFullSupplyTotalCost() {
-    // given;
-    setUpGetTotalCost(BigDecimal.ZERO, BigDecimal.ONE);
-
-    // when
-    Money result = requisition.getNonFullSupplyTotalCost();
-    BigDecimal amount = result.getAmount();
-
-    // then
-    assertEquals(1, 0, amount.doubleValue());
-  }
-
-  @Test
   public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided() {
     // given
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
-    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+    items.add(mockReqLine(previousRequisition, orderable.getId(), STOCK_ON_HAND_VALUE));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
     when(template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)).thenReturn(true);
 
     // when
-    Requisition req = new Requisition();
-    req.setProgramId(programId);
-    req.initiate(template, asList(product1, product2),
+    Requisition req = new RequisitionDataBuilder()
+        .withProgramId(requisition.getProgramId())
+        .build();
+    req.initiate(template, singletonList(product),
         Collections.singletonList(previousRequisition), 0, null, emptyMap(), UUID.randomUUID(),
         new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
@@ -705,26 +676,28 @@ public class RequisitionTest {
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getBeginningBalance(),
+        is(STOCK_ON_HAND_VALUE));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalReceivedQuantity(),
+        is(nullValue()));
   }
 
   @Test
   public void shouldInitiateRequisitionLineItemFieldWithOrderableId() {
     // when
-    Requisition req = new Requisition();
-    req.setProgramId(programId);
-    req.initiate(template, Collections.singleton(product1), Collections.emptyList(), 0, null,
+    Requisition req = new RequisitionDataBuilder()
+        .withProgramId(requisition.getProgramId())
+        .build();
+
+    req.initiate(template, Collections.singleton(product), Collections.emptyList(), 0, null,
         emptyMap(), UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertThat(lineItems.get(0).getOrderableId(), is(productId1));
+    assertThat(lineItems.get(0).getOrderable().getId(), is(orderable.getId()));
   }
 
   @Test
@@ -732,8 +705,7 @@ public class RequisitionTest {
     // given
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
-    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+    items.add(mockReqLine(previousRequisition, orderable.getId(), STOCK_ON_HAND_VALUE));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
@@ -742,13 +714,13 @@ public class RequisitionTest {
     ProofOfDeliveryDto pod = DtoGenerator.of(ProofOfDeliveryDto.class);
     pod.setStatus(CONFIRMED);
     pod.setLineItems(DtoGenerator.of(ProofOfDeliveryLineItemDto.class, 2));
-    pod.getLineItems().get(0).setOrderable(new ObjectReferenceDto(productId1));
-    pod.getLineItems().get(1).setOrderable(new ObjectReferenceDto(productId2));
+    pod.getLineItems().get(0).setOrderable(new ObjectReferenceDto(orderable.getId()));
 
     // when
-    Requisition req = new Requisition();
-    req.setProgramId(programId);
-    req.initiate(template, asList(product1, product2),
+    Requisition req = new RequisitionDataBuilder()
+        .withProgramId(requisition.getProgramId())
+        .build();
+    req.initiate(template, singletonList(product),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(),
         UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
@@ -756,15 +728,12 @@ public class RequisitionTest {
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getBeginningBalance(),
+        is(STOCK_ON_HAND_VALUE));
     assertThat(
-        req.findLineByProductId(productId1).getTotalReceivedQuantity(),
+        req.findLineByProduct(orderable.getId(), 1L).getTotalReceivedQuantity(),
         is(pod.getLineItems().get(0).getQuantityAccepted()));
-    assertThat(
-        req.findLineByProductId(productId2).getTotalReceivedQuantity(),
-        is(pod.getLineItems().get(1).getQuantityAccepted()));
   }
 
   @Test
@@ -772,8 +741,7 @@ public class RequisitionTest {
     // given
     Requisition previousRequisition = mock(Requisition.class);
     List<RequisitionLineItem> items = new ArrayList<>();
-    items.add(mockReqLine(previousRequisition, productId1, STOCK_ON_HAND_VALUE));
-    items.add(mockReqLine(previousRequisition, productId2, STOCK_ON_HAND_2));
+    items.add(mockReqLine(previousRequisition, orderable.getId(), STOCK_ON_HAND_VALUE));
 
     when(previousRequisition.getRequisitionLineItems()).thenReturn(items);
 
@@ -783,9 +751,11 @@ public class RequisitionTest {
     pod.setStatus(INITIATED);
 
     // when
-    Requisition req = new Requisition();
-    req.setProgramId(programId);
-    req.initiate(template, asList(product1, product2),
+    Requisition req = new RequisitionDataBuilder()
+        .withProgramId(requisition.getProgramId())
+        .build();
+
+    req.initiate(template, singletonList(product),
         Collections.singletonList(previousRequisition), 0, pod, emptyMap(), UUID.randomUUID(),
         new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
@@ -793,11 +763,11 @@ public class RequisitionTest {
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(STOCK_ON_HAND_VALUE));
-    assertThat(req.findLineByProductId(productId2).getBeginningBalance(), is(STOCK_ON_HAND_2));
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(nullValue()));
-    assertThat(req.findLineByProductId(productId2).getTotalReceivedQuantity(), is(nullValue()));
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getBeginningBalance(),
+        is(STOCK_ON_HAND_VALUE));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalReceivedQuantity(),
+        is(nullValue()));
   }
 
   @Test
@@ -823,10 +793,10 @@ public class RequisitionTest {
 
     Requisition requisition = getRequisition(notSkipped, skipped);
     requisition.getRequisitionLineItems().add(nullSkippedValueLine);
-    List<RequisitionLineItem> nonSkippedRequisitionLineItems =
-        requisition.getNonSkippedFullSupplyRequisitionLineItems();
-    RequisitionLineItem requisitionLineItem =
-        nonSkippedRequisitionLineItems.get(0);
+
+    List<RequisitionLineItem> nonSkippedRequisitionLineItems = requisition
+            .getNonSkippedFullSupplyRequisitionLineItems(orderables);
+    RequisitionLineItem requisitionLineItem = nonSkippedRequisitionLineItems.get(0);
 
     assertEquals(2, nonSkippedRequisitionLineItems.size());
     assertEquals(notSkipped.getId(), requisitionLineItem.getId());
@@ -840,7 +810,8 @@ public class RequisitionTest {
     Requisition requisition = getRequisition(notSkipped, skipped);
 
     // when
-    List<RequisitionLineItem> result = requisition.getNonSkippedNonFullSupplyRequisitionLineItems();
+    List<RequisitionLineItem> result = requisition
+        .getNonSkippedNonFullSupplyRequisitionLineItems(orderables);
 
     // then
     assertEquals(1, result.size());
@@ -863,43 +834,6 @@ public class RequisitionTest {
   }
 
   @Test
-  public void shouldUpdatePacksToShipOnSubmit() {
-    // given
-    long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder()
-        .withId(productId)
-        .withNetContent(1)
-        .buildAsDto();
-
-    setUpTestUpdatePacksToShip(product, packsToShip);
-
-    // when
-    requisition.submit(ImmutableMap.of(productId, product), UUID.randomUUID(), false);
-
-    // then
-    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
-  }
-
-  @Test
-  public void shouldUpdatePacksToShipOnAuthorize() {
-    // given
-    long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder()
-        .withId(productId)
-        .withNetContent(1)
-        .buildAsDto();
-
-    setUpTestUpdatePacksToShip(product, packsToShip);
-    requisition.setStatus(RequisitionStatus.SUBMITTED);
-
-    // when
-    requisition.authorize(ImmutableMap.of(productId, product), UUID.randomUUID());
-
-    // then
-    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
-  }
-
-  @Test
   public void shouldSetStatusAsReleasedWithoutOrderIfPeriodIsReportOnly() {
     // given
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -907,32 +841,11 @@ public class RequisitionTest {
     setUpValidRequisitionTemplate();
 
     // when
-    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(),
+    requisition.approve(null, orderables, Collections.emptyList(),
         UUID.randomUUID());
 
     // then
     assertThat(requisition.getStatus(), is(RequisitionStatus.RELEASED_WITHOUT_ORDER));
-  }
-
-  @Test
-  public void shouldUpdatePacksToShipOnApprove() {
-    // given
-    long packsToShip = 5L;
-    OrderableDto product = new OrderableDtoDataBuilder()
-        .withId(productId)
-        .withNetContent(1)
-        .buildAsDto();
-
-    setUpTestUpdatePacksToShip(product, packsToShip);
-    requisitionLineItem.setApprovedQuantity((int) packsToShip);
-    requisition.setStatus(RequisitionStatus.AUTHORIZED);
-
-    // when
-    requisition.approve(null, ImmutableMap.of(productId, product), Collections.emptyList(),
-        UUID.randomUUID());
-
-    // then
-    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
   }
 
   @Test
@@ -941,12 +854,11 @@ public class RequisitionTest {
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
 
     //when
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
-    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -956,18 +868,16 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
 
     //when
-    requisition.reject(Collections.emptyMap(), UUID.randomUUID());
+    requisition.reject(orderables, UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
-    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
   public void shouldCalculateAverageConsumptionWhenSubmitWithOnePreviousRequisition() {
     // given
-
     List<Integer> adjustedConsumptions = new ArrayList<>();
     adjustedConsumptions.add(5);
     prepareForTestAverageConsumption(adjustedConsumptions);
@@ -976,7 +886,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -996,7 +906,7 @@ public class RequisitionTest {
         .thenReturn(AVERAGE_CONSUMPTION);
 
     //when
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), false);
+    requisition.submit(orderables, UUID.randomUUID(), false);
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
@@ -1010,12 +920,11 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     //when
-    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+    requisition.authorize(orderables, UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
-    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -1025,29 +934,22 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.APPROVED);
 
     //when
-    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(),
+    requisition.approve(null, orderables, Collections.emptyList(),
         UUID.randomUUID());
 
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
-    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
   public void shouldSetPreviousAdjustedConsumptionsWhenOnePreviousRequisition() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(ORDERABLE_ID);
-
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
+
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
-
-    Requisition requisition = new Requisition();
-    requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
     requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
     requisition.setPreviousAdjustedConsumptions(1);
@@ -1058,19 +960,13 @@ public class RequisitionTest {
 
   @Test
   public void shouldSetPreviousAdjustedConsumptionsFromManyPreviousRequisitions() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(ORDERABLE_ID);
-
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(5);
-    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
+
     Requisition previousRequisition = new Requisition();
     previousRequisition
         .setRequisitionLineItems(Arrays.asList(previousRequisitionLineItem,
             previousRequisitionLineItem, previousRequisitionLineItem));
-
-    Requisition requisition = new Requisition();
-    requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
     requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
     requisition.setPreviousAdjustedConsumptions(1);
@@ -1080,13 +976,11 @@ public class RequisitionTest {
 
   @Test
   public void shouldNotAddPreviousAdjustedConsumptionIfLineSkipped() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(ORDERABLE_ID);
+    final RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
 
     RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
     previousRequisitionLineItem.setAdjustedConsumption(5);
     previousRequisitionLineItem.setSkipped(true);
-    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
@@ -1104,18 +998,12 @@ public class RequisitionTest {
   @Test
   public void shouldNotAddPreviousAdjustedConsumptionIfItIsNull() {
     //given
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(ORDERABLE_ID);
-
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem();
+    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(null);
-    previousRequisitionLineItem.setOrderableId(ORDERABLE_ID);
+
     Requisition previousRequisition = new Requisition();
     previousRequisition.setRequisitionLineItems(
         Collections.singletonList(previousRequisitionLineItem));
-
-    Requisition requisition = new Requisition();
-    requisition.setRequisitionLineItems(Lists.newArrayList(requisitionLineItem));
 
     requisition.setPreviousRequisitions(Collections.singletonList(previousRequisition));
     final int numberOfMonthsToAverage = 1;
@@ -1135,14 +1023,13 @@ public class RequisitionTest {
     RequisitionLineItem newLineItem = new RequisitionLineItem();
     newLineItem.setPreviousAdjustedConsumptions(Collections.singletonList(2));
     newLineItem.setId(requisitionLineItem.getId());
-    newLineItem.setOrderableId(requisitionLineItem.getOrderableId());
 
     Requisition newRequisition = new Requisition();
     newRequisition.setRequisitionLineItems(Lists.newArrayList(newLineItem));
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, Collections.emptyMap(), true);
+    requisition.updateFrom(newRequisition, orderables, true);
 
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
@@ -1166,7 +1053,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     requisition.setTemplate(template);
 
-    requisition.submit(Collections.emptyMap(), submitterId, false);
+    requisition.submit(orderables, submitterId, false);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED,
         submitterId);
@@ -1179,7 +1066,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.submit(Collections.emptyMap(), submitterId, true);
+    requisition.submit(orderables, submitterId, true);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.SUBMITTED,
         submitterId);
@@ -1194,7 +1081,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.authorize(Collections.emptyMap(), authorizerId);
+    requisition.authorize(orderables, authorizerId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.AUTHORIZED,
         authorizerId);
@@ -1207,7 +1094,7 @@ public class RequisitionTest {
     requisition.setTemplate(template);
     requisition.setRequisitionLineItems(Collections.emptyList());
 
-    requisition.approve(null, Collections.emptyMap(), Collections.emptyList(), approverId);
+    requisition.approve(null, orderables, Collections.emptyList(), approverId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.APPROVED,
         approverId);
@@ -1219,7 +1106,7 @@ public class RequisitionTest {
     Requisition requisition = createRequisitionWithStatusOf(RequisitionStatus.AUTHORIZED);
     requisition.setTemplate(template);
 
-    requisition.reject(Collections.emptyMap(), rejectorId);
+    requisition.reject(orderables, rejectorId);
 
     assertStatusChangeExistsAndAuthorIdMatches(requisition, RequisitionStatus.REJECTED,
         rejectorId);
@@ -1306,42 +1193,39 @@ public class RequisitionTest {
     // given
     final UUID commodityTypeId = UUID.randomUUID();
 
-    product1
+    product
         .getOrderable()
         .setIdentifiers(ImmutableMap.of(COMMODITY_TYPE_IDENTIFIER, commodityTypeId.toString()));
-
-    ApprovedProductDto product2 = mockApprovedProduct(productId2);
 
     Map<UUID, Integer> idealStockAmounts = Maps.newHashMap();
     idealStockAmounts.put(commodityTypeId, 1000);
 
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
-    req.initiate(template, asList(product1, product2), emptyList(), 0, null, idealStockAmounts,
+    req.initiate(template, singletonList(product), emptyList(), 0, null, idealStockAmounts,
         UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
-    assertEquals(2, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getIdealStockAmount(), is(1000));
-    assertThat(req.findLineByProductId(productId2).getIdealStockAmount(), is(nullValue()));
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getIdealStockAmount(), is(1000));
   }
 
   @Test
   public void shouldSetValuesFromStockCardRangeSummaryIfRequisitionIsStockBased() {
     Map<UUID, Integer> orderableSoh = Maps.newHashMap();
-    orderableSoh.put(productId1, 1000);
+    orderableSoh.put(orderable.getId(), 1000);
 
-    stockCardRangeSummaryDto.getOrderable().setId(productId1);
+    stockCardRangeSummaryDto.getOrderable().setId(orderable.getId());
 
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setNumberOfMonthsInPeriod(1);
 
-    req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+    req.initiate(requisitionTemplate, singletonList(product), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
@@ -1349,18 +1233,19 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(1, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getTotalReceivedQuantity(), is(100));
-    assertThat(req.findLineByProductId(productId1).getTotalConsumedQuantity(), is(200));
-    assertThat(req.findLineByProductId(productId1).getTotalLossesAndAdjustments(), is(-50));
-    assertThat(req.findLineByProductId(productId1).getTotalStockoutDays(), is(3));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalReceivedQuantity(), is(100));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalConsumedQuantity(), is(200));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalLossesAndAdjustments(),
+        is(-50));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalStockoutDays(), is(3));
   }
 
   @Test
   public void shouldNotExceedNumberOfDaysInPeriod() {
     Map<UUID, Integer> orderableSoh = Maps.newHashMap();
-    orderableSoh.put(productId1, 1000);
+    orderableSoh.put(orderable.getId(), 1000);
 
-    stockCardRangeSummaryDto.getOrderable().setId(productId1);
+    stockCardRangeSummaryDto.getOrderable().setId(orderable.getId());
     stockCardRangeSummaryDto.setStockOutDays(31);
 
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
@@ -1368,7 +1253,7 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setNumberOfMonthsInPeriod(1);
 
-    req.initiate(requisitionTemplate, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+    req.initiate(requisitionTemplate, singletonList(product), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
@@ -1376,15 +1261,15 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(1, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getTotalStockoutDays(), is(30));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getTotalStockoutDays(), is(30));
   }
 
   @Test
   public void shouldRejectIfRequisitionIsStockBasedAndTotalConsumedValueIsPositive() {
     Map<UUID, Integer> orderableSoh = Maps.newHashMap();
-    orderableSoh.put(productId1, 1000);
+    orderableSoh.put(orderable.getId(), 1000);
 
-    stockCardRangeSummaryDto.getOrderable().setId(productId1);
+    stockCardRangeSummaryDto.getOrderable().setId(orderable.getId());
     stockCardRangeSummaryDto.getTags().put(CONSUMED_TAG, 1000);
 
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
@@ -1393,21 +1278,21 @@ public class RequisitionTest {
     req.setNumberOfMonthsInPeriod(1);
 
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
-        asList(product1, product2), emptyList(),
+        singletonList(product), emptyList(),
         0, null, emptyMap(), UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period)))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getNonNegativeNumberErrorMessage(
-            TOTAL_CONSUMED_QUANTITY, productId1.toString()));
+            TOTAL_CONSUMED_QUANTITY, orderable.getId().toString()));
   }
 
   @Test
   public void shouldRejectIfRequisitionIsStockBasedAndTotalReceivedValueIsNegative() {
     Map<UUID, Integer> orderableSoh = Maps.newHashMap();
-    orderableSoh.put(productId1, 1000);
+    orderableSoh.put(orderable.getId(), 1000);
 
-    stockCardRangeSummaryDto.getOrderable().setId(productId1);
+    stockCardRangeSummaryDto.getOrderable().setId(orderable.getId());
     stockCardRangeSummaryDto.getTags().put(RECEIVED_TAG, -1000);
 
     RequisitionTemplate requisitionTemplate = mockStockBasedRequisitionTemplate();
@@ -1416,26 +1301,27 @@ public class RequisitionTest {
     req.setNumberOfMonthsInPeriod(1);
 
     assertThatThrownBy(() -> req.initiate(requisitionTemplate,
-        asList(product1, product2), emptyList(),
+        singletonList(product), emptyList(),
         0, null, emptyMap(), UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period)))
         .isInstanceOf(ValidationMessageException.class)
         .hasMessage(getNonPositiveNumberErrorMessage(
-            TOTAL_RECEIVED_QUANTITY, productId1.toString()));
+            TOTAL_RECEIVED_QUANTITY, orderable.getId().toString()));
   }
 
   @Test
   public void shouldSetStockOnHandForLineItems() {
     // given
     Map<UUID, Integer> orderableSoh = Maps.newHashMap();
-    orderableSoh.put(productId1, 1000);
+    orderableSoh.put(orderable.getId(), 1000);
 
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    template = mockStockBasedRequisitionTemplate();
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
 
-    req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+    req.initiate(template, singletonList(product), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(orderableSoh, emptyMap()),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
@@ -1444,19 +1330,20 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(1, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getStockOnHand(), is(1000));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getStockOnHand(), is(1000));
   }
 
   @Test
   public void shouldSetBeginningBalanceForLineItems() {
     // given
     Map<UUID, Integer> beginningBalances = Maps.newHashMap();
-    beginningBalances.put(productId1, 1000);
+    beginningBalances.put(orderable.getId(), 1000);
 
     // when
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    template = mockStockBasedRequisitionTemplate();
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+    req.initiate(template, singletonList(product), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(emptyMap(), beginningBalances),
         singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
@@ -1465,14 +1352,14 @@ public class RequisitionTest {
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
 
     assertEquals(1, lineItems.size());
-    assertThat(req.findLineByProductId(productId1).getBeginningBalance(), is(1000));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getBeginningBalance(), is(1000));
   }
 
   @Test
   public void shouldCopySkippedValueFromPreviousRequisition() {
     // given
     Requisition previousReq = mock(Requisition.class);
-    RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
+    RequisitionLineItem lineItem1 = mockReqLine(previousReq, orderable.getId(), 0);
     lineItem1.setSkipped(true);
 
     when(previousReq.getRequisitionLineItems()).thenReturn(asList(lineItem1));
@@ -1490,17 +1377,17 @@ public class RequisitionTest {
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
-    req.initiate(template, asList(product1), asList(previousReq), 0, null,
+    req.initiate(template, asList(product), asList(previousReq), 0, null,
         emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
 
-    assertThat(req.findLineByProductId(productId1).getSkipped(), is(true));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getSkipped(), is(true));
   }
 
   @Test
   public void shouldNotCopySkippedValueWhenSourceIsNotFromPreviousRequisition() {
     Requisition previousReq = mock(Requisition.class);
-    RequisitionLineItem lineItem1 = mockReqLine(previousReq, productId1, 0);
+    RequisitionLineItem lineItem1 = mockReqLine(previousReq, orderable.getId(), 0);
     lineItem1.setSkipped(true);
 
     when(previousReq.getRequisitionLineItems()).thenReturn(asList(lineItem1));
@@ -1510,11 +1397,11 @@ public class RequisitionTest {
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
-    req.initiate(template, asList(product1), asList(previousReq), 0, null,
+    req.initiate(template, asList(product), asList(previousReq), 0, null,
         emptyMap(), UUID.randomUUID(), null, singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
 
-    assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getSkipped(), is(false));
   }
 
   @Test
@@ -1525,11 +1412,11 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(false);
 
-    req.initiate(template, asList(product1), emptyList(), 0, null, emptyMap(), UUID.randomUUID(),
+    req.initiate(template, asList(product), emptyList(), 0, null, emptyMap(), UUID.randomUUID(),
         null, singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
 
-    assertThat(req.findLineByProductId(productId1).getSkipped(), is(false));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getSkipped(), is(false));
   }
 
   @Test
@@ -1541,7 +1428,8 @@ public class RequisitionTest {
 
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(true);
-    req.initiate(template, asList(product1), emptyList(), 0, null, emptyMap(), UUID.randomUUID(),
+    req.initiate(template, singletonList(product), emptyList(), 0, null, emptyMap(),
+        UUID.randomUUID(),
         null, singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
         singletonList(period));
 
@@ -1554,15 +1442,14 @@ public class RequisitionTest {
     Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
     req.setEmergency(true);
 
-    req.initiate(template, asList(product1, product2), emptyList(), 0, null, emptyMap(),
+    req.initiate(template, singletonList(product), emptyList(), 0, null, emptyMap(),
         UUID.randomUUID(), new StockData(), singletonList(stockCardRangeSummaryDto),
         singletonList(stockCardRangeSummaryDto), singletonList(period));
 
     // then
     List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
     assertThat(lineItems, hasSize(0));
-    assertThat(req.findLineByProductId(productId1), is(nullValue()));
-    assertThat(req.findLineByProductId(productId2), is(nullValue()));
+    assertThat(req.findLineByProduct(orderable.getId(), 1L), is(nullValue()));
   }
 
   @Test
@@ -1626,7 +1513,7 @@ public class RequisitionTest {
     requisitionLineItem.setCalculatedOrderQuantityIsa(689);
 
     //when
-    requisition.submit(Collections.emptyMap(), UUID.randomUUID(), true);
+    requisition.submit(orderables, UUID.randomUUID(), true);
 
     //then
     assertEquals(
@@ -1648,7 +1535,7 @@ public class RequisitionTest {
     requisitionLineItem.setCalculatedOrderQuantityIsa(689);
 
     //when
-    requisition.authorize(Collections.emptyMap(), UUID.randomUUID());
+    requisition.authorize(orderables, UUID.randomUUID());
 
     //then
     assertEquals(
@@ -1664,18 +1551,18 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(
         new DatePhysicalStockCountCompleted(LocalDate.now()));
-    this.requisition.updateFrom(requisition, Collections.emptyMap(), updateStockDate);
+    this.requisition.updateFrom(requisition, orderables, updateStockDate);
 
     return requisition;
   }
 
   private Requisition createRequisitionWithStatusOf(RequisitionStatus status) {
-    return new Requisition(UUID.randomUUID(), programId, UUID
+    return new Requisition(UUID.randomUUID(), requisition.getProgramId(), UUID
         .randomUUID(), status, false);
   }
 
   private void assertStatusChangeExistsAndAuthorIdMatches(Requisition requisition,
-                                                          RequisitionStatus status, UUID authorId) {
+      RequisitionStatus status, UUID authorId) {
     Optional<StatusChange> change = requisition.getStatusChanges().stream()
         .filter(statusChange -> statusChange.getStatus() == status)
         .findFirst();
@@ -1683,36 +1570,11 @@ public class RequisitionTest {
     assertEquals(authorId, change.get().getAuthorId());
   }
 
-  private void setUpGetTotalCost(BigDecimal fullSupplyCost, BigDecimal nonFullSupplyCost) {
-    CurrencyUnit currency = CurrencyUnit.of(currencyCode);
-
-    RequisitionLineItem fullSupplyItem = getRequisitionLineItem(false, true);
-    fullSupplyItem.setTotalCost(Money.of(currency, fullSupplyCost));
-
-    RequisitionLineItem nonFullSupplyItem = getRequisitionLineItem(false, false);
-    nonFullSupplyItem.setTotalCost(Money.of(currency, nonFullSupplyCost));
-
-    requisition.getRequisitionLineItems().clear();
-    requisition.getRequisitionLineItems().add(fullSupplyItem);
-    requisition.getRequisitionLineItems().add(nonFullSupplyItem);
-  }
-
-  private void setUpTestUpdatePacksToShip(OrderableDto productMock, long packsToShip) {
-    requisitionLineItem.setPacksToShip(packsToShip);
-    productMock.setId(requisitionLineItem.getOrderableId());
-    setUpValidRequisitionTemplate();
-  }
-
   private void prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption() {
-    requisitionLineItem = new RequisitionLineItem();
-    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
-
     PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD, true)
     ).thenReturn(ADJUSTED_CONSUMPTION);
-    when(LineItemFieldsCalculator.calculateTotalCost(requisitionLineItem, CURRENCY_UNIT))
-        .thenReturn(TOTAL_COST);
     when(LineItemFieldsCalculator
         .calculateAverageConsumption(Collections.singletonList(ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);
@@ -1721,13 +1583,8 @@ public class RequisitionTest {
     requisition.setTemplate(template);
   }
 
-  private void prepareForTestAverageConsumption(
-      List<Integer> adjustedConsumptions) {
-    UUID orderableId = UUID.randomUUID();
-    requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setOrderableId(orderableId);
+  private void prepareForTestAverageConsumption(List<Integer> adjustedConsumptions) {
     requisitionLineItem.setPreviousAdjustedConsumptions(adjustedConsumptions);
-    requisition.setRequisitionLineItems(Collections.singletonList(requisitionLineItem));
 
     PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
@@ -1746,23 +1603,14 @@ public class RequisitionTest {
   }
 
   private RequisitionLineItem mockReqLine(Requisition requisition, UUID productId,
-                                          int stockOnHand) {
+      int stockOnHand) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
-    when(item.getOrderableId()).thenReturn(productId);
+    when(item.getOrderable())
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
     when(item.getStockOnHand()).thenReturn(stockOnHand);
 
-    when(requisition.findLineByProductId(productId)).thenReturn(item);
+    when(requisition.findLineByProduct(productId, 1L)).thenReturn(item);
     return item;
-  }
-
-  private ApprovedProductDto mockApprovedProduct(UUID orderableId) {
-    return new ApprovedProductDtoDataBuilder()
-        .withOrderable(
-            new OrderableDtoDataBuilder()
-                .withId(orderableId)
-                .withProgramOrderable(programId, true)
-                .buildAsDto())
-        .buildAsDto();
   }
 
   private SupervisoryNodeDto mockSupervisoryParentNode(UUID parentId) {
@@ -1772,23 +1620,37 @@ public class RequisitionTest {
   }
 
   private RequisitionLineItem getRequisitionLineItem(Boolean skipped) {
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setSkipped(skipped);
-    item.setNonFullSupply(false);
-    item.setId(UUID.randomUUID());
-    return item;
+    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
+        .withRequisition(requisition)
+        .withSkippedFlag(skipped)
+        .build();
+
+    OrderableDto orderable = new OrderableDtoDataBuilder()
+        .withId(lineItem.getOrderable().getId())
+        .withVersionId(lineItem.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), true)
+        .buildAsDto();
+
+    orderables.put(orderable.getIdentity(), orderable);
+
+    return lineItem;
   }
 
   private RequisitionLineItem getRequisitionLineItem(boolean skipped, boolean fullSupply) {
     RequisitionLineItem item = getRequisitionLineItem(skipped);
-    item.setNonFullSupply(!fullSupply);
+    orderables.get(new VersionIdentityDto(item.getOrderable()))
+        .getProgramOrderable(requisition.getProgramId())
+        .setFullSupply(fullSupply);
+
     return item;
   }
 
   private Requisition getRequisition(RequisitionLineItem notSkipped, RequisitionLineItem skipped) {
-    Requisition requisition = new Requisition();
-    requisition.setRequisitionLineItems(Lists.newArrayList(notSkipped, skipped));
-    return requisition;
+    return new RequisitionDataBuilder()
+        .withProgramId(requisition.getProgramId())
+        .addLineItem(notSkipped, false)
+        .addLineItem(skipped, false)
+        .build();
   }
 
   private void prepareRequisitionToHaveRequiredFieldStockOnHandNotFilled() {
@@ -1804,7 +1666,7 @@ public class RequisitionTest {
   }
 
   private String getRequiredFieldErrorMessage(String requiredField, String calculatedColumn) {
-    return new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisitionId,
+    return new Message(ERROR_FIELD_MUST_HAVE_VALUES, requisition.getId(),
         requiredField, calculatedColumn).toString();
   }
 

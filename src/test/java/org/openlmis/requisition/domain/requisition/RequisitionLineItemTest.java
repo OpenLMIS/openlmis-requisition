@@ -93,18 +93,6 @@ public class RequisitionLineItemTest {
             createDefaultApprovedProduct(pricePerPack));
 
     checkResultsOfConstruction(item);
-    assertEquals(pricePerPack, item.getPricePerPack());
-  }
-
-  @Test
-  public void shouldCreateNewRequisitionLineItemWithDefaultPricePerPack() {
-    RequisitionLineItem item =
-        new RequisitionLineItem(initiatedRequisition,
-            createDefaultApprovedProduct(null));
-
-    checkResultsOfConstruction(item);
-    assertEquals(Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL),
-        item.getPricePerPack());
   }
 
   @Test
@@ -126,8 +114,6 @@ public class RequisitionLineItemTest {
     assertNull(item.getTotal());
     assertNull(item.getRequestedQuantityExplanation());
     assertNull(item.getTotalStockoutDays());
-    assertNull(item.getPacksToShip());
-    assertNull(item.getTotalCost());
     assertNull(item.getNumberOfNewPatientsAdded());
     assertNull(item.getAdjustedConsumption());
     assertNull(item.getAverageConsumption());
@@ -136,30 +122,6 @@ public class RequisitionLineItemTest {
     assertEquals(item.getStockAdjustments().size(), 0);
     assertEquals(item.getPreviousAdjustedConsumptions().size(), 0);
     assertNull(item.getCalculatedOrderQuantityIsa());
-  }
-
-  @Test
-  public void shouldUpdatePacksToShip() {
-    // given
-    UUID productId = UUID.randomUUID();
-
-    OrderableDto product = new OrderableDtoDataBuilder()
-        .withId(productId)
-        .withNetContent(1)
-        .buildAsDto();
-
-    RequisitionLineItem item = new RequisitionLineItem();
-    item.setRequisition(initiatedRequisition);
-    item.setRequestedQuantity(5);
-    item.setApprovedQuantity(5);
-    item.setCalculatedOrderQuantity(5);
-    item.setOrderableId(productId);
-
-    // when
-    item.updatePacksToShip(product);
-
-    // then
-    assertEquals(5L, item.getPacksToShip().longValue());
   }
 
   @Test
@@ -178,7 +140,6 @@ public class RequisitionLineItemTest {
   public void shouldUpdateSubmissionFields() {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
-    item.setOrderableId(UUID.randomUUID());
     item.setStockOnHand(1);
     item.setTotalConsumedQuantity(2);
     item.setBeginningBalance(3);
@@ -189,7 +150,6 @@ public class RequisitionLineItemTest {
     item.setNumberOfNewPatientsAdded(1);
 
     RequisitionLineItem updateItem = new RequisitionLineItem();
-    updateItem.setOrderableId(item.getOrderableId());
     updateItem.setStockOnHand(11);
     updateItem.setTotalConsumedQuantity(22);
     updateItem.setBeginningBalance(33);
@@ -412,17 +372,57 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldBuildFromConstructorAndExport() {
-    RequisitionLineItemDto lineItemDto = testConstructionAndExport(pricePerPack);
+    ProgramDto program = new ProgramDto();
+    program.setId(programId);
 
-    assertThat(lineItemDto.getPricePerPack(), is(pricePerPack));
-  }
+    List<StockAdjustment> stockAdjustments = new ArrayList<>();
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
+    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
 
-  @Test
-  public void shouldBuildFromConstructorAndExportWithDefaultPrice() {
-    RequisitionLineItemDto lineItemDto = testConstructionAndExport(null);
+    ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
+    RequisitionLineItem requisitionLineItem = createDefaultRequisitionLineItem(
+        ftap, stockAdjustments
+    );
+    ProgramOrderableDto programOrderable = ftap.getOrderable().getProgramOrderable(programId);
+    OrderableDto orderableDto = generateOrderableDto(programOrderable);
 
-    assertThat(lineItemDto.getPricePerPack(),
-        is(Money.of(CurrencyUnit.USD, RequisitionLineItem.PRICE_PER_PACK_IF_NULL)));
+    RequisitionLineItemDto dto = new RequisitionLineItemDto();
+    requisitionLineItem.export(dto, orderableDto);
+
+    assertNotNull(dto);
+    assertThat(dto.getOrderable().getId(), is(requisitionLineItem.getOrderable().getId()));
+    assertThat(dto.getId(), is(requisitionLineItem.getId()));
+    assertThat(dto.getBeginningBalance(), is(requisitionLineItem.getBeginningBalance()));
+    assertThat(dto.getTotalReceivedQuantity(), is(requisitionLineItem.getTotalReceivedQuantity()));
+    assertThat(dto.getTotalLossesAndAdjustments(),
+        is(requisitionLineItem.getTotalLossesAndAdjustments()));
+    assertThat(dto.getStockOnHand(), is(requisitionLineItem.getStockOnHand()));
+    assertThat(dto.getRequestedQuantity(), is(requisitionLineItem.getRequestedQuantity()));
+    assertThat(dto.getTotalConsumedQuantity(), is(requisitionLineItem.getTotalConsumedQuantity()));
+    assertThat(dto.getTotal(), is(requisitionLineItem.getTotal()));
+    assertThat(dto.getApprovedQuantity(), is(requisitionLineItem.getApprovedQuantity()));
+    assertThat(dto.getTotalStockoutDays(), is(requisitionLineItem.getTotalStockoutDays()));
+    assertThat(dto.getRemarks(), is(requisitionLineItem.getRemarks()));
+    assertThat(dto.getRequestedQuantityExplanation(),
+        is(requisitionLineItem.getRequestedQuantityExplanation()));
+    assertThat(dto.getNumberOfNewPatientsAdded(),
+        is(requisitionLineItem.getNumberOfNewPatientsAdded()));
+    assertThat(dto.getCalculatedOrderQuantityIsa(),
+        is(requisitionLineItem.getCalculatedOrderQuantityIsa()));
+
+    StockAdjustment.Importer[] items = stockAdjustments
+        .stream()
+        .map(item -> {
+          StockAdjustmentDto container = new StockAdjustmentDto();
+          item.export(container);
+
+          return (StockAdjustment.Importer) container;
+        }).toArray(StockAdjustment.Importer[]::new);
+
+    assertThat(dto.getStockAdjustments(), hasSize(items.length));
+    assertThat(dto.getStockAdjustments(), hasItems(items));
   }
 
   @Test
@@ -540,7 +540,7 @@ public class RequisitionLineItemTest {
   public void shouldCalculateStockBasedAverageConsumptionWithAdditionalQuantities() {
     UUID orderableId = UUID.randomUUID();
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .withOrderableId(orderableId)
+        .withOrderable(orderableId, 1L)
         .withAdditionalQuantityRequired(30)
         .build();
     List<Requisition> previousRequisitions = singletonList(
@@ -548,8 +548,8 @@ public class RequisitionLineItemTest {
             .withLineItems(singletonList(
                 new RequisitionLineItemDataBuilder()
                     .withAdditionalQuantityRequired(10)
-                    .withOrderableId(orderableId)
-                    .build()))
+                    .withOrderable(orderableId, 1L)
+                    .build()), false)
             .build());
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withAdditionalQuantityRequiredColumnDisplayed()
@@ -575,7 +575,7 @@ public class RequisitionLineItemTest {
   public void shouldCalculateStockBasedAverageConsumptionWithoutAdditionalQuantities() {
     UUID orderableId = UUID.randomUUID();
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .withOrderableId(orderableId)
+        .withOrderable(orderableId, 1L)
         .withAdditionalQuantityRequired(30)
         .build();
     List<Requisition> previousRequisitions = singletonList(
@@ -583,8 +583,8 @@ public class RequisitionLineItemTest {
             .withLineItems(singletonList(
                 new RequisitionLineItemDataBuilder()
                     .withAdditionalQuantityRequired(10)
-                    .withOrderableId(orderableId)
-                    .build()))
+                    .withOrderable(orderableId, 1L)
+                    .build()), false)
             .build());
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withColumn(ADDITIONAL_QUANTITY_REQUIRED, COLUMN_IDENTIFIER, SourceType.USER_INPUT,
@@ -610,12 +610,12 @@ public class RequisitionLineItemTest {
   private void checkResultsOfConstruction(RequisitionLineItem item) {
     assertEquals(initiatedRequisition, item.getRequisition());
     assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
-    assertEquals(orderableId, item.getOrderableId());
+    assertEquals(orderableId, item.getOrderable().getId());
   }
 
   private void assertOnlyApprovalFieldsEditable(Requisition requisition) {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
-        .withOrderableId(UUID.randomUUID())
+        .withOrderable(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
         .withApprovedQuantity(1)
         .withRemarks("Remarks")
@@ -623,7 +623,6 @@ public class RequisitionLineItemTest {
         .build();
 
     RequisitionLineItem updatedItem = new RequisitionLineItem();
-    updatedItem.setOrderableId(requisitionLineItem.getOrderableId());
     updatedItem.setRequisition(requisition);
     updatedItem.updateFrom(requisitionLineItem);
 
@@ -650,7 +649,6 @@ public class RequisitionLineItemTest {
         .withTotalStockoutDays(6)
         .withRemarks("remarks")
         .withRequestedQuantityExplanation("explanation")
-        .withTotalCost(Money.of(CurrencyUnit.USD, 30))
         .withNumberOfNewPatientsAdded(10)
         .build();
   }
@@ -666,72 +664,10 @@ public class RequisitionLineItemTest {
         .buildAsDto();
   }
 
-  private RequisitionLineItemDto testConstructionAndExport(Money pricePerPack) {
-    ProgramDto program = new ProgramDto();
-    program.setId(programId);
-
-    when(initiatedRequisition.getProgramId()).thenReturn(program.getId());
-
-    List<StockAdjustment> stockAdjustments = new ArrayList<>();
-    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
-    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
-    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
-    stockAdjustments.add(new StockAdjustmentDataBuilder().build());
-
-    ApprovedProductDto ftap = createDefaultApprovedProduct(pricePerPack);
-    RequisitionLineItem requisitionLineItem = createDefaultRequisitionLineItem(
-        ftap, stockAdjustments
-    );
-    ProgramOrderableDto programOrderable = ftap.getOrderable().findProgramOrderableDto(programId);
-    assert programOrderable != null;
-    OrderableDto orderableDto = generateOrderableDto(program, programOrderable);
-
-    RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    requisitionLineItem.export(dto, orderableDto);
-
-    assertNotNull(dto);
-    assertThat(dto.getOrderable().getId(), is(requisitionLineItem.getOrderableId()));
-    assertThat(dto.getId(), is(requisitionLineItem.getId()));
-    assertThat(dto.getBeginningBalance(), is(requisitionLineItem.getBeginningBalance()));
-    assertThat(dto.getTotalReceivedQuantity(), is(requisitionLineItem.getTotalReceivedQuantity()));
-    assertThat(dto.getTotalLossesAndAdjustments(),
-        is(requisitionLineItem.getTotalLossesAndAdjustments()));
-    assertThat(dto.getStockOnHand(), is(requisitionLineItem.getStockOnHand()));
-    assertThat(dto.getRequestedQuantity(), is(requisitionLineItem.getRequestedQuantity()));
-    assertThat(dto.getTotalConsumedQuantity(), is(requisitionLineItem.getTotalConsumedQuantity()));
-    assertThat(dto.getTotal(), is(requisitionLineItem.getTotal()));
-    assertThat(dto.getApprovedQuantity(), is(requisitionLineItem.getApprovedQuantity()));
-    assertThat(dto.getTotalStockoutDays(), is(requisitionLineItem.getTotalStockoutDays()));
-    assertThat(dto.getRemarks(), is(requisitionLineItem.getRemarks()));
-    assertThat(dto.getRequestedQuantityExplanation(),
-        is(requisitionLineItem.getRequestedQuantityExplanation()));
-    assertThat(dto.getTotalCost(), is(requisitionLineItem.getTotalCost()));
-    assertThat(dto.getNumberOfNewPatientsAdded(),
-        is(requisitionLineItem.getNumberOfNewPatientsAdded()));
-    assertThat(dto.getCalculatedOrderQuantityIsa(),
-        is(requisitionLineItem.getCalculatedOrderQuantityIsa()));
-
-    StockAdjustment.Importer[] items = stockAdjustments
-        .stream()
-        .map(item -> {
-          StockAdjustmentDto container = new StockAdjustmentDto();
-          item.export(container);
-
-          return (StockAdjustment.Importer) container;
-        }).toArray(StockAdjustment.Importer[]::new);
-
-    assertThat(dto.getStockAdjustments(), hasSize(items.length));
-    assertThat(dto.getStockAdjustments(), hasItems(items));
-
-    return dto;
-  }
-
-  private OrderableDto generateOrderableDto(ProgramDto program,
-                                            ProgramOrderableDto programOrderableDto) {
+  private OrderableDto generateOrderableDto(ProgramOrderableDto programOrderableDto) {
     OrderableDto orderableDto = new OrderableDto();
     orderableDto.setId(orderableId);
-    program.setId(UUID.randomUUID());
-    programOrderableDto.setProgramId(program.getId());
+    programOrderableDto.setProgramId(programId);
     Set<ProgramOrderableDto> products = new HashSet<>();
     products.add(programOrderableDto);
     orderableDto.setPrograms(products);

@@ -30,7 +30,6 @@ import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculat
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotal;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalConsumedQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateTotalLossesAndAdjustments;
-import static org.openlmis.requisition.i18n.MessageKeys.CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,10 +40,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -55,7 +57,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Type;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseEntity;
@@ -63,7 +64,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -99,10 +99,13 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
   public static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
 
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
+      @AttributeOverride(name = "versionId", column = @Column(name = "orderableVersionId"))
+  })
   @Getter
-  @Setter
-  @Type(type = UUID_TYPE)
-  private UUID orderableId;
+  private VersionEntityReference orderable;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
@@ -157,21 +160,7 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  private Long packsToShip;
-
-  @Getter
-  @Setter
   private Boolean skipped;
-
-  @Getter
-  @Setter
-  @Type(type = "org.openlmis.requisition.utils.CustomSingleColumnMoneyUserType")
-  private Money pricePerPack;
-
-  @Getter
-  @Setter
-  @Type(type = "org.openlmis.requisition.utils.CustomSingleColumnMoneyUserType")
-  private Money totalCost;
 
   @Setter
   @Getter
@@ -222,10 +211,6 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Setter
   @Getter
-  private boolean nonFullSupply;
-
-  @Setter
-  @Getter
   private Integer idealStockAmount;
 
   @Setter
@@ -251,21 +236,13 @@ public class RequisitionLineItem extends BaseEntity {
     this();
     this.requisition = requisition;
     this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
-    this.orderableId = approvedProduct.getOrderable().getId();
 
-    ProgramOrderableDto product = approvedProduct.getOrderable()
-        .findProgramOrderableDto(requisition.getProgramId());
+    OrderableDto orderable = approvedProduct.getOrderable();
 
-    if (null == product) {
-      throw new ValidationMessageException(CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE);
-    }
+    // the method will throw exception if program orderable does not exist.
+    orderable.getProgramOrderable(requisition.getProgramId());
 
-    LOGGER.debug("ProgramOrderableDto {}", product);
-    Money priceFromProduct = product.getPricePerPack();
-    this.pricePerPack = Optional
-        .ofNullable(priceFromProduct)
-        .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL));
-    this.nonFullSupply = false;
+    this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionId());
   }
 
   /**
@@ -274,17 +251,18 @@ public class RequisitionLineItem extends BaseEntity {
    * @param original an original line item with data that will be placed in a new line item.
    */
   public RequisitionLineItem(RequisitionLineItem original) {
-    this(original.orderableId, original.requisition, original.beginningBalance,
-        original.totalReceivedQuantity, original.totalLossesAndAdjustments, original.stockOnHand,
-        original.requestedQuantity, original.totalConsumedQuantity, original.total,
-        original.requestedQuantityExplanation, original.remarks, original.approvedQuantity,
-        original.totalStockoutDays, original.packsToShip, original.skipped, original.pricePerPack,
-        original.totalCost, original.numberOfNewPatientsAdded, original.additionalQuantityRequired,
+    this(null, original.requisition,
+        original.beginningBalance, original.totalReceivedQuantity,
+        original.totalLossesAndAdjustments, original.stockOnHand, original.requestedQuantity,
+        original.totalConsumedQuantity, original.total, original.requestedQuantityExplanation,
+        original.remarks, original.approvedQuantity, original.totalStockoutDays, original.skipped,
+        original.numberOfNewPatientsAdded, original.additionalQuantityRequired,
         original.adjustedConsumption, original.previousAdjustedConsumptions,
         original.averageConsumption, original.maximumStockQuantity,
         original.calculatedOrderQuantity, null, original.maxPeriodsOfStock,
-        original.nonFullSupply, original.idealStockAmount, original.calculatedOrderQuantityIsa);
+        original.idealStockAmount, original.calculatedOrderQuantityIsa);
     setId(original.getId());
+    this.orderable = new VersionEntityReference(original.orderable);
     this.stockAdjustments = original
         .stockAdjustments
         .stream()
@@ -304,7 +282,9 @@ public class RequisitionLineItem extends BaseEntity {
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
     if (importer.getOrderable() != null) {
-      requisitionLineItem.setOrderableId(importer.getOrderable().getId());
+      OrderableDto orderable = importer.getOrderable();
+      requisitionLineItem.orderable = new VersionEntityReference(
+          orderable.getId(), orderable.getVersionId());
     }
     requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
     requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
@@ -316,11 +296,8 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setRemarks(importer.getRemarks());
     requisitionLineItem.setApprovedQuantity(importer.getApprovedQuantity());
     requisitionLineItem.setTotalStockoutDays(importer.getTotalStockoutDays());
-    requisitionLineItem.setPacksToShip(importer.getPacksToShip());
-    requisitionLineItem.setPricePerPack(importer.getPricePerPack());
     requisitionLineItem.setNumberOfNewPatientsAdded(importer.getNumberOfNewPatientsAdded());
     requisitionLineItem.setTotal(importer.getTotal());
-    requisitionLineItem.setTotalCost(importer.getTotalCost());
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
     requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
@@ -399,7 +376,7 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Returns order quantity.
    */
-  int getOrderQuantity() {
+  public int getOrderQuantity() {
     if (!requisition.getStatus().isPreAuthorize()) {
       if (null == approvedQuantity) {
         return 0;
@@ -430,6 +407,18 @@ public class RequisitionLineItem extends BaseEntity {
    * @param exporter exporter to export to
    */
   public void export(Exporter exporter, OrderableDto orderableDto) {
+    Money pricePerPack = Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL);
+    long packsToShip = 0L;
+
+    if (null != orderableDto) {
+      pricePerPack = orderableDto
+          .getProgramOrderable(requisition.getProgramId())
+          .getPricePerPack();
+      packsToShip = orderableDto.packsToOrder(getOrderQuantity());
+    }
+
+    Money totalCost = pricePerPack.multipliedBy(packsToShip);
+
     exporter.setId(id);
     exporter.setOrderable(orderableDto);
     exporter.setApprovedQuantity(approvedQuantity);
@@ -493,8 +482,6 @@ public class RequisitionLineItem extends BaseEntity {
     setTotal(null);
     setRequestedQuantityExplanation(null);
     setTotalStockoutDays(null);
-    setPacksToShip(null);
-    setTotalCost(null);
     setNumberOfNewPatientsAdded(null);
     setAdjustedConsumption(null);
     setAverageConsumption(null);
@@ -541,7 +528,7 @@ public class RequisitionLineItem extends BaseEntity {
   void calculateAndSetStockBasedTotalConsumedQuantity(RequisitionTemplate template,
       StockCardRangeSummaryDto stockCardRangeSummaryDto) {
     setTotalConsumedQuantity(calculateStockBasedTotalConsumedQuantity(
-            template, stockCardRangeSummaryDto, this.orderableId));
+            template, stockCardRangeSummaryDto, this.orderable.getId()));
   }
 
   /**
@@ -550,7 +537,7 @@ public class RequisitionLineItem extends BaseEntity {
   void calculateAndSetStockBasedTotalReceivedQuantity(RequisitionTemplate template,
       StockCardRangeSummaryDto stockCardRangeSummaryDto) {
     setTotalReceivedQuantity(calculateStockBasedTotalReceivedQuantity(
-            template, stockCardRangeSummaryDto, orderableId));
+            template, stockCardRangeSummaryDto, this.orderable.getId()));
   }
 
   /**
@@ -578,18 +565,9 @@ public class RequisitionLineItem extends BaseEntity {
       StockCardRangeSummaryDto stockCardRangeSummaryToAverage, RequisitionTemplate template,
       List<ProcessingPeriodDto> periods, List<Requisition> previousRequisitions) {
     setAverageConsumption(calculateStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
-        orderableId, template, periods,
+        this.orderable.getId(), template, periods,
         template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)
             ? getSumOfAdditionalQuantitiesFromPreviousLineItems(previousRequisitions) : null));
-  }
-
-  /**
-   * Recalculates packs to ship.
-   *
-   * @param product Orderable product.
-   */
-  void updatePacksToShip(OrderableDto product) {
-    this.packsToShip = null == product ? null : product.packsToOrder(getOrderQuantity());
   }
 
   /**
@@ -754,7 +732,7 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer getSumOfAdditionalQuantitiesFromPreviousLineItems(
       List<Requisition> previousRequisitions) {
     return previousRequisitions.stream()
-        .map(req -> req.findLineByProductId(orderableId))
+        .map(req -> req.findLineByProduct(orderable.getId(), orderable.getVersionId()))
         .filter(Objects::nonNull)
         .filter(lineItem -> Objects.nonNull(lineItem.getAdditionalQuantityRequired()))
         .mapToInt(RequisitionLineItem::getAdditionalQuantityRequired)
@@ -852,13 +830,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getTotal();
 
-    Long getPacksToShip();
-
-    Money getPricePerPack();
-
     Integer getNumberOfNewPatientsAdded();
-
-    Money getTotalCost();
 
     Boolean getSkipped();
 

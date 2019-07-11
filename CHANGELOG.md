@@ -1,5 +1,8 @@
-8.0.1 / WIP
+8.1.0 / WIP
 ==================
+
+New functionality:
+* [OLMIS-6413](https://openlmis.atlassian.net/browse/OLMIS-6413): Added support for orderable versioning
 
 Improvements:
 * [OLMIS-6332](https://openlmis.atlassian.net/browse/OLMIS-6332): Changed default page size to max integer.

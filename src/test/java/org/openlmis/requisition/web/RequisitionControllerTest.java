@@ -53,6 +53,7 @@ import static org.openlmis.requisition.web.BaseRequisitionController.RESOURCE_UR
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -92,6 +93,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -343,7 +345,7 @@ public class RequisitionControllerTest {
   private void stubValidations(Requisition... requisitions) {
     for (Requisition requisition : requisitions) {
       when(requisition.getProgramId()).thenReturn(programUuid);
-      when(requisition.validateCanChangeStatus(any(LocalDate.class), anyBoolean()))
+      when(requisition.validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap()))
           .thenReturn(ValidationResult.success());
     }
   }
@@ -379,7 +381,8 @@ public class RequisitionControllerTest {
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -409,7 +412,8 @@ public class RequisitionControllerTest {
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -437,7 +441,8 @@ public class RequisitionControllerTest {
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyBoolean());
     verify(initiatedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
 
     verify(response, times(1)).addHeader(
         HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
@@ -474,7 +479,7 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
     doReturn(fieldErrors)
         .when(initiatedRequsition)
-        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
     when(initiatedRequsition.getId()).thenReturn(uuid1);
 
     assertThatThrownBy(() -> requisitionController.submitRequisition(uuid1, request, response))
@@ -580,7 +585,8 @@ public class RequisitionControllerTest {
     when(periodReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(ProcessingPeriodDto.class));
     when(stockCardRangeSummaryStockManagementService.search(any(UUID.class), any(UUID.class),
-        anySetOf(UUID.class), any(String.class), any(LocalDate.class), any(LocalDate.class)))
+        anySetOf(VersionIdentityDto.class), any(String.class),
+        any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(Collections.singletonList(stockCardRangeSummaryDto));
 
     requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
@@ -649,7 +655,8 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = new RequisitionDto();
     requisitionDto.setId(UUID.randomUUID());
     when(requisitionDtoBuilder.build(any(Requisition.class),
-        anyMapOf(UUID.class, OrderableDto.class), any(FacilityDto.class), any(ProgramDto.class),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class), any(FacilityDto.class),
+        any(ProgramDto.class),
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
 
@@ -691,7 +698,8 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = new RequisitionDto();
     requisitionDto.setId(UUID.randomUUID());
     when(requisitionDtoBuilder.build(any(Requisition.class),
-        anyMapOf(UUID.class, OrderableDto.class), any(FacilityDto.class), any(ProgramDto.class),
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        any(FacilityDto.class), any(ProgramDto.class),
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
 
@@ -783,7 +791,8 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -824,7 +833,8 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -853,7 +863,8 @@ public class RequisitionControllerTest {
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -876,7 +887,8 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -884,7 +896,7 @@ public class RequisitionControllerTest {
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(false);
     StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
-    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any()))
+    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
         .thenReturn(stockEventDto);
 
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
@@ -893,12 +905,14 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition, currentUser.getId());
+    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition,
+        currentUser.getId(), Maps.newHashMap());
     verify(stockEventService).submit(stockEventDto);
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -916,7 +930,8 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -934,7 +949,8 @@ public class RequisitionControllerTest {
     verify(requisitionService, times(1)).doApprove(eq(null), any(),
         any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -942,7 +958,7 @@ public class RequisitionControllerTest {
     setUpApprover();
     doReturn(fieldErrors)
         .when(authorizedRequsition)
-        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
 
     assertThatThrownBy(() ->
         requisitionController.approveRequisition(authorizedRequsition.getId(), request, response))
@@ -1142,7 +1158,8 @@ public class RequisitionControllerTest {
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(submittedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(), true);
+        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+            true, Maps.newHashMap());
   }
 
   @Test
@@ -1150,7 +1167,7 @@ public class RequisitionControllerTest {
     setUpAuthorizer();
     doReturn(fieldErrors)
         .when(submittedRequsition)
-        .validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
 
     assertThatThrownBy(() ->
         requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response))
