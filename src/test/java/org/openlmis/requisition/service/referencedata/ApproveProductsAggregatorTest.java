@@ -32,7 +32,9 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -41,9 +43,9 @@ public class ApproveProductsAggregatorTest {
   private static final int PRODUCT_COUNT = 25;
 
   private ProgramDto program;
-  private Set<UUID> orderableIds = Sets.newHashSet();
-  private Set<UUID> fullSupplyOrderableIds = Sets.newHashSet();
-  private Set<UUID> nonFullSupplyOrderableIds = Sets.newHashSet();
+  private Set<VersionIdentityDto> orderableIdentities = Sets.newHashSet();
+  private Set<VersionIdentityDto> fullSupplyOrderableIdentities = Sets.newHashSet();
+  private Set<VersionIdentityDto> nonFullSupplyOrderableIdentities = Sets.newHashSet();
   private List<ApprovedProductDto> approvedProducts = Lists.newArrayList();
 
   @Before
@@ -52,21 +54,22 @@ public class ApproveProductsAggregatorTest {
 
     for (int i = 0; i < PRODUCT_COUNT; ++i) {
       UUID orderableId = UUID.randomUUID();
-      orderableIds.add(orderableId);
+      orderableIdentities.add(new VersionIdentityDto(orderableId, 1L));
 
       if (i % 3 == 0) {
-        fullSupplyOrderableIds.add(orderableId);
+        fullSupplyOrderableIdentities.add(new VersionIdentityDto(orderableId, 1L));
       }
     }
 
-    nonFullSupplyOrderableIds.addAll(orderableIds);
-    nonFullSupplyOrderableIds.removeAll(fullSupplyOrderableIds);
+    nonFullSupplyOrderableIdentities.addAll(orderableIdentities);
+    nonFullSupplyOrderableIdentities.removeAll(fullSupplyOrderableIdentities);
 
-    for (UUID orderableId : orderableIds) {
+    for (VersionIdentityDto orderableIdentity : orderableIdentities) {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withOrderable(new OrderableDtoDataBuilder()
-              .withId(orderableId)
-              .withProgramOrderable(program.getId(), fullSupplyOrderableIds.contains(orderableId))
+              .withId(orderableIdentity.getId())
+              .withProgramOrderable(program.getId(),
+                  fullSupplyOrderableIdentities.contains(orderableIdentity))
               .buildAsDto())
           .withProgram(program)
           .buildAsDto()
@@ -80,14 +83,17 @@ public class ApproveProductsAggregatorTest {
         approvedProducts, program.getId()
     );
 
-    compareCollections(products.getOrderableIds(), orderableIds);
-    compareCollections(products.getFullSupplyOrderableIds(), fullSupplyOrderableIds);
-    compareCollections(products.getNonFullSupplyOrderableIds(), nonFullSupplyOrderableIds);
+    compareCollections(products.getOrderableIdentities(), orderableIdentities);
+    compareCollections(
+        products.getFullSupplyOrderableIds(),
+        fullSupplyOrderableIdentities.stream().map(BaseDto::getId).collect(Collectors.toSet()));
+    compareCollections(products.getNonFullSupplyOrderableIdentities(),
+        nonFullSupplyOrderableIdentities);
 
     Collection<ApprovedProductDto> fullSupplyProducts = approvedProducts
         .stream()
         .filter(item -> requireNonNull(
-            item.getOrderable().findProgramOrderableDto(program.getId())).getFullSupply())
+            item.getOrderable().getProgramOrderable(program.getId())).getFullSupply())
         .collect(Collectors.toList());
 
     compareCollections(products.getFullSupplyProducts(), fullSupplyProducts);
@@ -99,12 +105,12 @@ public class ApproveProductsAggregatorTest {
         approvedProducts, program.getId()
     );
 
-    for (UUID orderableId : fullSupplyOrderableIds) {
-      assertThat(products.getFullSupplyProduct(orderableId), isIn(approvedProducts));
+    for (VersionIdentityDto orderableIdentity : fullSupplyOrderableIdentities) {
+      assertThat(products.getFullSupplyProduct(orderableIdentity), isIn(approvedProducts));
     }
 
-    for (UUID orderableId : nonFullSupplyOrderableIds) {
-      assertThat(products.getFullSupplyProduct(orderableId), not(isIn(approvedProducts)));
+    for (VersionIdentityDto orderableIdentity : nonFullSupplyOrderableIdentities) {
+      assertThat(products.getFullSupplyProduct(orderableIdentity), not(isIn(approvedProducts)));
     }
   }
 

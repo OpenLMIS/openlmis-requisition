@@ -71,8 +71,8 @@ public class ApprovedProductReferenceDataServiceTest
     ApproveProductsAggregator response = service.getApprovedProducts(facilityId, program.getId());
 
     // then
-    assertThat(response.getOrderableIds(), hasSize(1));
-    assertThat(response.getOrderableIds(), hasItem(product.getOrderable().getId()));
+    assertThat(response.getOrderableIdentities(), hasSize(1));
+    assertThat(response.getOrderableIdentities(), hasItem(product.getOrderable().getIdentity()));
 
     verifyPageRequest()
         .isGetRequest()

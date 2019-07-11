@@ -22,14 +22,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 
 public final class ApproveProductsAggregator {
-  private Map<UUID, ApprovedProductDto> allProducts;
-  private Map<UUID, ApprovedProductDto> fullSupplyProducts;
-  private Map<UUID, ApprovedProductDto> nonFullSupplyProducts;
+  private Map<VersionIdentityDto, ApprovedProductDto> allProducts;
+  private Map<VersionIdentityDto, ApprovedProductDto> fullSupplyProducts;
+  private Map<VersionIdentityDto, ApprovedProductDto> nonFullSupplyProducts;
 
   /**
    * Create a new instance of the {@link ApproveProductsAggregator}.
@@ -44,27 +47,25 @@ public final class ApproveProductsAggregator {
   private void groupByOrderableId(List<ApprovedProductDto> products, UUID programId) {
     for (ApprovedProductDto approvedProduct : products) {
       OrderableDto orderable = approvedProduct.getOrderable();
-      ProgramOrderableDto po = orderable.findProgramOrderableDto(programId);
+      ProgramOrderableDto po = orderable.getProgramOrderable(programId);
 
-      if (null != po) {
-        allProducts.put(approvedProduct.getOrderable().getId(), approvedProduct);
+      allProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
 
-        if (Objects.equals(true, po.getFullSupply())) {
-          fullSupplyProducts.put(approvedProduct.getOrderable().getId(), approvedProduct);
-        }
+      if (Objects.equals(true, po.getFullSupply())) {
+        fullSupplyProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
+      }
 
-        if (Objects.equals(false, po.getFullSupply())) {
-          nonFullSupplyProducts.put(approvedProduct.getOrderable().getId(), approvedProduct);
-        }
+      if (Objects.equals(false, po.getFullSupply())) {
+        nonFullSupplyProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
       }
     }
   }
 
-  public Set<UUID> getOrderableIds() {
+  public Set<VersionIdentityDto> getOrderableIdentities() {
     return allProducts.keySet();
   }
 
-  public Set<UUID> getNonFullSupplyOrderableIds() {
+  public Set<VersionIdentityDto> getNonFullSupplyOrderableIdentities() {
     return nonFullSupplyProducts.keySet();
   }
 
@@ -72,11 +73,18 @@ public final class ApproveProductsAggregator {
     return fullSupplyProducts.values();
   }
 
+  /**
+   * Retrieve full supply orderable ids.
+   */
   public Set<UUID> getFullSupplyOrderableIds() {
-    return fullSupplyProducts.keySet();
+    return fullSupplyProducts
+        .keySet()
+        .stream()
+        .map(BaseDto::getId)
+        .collect(Collectors.toSet());
   }
 
-  public ApprovedProductDto getFullSupplyProduct(UUID orderableId) {
-    return fullSupplyProducts.get(orderableId);
+  public ApprovedProductDto getFullSupplyProduct(VersionIdentityDto orderableIdentity) {
+    return fullSupplyProducts.get(orderableIdentity);
   }
 }
