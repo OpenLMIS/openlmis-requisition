@@ -27,6 +27,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -42,6 +44,9 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -49,14 +54,11 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.assertj.core.util.Lists;
-import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -64,7 +66,6 @@ import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
-import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -72,6 +73,7 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -83,6 +85,7 @@ import org.openlmis.requisition.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
+import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -130,7 +133,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   private List<Requisition> requisitions;
   private List<ApproveRequisitionDto> approveRequisitions;
   private List<UUID> requisitionIds;
-  private Map<UUID, OrderableDto> orderablesMap;
+  private Map<VersionIdentityDto, OrderableDto> orderables;
   private List<String> permissionStrings;
   private UserDto user;
 
@@ -154,6 +157,21 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         generateRequisition(RequisitionStatus.AUTHORIZED)
     );
 
+    orderables = Maps.newHashMap();
+
+    for (Requisition requisition : requisitions) {
+      requisition
+          .getRequisitionLineItems()
+          .stream()
+          .peek(line -> line.setApprovedQuantity(10))
+          .map(line -> new OrderableDtoDataBuilder()
+              .withId(line.getOrderable().getId())
+              .withVersionId(line.getOrderable().getVersionId())
+              .withProgramOrderable(requisition.getProgramId(), true)
+              .buildAsDto())
+          .forEach(orderable -> orderables.put(orderable.getIdentity(), orderable));
+    }
+
     permissionStrings = requisitions
         .stream()
         .map(req -> String.format("%s|%s|%s", REQUISITION_APPROVE,
@@ -171,7 +189,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     approveRequisitions = requisitions
         .stream()
         .map(requisitionDtoBuilder::build)
-        .map(ApproveRequisitionDto::new)
+        .map(req -> new ApproveRequisitionDto(req, orderables))
         .collect(Collectors.toList());
 
     doReturn(requisitions)
@@ -181,14 +199,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .when(requisitionVersionValidator)
         .validateRequisitionTimestamps(any(ZonedDateTime.class), any(Requisition.class));
 
-    List<OrderableDto> orderables =
-        singletonList(generateOrderable(LINE_ITEM_PRODUCT_ID, requisitions));
-    doReturn(orderables)
+    doReturn(Lists.newArrayList(orderables.values()))
         .when(orderableReferenceDataService)
-        .findByIds(Collections.singleton(LINE_ITEM_PRODUCT_ID));
-
-    orderablesMap = orderables.stream()
-        .collect(Collectors.toMap(BasicOrderableDto::getId, orderable -> orderable));
+        .findByIdentities(anySet());
 
     program.setEnableDatePhysicalStockCountCompleted(false);
 
@@ -227,7 +240,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     requisitions.forEach(req -> {
       verify(requisitionDtoBuilder)
           .buildBatch(eq(req), facilityCaptor.capture(),
-              eq(orderablesMap), periodCaptor.capture());
+              eq(orderables), periodCaptor.capture());
 
       assertEquals(req.getProcessingPeriodId(), periodCaptor.getValue().getId());
       assertEquals(req.getFacilityId(), facilityCaptor.getValue().getId());
@@ -274,8 +287,9 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   public void shouldHaveErrorIfValidationFails() throws IOException {
     requisitions = mockRequisitionValidatonsAndStubRepository();
 
-    doReturn(ValidationResult.fieldErrors(Maps.newHashMap("someField", new Message("some-key"))))
-        .when(requisitions.get(0)).validateCanChangeStatus(any(LocalDate.class), anyBoolean());
+    doReturn(ValidationResult.fieldErrors(ImmutableMap.of("someField", new Message("some-key"))))
+        .when(requisitions.get(0))
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkValidationErrorResponseBody(response, 400,
@@ -540,7 +554,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     requisitions.forEach(requisition -> {
       Requisition spy = spy(requisition);
       requisitionSpies.add(spy);
-      when(spy.validateCanChangeStatus(any(LocalDate.class), anyBoolean()))
+      when(spy.validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap()))
           .thenReturn(ValidationResult.success());
     });
 

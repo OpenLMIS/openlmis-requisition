@@ -43,6 +43,7 @@ import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
@@ -56,6 +57,7 @@ import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -112,7 +114,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     Map<UUID, FacilityDto> facilities = findFacilities(requisitions, profiler);
     profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");
-    Map<UUID, OrderableDto> orderables = getUuidOrderableDtoMap(requisitions);
+    Map<VersionIdentityDto, OrderableDto> orderables = getOrderables(requisitions);
     Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions, profiler);
 
     profiler.start("CHECK_PERM_AND_BUILD_DTO");
@@ -129,7 +131,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
                     requisition,
                     facilities.get(requisition.getFacilityId()),
                     orderables,
-                    periods.get(requisition.getProcessingPeriodId()))));
+                    periods.get(requisition.getProcessingPeriodId())),
+                orderables));
       }
     }
 
@@ -167,8 +170,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
 
     Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions, profiler);
-    Map<UUID, OrderableDto> orderables = findOrderables(
-        profiler, () -> getLineItemOrderableIds(requisitions)
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, () -> getLineItemOrderableIdentities(requisitions)
     );
     Map<Pair<UUID, UUID>, List<SupplyLineDto>> supplyLinesMap =
         findSupplyLines(requisitions, profiler);
@@ -190,7 +193,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
           facilities, periods, approveParams);
     }
 
-    submitStockEvent(profiler, user, requisitions);
+    submitStockEvent(profiler, user, requisitions, orderables);
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
         buildResponse(processingStatus, profiler, HttpStatus.OK);
@@ -222,21 +225,35 @@ public class BatchRequisitionController extends BaseRequisitionController {
         profiler.start("FIND_REQUISITION");
         Requisition requisitionToUpdate = requisitionRepository.findOne(dto.getId());
 
+        profiler.start("RETRIEVE_ORDERABLES");
+        Set<VersionEntityReference> orderableIdentities = requisitionToUpdate
+            .getRequisitionLineItems()
+            .stream()
+            .map(RequisitionLineItem::getOrderable)
+            .collect(Collectors.toSet());
+
+        Map<VersionIdentityDto, OrderableDto> orderables = orderableReferenceDataService
+            .findByIdentities(orderableIdentities)
+            .stream()
+            .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
         profiler.start("BUILD_REQUISITION");
-        Requisition requisition = buildRequisition(dto, requisitionToUpdate);
+        Requisition requisition = buildRequisition(dto, requisitionToUpdate, orderables);
 
         profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
         result = requisitionVersionValidator
             .validateRequisitionTimestamps(requisition.getModifiedDate(), requisitionToUpdate);
         result
-            .addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition));
+            .addValidationResult(validateRequisitionCanBeUpdated(requisitionToUpdate, requisition,
+                orderables));
 
         if (!addValidationErrors(processingStatus, result, dto.getId())) {
           profiler.start("DO_UPDATE");
           RequisitionDto requisitionDto = doUpdate(requisitionToUpdate, requisition).getResource();
 
           profiler.start("ADD_PROCESSED_REQUISITION");
-          processingStatus.addProcessedRequisition(new ApproveRequisitionDto(requisitionDto));
+          processingStatus.addProcessedRequisition(
+              new ApproveRequisitionDto(requisitionDto, orderables));
         }
       }
     }
@@ -336,7 +353,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
         requisition, permissionStrings);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       profiler.start("VALIDATE_FOR_STATUS_CHANGE");
-      validationResult = getValidationResultForStatusChange(requisition);
+      validationResult = getValidationResultForStatusChange(requisition,
+          approveParams.getOrderables());
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
         profiler.start("DO_APPROVE");
         doApprove(requisition, approveParams);
@@ -345,7 +363,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder
                 .buildBatch(requisition, facilities.get(requisition.getFacilityId()),
-                    approveParams.getOrderables(), period)));
+                    approveParams.getOrderables(), period),
+                approveParams.getOrderables()));
       }
     }
     stopProfiler(profiler);
@@ -369,14 +388,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return ValidationResult.success();
   }
 
-  private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions) {
+  private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     profiler.start("SEND_STOCK_EVENT");
     ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
       for (Requisition requisition : requisitions) {
         CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, user.getId()), executor);
+            () -> submitStockEvent(requisition, user.getId(), orderables), executor);
         futures.add(future);
       }
     } finally {
@@ -385,12 +405,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     }
   }
 
-  private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate) {
-    Map<UUID, OrderableDto> orderables = orderableReferenceDataService
-        .findByIds(requisitionToUpdate.getAllOrderableIds())
-        .stream()
-        .collect(toMap(OrderableDto::getId, Function.identity()));
-
+  private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDtoBuilder.build(requisitionToUpdate),
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
@@ -499,15 +515,17 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return periods;
   }
 
-  private Map<UUID, OrderableDto> getUuidOrderableDtoMap(List<Requisition> requisitions) {
-    Set<UUID> orderableIds = requisitions.stream()
+  private Map<VersionIdentityDto, OrderableDto> getOrderables(List<Requisition> requisitions) {
+    Set<VersionEntityReference> orderableIds = requisitions
+        .stream()
         .map(Requisition::getRequisitionLineItems)
         .flatMap(Collection::stream)
-        .map(RequisitionLineItem::getOrderableId)
+        .map(RequisitionLineItem::getOrderable)
         .collect(Collectors.toSet());
 
-    return orderableReferenceDataService.findByIds(orderableIds)
+    return orderableReferenceDataService
+        .findByIdentities(orderableIds)
         .stream()
-        .collect(toMap(BasicOrderableDto::getId, orderable -> orderable));
+        .collect(toMap(BasicOrderableDto::getIdentity, Function.identity()));
   }
 }

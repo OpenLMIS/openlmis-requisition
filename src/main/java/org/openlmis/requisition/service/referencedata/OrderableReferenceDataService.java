@@ -15,11 +15,9 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -50,19 +48,6 @@ public class OrderableReferenceDataService
   @Override
   public List<OrderableDto> findAll() {
     return getPage(RequestParameters.init()).getContent();
-  }
-
-  /**
-   * Finds orderables by their ids.
-   *
-   * @param ids ids to look for.
-   * @return a page of orderables
-   */
-  public List<OrderableDto> findByIds(Collection<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Collections.emptyList();
-    }
-    return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
 
   /**

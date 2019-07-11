@@ -17,6 +17,7 @@ package org.openlmis.requisition.dto;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -43,7 +44,8 @@ public class ApproveRequisitionDto {
   /**
    * Creates instance with data from original requisition.
    */
-  public ApproveRequisitionDto(RequisitionDto requisition) {
+  public ApproveRequisitionDto(RequisitionDto requisition,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     this.id = requisition.getId();
     this.emergency = requisition.getEmergency();
     this.status = requisition.getStatus();
@@ -53,7 +55,13 @@ public class ApproveRequisitionDto {
     this.requisitionLineItems = requisition
         .getRequisitionLineItems()
         .stream()
-        .map(ApproveRequisitionLineItemDto::new)
+        .map(line -> {
+          OrderableDto orderable = orderables.get(line.getOrderable().getIdentity());
+          ProgramOrderableDto programOrderable = orderable
+              .getProgramOrderable(requisition.getProgram().getId());
+
+          return new ApproveRequisitionLineItemDto(line, orderable, programOrderable);
+        })
         .collect(Collectors.toList());
   }
 
