@@ -237,12 +237,12 @@ public class RequisitionLineItem extends BaseEntity {
     this.requisition = requisition;
     this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
 
-    OrderableDto orderable = approvedProduct.getOrderable();
+    OrderableDto orderableDto = approvedProduct.getOrderable();
 
     // the method will throw exception if program orderable does not exist.
-    orderable.getProgramOrderable(requisition.getProgramId());
+    orderableDto.getProgramOrderable(requisition.getProgramId());
 
-    this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionId());
+    this.orderable = new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId());
   }
 
   /**
