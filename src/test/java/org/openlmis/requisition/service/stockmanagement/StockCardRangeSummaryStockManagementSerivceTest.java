@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
@@ -64,7 +65,8 @@ public class StockCardRangeSummaryStockManagementSerivceTest
     // when
     StockCardRangeSummaryDto stockCardRangeSummaryDto = mockPageResponseEntityAndGetDto();
     List<StockCardRangeSummaryDto> actual = service.search(
-        programId, facilityId, Collections.singleton(orderableId), tag, startDate, endDate);
+        programId, facilityId, Collections.singleton(new VersionIdentityDto(orderableId, 1L)),
+        tag, startDate, endDate);
 
     // then
     assertThat(actual, hasSize(1));

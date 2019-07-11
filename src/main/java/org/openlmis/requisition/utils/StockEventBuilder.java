@@ -20,9 +20,12 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.BooleanUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -30,6 +33,9 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
@@ -70,7 +76,8 @@ public class StockEventBuilder {
    * @param requisition  the requisition to be used a source for the physical inventory draft
    * @return  the create physical inventory draft
    */
-  public StockEventDto fromRequisition(Requisition requisition, UUID currentUserId) {
+  public StockEventDto fromRequisition(Requisition requisition, UUID currentUserId,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     XLOGGER.entry(requisition);
     Profiler profiler = new Profiler("BUILD_STOCK_EVENT_FROM_REQUISITION");
     profiler.setLogger(XLOGGER);
@@ -93,7 +100,8 @@ public class StockEventBuilder {
             requisition.getStockAdjustmentReasons(),
             requisition.getTemplate(),
             getOccurredDate(requisition),
-            stockCards
+            stockCards,
+            orderables
         ))
         .build();
 
@@ -102,14 +110,23 @@ public class StockEventBuilder {
     return stockEventDto;
   }
 
-  private List<StockEventLineItemDto> fromLineItems(
-      List<RequisitionLineItem> lineItems, List<StockAdjustmentReason> reasons,
-      RequisitionTemplate template, LocalDate occurredDate,
-      List<StockCardDto> stockCards) {
-    return lineItems.stream()
-        .filter(lineItem -> !lineItem.isLineSkipped() && !lineItem.isNonFullSupply())
-        .map(lineItem -> fromLineItem(lineItem, reasons, template, occurredDate, stockCards))
-        .collect(Collectors.toList());
+  private List<StockEventLineItemDto> fromLineItems(List<RequisitionLineItem> lineItems,
+      List<StockAdjustmentReason> reasons, RequisitionTemplate template, LocalDate occurredDate,
+      List<StockCardDto> stockCards, Map<VersionIdentityDto, OrderableDto> orderables) {
+
+    List<StockEventLineItemDto> list = new ArrayList<>();
+
+    for (RequisitionLineItem lineItem : lineItems) {
+      OrderableDto orderable = orderables.get(new VersionIdentityDto(lineItem.getOrderable()));
+      ProgramOrderableDto programOrderable = orderable
+          .getProgramOrderable(lineItem.getRequisition().getProgramId());
+
+      if (!lineItem.isLineSkipped() && BooleanUtils.isTrue(programOrderable.getFullSupply())) {
+        list.add(fromLineItem(lineItem, reasons, template, occurredDate, stockCards));
+      }
+    }
+
+    return list;
   }
 
   private StockEventLineItemDto fromLineItem(RequisitionLineItem lineItem,
@@ -118,7 +135,7 @@ public class StockEventBuilder {
                                              LocalDate occurredDate,
                                              List<StockCardDto> stockCards) {
     return StockEventLineItemDto.builder()
-        .orderableId(lineItem.getOrderableId())
+        .orderableId(lineItem.getOrderable().getId())
         .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
         .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, template, stockCards))
@@ -162,14 +179,18 @@ public class StockEventBuilder {
     }
 
     profiler.start("GET_STOCK_CARD_FROM_LINE_ITEM");
-    StockCardDto stockCard = stockCards.stream().filter(stockCardDto -> stockCardDto.getOrderable()
-        .getId().equals(lineItem.getOrderableId())).findFirst().orElse(null);
+    StockCardDto stockCard = stockCards
+        .stream()
+        .filter(card -> Objects.equals(
+            card.getOrderable().getId(), lineItem.getOrderable().getId()))
+        .findFirst()
+        .orElse(null);
 
     if (stockCard == null) {
-      LOGGER.warn("No stock card found for Orderable: {}", lineItem.getOrderableId());
+      LOGGER.warn("No stock card found for Orderable: {}", lineItem.getOrderable().getId());
     } else if (stockCard.getStockOnHand() == null) {
       LOGGER.warn("Stock card has no stock on hand for Orderable: {}",
-              lineItem.getOrderableId());
+              lineItem.getOrderable().getId());
     }
 
     int beginningBalance =

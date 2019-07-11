@@ -22,6 +22,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
 
+import com.google.common.collect.Maps;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -31,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +54,9 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventAdjustmentDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
@@ -102,6 +107,8 @@ public class StockEventBuilderTest {
   private UUID userId = UUID.randomUUID();
 
   private List<StockCardDto> stockCards;
+
+  private Map<VersionIdentityDto, OrderableDto> orderables = Maps.newHashMap();
 
   @Mock
   private DateHelper dateHelper;
@@ -350,9 +357,9 @@ public class StockEventBuilderTest {
     StockEventDto result = getStockEventDto();
 
     assertThat(result.getLineItems().get(0).getOrderableId())
-        .isEqualTo(lineItemOneDto.getOrderableId());
+        .isEqualTo(lineItemOneDto.getOrderable().getId());
     assertThat(result.getLineItems().get(1).getOrderableId())
-        .isEqualTo(lineItemTwoDto.getOrderableId());
+        .isEqualTo(lineItemTwoDto.getOrderable().getId());
   }
 
   @Test
@@ -368,7 +375,10 @@ public class StockEventBuilderTest {
 
   @Test
   public void itShouldIgnoreNonFullSupplyLineItems() throws Exception {
-    lineItemOneDto.setNonFullSupply(true);
+    orderables
+        .get(new VersionIdentityDto(lineItemOneDto.getOrderable()))
+        .getProgramOrderable(requisition.getProgramId())
+        .setFullSupply(false);
 
     StockEventDto result = getStockEventDto();
 
@@ -441,14 +451,15 @@ public class StockEventBuilderTest {
             prepareStockAdjustment(reasons.get(0), 24),
             prepareStockAdjustment(reasons.get(2), 25)
         ))
-        .withOrderableId(UUID.randomUUID())
+        .withOrderable(UUID.randomUUID(), 1L)
         .build();
     stockCards.add(StockCardDto.builder()
         .orderable(new OrderableDtoDataBuilder()
-            .withId(lineItemOneDto.getOrderableId())
+            .withId(lineItemOneDto.getOrderable().getId())
             .buildAsDto())
         .stockOnHand(30)
         .build());
+
 
     return lineItemOneDto;
   }
@@ -464,12 +475,12 @@ public class StockEventBuilderTest {
         prepareStockAdjustment(reasons.get(1), 37),
         prepareStockAdjustment(reasons.get(3), 38)
       ))
-      .withOrderableId(UUID.randomUUID())
+      .withOrderable(UUID.randomUUID(), 1L)
       .build();
 
     stockCards.add(StockCardDto.builder()
         .orderable(new OrderableDtoDataBuilder()
-            .withId(lineItemTwoDto.getOrderableId())
+            .withId(lineItemTwoDto.getOrderable().getId())
             .buildAsDto())
         .stockOnHand(30)
         .build());
@@ -478,7 +489,7 @@ public class StockEventBuilderTest {
   }
 
   private Requisition prepareRequisitionDto(UUID periodId) {
-    return new RequisitionDataBuilder()
+    Requisition requisition = new RequisitionDataBuilder()
         .withDatePhysicalStockCountCompleted(DATE_PHYSICAL_STOCK_COUNT_COMPLETED)
         .withTemplate(prepareTemplate())
         .withFacilityId(UUID.randomUUID())
@@ -491,6 +502,18 @@ public class StockEventBuilderTest {
         ))
         .withEmergency(false)
         .build();
+
+    orderables = requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new OrderableDtoDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionId(line.getOrderable().getVersionId())
+            .withProgramOrderable(requisition.getProgramId(), true)
+            .buildAsDto())
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
+    return requisition;
   }
 
   private RequisitionTemplate prepareTemplate() {
@@ -570,6 +593,6 @@ public class StockEventBuilderTest {
   }
 
   private StockEventDto getStockEventDto() {
-    return stockEventBuilder.fromRequisition(requisition, userId);
+    return stockEventBuilder.fromRequisition(requisition, userId, orderables);
   }
 }

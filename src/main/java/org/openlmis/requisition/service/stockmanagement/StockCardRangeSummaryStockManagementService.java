@@ -19,6 +19,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.openlmis.requisition.dto.BaseDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.stereotype.Service;
@@ -34,20 +37,24 @@ public class StockCardRangeSummaryStockManagementService
    *
    * @param programId id of the program
    * @param facilityId id of the facility
-   * @param orderableIds set of orderable IDs
+   * @param orderableIdentities set of orderable IDs
    * @param tag string value of the tag
    * @param startDate start date
    * @param endDate end date
    * @return  the list of matching stock card range summaries
    */
   public List<StockCardRangeSummaryDto> search(UUID programId, UUID facilityId,
-      Set<UUID> orderableIds, String tag, LocalDate startDate, LocalDate endDate) {
+      Set<VersionIdentityDto> orderableIdentities, String tag,
+      LocalDate startDate, LocalDate endDate) {
     RequestParameters params = RequestParameters.init()
         .set("size", Integer.MAX_VALUE)
         .set("programId", programId)
         .set("facilityId", facilityId)
         .set("tag", tag)
-        .set("orderableId", orderableIds)
+        .set("orderableId", orderableIdentities
+            .stream()
+            .map(BaseDto::getId)
+            .collect(Collectors.toList()))
         .set("startDate", startDate)
         .set("endDate", endDate);
 
