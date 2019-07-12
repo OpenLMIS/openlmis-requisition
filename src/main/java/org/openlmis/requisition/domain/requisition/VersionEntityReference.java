@@ -50,6 +50,4 @@ public class VersionEntityReference {
     this.versionId = original.versionId;
   }
 
-
-
 }
