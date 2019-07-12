@@ -426,7 +426,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setPricePerPack(Optional
         .ofNullable(orderableDto)
-        .map(orderable -> orderable.getProgramOrderable(requisition.getProgramId()))
+        .map(item -> item.getProgramOrderable(requisition.getProgramId()))
         .map(ProgramOrderableDto::getPricePerPack)
         .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL)));
     exporter.setTotalCost(totalCost);
@@ -586,7 +586,7 @@ public class RequisitionLineItem extends BaseEntity {
   void updatePacksToShip(OrderableDto product) {
     this.packsToShip = Optional
         .ofNullable(product)
-        .map(orderable -> orderable.packsToOrder(getOrderQuantity()))
+        .map(item -> item.packsToOrder(getOrderQuantity()))
         .orElse(null);
   }
 
