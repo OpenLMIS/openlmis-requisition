@@ -36,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.Requisition.STOCK_ON_HAND;
 import static org.openlmis.requisition.domain.requisition.Requisition.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
@@ -56,6 +57,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -67,6 +69,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.hamcrest.Matcher;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,8 +106,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTest {
 
+  private static final CurrencyUnit CURRENCY_UNIT = CurrencyUnit.USD;
   private static final int ADJUSTED_CONSUMPTION = 1;
   private static final int AVERAGE_CONSUMPTION = 1;
+  private static final Money TOTAL_COST = Money.of(CURRENCY_UNIT, 5);
   private static final int MONTHS_IN_PERIOD = 1;
   private static final int CALCULATED_ORDER_QUANTITY = 5;
   private static final int REQUESTED_QUANTITY = 5;
@@ -654,6 +660,58 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldReturnZeroIfNoTotalCosts() {
+    // given;
+    requisition.setRequisitionLineItems(Collections.emptyList());
+
+    // when
+    Money result = requisition.getTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertEquals(0, 0, amount.doubleValue());
+  }
+
+  @Test
+  public void shouldGetTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ONE);
+
+    // when
+    Money result = requisition.getTotalCost();
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertEquals(2, 0, amount.doubleValue());
+  }
+
+  @Test
+  public void shouldGetFullSupplyTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ONE, BigDecimal.ZERO);
+
+    // when
+    Money result = requisition.getFullSupplyTotalCost(orderables);
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertEquals(1, 0, amount.doubleValue());
+  }
+
+  @Test
+  public void shouldGetNonFullSupplyTotalCost() {
+    // given;
+    setUpGetTotalCost(BigDecimal.ZERO, BigDecimal.ONE);
+
+    // when
+    Money result = requisition.getNonFullSupplyTotalCost(orderables);
+    BigDecimal amount = result.getAmount();
+
+    // then
+    assertEquals(1, 0, amount.doubleValue());
+  }
+
+  @Test
   public void shouldInitiateRequisitionLineItemFieldsIfPreviousRequisitionProvided() {
     // given
     Requisition previousRequisition = mock(Requisition.class);
@@ -834,6 +892,37 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldUpdatePacksToShipOnSubmit() {
+    // given
+    long packsToShip = 5L;
+    orderable.setNetContent(1);
+
+    setUpTestUpdatePacksToShip(orderable, packsToShip);
+
+    // when
+    requisition.submit(orderables, UUID.randomUUID(), false);
+
+    // then
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
+  }
+
+  @Test
+  public void shouldUpdatePacksToShipOnAuthorize() {
+    // given
+    long packsToShip = 5L;
+    orderable.setNetContent(1);
+
+    setUpTestUpdatePacksToShip(orderable, packsToShip);
+    requisition.setStatus(RequisitionStatus.SUBMITTED);
+
+    // when
+    requisition.authorize(orderables, UUID.randomUUID());
+
+    // then
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
+  }
+
+  @Test
   public void shouldSetStatusAsReleasedWithoutOrderIfPeriodIsReportOnly() {
     // given
     requisition.setStatus(RequisitionStatus.AUTHORIZED);
@@ -849,6 +938,23 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldUpdatePacksToShipOnApprove() {
+    // given
+    long packsToShip = 5L;
+    orderable.setNetContent(1);
+
+    setUpTestUpdatePacksToShip(orderable, packsToShip);
+    requisitionLineItem.setApprovedQuantity((int) packsToShip);
+    requisition.setStatus(RequisitionStatus.AUTHORIZED);
+
+    // when
+    requisition.approve(null, orderables, Collections.emptyList(), UUID.randomUUID());
+
+    // then
+    assertEquals(packsToShip, requisitionLineItem.getPacksToShip().longValue());
+  }
+
+  @Test
   public void shouldCalculateAdjustedConsumptionTotalCostAndAverageConsumptionWhenSubmit() {
     // given
     prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption();
@@ -859,6 +965,7 @@ public class RequisitionTest {
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -873,6 +980,7 @@ public class RequisitionTest {
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -925,6 +1033,7 @@ public class RequisitionTest {
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -940,6 +1049,7 @@ public class RequisitionTest {
     //then
     assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
+    assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
@@ -1570,11 +1680,39 @@ public class RequisitionTest {
     assertEquals(authorId, change.get().getAuthorId());
   }
 
+  private void setUpGetTotalCost(BigDecimal fullSupplyCost, BigDecimal nonFullSupplyCost) {
+    CurrencyUnit currency = CurrencyUnit.of(currencyCode);
+
+    RequisitionLineItem fullSupplyItem = getRequisitionLineItem(false, true);
+    fullSupplyItem.setTotalCost(Money.of(currency, fullSupplyCost));
+
+    RequisitionLineItem nonFullSupplyItem = getRequisitionLineItem(false, false);
+    nonFullSupplyItem.setTotalCost(Money.of(currency, nonFullSupplyCost));
+
+    requisition.getRequisitionLineItems().clear();
+    requisition.getRequisitionLineItems().add(fullSupplyItem);
+    requisition.getRequisitionLineItems().add(nonFullSupplyItem);
+  }
+
+  private void setUpTestUpdatePacksToShip(OrderableDto productMock, long packsToShip) {
+    requisitionLineItem.setPacksToShip(packsToShip);
+    productMock.setId(requisitionLineItem.getOrderable().getId());
+    productMock
+        .getMeta()
+        .setVersionId(requisitionLineItem.getOrderable().getVersionId().toString());
+    setUpValidRequisitionTemplate();
+  }
+
   private void prepareForTestAdjustedConcumptionTotalCostAndAverageConsumption() {
     PowerMockito.spy(LineItemFieldsCalculator.class);
     when(LineItemFieldsCalculator
         .calculateAdjustedConsumption(requisitionLineItem, MONTHS_IN_PERIOD, true)
     ).thenReturn(ADJUSTED_CONSUMPTION);
+    when(LineItemFieldsCalculator
+        .calculateTotalCost(requisitionLineItem,
+            orderable.getProgramOrderable(requisitionLineItem.getRequisition().getProgramId()),
+            CURRENCY_UNIT))
+        .thenReturn(TOTAL_COST);
     when(LineItemFieldsCalculator
         .calculateAverageConsumption(Collections.singletonList(ADJUSTED_CONSUMPTION)))
         .thenReturn(AVERAGE_CONSUMPTION);

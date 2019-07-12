@@ -56,11 +56,11 @@ public class ApproveRequisitionDto {
         .getRequisitionLineItems()
         .stream()
         .map(line -> {
-          OrderableDto orderable = orderables.get(line.getOrderable().getIdentity());
-          ProgramOrderableDto programOrderable = orderable
+          ProgramOrderableDto programOrderable = orderables
+              .get(line.getOrderable().getIdentity())
               .getProgramOrderable(requisition.getProgram().getId());
 
-          return new ApproveRequisitionLineItemDto(line, orderable, programOrderable);
+          return new ApproveRequisitionLineItemDto(line, programOrderable);
         })
         .collect(Collectors.toList());
   }

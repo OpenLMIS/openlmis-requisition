@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
@@ -80,6 +81,8 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
 import org.openlmis.requisition.domain.ExtraDataEntity;
 import org.openlmis.requisition.domain.ExtraDataEntity.ExtraDataExporter;
@@ -377,6 +380,9 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
     calculateAndValidateTemplateFields(this.template, products);
 
+    profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
+    updateTotalCostAndPacksToShip(products);
+
     if (isDatePhysicalStockCountCompletedEnabled) {
       profiler.start("SET_DATE_PHYSICAL_STOCK_COUNT_COMPLETED");
       setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
@@ -618,6 +624,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     updateConsumptions(products);
+    updateTotalCostAndPacksToShip(products);
 
     status = RequisitionStatus.SUBMITTED;
     statusChanges.add(StatusChange.newStatusChange(this, submitter));
@@ -640,6 +647,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     updateConsumptions(products);
+    updateTotalCostAndPacksToShip(products);
     prepareRequisitionForApproval(authorizer);
     setModifiedDate(ZonedDateTime.now());
   }
@@ -684,6 +692,7 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     updateConsumptions(products);
+    updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
 
     statusChanges.add(StatusChange.newStatusChange(this, approver));
@@ -695,6 +704,7 @@ public class Requisition extends BaseTimestampedEntity {
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector) {
     status = RequisitionStatus.REJECTED;
     updateConsumptions(products);
+    updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
     supervisoryNodeId = null;
 
@@ -804,6 +814,33 @@ public class Requisition extends BaseTimestampedEntity {
   public List<RequisitionLineItem> getNonSkippedNonFullSupplyRequisitionLineItems(
       Map<VersionIdentityDto, OrderableDto> orderables) {
     return filterLineItems(false, true, orderables);
+  }
+
+  /**
+   * Calculates combined cost of all requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getTotalCost() {
+    return calculateTotalCostForLines(requisitionLineItems);
+  }
+
+  /**
+   * Calculates combined cost of non-full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getNonFullSupplyTotalCost(Map<VersionIdentityDto, OrderableDto> orderables) {
+    return calculateTotalCostForLines(getNonSkippedNonFullSupplyRequisitionLineItems(orderables));
+  }
+
+  /**
+   * Calculates combined cost of full supply non-skipped requisition line items.
+   *
+   * @return sum of total costs.
+   */
+  public Money getFullSupplyTotalCost(Map<VersionIdentityDto, OrderableDto> orderables) {
+    return calculateTotalCostForLines(getNonSkippedFullSupplyRequisitionLineItems(orderables));
   }
 
   /**
@@ -955,6 +992,17 @@ public class Requisition extends BaseTimestampedEntity {
     statusChanges.add(StatusChange.newStatusChange(this, user));
   }
 
+  private Money calculateTotalCostForLines(List<RequisitionLineItem> requisitionLineItems) {
+    return Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(RequisitionLineItem::getTotalCost)
+        .filter(Objects::nonNull)
+        .reduce(Money::plus)
+        .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), 0));
+  }
+
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
       Map<VersionIdentityDto, OrderableDto> orderables) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
@@ -975,6 +1023,18 @@ public class Requisition extends BaseTimestampedEntity {
       getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
     }
+  }
+
+  private void updateTotalCostAndPacksToShip(Map<VersionIdentityDto, OrderableDto> products) {
+    getNonSkippedRequisitionLineItems()
+        .forEach(line -> {
+          OrderableDto product = products.get(new VersionIdentityDto(line.getOrderable()));
+          ProgramOrderableDto programOrderable = product.getProgramOrderable(programId);
+
+          line.updatePacksToShip(product);
+          line.setTotalCost(LineItemFieldsCalculator
+              .calculateTotalCost(line, programOrderable, CurrencyUnit.of(currencyCode)));
+        });
   }
 
   private void populateApprovedQuantity() {

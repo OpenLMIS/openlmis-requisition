@@ -63,9 +63,9 @@ import org.openlmis.requisition.utils.RequisitionExportHelper;
 public class RequisitionReportDtoBuilderTest {
 
   private static final String SYSTEM = "SYSTEM";
-  private static final Money FS_TOTAL_COST = Money.of(CurrencyUnit.USD, 10);
-  private static final Money NFS_TOTAL_COST = Money.of(CurrencyUnit.USD, 20);
-  private static final Money TOTAL_COST = FS_TOTAL_COST.plus(NFS_TOTAL_COST);
+  private static final Money TOTAL_COST = Money.of(CurrencyUnit.EUR, 25);
+  private static final Money FS_TOTAL_COST = Money.of(CurrencyUnit.EUR, 3);
+  private static final Money NFS_TOTAL_COST = Money.of(CurrencyUnit.EUR, 22);
 
   @Mock
   private RequisitionExportHelper exportHelper;
@@ -101,12 +101,16 @@ public class RequisitionReportDtoBuilderTest {
 
   @Before
   public void setUp() {
-    fullSupply = new RequisitionLineItemDataBuilder().build();
-    nonFullSupply = new RequisitionLineItemDataBuilder().build();
+    fullSupply = new RequisitionLineItemDataBuilder()
+        .withTotalCost(FS_TOTAL_COST)
+        .build();
+    nonFullSupply = new RequisitionLineItemDataBuilder()
+        .withTotalCost(NFS_TOTAL_COST)
+        .build();
     requisition = new RequisitionDataBuilder()
         .addLineItem(fullSupply, false)
         .addLineItem(nonFullSupply, true)
-        .build();
+        .buildInitiatedRegularRequisition();
 
     final OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(fullSupply.getOrderable().getId())

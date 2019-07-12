@@ -114,6 +114,8 @@ public class RequisitionLineItemTest {
     assertNull(item.getTotal());
     assertNull(item.getRequestedQuantityExplanation());
     assertNull(item.getTotalStockoutDays());
+    assertNull(item.getPacksToShip());
+    assertNull(item.getTotalCost());
     assertNull(item.getNumberOfNewPatientsAdded());
     assertNull(item.getAdjustedConsumption());
     assertNull(item.getAverageConsumption());
@@ -122,6 +124,29 @@ public class RequisitionLineItemTest {
     assertEquals(item.getStockAdjustments().size(), 0);
     assertEquals(item.getPreviousAdjustedConsumptions().size(), 0);
     assertNull(item.getCalculatedOrderQuantityIsa());
+  }
+
+  @Test
+  public void shouldUpdatePacksToShip() {
+    // given
+    UUID productId = UUID.randomUUID();
+
+    OrderableDto product = new OrderableDtoDataBuilder()
+        .withId(productId)
+        .withNetContent(1)
+        .buildAsDto();
+
+    RequisitionLineItem item = new RequisitionLineItem();
+    item.setRequisition(initiatedRequisition);
+    item.setRequestedQuantity(5);
+    item.setApprovedQuantity(5);
+    item.setCalculatedOrderQuantity(5);
+
+    // when
+    item.updatePacksToShip(product);
+
+    // then
+    assertEquals(5L, item.getPacksToShip().longValue());
   }
 
   @Test

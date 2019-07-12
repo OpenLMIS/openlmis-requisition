@@ -28,10 +28,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -125,6 +128,26 @@ public final class LineItemFieldsCalculator {
       }
     }
     return totalLossesAndAdjustments;
+  }
+
+  /**
+   * Calculates the total cost of the requisition line item, by multiplying price per pack
+   * and packs to ship. If either one is null, zero will be returned.
+   *
+   * @param lineItem the line item to calculate the value for
+   * @return a {@link Money} object representing the total cost for this line
+   */
+  public static Money calculateTotalCost(RequisitionLineItem lineItem,
+      ProgramOrderableDto programOrderable, CurrencyUnit currencyUnit) {
+    Money pricePerPack = programOrderable.getPricePerPack();
+
+    if (pricePerPack == null) {
+      pricePerPack = Money.of(currencyUnit, RequisitionLineItem.PRICE_PER_PACK_IF_NULL);
+    }
+
+    long packsToShip = zeroIfNull(lineItem.getPacksToShip());
+
+    return pricePerPack.multipliedBy(packsToShip);
   }
 
   /**

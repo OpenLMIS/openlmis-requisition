@@ -42,7 +42,7 @@ public class OrderLineItemDto {
                                                   OrderableDto productDto) {
     OrderLineItemDto orderLineItem = new OrderLineItemDto();
     orderLineItem.setOrderable(productDto);
-    orderLineItem.setOrderedQuantity(productDto.packsToOrder(lineItem.getOrderQuantity()));
+    orderLineItem.setOrderedQuantity(lineItem.getPacksToShip());
 
     return orderLineItem;
   }

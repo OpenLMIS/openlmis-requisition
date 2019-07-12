@@ -52,12 +52,12 @@ public class ApproveRequisitionLineItemDto {
    * Creates instance with data from original requisition line item.
    */
   public ApproveRequisitionLineItemDto(RequisitionLineItem.Importer requisitionLineItem,
-      OrderableDto orderable, ProgramOrderableDto programOrderable) {
+      ProgramOrderableDto programOrderable) {
     this.id = requisitionLineItem.getId();
     this.orderable = requisitionLineItem.getOrderable();
     this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
     this.pricePerPack = programOrderable.getPricePerPack();
-    this.totalCost = pricePerPack.multipliedBy(orderable.packsToOrder(approvedQuantity));
+    this.totalCost = requisitionLineItem.getTotalCost();
     this.skipped = requisitionLineItem.getSkipped();
   }
 

@@ -44,10 +44,7 @@ public class OrderLineItemDtoTest {
 
     assertThat(orderLineItem.getId(), is(nullValue()));
     assertThat(orderLineItem.getOrderable(), is(product));
-    assertThat(
-        orderLineItem.getOrderedQuantity(),
-        is(product.packsToOrder(requisitionLineItem.getOrderQuantity()))
-    );
+    assertThat(orderLineItem.getOrderedQuantity(), is(requisitionLineItem.getPacksToShip()));
   }
 
 }

@@ -49,7 +49,9 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   private String remarks;
   private Integer approvedQuantity;
   private Integer totalStockoutDays = 0;
+  private Long packsToShip = 5L;
   private Boolean skipped = false;
+  private Money totalCost = asMoney(60);
   private Integer numberOfNewPatientsAdded = 0;
   private Integer adjustedConsumption = 100;
   private List<Integer> previousAdjustedConsumptions = Lists.emptyList();
@@ -117,7 +119,7 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
         orderable, requisition, beginningBalance, totalReceivedQuantity,
         totalLossesAndAdjustments, stockOnHand, requestedQuantity, totalConsumedQuantity, total,
         requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays,
-        skipped, numberOfNewPatientsAdded, additionalQuantityRequired,
+        packsToShip, skipped, totalCost, numberOfNewPatientsAdded, additionalQuantityRequired,
         adjustedConsumption, previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
         calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock,
         idealStockAmount, calculatedOrderQuantityIsa
@@ -213,6 +215,11 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
+  public RequisitionLineItemDataBuilder withPacksToShip(Long packsToShip) {
+    this.packsToShip = packsToShip;
+    return this;
+  }
+
   public RequisitionLineItemDataBuilder withMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock) {
     this.maxPeriodsOfStock = maxPeriodsOfStock;
     return this;
@@ -262,6 +269,11 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   public RequisitionLineItemDataBuilder withRequestedQuantityExplanation(
       String requestedQuantityExplanation) {
     this.requestedQuantityExplanation = requestedQuantityExplanation;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withTotalCost(Money totalCost) {
+    this.totalCost = totalCost;
     return this;
   }
 
@@ -322,6 +334,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     total = null;
     approvedQuantity = null;
     totalStockoutDays = null;
+    packsToShip = null;
+    totalCost = null;
     numberOfNewPatientsAdded = null;
     adjustedConsumption = null;
     averageConsumption = null;

@@ -41,8 +41,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,10 +55,12 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilde
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -185,6 +190,50 @@ public class LineItemFieldsCalculatorTest {
 
     assertEquals(400, LineItemFieldsCalculator.calculateTotalConsumedQuantity(requisitionLineItem));
   }
+
+  @Test
+  public void shouldCalculateTotalCost() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withPacksToShip(40L)
+        .build();
+
+    ProgramOrderableDto programOrderable = new ProgramOrderableDtoDataBuilder()
+        .withProgramId(requisitionLineItem.getRequisition().getProgramId())
+        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
+        .buildAsDto();
+
+    Money totalCost = LineItemFieldsCalculator
+            .calculateTotalCost(requisitionLineItem, programOrderable, CurrencyUnit.USD);
+
+    assertEquals(Money.of(CurrencyUnit.USD, 130), totalCost);
+  }
+
+  @Test
+  public void shouldCalculateTotalCostAsZeroIfValuesAreMissing() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withPacksToShip(null)
+        .build();
+
+    ProgramOrderableDto programOrderable = new ProgramOrderableDtoDataBuilder()
+        .withProgramId(requisitionLineItem.getRequisition().getProgramId())
+        .withPricePerPack(Money.of(CurrencyUnit.USD, 3.25))
+        .buildAsDto();
+
+    Money totalCost = LineItemFieldsCalculator
+        .calculateTotalCost(requisitionLineItem, programOrderable, CurrencyUnit.USD);
+    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+
+    programOrderable.setPricePerPack(null);
+    totalCost = LineItemFieldsCalculator
+        .calculateTotalCost(requisitionLineItem, programOrderable, CurrencyUnit.USD);
+    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+
+    requisitionLineItem.setPacksToShip(20L);
+    totalCost = LineItemFieldsCalculator
+        .calculateTotalCost(requisitionLineItem, programOrderable, CurrencyUnit.USD);
+    assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY), totalCost.getAmount());
+  }
+
 
   @Test
   public void shouldCalculateAdjustedConsumption() {
