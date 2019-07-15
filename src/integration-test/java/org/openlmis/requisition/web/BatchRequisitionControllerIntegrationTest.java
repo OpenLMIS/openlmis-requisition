@@ -189,7 +189,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     approveRequisitions = requisitions
         .stream()
         .map(requisitionDtoBuilder::build)
-        .map(req -> new ApproveRequisitionDto(req, req.getProgramId(), orderables))
+        .map(req -> new ApproveRequisitionDto(req, req.getProgram().getId(), orderables))
         .collect(Collectors.toList());
 
     doReturn(requisitions)
