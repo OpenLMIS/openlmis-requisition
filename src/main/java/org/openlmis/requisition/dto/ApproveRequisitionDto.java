@@ -56,7 +56,7 @@ public class ApproveRequisitionDto {
         .getRequisitionLineItems()
         .stream()
         .map(line -> {
-          OrderableDto orderable = orderables.get(line.getOrderableIdentity());
+          OrderableDto orderable = orderables.get(line.getOrderable().getIdentity());
           ProgramOrderableDto programOrderable = orderable
               .getProgramOrderable(programId);
 
