@@ -132,6 +132,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
                     facilities.get(requisition.getFacilityId()),
                     orderables,
                     periods.get(requisition.getProcessingPeriodId())),
+                requisition.getProgramId(),
                 orderables));
       }
     }
@@ -253,7 +254,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
           profiler.start("ADD_PROCESSED_REQUISITION");
           processingStatus.addProcessedRequisition(
-              new ApproveRequisitionDto(requisitionDto, orderables));
+              new ApproveRequisitionDto(requisitionDto,
+                  requisitionToUpdate.getProgramId(), orderables));
         }
       }
     }
@@ -364,6 +366,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
             new ApproveRequisitionDto(requisitionDtoBuilder
                 .buildBatch(requisition, facilities.get(requisition.getFacilityId()),
                     approveParams.getOrderables(), period),
+                requisition.getProgramId(),
                 approveParams.getOrderables()));
       }
     }

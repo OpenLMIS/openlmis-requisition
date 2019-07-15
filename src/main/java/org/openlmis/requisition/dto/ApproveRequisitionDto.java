@@ -44,7 +44,7 @@ public class ApproveRequisitionDto {
   /**
    * Creates instance with data from original requisition.
    */
-  public ApproveRequisitionDto(RequisitionDto requisition,
+  public ApproveRequisitionDto(RequisitionDto requisition, UUID programId,
       Map<VersionIdentityDto, OrderableDto> orderables) {
     this.id = requisition.getId();
     this.emergency = requisition.getEmergency();
@@ -56,11 +56,11 @@ public class ApproveRequisitionDto {
         .getRequisitionLineItems()
         .stream()
         .map(line -> {
-          ProgramOrderableDto programOrderable = orderables
-              .get(line.getOrderable().getIdentity())
-              .getProgramOrderable(requisition.getProgram().getId());
+          OrderableDto orderable = orderables.get(line.getOrderableIdentity());
+          ProgramOrderableDto programOrderable = orderable
+              .getProgramOrderable(programId);
 
-          return new ApproveRequisitionLineItemDto(line, programOrderable);
+          return new ApproveRequisitionLineItemDto(line, orderable, programOrderable);
         })
         .collect(Collectors.toList());
   }
