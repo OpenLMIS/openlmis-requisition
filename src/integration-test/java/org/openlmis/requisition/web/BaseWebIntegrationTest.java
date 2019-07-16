@@ -71,12 +71,23 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.StatusMessageRepository;
+import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -84,8 +95,13 @@ import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.DateHelper;
+import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.utils.StockEventBuilder;
+import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
+import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -145,8 +161,62 @@ public abstract class BaseWebIntegrationTest {
   @MockBean
   protected RequisitionTemplateService requisitionTemplateService;
 
+  @MockBean
+  RequisitionDtoBuilder requisitionDtoBuilder;
+
+  @MockBean
+  StockEventBuilder stockEventBuilder;
+
+  @MockBean
+  StockEventStockManagementService stockEventStockManagementService;
+
+  @MockBean
+  TogglzReferenceDataService togglzReferenceDataService;
+
+  @MockBean
+  StatusMessageRepository statusMessageRepository;
+
+  @MockBean
+  FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @MockBean
+  RequisitionStatusProcessor requisitionStatusProcessor;
+
+  @MockBean
+  DatePhysicalStockCountCompletedEnabledPredicate predicate;
+
+  @MockBean
+  PeriodService periodService;
+
+  @MockBean
+  RequisitionService requisitionService;
+
+  @MockBean
+  UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
+
+  @MockBean
+  OrderableReferenceDataService orderableReferenceDataService;
+
+  @MockBean(name = "facilityReferenceDataService")
+  FacilityReferenceDataService facilityReferenceDataService;
+
+  @MockBean
+  ValidReasonStockmanagementService validReasonStockmanagementService;
+
+  @MockBean
+  ReasonsValidator reasonsValidator;
+
+  @MockBean
+  ProcessedRequestsRedisRepository processedRequestsRedisRepository;
+
+  @MockBean
+  RequisitionVersionValidator requisitionVersionValidator;
+
   @Autowired
   protected ObjectMapper objectMapper;
+
+  @Autowired
+  DateHelper dateHelper;
 
   @LocalServerPort
   private int serverPort;

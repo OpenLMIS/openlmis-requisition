@@ -66,7 +66,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -79,7 +78,6 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
-import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -87,9 +85,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ReasonCategory;
-import org.openlmis.requisition.dto.ReasonDto;
-import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -97,40 +92,25 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
-import org.openlmis.requisition.repository.StatusMessageRepository;
-import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.PageDto;
-import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.RequisitionStatusProcessor;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.testutils.ReasonDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
-import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
-import org.openlmis.requisition.validate.ReasonsValidator;
-import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -178,45 +158,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private static final String MODIFIED_DATE_FROM = "modifiedDateFrom";
   private static final String MODIFIED_DATE_TO = "modifiedDateTo";
 
-  @MockBean
-  private StatusMessageRepository statusMessageRepository;
-
-  @MockBean
-  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-
-  @MockBean
-  private RequisitionStatusProcessor requisitionStatusProcessor;
-
-  @MockBean
-  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
-
-  @MockBean
-  private PeriodService periodService;
-
-  @MockBean
-  private RequisitionService requisitionService;
-
-  @MockBean
-  private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
-
-  @MockBean
-  private OrderableReferenceDataService orderableReferenceDataService;
-
-  @MockBean(name = "facilityReferenceDataService")
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @MockBean
-  private ValidReasonStockmanagementService validReasonStockmanagementService;
-
-  @MockBean
-  private ReasonsValidator reasonsValidator;
-
-  @MockBean
-  private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
-
-  @MockBean
-  private RequisitionVersionValidator requisitionVersionValidator;
-
   @Autowired
   private MessageService messageService;
 
@@ -227,7 +168,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private RequisitionController requisitionController;
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
-  private UUID facilityTypeId = UUID.randomUUID();
   private UUID key = UUID.randomUUID();
   private String wrongFormatKey = "some-key";
   private UserDto user;
@@ -244,7 +184,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     mockRequisitionDtoBuilderResponses();
     mockStockEventServiceResponses();
 
-    mockReasons();
+    stockAdjustmentReasons = mockReasons();
 
     mockSearchSupervisoryNodeByProgramAndFacility();
 
@@ -324,6 +264,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldReturnBadRequestWhenUpdateRequisitionValidationFailure() {
     // given
+    mockPeriod();
     Requisition requisition = spy(generateRequisition());
 
     UUID requisitionId = requisition.getId();
@@ -1314,7 +1255,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // then
     assertEquals(requisition.getId(), result.getId());
     verify(facilityReferenceDataService).findOne(facility.getId());
-    verify(validReasonStockmanagementService).search(program.getId(), facilityTypeId);
+    verify(validReasonStockmanagementService).search(program.getId(), facility.getType().getId());
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
@@ -1488,7 +1429,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // then
     assertEquals(requisition.getId(), result.getId());
     verify(facilityReferenceDataService).findOne(facility.getId());
-    verify(validReasonStockmanagementService).search(program.getId(), facilityTypeId);
+    verify(validReasonStockmanagementService).search(program.getId(), facility.getType().getId());
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
@@ -2165,87 +2106,11 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     return right;
   }
 
-  private void mockReasons() {
-    ReasonDto reasonDto = new ReasonDtoDataBuilder()
-        .withReasonCategory(ReasonCategory.ADJUSTMENT)
-        .withReasonType(ReasonType.BALANCE_ADJUSTMENT)
-        .withDescription("simple description")
-        .withFreeTextAllowed(false)
-        .withHidden(false)
-        .buildAsDto();
-
-    ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
-    when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);
-
-    when(validReasonStockmanagementService.search(anyUuid(), anyUuid()))
-        .thenReturn(singletonList(validReasonDto));
-    stockAdjustmentReasons = singletonList(StockAdjustmentReason.newInstance(reasonDto));
-  }
-
-  private void mockValidationSuccess() {
-    given(statusMessageRepository.save(any(StatusMessage.class))).willReturn(null);
-
-    doNothing().when(requisitionStatusProcessor)
-        .statusChange(any(Requisition.class), any(Locale.class));
-    doNothing().when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
-    doNothing().when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(any(FacilityDto.class), any(UUID.class));
-  }
-
   private void mockExternalServiceCalls() {
     given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(Collections.emptyList());
     given(supervisoryNodeReferenceDataService.findOne(anyUuid()))
         .willReturn(new SupervisoryNodeDto());
-  }
-
-  private ProgramDto mockProgram() {
-    ProgramDto programDto = DtoGenerator.of(ProgramDto.class);
-
-    given(programReferenceDataService.findOne(anyUuid())).willReturn(programDto);
-
-    return programDto;
-  }
-
-  private FacilityDto mockFacility() {
-    FacilityDto facilityDto = DtoGenerator.of(FacilityDto.class);
-    facilityDto.getType().setId(facilityTypeId);
-
-    when(facilityReferenceDataService.findOne(anyUuid())).thenReturn(facilityDto);
-
-    return facilityDto;
-  }
-
-  private ProcessingPeriodDto mockPeriod() {
-    return mockPeriod(dateHelper.getCurrentDateWithSystemZone());
-  }
-
-  private ProcessingPeriodDto mockPeriod(LocalDate endDate) {
-    ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
-    period.setEndDate(endDate);
-
-    when(periodService.findPeriod(anyUuid(), anyUuid(), anyUuid(), anyBoolean()))
-        .thenReturn(period);
-    when(periodService.getPeriod(anyUuid()))
-        .thenReturn(period);
-
-    return period;
-  }
-
-  private void mockFacilityDoesNotSupportProgram(FacilityDto facility, UUID programId) {
-    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
-    ValidationMessageException exception = mockValidationException(errorKey);
-    doThrow(exception).when(facilitySupportsProgramHelper)
-        .checkIfFacilitySupportsProgram(facility, programId);
-  }
-
-  private ValidationMessageException mockValidationException(String key, Object... args) {
-    ValidationMessageException exception = mock(ValidationMessageException.class);
-    Message errorMessage = new Message(key, (Object[]) args);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
   }
 
   private DataRetrievalException mockDataException(String key, Object... args) {

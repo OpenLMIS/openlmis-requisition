@@ -66,6 +66,7 @@ import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -293,8 +294,8 @@ public class RequisitionLineItem extends BaseEntity {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
-    if (importer.getOrderable() != null) {
-      OrderableDto orderable = importer.getOrderable();
+    if (importer.getOrderableIdentity() != null) {
+      VersionIdentityDto orderable = importer.getOrderableIdentity();
       requisitionLineItem.orderable = new VersionEntityReference(
           orderable.getId(), orderable.getVersionId());
     }
@@ -828,7 +829,7 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getTotalReceivedQuantity();
 
-    OrderableDto getOrderable();
+    VersionIdentityDto getOrderableIdentity();
 
     Integer getTotalLossesAndAdjustments();
 

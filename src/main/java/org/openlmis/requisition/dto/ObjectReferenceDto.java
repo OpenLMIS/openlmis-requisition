@@ -25,13 +25,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @ToString
-public class ObjectReferenceDto {
-
-  @Getter
-  @Setter
-  private UUID id;
+public class ObjectReferenceDto extends BaseDto {
 
   @Getter
   @Setter

@@ -35,6 +35,9 @@ public class BasicProgramDtoDataBuilder implements DtoDataBuilder<BasicProgramDt
 
   @Override
   public BasicProgramDto buildAsDto() {
-    return new BasicProgramDto(id, code, name);
+    BasicProgramDto dto = new BasicProgramDto(code, name);
+    dto.setId(id);
+
+    return dto;
   }
 }

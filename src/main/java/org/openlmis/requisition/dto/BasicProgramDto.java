@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.dto;
 
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,9 +25,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
-public class BasicProgramDto {
-  private UUID id;
+@EqualsAndHashCode(callSuper = true)
+public class BasicProgramDto extends BaseDto {
   private String code;
   private String name;
 

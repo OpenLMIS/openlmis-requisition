@@ -28,11 +28,10 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -65,6 +64,7 @@ import org.mockito.ArgumentCaptor;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -78,19 +78,14 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.RequisitionStatusProcessor;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
-import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
-import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -103,27 +98,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   private static final String APPROVE_ALL = "approveAll";
   private static final String SAVE_ALL = "saveAll";
   private static final String ID = "id";
-
-  @MockBean
-  private RequisitionService requisitionService;
-
-  @MockBean
-  private DatePhysicalStockCountCompletedEnabledPredicate predicate;
-
-  @MockBean
-  private OrderableReferenceDataService orderableReferenceDataService;
-
-  @MockBean
-  private RequisitionStatusProcessor requisitionStatusProcessor;
-
-  @MockBean
-  private BasicRequisitionDtoBuilder basicRequisitionDtoBuilder;
-
-  @MockBean
-  private RequisitionVersionValidator requisitionVersionValidator;
-
-  @MockBean(name = "facilityReferenceDataService")
-  private FacilityReferenceDataService facilityReferenceDataService;
 
   @MockBean(name = "userReferenceDataService")
   private UserReferenceDataService userReferenceDataService;
@@ -157,6 +131,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         generateRequisition(RequisitionStatus.AUTHORIZED)
     );
 
+    doReturn(requisitions)
+        .when(requisitionRepository)
+        .readDistinctByIdIn(anySetOf(UUID.class));
+
     orderables = Maps.newHashMap();
 
     for (Requisition requisition : requisitions) {
@@ -189,7 +167,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     approveRequisitions = requisitions
         .stream()
         .map(requisitionDtoBuilder::build)
-        .map(req -> new ApproveRequisitionDto(req, req.getProgram().getId(), orderables))
+        .map(req -> new ApproveRequisitionDto(req, req.getProgramId(), orderables))
         .collect(Collectors.toList());
 
     doReturn(requisitions)
@@ -201,7 +179,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     doReturn(Lists.newArrayList(orderables.values()))
         .when(orderableReferenceDataService)
-        .findByIdentities(anySet());
+        .findByIdentities(anySetOf(VersionEntityReference.class));
 
     program.setEnableDatePhysicalStockCountCompleted(false);
 
@@ -218,7 +196,18 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .collect(Collectors.toList());
     doReturn(facilityList)
         .when(facilityReferenceDataService)
-        .search(requisitions.stream().map(Requisition::getFacilityId).collect(Collectors.toSet()));
+        .search(anySetOf(UUID.class));
+
+    List<ProcessingPeriodDto> periods = requisitions
+        .stream()
+        .map(r -> new ProcessingPeriodDtoDataBuilder()
+            .withId(r.getProcessingPeriodId())
+            .buildAsDto())
+        .collect(Collectors.toList());
+
+    doReturn(periods)
+        .when(periodReferenceDataService)
+        .search(anySetOf(UUID.class));
 
     mockSearchSupervisoryNodeByProgramAndFacility();
   }
@@ -429,17 +418,8 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   }
 
   private ReleasableRequisitionDto generateReleasableRequisitionDto() {
-    ReleasableRequisitionDto releasableRequisitionDto = new ReleasableRequisitionDtoDataBuilder()
+    return new ReleasableRequisitionDtoDataBuilder()
         .buildAsDto();
-    return releasableRequisitionDto;
-  }
-
-  private ValidationMessageException mockValidationException(String key, Object... args) {
-    ValidationMessageException exception = mock(ValidationMessageException.class);
-    Message errorMessage = new Message(key, (Object[]) args);
-    given(exception.asMessage()).willReturn(errorMessage);
-
-    return exception;
   }
 
   private void checkResponseBody(Response response) throws IOException {

@@ -16,54 +16,57 @@
 package org.openlmis.requisition.web;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReasonCategory;
+import org.openlmis.requisition.dto.ReasonDto;
+import org.openlmis.requisition.dto.ReasonType;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
-import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.utils.StockEventBuilder;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.openlmis.requisition.testutils.ReasonDtoDataBuilder;
+import org.openlmis.requisition.utils.Message;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrationTest {
-
-  @MockBean
-  RequisitionDtoBuilder requisitionDtoBuilder;
-
-  @MockBean
-  private StockEventBuilder stockEventBuilder;
-
-  @MockBean
-  private StockEventStockManagementService stockEventStockManagementService;
-
-  @MockBean
-  private TogglzReferenceDataService togglzReferenceDataService;
 
   @Before
   public void setUp() {
@@ -95,6 +98,82 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
 
   void mockRepositorySaveAnswer() {
     given(requisitionRepository.save(any(Requisition.class))).willAnswer(new SaveAnswer<>());
+  }
+
+  ProgramDto mockProgram() {
+    ProgramDto programDto = DtoGenerator.of(ProgramDto.class);
+
+    given(programReferenceDataService.findOne(anyUuid())).willReturn(programDto);
+
+    return programDto;
+  }
+
+  FacilityDto mockFacility() {
+    FacilityDto facilityDto = DtoGenerator.of(FacilityDto.class);
+    facilityDto.getType().setId(UUID.randomUUID());
+
+    when(facilityReferenceDataService.findOne(anyUuid())).thenReturn(facilityDto);
+
+    return facilityDto;
+  }
+
+  ProcessingPeriodDto mockPeriod() {
+    return mockPeriod(dateHelper.getCurrentDateWithSystemZone());
+  }
+
+  ProcessingPeriodDto mockPeriod(LocalDate endDate) {
+    ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
+    period.setEndDate(endDate);
+
+    when(periodService.findPeriod(anyUuid(), anyUuid(), anyUuid(), anyBoolean()))
+        .thenReturn(period);
+    when(periodService.getPeriod(anyUuid()))
+        .thenReturn(period);
+
+    return period;
+  }
+
+  void mockFacilityDoesNotSupportProgram(FacilityDto facility, UUID programId) {
+    String errorKey = MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
+    ValidationMessageException exception = mockValidationException(errorKey);
+    doThrow(exception).when(facilitySupportsProgramHelper)
+        .checkIfFacilitySupportsProgram(facility, programId);
+  }
+
+  ValidationMessageException mockValidationException(String key, Object... args) {
+    ValidationMessageException exception = mock(ValidationMessageException.class);
+    Message errorMessage = new Message(key, (Object[]) args);
+    given(exception.asMessage()).willReturn(errorMessage);
+
+    return exception;
+  }
+
+  void mockValidationSuccess() {
+    given(statusMessageRepository.save(any(StatusMessage.class))).willReturn(null);
+
+    doNothing().when(requisitionStatusProcessor)
+        .statusChange(any(Requisition.class), any(Locale.class));
+    doNothing().when(facilitySupportsProgramHelper)
+        .checkIfFacilitySupportsProgram(any(UUID.class), any(UUID.class));
+    doNothing().when(facilitySupportsProgramHelper)
+        .checkIfFacilitySupportsProgram(any(FacilityDto.class), any(UUID.class));
+  }
+
+  List<StockAdjustmentReason> mockReasons() {
+    ReasonDto reasonDto = new ReasonDtoDataBuilder()
+        .withReasonCategory(ReasonCategory.ADJUSTMENT)
+        .withReasonType(ReasonType.BALANCE_ADJUSTMENT)
+        .withDescription("simple description")
+        .withFreeTextAllowed(false)
+        .withHidden(false)
+        .buildAsDto();
+
+    ValidReasonDto validReasonDto = mock(ValidReasonDto.class);
+    when(validReasonDto.getReasonWithHidden()).thenReturn(reasonDto);
+
+    when(validReasonStockmanagementService.search(anyUuid(), anyUuid()))
+        .thenReturn(singletonList(validReasonDto));
+    return singletonList(StockAdjustmentReason.newInstance(reasonDto));
   }
 
   private static class BuildRequisitionDtoAnswer implements Answer<RequisitionDto> {

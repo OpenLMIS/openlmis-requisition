@@ -35,9 +35,9 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -417,7 +417,7 @@ public class RequisitionLineItemTest {
     requisitionLineItem.export(dto, orderableDto);
 
     assertNotNull(dto);
-    assertThat(dto.getOrderable().getId(), is(requisitionLineItem.getOrderable().getId()));
+    assertThat(dto.getOrderableIdentity().getId(), is(requisitionLineItem.getOrderable().getId()));
     assertThat(dto.getId(), is(requisitionLineItem.getId()));
     assertThat(dto.getBeginningBalance(), is(requisitionLineItem.getBeginningBalance()));
     assertThat(dto.getTotalReceivedQuantity(), is(requisitionLineItem.getTotalReceivedQuantity()));
@@ -460,7 +460,8 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldReturnFalseWhenSkippedIsNotSet() {
-    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDataBuilder()
+        .buildAsDto();
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
     assertEquals(false, requisitionLineItem.getSkipped());
@@ -468,7 +469,8 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldNotSetPreviousAdjustedConsumption() {
-    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDataBuilder()
+        .buildAsDto();
     requisitionLineItemDto.setPreviousAdjustedConsumptions(singletonList(1));
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
@@ -477,7 +479,8 @@ public class RequisitionLineItemTest {
 
   @Test
   public void shouldSetStockAdjustments() {
-    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
+    RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDataBuilder()
+        .buildAsDto();
     requisitionLineItemDto.setStockAdjustments(singletonList(new StockAdjustmentDto()));
     RequisitionLineItem requisitionLineItem =
         RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
@@ -690,13 +693,14 @@ public class RequisitionLineItemTest {
   }
 
   private OrderableDto generateOrderableDto(ProgramOrderableDto programOrderableDto) {
-    OrderableDto orderableDto = new OrderableDto();
-    orderableDto.setId(orderableId);
     programOrderableDto.setProgramId(programId);
-    Set<ProgramOrderableDto> products = new HashSet<>();
-    products.add(programOrderableDto);
-    orderableDto.setPrograms(products);
-    return orderableDto;
+    Set<ProgramOrderableDto> products = Sets.newHashSet(programOrderableDto);
+
+    return new OrderableDtoDataBuilder()
+        .withId(orderableId)
+        .withVersionId(1L)
+        .withPrograms(products)
+        .buildAsDto();
   }
 
   private Requisition mockReq(RequisitionStatus status) {

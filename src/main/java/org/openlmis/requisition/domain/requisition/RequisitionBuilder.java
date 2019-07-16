@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.utils.Message;
@@ -61,7 +62,8 @@ public final class RequisitionBuilder {
    */
   public static Requisition newRequisition(
       Requisition.Importer importer, RequisitionTemplate template, UUID programId,
-      RequisitionStatus requisitionStatus, Map<VersionIdentityDto, OrderableDto> orderables) {
+      ProcessingPeriodDto processingPeriodDto, RequisitionStatus requisitionStatus,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     Requisition requisition = new Requisition();
     requisition.setProgramId(programId);
     requisition.setRequisitionLineItems(new ArrayList<>());
@@ -86,7 +88,7 @@ public final class RequisitionBuilder {
         requisition.getRequisitionLineItems().add(item);
       }
     }
-    requisition.setNumberOfMonthsInPeriod(importer.getProcessingPeriod().getDurationInMonths());
+    requisition.setNumberOfMonthsInPeriod(processingPeriodDto.getDurationInMonths());
     requisition.setDraftStatusMessage(importer.getDraftStatusMessage());
 
     // required for conflict check

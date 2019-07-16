@@ -26,6 +26,8 @@ public class BasicProcessingPeriodDtoTest extends EqualsContractTest<BasicProces
 
   @Override
   protected void prepare(EqualsVerifier<BasicProcessingPeriodDto> verifier) {
-    verifier.withRedefinedSubclass(ProcessingPeriodDto.class);
+    verifier
+        .withRedefinedSubclass(ProcessingPeriodDto.class)
+        .withRedefinedSuperclass();
   }
 }

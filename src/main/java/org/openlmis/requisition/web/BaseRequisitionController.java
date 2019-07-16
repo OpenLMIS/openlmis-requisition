@@ -47,6 +47,7 @@ import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
+import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
@@ -55,12 +56,14 @@ import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -79,6 +82,7 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
@@ -144,8 +148,7 @@ public abstract class BaseRequisitionController extends BaseController {
   private StockEventBuilder stockEventBuilder;
 
   @Autowired
-  private DatePhysicalStockCountCompletedEnabledPredicate
-      datePhysicalStockCountCompletedEnabledPredicate;
+  DatePhysicalStockCountCompletedEnabledPredicate datePhysicalStockCountCompletedEnabledPredicate;
 
   @Autowired
   private DateHelper dateHelper;
@@ -171,6 +174,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private RequisitionSplitter requisitionSplitter;
 
+  @Autowired
+  private ValidReasonStockmanagementService validReasonStockmanagementService;
+
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
 
@@ -181,7 +187,7 @@ public abstract class BaseRequisitionController extends BaseController {
     );
 
     ETagResource<RequisitionDto> dto = doUpdate(
-        requisitionToUpdate, requisition, orderables, facility, program, profiler
+        requisitionToUpdate, requisition, orderables, facility, program, null, profiler
     );
 
     stopProfiler(profiler, dto);
@@ -190,7 +196,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
   ETagResource<RequisitionDto> doUpdate(Requisition toUpdate, Requisition requisition,
       Map<VersionIdentityDto, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
-      Profiler profiler) {
+      ProcessingPeriodDto period, Profiler profiler) {
     profiler.start("UPDATE");
 
     toUpdate.updateFrom(requisition, orderables,
@@ -201,7 +207,7 @@ public abstract class BaseRequisitionController extends BaseController {
     logger.debug("Requisition with id {} saved", toUpdate.getId());
 
     return new ETagResource<>(
-        buildDto(profiler, toUpdate, orderables, facility, program, null),
+        buildDto(profiler, toUpdate, orderables, facility, program, period),
         toUpdate.getVersion());
   }
 
@@ -490,6 +496,18 @@ public abstract class BaseRequisitionController extends BaseController {
       }
     }
     return null;
+  }
+
+  List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId, FacilityDto facilityDto) {
+    List<ValidReasonDto> validReasons = validReasonStockmanagementService
+            .search(programId, facilityDto.getType().getId());
+
+    List<ReasonDto> reasonDtos = validReasons
+        .stream()
+        .map(ValidReasonDto::getReasonWithHidden)
+        .collect(Collectors.toList());
+
+    return StockAdjustmentReason.newInstance(reasonDtos);
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,

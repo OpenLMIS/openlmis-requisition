@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -130,6 +132,44 @@ public class RequisitionDto implements Requisition.Importer, Requisition.Exporte
     return new ArrayList<>(
         Optional.ofNullable(requisitionLineItems).orElse(Collections.emptyList())
     );
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getFacilityId() {
+    return Optional
+        .ofNullable(facility)
+        .map(BaseDto::getId)
+        .orElse(null);
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getProgramId() {
+    return Optional
+        .ofNullable(program)
+        .map(BaseDto::getId)
+        .orElse(null);
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getProcessingPeriodId() {
+    return Optional
+        .ofNullable(processingPeriod)
+        .map(BaseDto::getId)
+        .orElse(null);
+  }
+
+  @Override
+  @JsonIgnore
+  public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
+    return Optional
+        .ofNullable(availableNonFullSupplyProducts)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .collect(Collectors.toSet());
   }
 
   @Override

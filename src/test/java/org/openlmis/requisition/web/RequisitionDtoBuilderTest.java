@@ -141,9 +141,9 @@ public class RequisitionDtoBuilderTest {
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
-    assertEquals(facility, requisitionDto.getFacility());
-    assertEquals(program, requisitionDto.getProgram());
-    assertEquals(processingPeriod, requisitionDto.getProcessingPeriod());
+    assertEquals(facility.getId(), requisitionDto.getFacilityId());
+    assertEquals(program.getId(), requisitionDto.getProgramId());
+    assertEquals(processingPeriod.getId(), requisitionDto.getProcessingPeriodId());
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(
@@ -151,8 +151,8 @@ public class RequisitionDtoBuilderTest {
         requisitionDto.getDatePhysicalStockCountCompleted());
     assertEquals(requisition.getStatus(), requisitionDto.getStatus());
     assertNotNull(requisitionDto.getModifiedDate());
-    assertEquals(Collections.singleton(orderableDto),
-        requisitionDto.getAvailableNonFullSupplyProducts());
+    assertEquals(Collections.singleton(orderableDto.getIdentity()),
+        requisitionDto.getAvailableNonFullSupplyProductsIdentities());
 
     assertReasonsEquals(requisitionDto.getStockAdjustmentReasons());
   }
@@ -183,13 +183,15 @@ public class RequisitionDtoBuilderTest {
 
     assertNotNull(requisitionDto);
     assertNotNull(requisitionDto.getAvailableFullSupplyProducts());
-    assertNotNull(requisitionDto.getAvailableNonFullSupplyProducts());
+    assertNotNull(requisitionDto.getAvailableNonFullSupplyProductsIdentities());
     assertEquals(2, requisitionDto.getAvailableFullSupplyProducts().size());
-    assertEquals(2, requisitionDto.getAvailableNonFullSupplyProducts().size());
+    assertEquals(2, requisitionDto.getAvailableNonFullSupplyProductsIdentities().size());
     assertTrue(requisitionDto.getAvailableFullSupplyProducts().contains(fs1));
     assertTrue(requisitionDto.getAvailableFullSupplyProducts().contains(fs2));
-    assertTrue(requisitionDto.getAvailableNonFullSupplyProducts().contains(nfs1));
-    assertTrue(requisitionDto.getAvailableNonFullSupplyProducts().contains(nfs2));
+    assertTrue(requisitionDto.getAvailableNonFullSupplyProductsIdentities()
+        .contains(nfs1.getIdentity()));
+    assertTrue(requisitionDto.getAvailableNonFullSupplyProductsIdentities()
+        .contains(nfs2.getIdentity()));
   }
 
   @Test
@@ -207,8 +209,8 @@ public class RequisitionDtoBuilderTest {
     assertNotNull(requisitionDto);
     assertEquals(requisition.getId(), requisitionDto.getId());
     assertEquals(requisition.getEmergency(), requisitionDto.getEmergency());
-    assertEquals(facility, requisitionDto.getFacility());
-    assertEquals(processingPeriod, requisitionDto.getProcessingPeriod());
+    assertEquals(facility.getId(), requisitionDto.getFacilityId());
+    assertEquals(processingPeriod.getId(), requisitionDto.getProcessingPeriodId());
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(lineItemDtos, requisitionDto.getRequisitionLineItems());
     assertEquals(requisition.getStatus(), requisitionDto.getStatus());
@@ -216,7 +218,7 @@ public class RequisitionDtoBuilderTest {
     assertEquals(requisition.getModifiedDate(), requisitionDto.getModifiedDate());
     assertEquals(requisition.getSupervisoryNodeId(), requisitionDto.getSupervisoryNode());
 
-    assertNull(requisitionDto.getProgram());
+    assertNull(requisitionDto.getProgramId());
     assertNull(requisitionDto.getStockAdjustmentReasons());
     assertNull(requisitionDto.getAvailableNonFullSupplyProducts());
   }
@@ -233,9 +235,9 @@ public class RequisitionDtoBuilderTest {
         .exportToDtos(anyListOf(RequisitionLineItem.class), anyMap(), eq(false));
 
     assertNotNull(requisitionDto);
-    assertNull(requisitionDto.getFacility());
-    assertNull(requisitionDto.getProgram());
-    assertNull(requisitionDto.getProcessingPeriod());
+    assertNull(requisitionDto.getFacilityId());
+    assertNull(requisitionDto.getProgramId());
+    assertNull(requisitionDto.getProcessingPeriodId());
   }
 
   private Requisition buildRequisition() {

@@ -20,18 +20,20 @@ import static org.junit.Assert.assertNull;
 
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
-public class ObjectReferenceDtoTest {
+public class ObjectReferenceDtoTest extends EqualsContractTest<ObjectReferenceDto> {
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(ObjectReferenceDto.class)
-        .suppress(Warning.NONFINAL_FIELDS)
+  @Override
+  protected Class<ObjectReferenceDto> getTestClass() {
+    return ObjectReferenceDto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<ObjectReferenceDto> verifier) {
+    verifier
         .withRedefinedSubclass(UserObjectReferenceDto.class)
-        .verify();
+        .withRedefinedSuperclass();
   }
 
   @Test

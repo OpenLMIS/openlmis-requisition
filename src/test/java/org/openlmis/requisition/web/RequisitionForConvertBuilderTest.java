@@ -200,6 +200,6 @@ public class RequisitionForConvertBuilderTest {
             .getAvailableSupplyingDepots(requisitionDto.getId());
 
     assertEquals(2, result.size());
-    assertEquals(requisitionDto.getFacility().getId(), result.get(0).getId());
+    assertEquals(requisitionDto.getFacilityId(), result.get(0).getId());
   }
 }

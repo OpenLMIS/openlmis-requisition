@@ -16,12 +16,11 @@
 package org.openlmis.requisition.web;
 
 import static java.util.Comparator.comparing;
-import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +32,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -89,8 +89,9 @@ public class RequisitionReportDtoBuilder {
 
     RequisitionReportDto reportDto = new RequisitionReportDto();
     reportDto.setRequisition(requisitionDtoBuilder.build(requisition));
-    reportDto.setFullSupply(exportLinesToDtos(fullSupply, requisition.getProgramId()));
-    reportDto.setNonFullSupply(exportLinesToDtos(nonFullSupply, requisition.getProgramId()));
+    reportDto.setFullSupply(exportLinesToDtos(fullSupply, orderables, requisition.getProgramId()));
+    reportDto.setNonFullSupply(exportLinesToDtos(nonFullSupply, orderables,
+        requisition.getProgramId()));
     reportDto.setFullSupplyTotalCost(requisition.getFullSupplyTotalCost(orderables));
     reportDto.setNonFullSupplyTotalCost(requisition.getNonFullSupplyTotalCost(orderables));
     reportDto.setTotalCost(requisition.getTotalCost());
@@ -126,20 +127,25 @@ public class RequisitionReportDtoBuilder {
   }
 
   List<RequisitionLineItemDto> exportLinesToDtos(List<RequisitionLineItem> lineItems,
-      UUID programId) {
-    List<RequisitionLineItemDto> list = new ArrayList<>();
-    for (RequisitionLineItemDto requisitionLineItemDto : requisitionExportHelper
-        .exportToDtos(lineItems)) {
-      list.add(requisitionLineItemDto);
-    }
-    list.sort(byDisplayOrder(programId));
+      Map<VersionIdentityDto, OrderableDto> orderables, UUID programId) {
+    List<RequisitionLineItemDto> list = requisitionExportHelper.exportToDtos(lineItems);
+    list.sort(byDisplayOrder(orderables, programId));
     return list;
   }
 
-  private Comparator<RequisitionLineItemDto> byDisplayOrder(UUID programId) {
-    return comparing(r -> requireNonNull(r.getOrderable()
-            .getProgramOrderable(programId))
-            .getOrderableCategoryDisplayOrder());
+  private Comparator<RequisitionLineItemDto> byDisplayOrder(
+      Map<VersionIdentityDto, OrderableDto> orderables, UUID programId) {
+    return comparing(r -> {
+      VersionIdentityDto orderableIdentity = r.getOrderableIdentity();
+      Objects.requireNonNull(orderableIdentity);
+
+      OrderableDto orderable = orderables.get(orderableIdentity);
+      Objects.requireNonNull(orderable);
+
+      ProgramOrderableDto programOrderable = orderable.getProgramOrderable(programId);
+
+      return programOrderable.getOrderableCategoryDisplayOrder();
+    });
   }
 
   private UserDto getUser(StatusChange statusChange) {

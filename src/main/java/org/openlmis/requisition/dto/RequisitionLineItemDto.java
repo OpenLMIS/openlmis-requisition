@@ -16,24 +16,16 @@
 package org.openlmis.requisition.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joda.money.Money;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.StockAdjustment;
-import org.openlmis.requisition.dto.stockmanagement.StockAdjustmentDto;
 import org.openlmis.requisition.utils.MoneyDeserializer;
 import org.openlmis.requisition.utils.MoneySerializer;
 
@@ -42,66 +34,23 @@ import org.openlmis.requisition.utils.MoneySerializer;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequisitionLineItemDto extends BaseDto
-    implements RequisitionLineItem.Exporter, RequisitionLineItem.Importer {
+public class RequisitionLineItemDto extends BaseRequisitionLineItemDto {
 
   private OrderableDto orderable;
-  private Integer beginningBalance;
-  private Integer totalReceivedQuantity;
-  private Integer totalLossesAndAdjustments;
-  private Integer stockOnHand;
-  private Integer requestedQuantity;
-  private Integer totalConsumedQuantity;
-  private String requestedQuantityExplanation;
-  private String remarks;
-  private Integer approvedQuantity;
-  private Integer totalStockoutDays;
-  private Integer total;
-  private Long packsToShip;
+
   @JsonSerialize(using = MoneySerializer.class)
   @JsonDeserialize(using = MoneyDeserializer.class)
   private Money pricePerPack;
-  private Integer numberOfNewPatientsAdded;
-  @JsonSerialize(using = MoneySerializer.class)
-  @JsonDeserialize(using = MoneyDeserializer.class)
-  private Money totalCost;
-  private Boolean skipped;
-  private Integer adjustedConsumption;
-  private List<Integer> previousAdjustedConsumptions;
-  private Integer averageConsumption;
-  private BigDecimal maxPeriodsOfStock;
-  private Integer maximumStockQuantity;
-  private Integer calculatedOrderQuantity;
-  private Integer idealStockAmount;
-  private Integer calculatedOrderQuantityIsa;
-  private Integer additionalQuantityRequired;
 
-  @JsonProperty
-  private List<StockAdjustmentDto> stockAdjustments = new ArrayList<>();
+  private BigDecimal maxPeriodsOfStock;
 
   @JsonIgnore
   @Override
-  public List<StockAdjustment.Importer> getStockAdjustments() {
-    if (stockAdjustments == null) {
-      return Collections.emptyList();
-    }
-
-    List<StockAdjustment.Importer> stockAdjustmentImporters = new ArrayList<>();
-    stockAdjustmentImporters.addAll(stockAdjustments);
-    return stockAdjustmentImporters;
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .orElse(null);
   }
 
-  @Override
-  public void addStockAdjustment(StockAdjustment.Exporter stockAdjustmentExporter) {
-    stockAdjustments.add((StockAdjustmentDto) stockAdjustmentExporter);
-  }
-
-  public Optional<Supplier<StockAdjustment.Exporter>> provideStockAdjustmentExporter() {
-    return Optional.of(StockAdjustmentDto::new);
-  }
-
-  @Override
-  public boolean supportsPreviousAdjustedConsumptions() {
-    return true;
-  }
 }

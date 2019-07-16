@@ -33,10 +33,8 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.dto.StatusMessageDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.openlmis.requisition.testutils.StatusMessageDataBuilder;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -44,9 +42,6 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
 
   private static final String RESOURCE_URL = "/api/requisitions";
   private static final String STATUS_MESSAGE_URL = RESOURCE_URL + "/{id}/statusMessages";
-
-  @MockBean
-  private StatusMessageRepository statusMessageRepository;
 
   @Before
   public void setUp() {

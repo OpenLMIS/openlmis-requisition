@@ -26,6 +26,8 @@ public class BasicProgramDtoTest extends EqualsContractTest<BasicProgramDto> {
 
   @Override
   protected void prepare(EqualsVerifier<BasicProgramDto> verifier) {
-    verifier.withRedefinedSubclass(ProgramDto.class);
+    verifier
+        .withRedefinedSubclass(ProgramDto.class)
+        .withRedefinedSuperclass();
   }
 }

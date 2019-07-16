@@ -38,6 +38,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -46,6 +47,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
+import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -63,6 +65,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.Message;
@@ -96,6 +99,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -216,6 +222,33 @@ public class BatchRequisitionController extends BaseRequisitionController {
     Profiler profiler = new Profiler("BATCH_SAVE_ALL_REQUISITIONS");
     profiler.setLogger(XLOGGER);
 
+    profiler.start("FIND_REQUISITIONS");
+    Set<UUID> uuids = dtos
+        .stream()
+        .map(ApproveRequisitionDto::getId)
+        .collect(Collectors.toSet());
+
+    Map<UUID, Requisition> requisitions = requisitionRepository
+        .readDistinctByIdIn(uuids)
+        .stream()
+        .collect(Collectors.toMap(BaseEntity::getId, Function.identity()));
+
+    Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions.values(), profiler);
+
+    profiler.start("RETRIEVE_ORDERABLES");
+    Set<VersionEntityReference> orderableIdentities = requisitions
+        .values()
+        .stream()
+        .map(Requisition::getRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .map(RequisitionLineItem::getOrderable)
+        .collect(Collectors.toSet());
+
+    Map<VersionIdentityDto, OrderableDto> orderables = orderableReferenceDataService
+        .findByIdentities(orderableIdentities)
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
 
     profiler.start("FIND_VALIDATE_AND_SAVE_REQUISITIONS");
@@ -223,23 +256,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
       profiler.start("VALIDATE_AND_CHECK_SAVE_REQUISITION");
       ValidationResult result = requisitionService.validateCanSaveRequisition(dto.getId());
       if (!addValidationErrors(processingStatus, result, dto.getId())) {
-        profiler.start("FIND_REQUISITION");
-        Requisition requisitionToUpdate = requisitionRepository.findOne(dto.getId());
+        Requisition requisitionToUpdate = requisitions.get(dto.getId());
 
-        profiler.start("RETRIEVE_ORDERABLES");
-        Set<VersionEntityReference> orderableIdentities = requisitionToUpdate
-            .getRequisitionLineItems()
-            .stream()
-            .map(RequisitionLineItem::getOrderable)
-            .collect(Collectors.toSet());
-
-        Map<VersionIdentityDto, OrderableDto> orderables = orderableReferenceDataService
-            .findByIdentities(orderableIdentities)
-            .stream()
-            .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+        ProcessingPeriodDto period = periods.get(requisitionToUpdate.getProcessingPeriodId());
 
         profiler.start("BUILD_REQUISITION");
-        Requisition requisition = buildRequisition(dto, requisitionToUpdate, orderables);
+        Requisition requisition = buildRequisition(dto, requisitionToUpdate, period, orderables);
 
         profiler.start("VALIDATE_REQUISITION_TIMESTAMPS");
         result = requisitionVersionValidator
@@ -409,11 +431,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      ProcessingPeriodDto processingPeriodDto, Map<VersionIdentityDto, OrderableDto> orderables) {
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDtoBuilder.build(requisitionToUpdate),
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        requisitionToUpdate.getStatus(), orderables);
+        processingPeriodDto, requisitionToUpdate.getStatus(), orderables);
     requisition.setTemplate(requisitionToUpdate.getTemplate());
     requisition.setId(requisitionToUpdate.getId());
     return updateOne(dto, requisition);
@@ -489,33 +511,29 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private Map<UUID, FacilityDto> findFacilities(List<Requisition> requisitions, Profiler profiler) {
     profiler.start("FIND_ALL_FACILITIES_FOR_REQUISITIONS");
-    Set<UUID> facilityIds = requisitions.stream()
+    Set<UUID> facilityIds = requisitions
+        .stream()
         .map(Requisition::getFacilityId)
         .collect(Collectors.toSet());
 
-    List<FacilityDto> list = facilityReferenceDataService.search(facilityIds);
-
-    Map<UUID, FacilityDto> facilities = new HashMap<>(facilityIds.size());
-    for (FacilityDto facility : list) {
-      facilities.put(facility.getId(), facility);
-    }
-
-    return facilities;
+    return facilityReferenceDataService
+        .search(facilityIds)
+        .stream()
+        .collect(Collectors.toMap(BaseDto::getId, Function.identity()));
   }
 
-  private Map<UUID, ProcessingPeriodDto> findPeriods(List<Requisition> requisitions,
+  private Map<UUID, ProcessingPeriodDto> findPeriods(Collection<Requisition> requisitions,
       Profiler profiler) {
     profiler.start("FIND_ALL_PERIODS_FOR_REQUISITIONS");
-    Set<UUID> periodIds = requisitions.stream()
+    Set<UUID> periodIds = requisitions
+        .stream()
         .map(Requisition::getProcessingPeriodId)
         .collect(Collectors.toSet());
 
-    Map<UUID, ProcessingPeriodDto> periods = new HashMap<>(periodIds.size());
-    for (UUID periodId : periodIds) {
-      periods.put(periodId, periodService.getPeriod(periodId));
-    }
-
-    return periods;
+    return periodReferenceDataService
+        .search(periodIds)
+        .stream()
+        .collect(Collectors.toMap(BaseDto::getId, Function.identity()));
   }
 
   private Map<VersionIdentityDto, OrderableDto> getOrderables(List<Requisition> requisitions) {

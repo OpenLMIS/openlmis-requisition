@@ -114,7 +114,7 @@ public class RequisitionExportHelperTest {
     RequisitionLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), requisitionLineItem.getId());
-    assertEquals(item.getOrderable().getId(), requisitionLineItem.getOrderable().getId());
+    assertEquals(item.getOrderableIdentity().getId(), requisitionLineItem.getOrderable().getId());
     assertEquals(item.getBeginningBalance(), requisitionLineItem.getBeginningBalance());
     assertEquals(item.getTotalReceivedQuantity(), requisitionLineItem.getTotalReceivedQuantity());
     assertEquals(item.getTotalLossesAndAdjustments(),

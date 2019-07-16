@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -37,7 +36,6 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ReasonDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
@@ -45,7 +43,6 @@ import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.dto.ValidReasonDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -54,7 +51,6 @@ import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
-import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.validate.ReasonsValidator;
@@ -89,9 +85,6 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
-
-  @Autowired
-  private ValidReasonStockmanagementService validReasonStockmanagementService;
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
@@ -326,10 +319,14 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, requisitionToUpdate::getAllOrderables
     );
 
+    profiler.start("GET_PERIOD");
+    ProcessingPeriodDto period = periodService
+        .getPeriod(requisitionToUpdate.getProcessingPeriodId());
+
     profiler.start("BUILD_REQUISITION_UPDATER");
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        requisitionToUpdate.getStatus(), orderables);
+        period, requisitionToUpdate.getStatus(), orderables);
     requisition.setId(requisitionId);
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
@@ -343,7 +340,7 @@ public class RequisitionController extends BaseRequisitionController {
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
 
     ETagResource<RequisitionDto> etaggedResource = doUpdate(
-        requisitionToUpdate, requisition, orderables, facility, program, profiler
+        requisitionToUpdate, requisition, orderables, facility, program, period, profiler
     );
 
     stopProfiler(profiler, etaggedResource.getResource());
@@ -700,19 +697,6 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("GET_SUPPLY_LINE");
     return supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
-  }
-
-  private List<StockAdjustmentReason> getStockAdjustmentReasons(UUID programId,
-      FacilityDto facilityDto) {
-    List<ValidReasonDto> validReasons =
-        validReasonStockmanagementService
-            .search(programId, facilityDto.getType().getId());
-
-    List<ReasonDto> reasonDtos = validReasons.stream()
-        .map(ValidReasonDto::getReasonWithHidden)
-        .collect(Collectors.toList());
-
-    return StockAdjustmentReason.newInstance(reasonDtos);
   }
 
 }

@@ -16,19 +16,18 @@
 package org.openlmis.requisition.dto;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
 
-public class RequisitionLineItemDtoTest {
+public class RequisitionLineItemDtoTest extends EqualsContractTest<RequisitionLineItemDto> {
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(RequisitionLineItemDto.class)
-        .withRedefinedSuperclass()
-        .withRedefinedSubclass(BatchApproveRequisitionLineItemDto.class)
-        .suppress(Warning.NONFINAL_FIELDS) // fields in DTO cannot be final
-        .verify();
+  @Override
+  protected Class<RequisitionLineItemDto> getTestClass() {
+    return RequisitionLineItemDto.class;
   }
 
+  @Override
+  protected void prepare(EqualsVerifier<RequisitionLineItemDto> verifier) {
+    verifier
+        .withRedefinedSuperclass()
+        .withRedefinedSubclass(BatchApproveRequisitionLineItemDto.class);
+  }
 }

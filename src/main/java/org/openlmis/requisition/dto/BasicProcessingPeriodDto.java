@@ -24,12 +24,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class BasicProcessingPeriodDto {
+public class BasicProcessingPeriodDto extends BaseDto {
   public static final String START_DATE = "startDate";
 
-  private UUID id;
   private String name;
   private LocalDate startDate;
   private LocalDate endDate;

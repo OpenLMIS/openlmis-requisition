@@ -230,11 +230,19 @@ public class RequisitionReportDtoBuilderTest {
         .withRequisition(requisition)
         .buildAsDto();
 
+    OrderableDto extraOrderable = new OrderableDtoDataBuilder()
+        .withId(extra.getOrderable().getId())
+        .withVersionId(extra.getOrderable().getVersionId())
+        .withProgramOrderable(requisition.getProgramId(), false, Money.of(CurrencyUnit.USD, 2), 10)
+        .buildAsDto();
+
+    orderables.put(extraOrderable.getIdentity(), extraOrderable);
+
     when(exportHelper.exportToDtos(Lists.newArrayList(fullSupply)))
         .thenReturn(Lists.newArrayList(fullSupplyDtos, nonFullSupplyDtos, extra));
 
     List<RequisitionLineItemDto> lineItemDtos = requisitionReportDtoBuilder
-        .exportLinesToDtos(Lists.newArrayList(fullSupply), requisition.getProgramId());
+        .exportLinesToDtos(Lists.newArrayList(fullSupply), orderables, requisition.getProgramId());
 
     assertTrue(getOrderableCategoryDisplayOrder(lineItemDtos.get(0))
         <= getOrderableCategoryDisplayOrder(lineItemDtos.get(1)));
@@ -243,8 +251,8 @@ public class RequisitionReportDtoBuilderTest {
   }
 
   private Integer getOrderableCategoryDisplayOrder(RequisitionLineItemDto lineItemDto) {
-    return lineItemDto
-        .getOrderable()
+    return orderables
+        .get(lineItemDto.getOrderableIdentity())
         .getProgramOrderable(requisition.getProgramId())
         .getOrderableCategoryDisplayOrder();
   }

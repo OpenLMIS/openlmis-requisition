@@ -91,10 +91,8 @@ import org.openlmis.requisition.domain.OpenLmisNumberUtils;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
-import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
@@ -1160,11 +1158,11 @@ public class Requisition extends BaseTimestampedEntity {
 
     List<RequisitionLineItem.Importer> getRequisitionLineItems();
 
-    FacilityDto getFacility();
+    UUID getFacilityId();
 
-    ProgramDto getProgram();
+    UUID getProgramId();
 
-    ProcessingPeriodDto getProcessingPeriod();
+    UUID getProcessingPeriodId();
 
     RequisitionStatus getStatus();
 
@@ -1176,7 +1174,7 @@ public class Requisition extends BaseTimestampedEntity {
 
     String getDraftStatusMessage();
 
-    Set<OrderableDto> getAvailableNonFullSupplyProducts();
+    Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities();
 
     LocalDate getDatePhysicalStockCountCompleted();
   }
