@@ -26,7 +26,6 @@ services:
     entrypoint:
       - 'gradle'
     command:
-      - 'clean'
       - 'sonarqube'
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
