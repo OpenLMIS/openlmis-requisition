@@ -77,6 +77,7 @@ import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -179,6 +180,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   FacilityTypeApprovedProductReferenceDataService
       facilityTypeApprovedProductReferenceDataService;
+
+  @Autowired
+  ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;

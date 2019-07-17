@@ -41,6 +41,8 @@ schemas:
 
   - requisitionDto: !include schemas/requisitionDto.json
 
+  - requisitionV2: !include schemas/requisitionV2.json
+
   - requisitionDtoArray: |
       {
           "type": "array",
@@ -48,6 +50,8 @@ schemas:
       }
 
   - requisitionLineItemDto: !include schemas/requisitionLineItemDto.json
+
+  - requisitionLineItemV2: !include schemas/requisitionLineItemV2.json
 
   - approveRequisitionDto: !include schemas/approveRequisitionDto.json
 
@@ -980,3 +984,123 @@ resourceTypes:
                   body:
                     application/json:
                         schema: availableRequisitionColumnPage
+
+  /v2:
+    /requisitions:
+            displayName: Requisition V2
+            /initiate:
+                post:
+                    is: [ secured, idempotent ]
+                    description: Initiate requisition.
+                    queryParameters:
+                        program:
+                            displayName: Program
+                            type: string
+                            required: true
+                            repeat: false
+                        facility:
+                            displayName: Facility
+                            type: string
+                            required: true
+                            repeat: false
+                        suggestedPeriod:
+                            displayName: Suggested period
+                            type: string
+                            required: false
+                            repeat: false
+                        emergency:
+                            displayName: Emergency
+                            type: boolean
+                            required: true
+                            repeat: false
+                    responses:
+                        201:
+                            description: The request is valid and the given requisition has been created.
+                            body:
+                                application/json:
+                                    schema: requisitionV2
+                        400:
+                            description: The request's body is invalid
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+                        401:
+                            description: The request does not contain a token or the token might be invalid.
+                            body:
+                                application/json:
+                        403:
+                            description: The server understood the request but refuses to authorize it.
+                            body:
+                                application/json:
+                                     schema: localizedMessage
+                        409:
+                            description: There is a conflict while the request is handled.
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+            /{id}:
+                uriParameters:
+                    id:
+                        displayName: id
+                        type: string
+                        required: true
+                        repeat: false
+                get:
+                    is: [ secured ]
+                    description: Get chosen requisition.
+                    responses:
+                        200:
+                            description: The request is valid and the given requisition will be returned.
+                            body:
+                                application/json:
+                                    schema: requisitionV2
+                        401:
+                            description: The request does not contain a token or the token might be invalid.
+                            body:
+                                application/json:
+                        403:
+                            description: The server understood the request but refuses to authorize it.
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+                        404:
+                            description: The server understood the request but can not find the requisition.
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+                put:
+                    is: [ secured ]
+                    description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode, orderableId of line item, such attempts will be ignored.
+                    body:
+                        application/json:
+                            schema: requisitionV2
+                    responses:
+                        200:
+                            description: The request is valid and the given requisition will be updated and returned.
+                            body:
+                                application/json:
+                                    schema: requisitionV2
+                        400:
+                            description: The request's body is invalid
+                            body:
+                                application/json:
+                                    schema: localizedMessageMap
+                        401:
+                            description: The request does not contain a token or the token might be invalid.
+                            body:
+                                application/json:
+                        403:
+                            description: The server understood the request but refuses to authorize it.
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+                        404:
+                            description: The server understood the request but can not find the requisition.
+                            body:
+                                application/json:
+                                    schema: localizedMessage
+                        409:
+                            description: There is a conflict while the request is handled.
+                            body:
+                                application/json:
+                                    schema: localizedMessage

@@ -15,9 +15,11 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.openlmis.requisition.web.ResourceNames.APPROVED_PRODUCTS;
+import static org.openlmis.requisition.web.ResourceNames.ORDERABLES;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import java.math.BigDecimal;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -26,23 +28,44 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joda.money.Money;
-import org.openlmis.requisition.utils.MoneyDeserializer;
-import org.openlmis.requisition.utils.MoneySerializer;
 
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequisitionLineItemDto extends BaseRequisitionLineItemDto {
+public final class RequisitionLineItemV2Dto extends BaseRequisitionLineItemDto {
 
-  private OrderableDto orderable;
+  @JsonIgnore
+  private String serviceUrl;
 
-  @JsonSerialize(using = MoneySerializer.class)
-  @JsonDeserialize(using = MoneyDeserializer.class)
-  private Money pricePerPack;
+  private VersionObjectReferenceDto orderable;
 
-  private BigDecimal maxPeriodsOfStock;
+  private VersionObjectReferenceDto approvedProduct;
+
+  @Override
+  @JsonIgnore
+  public void setOrderable(OrderableDto orderableDto) {
+    this.orderable = new VersionObjectReferenceDto(
+        orderableDto.getId(), serviceUrl, ORDERABLES, orderableDto.getVersionId());
+  }
+
+  @JsonSetter("orderable")
+  public void setOrderable(VersionObjectReferenceDto orderable) {
+    this.orderable = orderable;
+  }
+
+  @Override
+  @JsonIgnore
+  public void setApprovedProduct(ApprovedProductDto approvedProduct) {
+    this.approvedProduct = new VersionObjectReferenceDto(
+        approvedProduct.getId(), serviceUrl, APPROVED_PRODUCTS, approvedProduct.getVersionId());
+  }
+
+  @JsonSetter("approvedProduct")
+  public void setApprovedProduct(VersionObjectReferenceDto approvedProduct) {
+    this.approvedProduct = approvedProduct;
+  }
 
   @JsonIgnore
   @Override
@@ -53,15 +76,25 @@ public class RequisitionLineItemDto extends BaseRequisitionLineItemDto {
         .orElse(null);
   }
 
-  @Override
   @JsonIgnore
+  @Override
   public VersionIdentityDto getApprovedProductIdentity() {
-    return null;
+    return Optional
+        .ofNullable(approvedProduct)
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .orElse(null);
   }
 
   @Override
   @JsonIgnore
-  public void setApprovedProduct(ApprovedProductDto approvedProduct) {
-    // nothing to do here
+  public void setPricePerPack(Money pricePerPack) {
+    // not supported
   }
+
+  @Override
+  @JsonIgnore
+  public void setMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock) {
+    // not supported
+  }
+
 }

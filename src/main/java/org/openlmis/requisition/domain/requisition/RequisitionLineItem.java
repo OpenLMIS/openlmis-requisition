@@ -310,6 +310,11 @@ public class RequisitionLineItem extends BaseEntity {
       requisitionLineItem.orderable = new VersionEntityReference(
           orderable.getId(), orderable.getVersionId());
     }
+    if (importer.getApprovedProductIdentity() != null) {
+      VersionIdentityDto approvedProduct = importer.getApprovedProductIdentity();
+      requisitionLineItem.facilityTypeApprovedProduct = new VersionEntityReference(
+          approvedProduct.getId(), approvedProduct.getVersionId());
+    }
     requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
     requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
     requisitionLineItem.setTotalLossesAndAdjustments(importer.getTotalLossesAndAdjustments());
@@ -435,6 +440,7 @@ public class RequisitionLineItem extends BaseEntity {
       ApprovedProductDto approvedProductDto) {
     exporter.setId(id);
     exporter.setOrderable(orderableDto);
+    exporter.setApprovedProduct(approvedProductDto);
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setPricePerPack(Optional
         .ofNullable(orderableDto)
@@ -817,6 +823,8 @@ public class RequisitionLineItem extends BaseEntity {
 
     void setOrderable(OrderableDto orderableDto);
 
+    void setApprovedProduct(ApprovedProductDto approvedProduct);
+
     void setPricePerPack(Money pricePerPack);
 
     void setNumberOfNewPatientsAdded(Integer numberOfNewPatientsAdded);
@@ -858,6 +866,8 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getTotalReceivedQuantity();
 
     VersionIdentityDto getOrderableIdentity();
+
+    VersionIdentityDto getApprovedProductIdentity();
 
     Integer getTotalLossesAndAdjustments();
 

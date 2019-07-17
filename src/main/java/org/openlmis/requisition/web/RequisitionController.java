@@ -56,7 +56,6 @@ import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
-import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -101,9 +100,6 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
-
-  @Autowired
-  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   /**
    * Allows creating new requisitions.

@@ -13,20 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.web;
+package org.openlmis.requisition.dto;
 
-public class ResourceNames {
+import java.util.UUID;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String PROGRAMS = "programs";
-  public static final String FACILITY_TYPES = "facilityTypes";
-  public static final String ORDERABLES = "orderables";
-  public static final String APPROVED_PRODUCTS = "facilityTypeApprovedProducts";
-  public static final String FACILITIES = "facilities";
-  public static final String PROCESSING_PERIODS = "processingPeriods";
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public final class VersionObjectReferenceDto extends ObjectReferenceDto {
 
-  private ResourceNames() {
-    throw new UnsupportedOperationException();
+  @Getter
+  private Long versionId;
+
+  public VersionObjectReferenceDto(UUID id, String serviceUrl,
+      String resourceName, Long versionId) {
+    super(id, serviceUrl, resourceName);
+    this.versionId = versionId;
   }
 }

@@ -13,20 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.web;
+package org.openlmis.requisition.dto;
 
-public class ResourceNames {
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String PROGRAMS = "programs";
-  public static final String FACILITY_TYPES = "facilityTypes";
-  public static final String ORDERABLES = "orderables";
-  public static final String APPROVED_PRODUCTS = "facilityTypeApprovedProducts";
-  public static final String FACILITIES = "facilities";
-  public static final String PROCESSING_PERIODS = "processingPeriods";
+public class RequisitionLineItemV2DtoTest extends EqualsContractTest<RequisitionLineItemV2Dto> {
 
-  private ResourceNames() {
-    throw new UnsupportedOperationException();
+  @Override
+  protected Class<RequisitionLineItemV2Dto> getTestClass() {
+    return RequisitionLineItemV2Dto.class;
+  }
+
+  @Override
+  protected void prepare(EqualsVerifier<RequisitionLineItemV2Dto> verifier) {
+    verifier.withRedefinedSuperclass();
   }
 }
