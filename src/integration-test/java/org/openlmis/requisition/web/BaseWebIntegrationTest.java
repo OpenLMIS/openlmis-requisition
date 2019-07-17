@@ -277,6 +277,7 @@ public abstract class BaseWebIntegrationTest {
         .withNumberOfMonthsInPeriod(1)
         .withProcessingPeriodId(generateProcessingPeriod())
         .withTemplate(generateRequisitionTemplate())
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
 
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));

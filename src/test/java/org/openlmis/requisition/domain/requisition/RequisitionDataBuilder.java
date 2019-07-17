@@ -344,6 +344,17 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   }
 
   /**
+   * Add available product.
+   */
+  public RequisitionDataBuilder addAvailableProduct(UUID facilityTypeApprovedProductId,
+      Long facilityTypeApprovedProductVersionId, UUID orderableId, Long orderableVersionId) {
+    this.availableProducts.add(new ApprovedProductReference(
+        facilityTypeApprovedProductId, facilityTypeApprovedProductVersionId,
+        orderableId, orderableVersionId));
+    return this;
+  }
+
+  /**
    * Sets all fields empty.
    */
   public RequisitionDataBuilder withEmptyFields() {

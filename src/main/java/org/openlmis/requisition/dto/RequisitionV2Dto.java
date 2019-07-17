@@ -15,7 +15,11 @@
 
 package org.openlmis.requisition.dto;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,6 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.requisition.domain.requisition.Versionable;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -49,12 +54,20 @@ public final class RequisitionV2Dto extends BaseRequisitionDto {
   @Setter
   private Set<VersionObjectReferenceDto> availableFullSupplyProducts;
 
-  @Getter
   @Setter
   private Set<VersionObjectReferenceDto> availableNonFullSupplyProducts;
 
   @Override
-  List<? extends BaseRequisitionLineItemDto> getLineItems() {
-    return requisitionLineItems;
+  List<BaseRequisitionLineItemDto> getLineItems() {
+    return Lists.newArrayList(Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList()));
+  }
+
+  @Override
+  public Set<Versionable> getAvailableNonFullSupplyProducts() {
+    return Sets.newHashSet(Optional
+        .ofNullable(availableNonFullSupplyProducts)
+        .orElse(Collections.emptySet()));
   }
 }

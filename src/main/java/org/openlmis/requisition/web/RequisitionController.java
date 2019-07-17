@@ -318,7 +318,6 @@ public class RequisitionController extends BaseRequisitionController {
     Page<Requisition> requisitionPage = requisitionService.searchRequisitions(params, pageable);
 
     profiler.start("REQUISITION_DTO_BUILD");
-    assert requisitionPage != null;
     Page<BasicRequisitionDto> requisitionDtoPage = Pagination.getPage(
         basicRequisitionDtoBuilder.build(requisitionPage.getContent()),
         pageable,

@@ -243,7 +243,7 @@ public class RequisitionDtoBuilderTest {
 
     assertNull(requisitionDto.getProgramId());
     assertNull(requisitionDto.getStockAdjustmentReasons());
-    assertNull(requisitionDto.getAvailableNonFullSupplyProducts());
+    assertTrue(requisitionDto.getAvailableNonFullSupplyProducts().isEmpty());
   }
 
   @Test

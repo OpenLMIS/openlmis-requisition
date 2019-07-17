@@ -197,7 +197,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
           ApprovedProductDto approvedProduct = new ApprovedProductDto(
               line.getFacilityTypeApprovedProduct().getId(), null, null, null,
               null, null, new MetadataDto(
-                  line.getFacilityTypeApprovedProduct().getVersionId().toString(), null));
+              line.getFacilityTypeApprovedProduct().getVersionId().toString(), null));
 
           RequisitionLineItemV2Dto lineDto = new RequisitionLineItemV2Dto();
           lineDto.setServiceUrl(serviceUrl);

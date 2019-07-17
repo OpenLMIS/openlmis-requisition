@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplate.ORDER_RELATED_COLUMNS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT;
 import static org.openlmis.requisition.web.BaseController.API_URL;
@@ -385,6 +386,22 @@ public class RequisitionControllerTest {
         .collect(Collectors.toList());
 
     assertTrue(periodUuids.contains(uuid1));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfFacilityIdIsNotProvided() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
+
+    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfProgramIdIsNotProvided() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
+
+    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false);
   }
 
   @Test

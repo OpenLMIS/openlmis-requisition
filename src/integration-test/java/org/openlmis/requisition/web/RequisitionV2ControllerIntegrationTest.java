@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -113,9 +112,6 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     mockSearchSupervisoryNodeByProgramAndFacility();
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(false);
-
-    when(approvedProductReferenceDataService.getApprovedProducts(anyUuid(), anyUuid()))
-        .thenReturn(new ApproveProductsAggregator(emptyList(), UUID.randomUUID()));
 
     ReflectionTestUtils.setField(controller, BaseRequisitionController.class,
         "baseUrl", BASE_URL, String.class);
@@ -606,12 +602,13 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
   private List<OrderableDto> generateOrderables(Requisition requisition) {
     List<OrderableDto> orderables = requisition
-        .getRequisitionLineItems()
+        .getAllOrderables()
         .stream()
-        .map(line -> new OrderableDtoDataBuilder()
-            .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+        .map(identity -> new OrderableDtoDataBuilder()
+            .withId(identity.getId())
+            .withVersionId(identity.getVersionId())
             .withProgramOrderable(requisition.getProgramId(), true)
+            .withProgramOrderable(UUID.randomUUID(), false)
             .buildAsDto())
         .collect(Collectors.toList());
 
@@ -623,17 +620,24 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
   private List<ApprovedProductDto> generateApprovedProducts(Requisition requisition) {
     List<ApprovedProductDto> approvedProducts = requisition
-        .getRequisitionLineItems()
+        .getAllApprovedProductIdentities()
         .stream()
-        .map(line -> new ApprovedProductDtoDataBuilder()
-            .withId(line.getFacilityTypeApprovedProduct().getId())
-            .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+        .map(product -> new ApprovedProductDtoDataBuilder()
+            .withId(product.getId())
+            .withVersionId(product.getVersionId())
+            .withOrderable(new OrderableDtoDataBuilder()
+                .withProgramOrderable(requisition.getProgramId(), true)
+                .buildAsDto())
             .buildAsDto())
         .collect(Collectors.toList());
 
     given(facilityTypeApprovedProductReferenceDataService
         .findByIdentities(anySetOf(VersionEntityReference.class)))
         .willReturn(approvedProducts);
+
+    when(approvedProductReferenceDataService.getApprovedProducts(anyUuid(), anyUuid()))
+        .thenAnswer(invocation -> new ApproveProductsAggregator(
+            approvedProducts, invocation.getArgumentAt(1, UUID.class)));
 
     return approvedProducts;
   }

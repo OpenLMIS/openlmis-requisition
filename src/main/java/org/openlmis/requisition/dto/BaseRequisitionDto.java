@@ -168,8 +168,8 @@ public abstract class BaseRequisitionDto
   public abstract BaseDto getProcessingPeriod();
 
   @JsonIgnore
-  abstract List<? extends BaseRequisitionLineItemDto> getLineItems();
+  abstract List<BaseRequisitionLineItemDto> getLineItems();
 
-  public abstract Set<? extends Versionable> getAvailableNonFullSupplyProducts();
+  public abstract Set<Versionable> getAvailableNonFullSupplyProducts();
 
 }
