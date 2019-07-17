@@ -79,18 +79,20 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
     // Add permission to user for each facility and program
     userPermissionStrings.add("REQUISITION_VIEW|" + facilityId + "|" + programId);
 
+    int nextInstanceNumber = getNextInstanceNumber();
+
     Requisition requisition = new RequisitionDataBuilder()
           .withFacilityId(facilityId)
           .withProgramId(programId)
           .withProcessingPeriodId(processingPeriodId)
           .withStatus(INITIATED)
-          .withEmergency(getNextInstanceNumber() % 2 == 0)
+          .withEmergency(nextInstanceNumber % 2 == 0)
           .withCreatedDate(ZonedDateTime.now())
           .withModifiedDate(ZonedDateTime.now())
           .withSupervisoryNodeId(UUID.randomUUID())
           .withNumberOfMonthsInPeriod(1)
           .withTemplate(testTemplate)
-          .withDraftStatusMessage(RandomStringUtils.randomAlphanumeric(500))
+          .withDraftStatusMessage("draft status message " + nextInstanceNumber)
           .buildAsNew();
 
     addStatusChanges(requisition, 0);
