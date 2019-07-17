@@ -15,26 +15,14 @@
 
 package org.openlmis.requisition.service.referencedata;
 
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.ToStringContractTest;
 
-@EqualsAndHashCode
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public final class FacilityTypeApprovedProductSearchParams {
-  private List<String> facilityTypeCodes;
-  private String programCode;
-  private Boolean active;
-  private List<VersionIdentityDto> identities;
-  private Integer page;
-  private Integer size;
+public class FacilityTypeApprovedProductSearchParamsTest
+    extends ToStringContractTest<FacilityTypeApprovedProductSearchParams> {
+
+  @Override
+  protected Class<FacilityTypeApprovedProductSearchParams> getTestClass() {
+    return FacilityTypeApprovedProductSearchParams.class;
+  }
+
 }
