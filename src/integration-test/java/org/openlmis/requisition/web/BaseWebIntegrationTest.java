@@ -43,13 +43,9 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.assertj.core.util.Lists;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -63,10 +59,8 @@ import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -90,10 +84,8 @@ import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
-import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -278,6 +270,9 @@ public abstract class BaseWebIntegrationTest {
         .withProcessingPeriodId(generateProcessingPeriod())
         .withTemplate(generateRequisitionTemplate())
         .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
 
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));
@@ -296,6 +291,7 @@ public abstract class BaseWebIntegrationTest {
         .withNumberOfMonthsInPeriod(1)
         .withProcessingPeriodId(generateProcessingPeriod())
         .withTemplate(generateRequisitionTemplate())
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
@@ -313,35 +309,20 @@ public abstract class BaseWebIntegrationTest {
     return template;
   }
 
-  protected OrderableDto generateOrderable(UUID id, List<Requisition> requisitions) {
-    Set<ProgramOrderableDto> programOrderables = requisitions.stream()
-        .map(r -> getProgramOrderableDto(r.getProgramId()))
-        .collect(Collectors.toSet());
-
-    OrderableDto orderable = new OrderableDtoDataBuilder()
-        .withId(id)
-        .withPrograms(programOrderables)
-        .buildAsDto();
-
-    return orderable;
-  }
-
-  private static ProgramOrderableDto getProgramOrderableDto(UUID programId) {
-    ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
-        .withProgramId(programId)
-        .withPricePerPack(Money.of(CurrencyUnit.EUR, 10))
-        .buildAsDto();
-    return programOrderableDto;
-  }
-
   private List<RequisitionLineItem> generateRequisitionLineItems(Requisition requisition) {
-    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
+    RequisitionLineItem lineItem1 = new RequisitionLineItemDataBuilder()
         .withOrderable(UUID.randomUUID(), 1L)
         .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
         .build();
 
-    return Lists.newArrayList(lineItem);
+    RequisitionLineItem lineItem2 = new RequisitionLineItemDataBuilder()
+        .withOrderable(UUID.randomUUID(), 1L)
+        .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
+        .withRequisition(requisition)
+        .build();
+
+    return Lists.newArrayList(lineItem1, lineItem2);
   }
 
   private UUID generateProcessingPeriod() {
@@ -353,7 +334,7 @@ public abstract class BaseWebIntegrationTest {
     return period.getId();
   }
 
-  ProgramDto generateProgram() {
+  private ProgramDto generateProgram() {
     ProgramDto program = new ProgramDtoDataBuilder()
         .buildAsDto();
 
@@ -362,7 +343,7 @@ public abstract class BaseWebIntegrationTest {
     return program;
   }
 
-  protected void mockExternalAuthorization() {
+  private void mockExternalAuthorization() {
     // This mocks the auth check to always return valid admin credentials.
     wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
         .willReturn(aResponse()
@@ -377,11 +358,11 @@ public abstract class BaseWebIntegrationTest {
 
   }
 
-  protected Requisition spyRequisitionAndStubRepository(RequisitionStatus status) {
+  Requisition spyRequisitionAndStubRepository(RequisitionStatus status) {
     return spyRequisitionAndStubRepository(generateRequisition(status));
   }
 
-  protected Requisition spyRequisitionAndStubRepository(Requisition requisition) {
+  private Requisition spyRequisitionAndStubRepository(Requisition requisition) {
     Requisition requisitionSpy = spy(requisition);
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisitionSpy);

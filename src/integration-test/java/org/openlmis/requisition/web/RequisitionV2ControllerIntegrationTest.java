@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -128,6 +129,8 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     Requisition requisition = generateRequisition(
         RequisitionStatus.INITIATED, program.getId(), facility.getId());
     requisition.setProcessingPeriodId(period.getId());
+
+    generateApprovedProducts(requisition);
 
     doReturn(ValidationResult.success())
         .when(permissionService)
@@ -283,7 +286,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .when(permissionService)
         .canViewRequisition(requisition);
 
-    generateOrderables(requisition);
+    generateApprovedProducts(requisition);
 
     // when
     restAssured.given()
@@ -580,14 +583,13 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     requisitionDto
         .setProgram(new ObjectReferenceDto(requisition.getProgramId(), null, PROGRAMS));
 
-    List<OrderableDto> orderables = generateOrderables(requisition);
     List<ApprovedProductDto> approvedProducts = generateApprovedProducts(requisition);
 
     requisitionDto.setRequisitionLineItems(requisition
         .getRequisitionLineItems()
         .stream()
         .map(line -> {
-          OrderableDto orderableDto = findOrderable(orderables, line);
+          OrderableDto orderableDto = findOrderable(approvedProducts, line);
           ApprovedProductDto approvedProductDto = findApprovedProduct(approvedProducts, line);
 
           RequisitionLineItemV2Dto lineDto = new RequisitionLineItemV2Dto();
@@ -600,36 +602,43 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     return requisitionDto;
   }
 
-  private List<OrderableDto> generateOrderables(Requisition requisition) {
-    List<OrderableDto> orderables = requisition
-        .getAllOrderables()
-        .stream()
-        .map(identity -> new OrderableDtoDataBuilder()
-            .withId(identity.getId())
-            .withVersionId(identity.getVersionId())
-            .withProgramOrderable(requisition.getProgramId(), true)
-            .withProgramOrderable(UUID.randomUUID(), false)
-            .buildAsDto())
-        .collect(Collectors.toList());
-
-    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
-        .willReturn(orderables);
-
-    return orderables;
-  }
-
   private List<ApprovedProductDto> generateApprovedProducts(Requisition requisition) {
     List<ApprovedProductDto> approvedProducts = requisition
-        .getAllApprovedProductIdentities()
+        .getRequisitionLineItems()
         .stream()
-        .map(product -> new ApprovedProductDtoDataBuilder()
-            .withId(product.getId())
-            .withVersionId(product.getVersionId())
+        .map(line -> new ApprovedProductDtoDataBuilder()
+            .withId(line.getFacilityTypeApprovedProduct().getId())
+            .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
             .withOrderable(new OrderableDtoDataBuilder()
+                .withId(line.getOrderable().getId())
+                .withVersionId(line.getOrderable().getVersionId())
                 .withProgramOrderable(requisition.getProgramId(), true)
                 .buildAsDto())
             .buildAsDto())
         .collect(Collectors.toList());
+
+    int index = 0;
+    for (ApprovedProductReference product : requisition.getAvailableProducts()) {
+      approvedProducts.add(new ApprovedProductDtoDataBuilder()
+          .withId(product.getFacilityTypeApprovedProduct().getId())
+          .withVersionId(product.getFacilityTypeApprovedProduct().getVersionId())
+          .withOrderable(new OrderableDtoDataBuilder()
+              .withId(product.getOrderable().getId())
+              .withVersionId(product.getOrderable().getVersionId())
+              .withProgramOrderable(requisition.getProgramId(), index % 2 == 0)
+              .buildAsDto())
+          .buildAsDto());
+
+      ++index;
+    }
+
+    List<OrderableDto> orderables = approvedProducts
+        .stream()
+        .map(ApprovedProductDto::getOrderable)
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willReturn(orderables);
 
     given(facilityTypeApprovedProductReferenceDataService
         .findByIdentities(anySetOf(VersionEntityReference.class)))
@@ -652,9 +661,11 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .orElse(null);
   }
 
-  private OrderableDto findOrderable(List<OrderableDto> orderables, RequisitionLineItem line) {
-    return orderables
+  private OrderableDto findOrderable(List<ApprovedProductDto> approvedProducts,
+      RequisitionLineItem line) {
+    return approvedProducts
         .stream()
+        .map(ApprovedProductDto::getOrderable)
         .filter(orderable -> orderable.getIdentity()
             .equals(new VersionIdentityDto(line.getOrderable())))
         .findFirst()
