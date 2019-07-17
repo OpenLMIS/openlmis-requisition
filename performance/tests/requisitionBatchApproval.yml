@@ -1,55 +1,213 @@
-#execution:
-#  - concurrency: 1
-#    iterations: 1
-#    scenario: batch-workflow
-#
-#scenarios:
-#  search-requisitions:
-#    requests:
-#      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}
-#        method: GET
-#        label: SearchRequisitions
-#        headers:
-#          Authorization: Bearer ${access_token}
-#          Content-Type: application/json
-#        extract-jsonpath:
-#          requisitions_size: $.numberOfElements
-#        jsr223:
-#          script-text: |
-#            import groovy.json.JsonSlurper;
-#            def response = prev.getResponseDataAsString();
-#            log.info(prev.getUrlAsString())
-#            log.info("response " + response)
-#            def requisitions_id = [];
-#            def data = new JsonSlurper().parseText(response);
-#            def builder = new StringBuilder();
-#            for (def i=0; i<data.content.size(); i++) {
-#              builder.append("&id=")
-#              def id = data.content[i].id
-#              builder.append(id)
-#              vars.put("reqid_" + (i + 1), id)
-#            }
-#            vars.put("requisitions_id", builder.toString())
-#  approve-requisitions:
-#    requests:
-#      - if: '"${requisitions_size}" > "0"'
-#        then:
-#          - url: ${__P(base-uri)}/api/requisitions?approveAll${requisitions_id}
-#            method: POST
-#            label: ApproveRequisitions
-#            headers:
-#              Authorization: Bearer ${access_token}
-#            jsr223:
-#              script-text: |
-#                log.info(prev.getUrlAsString())
-#                log.info(prev.getResponseDataAsString())
-#  batch-workflow:
-#    variables:
-#      # Essential Meds
-#      program_id: 10845cb9-d365-4aaa-badd-b4fa39c6a26a
-#      number_of_req: 10
-#      status: IN_APPROVAL
-#    requests:
-#      - include-scenario: get-user-token
-#      - include-scenario: search-requisitions
-#      - include-scenario: approve-requisitions
+execution:
+  - concurrency: 1
+    iterations: 1
+    scenario: batch-workflow
+
+scenarios:
+  search-requisitions:
+    requests:
+      - url: ${__P(base-uri)}/api/requisitions/search?requisitionStatus=${status}&program=${program_id}
+        method: GET
+        label: SearchRequisitions
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        extract-jsonpath:
+          requisitions_size: $.numberOfElements
+        jsr223:
+          script-text: |
+            import groovy.json.JsonSlurper;
+            def response = prev.getResponseDataAsString();
+            log.info(prev.getUrlAsString())
+            log.info(response)
+            def requisitions_id = [];
+            def data = new JsonSlurper().parseText(response);
+            def builder = new StringBuilder();
+            for (def i=0; i<data.content.size(); i++) {
+              builder.append("&id=")
+              log.info(data.content[i].toString())
+              def id = data.content[i].id
+              builder.append(id)
+              vars.put("reqid_" + (i + 1), id)
+            }
+            vars.put("requisitions_id", builder.toString())
+  prepare-requisitions:
+    requests:
+      - if: '"${requisitions_size}" > "0"'
+        then:
+          - foreach: id in reqid
+            do:
+              - url: ${__P(base-uri)}/api/requisitions/${id}/reject
+                method: PUT
+                label: RejectRequisition
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                body: {}
+                jsr223:
+                  script-text: |
+                    log.info("RejectRequisition")
+                    log.info(prev.getUrlAsString())
+                    log.info(prev.getResponseDataAsString())
+              - url: ${__P(base-uri)}/api/requisitions/${id}
+                method: GET
+                abel: GetRequisitionToUpdate
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                jsr223:
+                  script-text: |
+                    import groovy.json.JsonSlurper;
+                    import groovy.json.JsonOutput;
+                    def response = prev.getResponseDataAsString();
+                    log.info(prev.getUrlAsString())
+                    log.info(response)
+                    def jsonSlurper = new JsonSlurper();
+                    def requisition = jsonSlurper.parseText(response);
+                    vars.put("requisition", JsonOutput.toJson(requisition));
+              - url: ${__P(base-uri)}/api/requisitions/${id}
+                method: GET
+                label: PrepareRequisitionToUpdate
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                jsr223:
+                  script-text: |
+                    import groovy.json.JsonSlurper;
+                    import groovy.json.JsonOutput;
+                    def response = prev.getResponseDataAsString();
+                    log.info(prev.getUrlAsString())
+                    log.info(response)
+                    def jsonSlurper = new JsonSlurper();
+                    def requisition = jsonSlurper.parseText(response);
+                    requisition.requisitionLineItems.eachWithIndex { line, index ->
+                     log.info(line.totalLossesAndAdjustments.toString())
+                     log.info(line.stockOnHand.toString())
+                     if (index == 0) {
+                       line.skipped = false
+                     } else {
+                       line.skipped = true
+                     }
+                     if(!line.totalLossesAndAdjustments)
+                     line.totalLossesAndAdjustments= 0
+
+                     line.beginningBalance = Math.abs(line.totalLossesAndAdjustments)
+                     line.totalReceivedQuantity = Math.round(line.beginningBalance / 2)
+                     line.totalConsumedQuantity = Math.round(line.beginningBalance / 5)
+                     line.stockOnHand = line.beginningBalance + line.totalReceivedQuantity + line.totalLossesAndAdjustments - line.totalConsumedQuantity
+                     line.requestedQuantity = line.beginningBalance * 2
+                     line.requestedQuantityExplanation = "we need more"
+                     line.totalStockoutDays = 0
+                     line.stockOnHand = null
+                     line.approvedQuantity = null
+                     }
+                     vars.put("requisition", JsonOutput.toJson(requisition));
+              - url: ${__P(base-uri)}/api/requisitions/${id}
+                method: PUT
+                label: UpdateRequisition
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                body: ${requisition}
+                jsr223:
+                  script-text: |
+                    log.info(prev.getUrlAsString())
+                    log.info(prev.getResponseDataAsString())
+              - url: ${__P(base-uri)}/api/requisitions/${id}/submit
+                method: POST
+                label: SubmitRequisition
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                body: {}
+                jsr223:
+                  script-text: |
+                    log.info(prev.getUrlAsString())
+                    log.info(prev.getResponseDataAsString())
+              - url: ${__P(base-uri)}/api/requisitions/${id}/authorize
+                method: POST
+                label: AuthorizeRequisition
+                headers:
+                  Authorization: Bearer ${access_token}
+                  Content-Type: application/json
+                body: {}
+                jsr223:
+                  script-text: |
+                    log.info("AuthorizeRequisition");
+                    log.info(prev.getUrlAsString())
+                    log.info(prev.getResponseDataAsString())
+  get-requisitions:
+    requests:
+      - if: '"${requisitions_size}" > "0"'
+        then:
+          - url: ${__P(base-uri)}/api/requisitions?retrieveAll${requisitions_id}
+            method: GET
+            label: GetRequisitions
+            headers:
+              Authorization: Bearer ${access_token}
+              Content-Type: application/json
+            jsr223:
+              script-text: |
+                log.info(prev.getUrlAsString())
+                log.info(prev.getResponseDataAsString())
+  update-requisitions:
+    requests:
+      - if: '"${requisitions_size}" > "0"'
+        then:
+          - url: ${__P(base-uri)}/api/requisitions?saveAll${requisitions_id}
+            method: PUT
+            label: UpdateRequisitions
+            headers:
+              Authorization: Bearer ${access_token}
+              Content-Type: application/json
+            jsr223:
+              execute: before
+              script-text: |
+                log.info("UpdateRequisitions")
+                log.info(prev.getUrlAsString())
+                log.info(prev.getResponseDataAsString())
+                import groovy.json.JsonSlurper
+                import groovy.json.JsonOutput
+                def response = prev.getResponseDataAsString();
+                def batchResponse = new JsonSlurper().parseText(response);
+                batchResponse.requisitionDtos.each { req ->
+                req.requisitionLineItems.eachWithIndex { line, index ->
+                     if (line.skipped == null || !line.skipped) {
+                                  if (line.approvedQuantity != null) {
+                                    line.approvedQuantity = Math.round(line.approvedQuantity / 2)
+                                  } else {
+                                    line.approvedQuantity = (index + 1) * 10
+                                  }
+                                } else {
+                                  line.approvedQuantity = null
+                            }
+                       }
+                    }
+                 vars.put("requisitions", JsonOutput.toJson(batchResponse.requisitionDtos));
+            body: ${requisitions}
+  approve-requisitions:
+    requests:
+      - if: '"${requisitions_size}" > "0"'
+        then:
+          - url: ${__P(base-uri)}/api/requisitions?approveAll${requisitions_id}
+            method: POST
+            label: ApproveRequisitions
+            headers:
+              Authorization: Bearer ${access_token}
+            jsr223:
+              script-text: |
+                log.info(prev.getUrlAsString())
+                log.info(prev.getResponseDataAsString())
+  batch-workflow:
+    variables:
+      # Essential Meds
+      program_id: 10845cb9-d365-4aaa-badd-b4fa39c6a26a
+      number_of_req: 10
+      status: IN_APPROVAL
+    requests:
+      - include-scenario: get-user-token
+      - include-scenario: search-requisitions
+      - include-scenario: prepare-requisitions
+      - include-scenario: get-requisitions
+      - include-scenario: update-requisitions
+      - include-scenario: approve-requisitions
