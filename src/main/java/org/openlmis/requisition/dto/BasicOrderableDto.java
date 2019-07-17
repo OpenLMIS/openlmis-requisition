@@ -22,13 +22,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.requisition.domain.requisition.Versionable;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class BasicOrderableDto {
+public class BasicOrderableDto implements Versionable {
   private UUID id;
   private String productCode;
   private String fullProductName;

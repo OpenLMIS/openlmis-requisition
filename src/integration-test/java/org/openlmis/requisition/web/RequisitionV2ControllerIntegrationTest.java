@@ -290,7 +290,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     generateOrderables(requisition);
 
     // when
-    RequisitionV2Dto result = restAssured.given()
+    restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
@@ -299,11 +299,9 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .then()
         .statusCode(HttpStatus.OK.value())
         .header(HttpHeaders.ETAG, "W/1")
-        .extract()
-        .as(RequisitionV2Dto.class);
+        .body("id", is(requisition.getId().toString()));
 
     // then
-    assertEquals(requisition.getId(), result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

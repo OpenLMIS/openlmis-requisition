@@ -15,116 +15,46 @@
 
 package org.openlmis.requisition.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.openlmis.requisition.domain.StatusLogEntry;
-import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.utils.StatusChangeHelper;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public final class RequisitionV2Dto
-    extends BaseDto
-    implements Requisition.Importer, Requisition.Exporter {
-  private ZonedDateTime createdDate;
-  private ZonedDateTime modifiedDate;
-  private List<RequisitionLineItemV2Dto> requisitionLineItems;
-  private String draftStatusMessage;
+public final class RequisitionV2Dto extends BaseRequisitionDto {
+
+  @Getter
+  @Setter
   private ObjectReferenceDto facility;
+
+  @Getter
+  @Setter
   private ObjectReferenceDto program;
+
+  @Getter
+  @Setter
   private ObjectReferenceDto processingPeriod;
-  private RequisitionStatus status;
-  private Boolean emergency;
-  private Boolean reportOnly;
-  private UUID supplyingFacility;
-  private UUID supervisoryNode;
-  private BasicRequisitionTemplateDto template;
+
+  @Setter
+  private List<RequisitionLineItemV2Dto> requisitionLineItems;
+
+  @Getter
+  @Setter
   private Set<VersionObjectReferenceDto> availableFullSupplyProducts;
+
+  @Getter
+  @Setter
   private Set<VersionObjectReferenceDto> availableNonFullSupplyProducts;
-  private Map<String, StatusLogEntry> statusChanges = new HashMap<>();
-  private List<StatusChangeDto> statusHistory = new ArrayList<>();
-  private LocalDate datePhysicalStockCountCompleted;
-  private List<ReasonDto> stockAdjustmentReasons;
-  private Map<String, Object> extraData;
 
   @Override
-  public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
-    return new ArrayList<>(
-        Optional.ofNullable(requisitionLineItems).orElse(Collections.emptyList())
-    );
-  }
-
-  @Override
-  @JsonIgnore
-  public UUID getFacilityId() {
-    return Optional
-        .ofNullable(facility)
-        .map(BaseDto::getId)
-        .orElse(null);
-  }
-
-  @Override
-  @JsonIgnore
-  public UUID getProgramId() {
-    return Optional
-        .ofNullable(program)
-        .map(BaseDto::getId)
-        .orElse(null);
-  }
-
-  @Override
-  @JsonIgnore
-  public UUID getProcessingPeriodId() {
-    return Optional
-        .ofNullable(processingPeriod)
-        .map(BaseDto::getId)
-        .orElse(null);
-  }
-
-  @Override
-  @JsonIgnore
-  public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
-    return Optional
-        .ofNullable(availableNonFullSupplyProducts)
-        .orElse(Collections.emptySet())
-        .stream()
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
-        .collect(Collectors.toSet());
-  }
-
-  @Override
-  public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
-    StatusChangeDto statusChangeDto = (StatusChangeDto) statusChangeExporter;
-    StatusChangeHelper.addOrUpdate(this.statusChanges, statusChangeDto);
-    statusHistory.add(statusChangeDto);
-  }
-
-  @Override
-  public Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter() {
-    return Optional.of(StatusChangeDto::new);
+  List<? extends BaseRequisitionLineItemDto> getLineItems() {
+    return requisitionLineItems;
   }
 }

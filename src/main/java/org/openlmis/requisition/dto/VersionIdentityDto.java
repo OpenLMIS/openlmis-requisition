@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.domain.requisition.Versionable;
 
 @Getter
 @Setter
@@ -30,7 +31,7 @@ import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public final class VersionIdentityDto extends BaseDto {
+public final class VersionIdentityDto extends BaseDto implements Versionable {
   private Long versionId;
 
   public VersionIdentityDto(UUID id, Long versionId) {

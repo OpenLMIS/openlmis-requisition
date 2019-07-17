@@ -20,11 +20,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.openlmis.requisition.domain.requisition.Versionable;
 
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class VersionObjectReferenceDto extends ObjectReferenceDto {
+public final class VersionObjectReferenceDto extends ObjectReferenceDto implements Versionable {
 
   @Getter
   private Long versionId;

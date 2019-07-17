@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,7 +46,9 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -71,12 +75,15 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.IdempotencyKeyException;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
+import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
@@ -91,6 +98,7 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,10 +190,119 @@ public abstract class BaseRequisitionController extends BaseController {
       facilityTypeApprovedProductReferenceDataService;
 
   @Autowired
-  ApprovedProductReferenceDataService approvedProductReferenceDataService;
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
+
+  @Autowired
+  private RequisitionTemplateService requisitionTemplateService;
+
+  @Autowired
+  private ReasonsValidator reasonsValidator;
+
+  InitiateResult doInitiate(UUID programId, UUID facilityId, UUID suggestedPeriod,
+      boolean emergency, HttpServletRequest request, Profiler profiler) {
+    if (null == facilityId || null == programId) {
+      throw new ValidationMessageException(
+          new Message(MessageKeys.ERROR_INITIALIZE_MISSING_PARAMETERS));
+    }
+
+    checkPermission(profiler, () -> permissionService.canInitRequisition(programId, facilityId));
+
+    validateIdempotencyKey(request, profiler);
+
+    FacilityDto facility = findFacility(facilityId, profiler);
+
+    profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
+    facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
+
+    profiler.start("FIND_PROCESSING_PERIOD");
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+
+    boolean reportOnly = period.isReportOnly();
+
+    profiler.start("GET_STOCK_ADJ_REASONS");
+    List<StockAdjustmentReason> stockAdjustmentReasons =
+        getStockAdjustmentReasons(programId, facility);
+
+    ProgramDto program = findProgram(programId, profiler);
+
+    profiler.start("FIND_REQUISITION_TEMPLATE");
+    RequisitionTemplate requisitionTemplate = requisitionTemplateService.findTemplate(
+        program.getId(), facility.getType().getId(), reportOnly && !emergency
+    );
+
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(facility.getId(), program.getId());
+
+    profiler.start("INITIATE_REQUISITION");
+    Requisition newRequisition = requisitionService.initiate(
+        program, facility, period, emergency, stockAdjustmentReasons,
+        requisitionTemplate, approvedProducts);
+
+    profiler.start("VALIDATE_REASONS");
+    reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());
+
+    return new InitiateResult(newRequisition, approvedProducts, facility, program, period);
+  }
+
+  UpdatePreparationResult doUpdatePreparation(UUID requisitionId,
+      Requisition.Importer requisitionImporter, HttpServletRequest request, Profiler profiler) {
+    if (null != requisitionImporter.getId()
+        && !Objects.equals(requisitionImporter.getId(), requisitionId)) {
+      throw new ValidationMessageException(ERROR_ID_MISMATCH);
+    }
+
+    Requisition requisitionToUpdate = findRequisition(requisitionId, profiler);
+
+    profiler.start("VALIDATE_TIMESTAMPS");
+    requisitionVersionValidator
+        .validateRequisitionTimestamps(requisitionImporter.getModifiedDate(), requisitionToUpdate)
+        .throwExceptionIfHasErrors();
+
+    checkPermission(
+        profiler,
+        () -> requisitionService.validateCanSaveRequisition(requisitionToUpdate)
+    );
+
+    profiler.start("VALIDATE_VERSION");
+    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisitionToUpdate)
+        .throwExceptionIfHasErrors();
+
+    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+        profiler, requisitionToUpdate::getAllOrderables
+    );
+
+    profiler.start("GET_PERIOD");
+    ProcessingPeriodDto period = periodService
+        .getPeriod(requisitionToUpdate.getProcessingPeriodId());
+
+    profiler.start("BUILD_REQUISITION_UPDATER");
+    Map<VersionEntityReference, ApprovedProductReference> productReferences = requisitionToUpdate
+        .getAvailableProducts()
+        .stream()
+        .collect(Collectors.toMap(ApprovedProductReference::getOrderable, Function.identity()));
+
+    Requisition requisition = RequisitionBuilder.newRequisition(requisitionImporter,
+        requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
+        period, requisitionToUpdate.getStatus(), orderables, productReferences);
+    requisition.setId(requisitionId);
+
+    ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
+
+    profiler.start("VALIDATE_CAN_BE_UPDATED");
+    validateRequisitionCanBeUpdated(requisitionToUpdate, requisition, program, orderables)
+        .throwExceptionIfHasErrors();
+
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        requisitionToUpdate::getAllApprovedProductIdentities, profiler);
+
+    return new UpdatePreparationResult(requisitionToUpdate, requisition, orderables,
+        program, period, approvedProducts);
+  }
 
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION");
@@ -591,6 +708,27 @@ public abstract class BaseRequisitionController extends BaseController {
           approvedProducts, facility, program, period);
       return new ETagResource<>(dto, toUpdate.getVersion());
     }
+  }
+
+  @Getter
+  @AllArgsConstructor
+  class InitiateResult {
+    private Requisition requisition;
+    private ApproveProductsAggregator approveProducts;
+    private FacilityDto facility;
+    private ProgramDto program;
+    private ProcessingPeriodDto period;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  class UpdatePreparationResult {
+    private Requisition requisitionToUpdate;
+    private Requisition requisition;
+    private Map<VersionIdentityDto, OrderableDto> orderables;
+    private ProgramDto program;
+    private ProcessingPeriodDto period;
+    private Map<VersionIdentityDto, ApprovedProductDto> approvedProducts;
   }
 
 }

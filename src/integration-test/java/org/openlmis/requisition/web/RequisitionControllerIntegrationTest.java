@@ -208,7 +208,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(permissionService).canViewRequisition(requisition);
 
     // when
-    RequisitionDto result = restAssured.given()
+    restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
@@ -217,11 +217,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(200)
         .header(HttpHeaders.ETAG, "W/1")
-        .extract()
-        .as(RequisitionDto.class);
+        .body("id", is(requisition.getId().toString()));
 
     // then
-    assertEquals(requisition.getId(), result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

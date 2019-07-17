@@ -32,7 +32,7 @@ import org.hibernate.annotations.Type;
 @EqualsAndHashCode
 @ToString
 @Embeddable
-public class VersionEntityReference {
+public class VersionEntityReference implements Versionable {
 
   @Type(type = "pg-uuid")
   private UUID id;

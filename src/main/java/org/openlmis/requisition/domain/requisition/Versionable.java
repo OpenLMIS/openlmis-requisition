@@ -13,35 +13,14 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.domain.requisition;
 
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.requisition.domain.requisition.Versionable;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ApprovedProductDto implements Versionable {
-  private UUID id;
-  private OrderableDto orderable;
-  private ProgramDto program;
-  private Double maxPeriodsOfStock;
-  private Double minPeriodsOfStock;
-  private Double emergencyOrderPoint;
-  private MetadataDto meta = new MetadataDto();
+public interface Versionable {
 
-  public Long getVersionId() {
-    return Long.valueOf(this.meta.getVersionId());
-  }
+  UUID getId();
 
-  public VersionIdentityDto getIdentity() {
-    return new VersionIdentityDto(this.id, getVersionId());
-  }
+  Long getVersionId();
+
 }
