@@ -42,6 +42,7 @@ import org.mockito.stubbing.Answer;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -57,6 +58,7 @@ import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
@@ -81,10 +83,13 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder
         .build(any(Requisition.class), anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+            anyMapOf(VersionIdentityDto.class, ApprovedProductDto.class),
             any(FacilityDto.class), any(ProgramDto.class), any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.buildBatch(any(Requisition.class), any(FacilityDto.class),
-        anyMapOf(VersionIdentityDto.class, OrderableDto.class), any(ProcessingPeriodDto.class)))
+        anyMapOf(VersionIdentityDto.class, OrderableDto.class),
+        anyMapOf(VersionIdentityDto.class, ApprovedProductDto.class),
+        any(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());
@@ -207,8 +212,13 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
                 .withFullProductName(RandomStringUtils.randomAlphanumeric(5))
                 .buildAsDto();
 
+            ApprovedProductDto approvedProductDto = new ApprovedProductDtoDataBuilder()
+                .withId(line.getFacilityTypeApprovedProduct().getId())
+                .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+                .buildAsDto();
+
             RequisitionLineItemDto lineDto = new RequisitionLineItemDto();
-            line.export(lineDto, orderableDto);
+            line.export(lineDto, orderableDto, approvedProductDto);
 
             return lineDto;
           })

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -42,7 +43,8 @@ public class StatusChangeValidationService {
    */
   public StatusChangeValidationService(Requisition requisition, LocalDate currentDate,
       boolean isDatePhysicalStockCountCompletedEnabled,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     this.requisition = requisition;
     validators.add(new RequisitionInvariantsValidator(requisition, requisition, orderables));
     validators.add(new ApprovalFieldsValidator(requisition, requisition));
@@ -57,7 +59,7 @@ public class StatusChangeValidationService {
     validators.add(new BeginningBalanceValidator(requisition,
         requisition.getTemplate(), orderables));
     validators.add(new CalculatedFieldsValidator(requisition,
-        requisition.getTemplate(), orderables));
+        requisition.getTemplate(), orderables, approvedProducts));
     validators.add(new NumberOfNewPatientsAddedValidator(requisition, orderables));
     validators.add(new RequestedQuantityValidator(requisition, orderables));
     validators.add(new StockAdjustmentsValidator(requisition, orderables));

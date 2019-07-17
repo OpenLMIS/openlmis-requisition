@@ -24,9 +24,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -48,6 +50,15 @@ public class StatusChangeValidationServiceTest {
           .buildAsDto())
       .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
 
+  private Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = requisition
+      .getRequisitionLineItems()
+      .stream()
+      .map(line -> new ApprovedProductDtoDataBuilder()
+          .withId(line.getFacilityTypeApprovedProduct().getId())
+          .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+          .buildAsDto())
+      .collect(Collectors.toMap(ApprovedProductDto::getIdentity, Function.identity()));
+
   private Class[] expectedClasses = {
       RequisitionInvariantsValidator.class,
       ApprovalFieldsValidator.class,
@@ -67,7 +78,8 @@ public class StatusChangeValidationServiceTest {
   @Test
   public void shouldPassValidations() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true,
+            orderables, approvedProducts);
 
     ValidationResult validationResult =
         statusChangeValidationService.validateRequisitionCanChangeStatus();
@@ -93,7 +105,8 @@ public class StatusChangeValidationServiceTest {
   @Test
   public void shouldUseAllRequiredValidators() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true,
+            orderables, approvedProducts);
 
     List<RequisitionStatusChangeDomainValidator> validators =
         (List<RequisitionStatusChangeDomainValidator>)
@@ -108,7 +121,8 @@ public class StatusChangeValidationServiceTest {
 
   private void addValidatorForApprovalAndCallValidationService() {
     StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true, orderables);
+        new StatusChangeValidationService(requisition, LocalDate.now(), true,
+            orderables, approvedProducts);
 
     List<RequisitionStatusChangeDomainValidator> validators =
         (List<RequisitionStatusChangeDomainValidator>)

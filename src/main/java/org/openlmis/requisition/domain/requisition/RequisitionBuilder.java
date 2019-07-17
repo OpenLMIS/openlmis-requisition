@@ -21,6 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PROGRAM_NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -63,7 +64,8 @@ public final class RequisitionBuilder {
   public static Requisition newRequisition(
       Requisition.Importer importer, RequisitionTemplate template, UUID programId,
       ProcessingPeriodDto processingPeriodDto, RequisitionStatus requisitionStatus,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionEntityReference, ApprovedProductReference> productReferences) {
     Requisition requisition = new Requisition();
     requisition.setProgramId(programId);
     requisition.setRequisitionLineItems(new ArrayList<>());
@@ -85,6 +87,12 @@ public final class RequisitionBuilder {
         if (isSkipped(requisitionLineItem) && requisitionStatus.isPreAuthorize()) {
           item.skipLineItem(template);
         }
+
+        Optional
+            .ofNullable(productReferences.get(item.getOrderable()))
+            .map(ApprovedProductReference::getFacilityTypeApprovedProduct)
+            .ifPresent(item::setFacilityTypeApprovedProduct);
+
         requisition.getRequisitionLineItems().add(item);
       }
     }

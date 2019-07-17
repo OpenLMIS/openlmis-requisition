@@ -41,12 +41,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.SourceType;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -121,6 +123,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     Map<UUID, FacilityDto> facilities = findFacilities(requisitions, profiler);
     profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");
     Map<VersionIdentityDto, OrderableDto> orderables = getOrderables(requisitions);
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts =
+        getApprovedProducts(requisitions);
     Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions, profiler);
 
     profiler.start("CHECK_PERM_AND_BUILD_DTO");
@@ -137,6 +141,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
                     requisition,
                     facilities.get(requisition.getFacilityId()),
                     orderables,
+                    approvedProducts,
                     periods.get(requisition.getProcessingPeriodId())),
                 requisition.getProgramId(),
                 orderables));
@@ -187,6 +192,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     Map<UUID, ProcessingPeriodDto> periods = findPeriods(requisitions, profiler);
 
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        () -> getLineItemApprovedProductIdentities(requisitions), profiler);
+
     profiler.start("VALIDATE_AND_APPROVE");
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
@@ -197,7 +205,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
       ApproveParams approveParams =
           new ApproveParams(user, supervisoryNode, orderables, supplyLines, period);
       validateAndApprove(requisition, processingStatus, permissionStrings,
-          facilities, periods, approveParams);
+          facilities, periods, approveParams, approvedProducts);
     }
 
     submitStockEvent(profiler, user, requisitions, orderables);
@@ -370,7 +378,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private void validateAndApprove(Requisition requisition,
       RequisitionsProcessingStatusDto processingStatus, List<String> permissionStrings,
       Map<UUID, FacilityDto> facilities, Map<UUID, ProcessingPeriodDto> periods,
-      ApproveParams approveParams) {
+      ApproveParams approveParams, Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     Profiler profiler = getProfiler("VALIDATE_AND_APPROVE_REQUISITION");
     profiler.start("VALIDATE_CAN_APPROVE");
     ValidationResult validationResult = validateCanApproveRequisition(
@@ -378,7 +386,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       profiler.start("VALIDATE_FOR_STATUS_CHANGE");
       validationResult = getValidationResultForStatusChange(requisition,
-          approveParams.getOrderables());
+          approveParams.getOrderables(), approvedProducts);
       if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
         profiler.start("DO_APPROVE");
         doApprove(requisition, approveParams);
@@ -387,7 +395,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
         processingStatus.addProcessedRequisition(
             new ApproveRequisitionDto(requisitionDtoBuilder
                 .buildBatch(requisition, facilities.get(requisition.getFacilityId()),
-                    approveParams.getOrderables(), period),
+                    approveParams.getOrderables(), approvedProducts, period),
                 requisition.getProgramId(),
                 approveParams.getOrderables()));
       }
@@ -432,10 +440,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private Requisition buildRequisition(ApproveRequisitionDto dto, Requisition requisitionToUpdate,
       ProcessingPeriodDto processingPeriodDto, Map<VersionIdentityDto, OrderableDto> orderables) {
+    Map<VersionEntityReference, ApprovedProductReference> productReferences = requisitionToUpdate
+        .getAvailableProducts()
+        .stream()
+        .collect(Collectors.toMap(ApprovedProductReference::getOrderable, Function.identity()));
+
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDtoBuilder.build(requisitionToUpdate),
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        processingPeriodDto, requisitionToUpdate.getStatus(), orderables);
+        processingPeriodDto, requisitionToUpdate.getStatus(), orderables, productReferences);
     requisition.setTemplate(requisitionToUpdate.getTemplate());
     requisition.setId(requisitionToUpdate.getId());
     return updateOne(dto, requisition);
@@ -548,5 +561,20 @@ public class BatchRequisitionController extends BaseRequisitionController {
         .findByIdentities(orderableIds)
         .stream()
         .collect(toMap(BasicOrderableDto::getIdentity, Function.identity()));
+  }
+
+  private Map<VersionIdentityDto, ApprovedProductDto> getApprovedProducts(
+      List<Requisition> requisitions) {
+    Set<VersionEntityReference> approvedProductIds = requisitions
+        .stream()
+        .map(Requisition::getRequisitionLineItems)
+        .flatMap(Collection::stream)
+        .map(RequisitionLineItem::getFacilityTypeApprovedProduct)
+        .collect(Collectors.toSet());
+
+    return facilityTypeApprovedProductReferenceDataService
+        .findByIdentities(approvedProductIds)
+        .stream()
+        .collect(toMap(ApprovedProductDto::getIdentity, Function.identity()));
   }
 }

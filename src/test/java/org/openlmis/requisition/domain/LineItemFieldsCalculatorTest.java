@@ -71,6 +71,8 @@ public class LineItemFieldsCalculatorTest {
   private static final String ADJUSTMENT_TAG = "adjustment";
   private static final String OTHER_TAG = "other";
   private static final String COLUMN_IDENTIFIER = "I";
+  private static final Double MAX_PERIODS_OF_STOCK_7_25 = 7.25;
+  private static final Double MAX_PERIODS_OF_STOCK_7 = 7.0;
 
   private static final int STOCK_ON_HAND = 3789;
 
@@ -315,12 +317,12 @@ public class LineItemFieldsCalculatorTest {
         .build();
 
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .withMaxPeriodsOfStock(BigDecimal.valueOf(7.25))
         .withAverageConsumption(2)
         .build();
 
     assertThat(
-        LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
+        LineItemFieldsCalculator.calculateMaximumStockQuantity(
+            item, template, MAX_PERIODS_OF_STOCK_7_25),
         is(equalTo(15))
     );
   }
@@ -333,12 +335,12 @@ public class LineItemFieldsCalculatorTest {
         .build();
 
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
-        .withMaxPeriodsOfStock(BigDecimal.valueOf(7.25))
         .withAverageConsumption(2)
         .build();
 
     assertThat(
-        LineItemFieldsCalculator.calculateMaximumStockQuantity(item, template),
+        LineItemFieldsCalculator.calculateMaximumStockQuantity(
+            item, template, MAX_PERIODS_OF_STOCK_7_25),
         is(equalTo(15))
     );
   }
@@ -352,7 +354,8 @@ public class LineItemFieldsCalculatorTest {
         .build();
 
     assertThat(
-        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(
+            item, new RequisitionTemplate(), null),
         is(equalTo(5))
     );
 
@@ -370,13 +373,13 @@ public class LineItemFieldsCalculatorTest {
 
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
         .withEmptyNumericFields()
-        .withMaxPeriodsOfStock(BigDecimal.valueOf(7))
         .withAverageConsumption(2)
         .withStockOnHand(4)
         .build();
 
     assertThat(
-        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, template),
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(
+            item, template, MAX_PERIODS_OF_STOCK_7),
         is(equalTo(10))
     );
 
@@ -395,7 +398,8 @@ public class LineItemFieldsCalculatorTest {
         .build();
 
     assertThat(
-        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(item, new RequisitionTemplate()),
+        LineItemFieldsCalculator.calculateCalculatedOrderQuantity(
+            item, new RequisitionTemplate(), null),
         is(equalTo(5))
     );
 

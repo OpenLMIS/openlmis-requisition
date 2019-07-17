@@ -23,11 +23,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
 import org.openlmis.requisition.dto.BatchApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -43,6 +45,10 @@ public class RequisitionExportHelper {
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Autowired
+  private FacilityTypeApprovedProductReferenceDataService
+      facilityTypeApprovedProductReferenceDataService;
+
   /**
    * Return list of RequisitionLineItemDtos for a given RequisitionLineItem.
    *
@@ -50,7 +56,7 @@ public class RequisitionExportHelper {
    * @return list of RequisitionLineItemDtos
    */
   public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems) {
-    return exportToDtos(requisitionLineItems, null, false);
+    return exportToDtos(requisitionLineItems, null, null, false);
   }
 
   /**
@@ -61,8 +67,9 @@ public class RequisitionExportHelper {
    * @return list of RequisitionLineItemDtos
    */
   public List<RequisitionLineItemDto> exportToDtos(List<RequisitionLineItem> requisitionLineItems,
-                                                   Map<VersionIdentityDto, OrderableDto> orderables,
-                                                   boolean batch) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      boolean batch) {
     XLOGGER.entry(requisitionLineItems);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEMS_TO_DTOS");
     profiler.setLogger(XLOGGER);
@@ -86,11 +93,31 @@ public class RequisitionExportHelper {
       orderablesForLines = orderables;
     }
 
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProductsForLines;
+    if (approvedProducts == null) {
+      profiler.start("GET_APPROVED_PRODUCTS_IDS_FROM_LINE_ITEMS");
+      Set<VersionEntityReference> approvedProductsIds = new HashSet<>(requisitionLineItems.size());
+      for (RequisitionLineItem lineItem : requisitionLineItems) {
+        approvedProductsIds.add(lineItem.getFacilityTypeApprovedProduct());
+      }
+
+      profiler.start("FIND_APPROVED_PRODUCTS_BY_IDS");
+      approvedProductsForLines =
+          facilityTypeApprovedProductReferenceDataService
+              .findByIdentities(approvedProductsIds)
+              .stream()
+              .collect(Collectors.toMap(ApprovedProductDto::getIdentity, product -> product));
+
+    } else {
+      approvedProductsForLines = approvedProducts;
+    }
+
     profiler.start("CONVERT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtos =
         new ArrayList<>(requisitionLineItems.size());
     for (RequisitionLineItem lineItem : requisitionLineItems) {
-      requisitionLineItemDtos.add(exportToDto(lineItem, orderablesForLines, batch));
+      requisitionLineItemDtos.add(exportToDto(lineItem, orderablesForLines,
+          approvedProductsForLines, batch));
     }
 
     profiler.stop().log();
@@ -100,8 +127,9 @@ public class RequisitionExportHelper {
 
 
   private RequisitionLineItemDto exportToDto(RequisitionLineItem requisitionLineItem,
-                                             Map<VersionIdentityDto, OrderableDto> orderables,
-                                             boolean batch) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      boolean batch) {
     XLOGGER.entry(requisitionLineItem, orderables);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
@@ -109,6 +137,10 @@ public class RequisitionExportHelper {
     profiler.start("GET_LINE_ITEM_ORDERABLE_FROM_ORDERABLES");
     final OrderableDto orderableDto = orderables
         .get(new VersionIdentityDto(requisitionLineItem.getOrderable()));
+
+    profiler.start("GET_LINE_ITEM_APPROVED_PRODUCT_FROM_APPROVED_PRODUCTS");
+    final ApprovedProductDto approvedProductDto = approvedProducts
+        .get(new VersionIdentityDto(requisitionLineItem.getFacilityTypeApprovedProduct()));
 
     profiler.start("CONSTRUCT_REQUISITION_LINE_ITEM_DTO");
     RequisitionLineItemDto dto;
@@ -119,7 +151,7 @@ public class RequisitionExportHelper {
     }
 
     profiler.start("EXPORT_TO_DTO");
-    requisitionLineItem.export(dto, orderableDto);
+    requisitionLineItem.export(dto, orderableDto, approvedProductDto);
 
     profiler.stop().log();
     XLOGGER.exit(dto);

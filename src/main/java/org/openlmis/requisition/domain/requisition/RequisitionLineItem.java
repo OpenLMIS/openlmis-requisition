@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -109,6 +110,17 @@ public class RequisitionLineItem extends BaseEntity {
   })
   @Getter
   private VersionEntityReference orderable;
+
+  @Setter
+  @Getter
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(
+          name = "facilityTypeApprovedProductId")),
+      @AttributeOverride(name = "versionId", column = @Column(
+          name = "facilityTypeApprovedProductVersionId"))
+  })
+  private VersionEntityReference facilityTypeApprovedProduct;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "requisitionId")
@@ -219,10 +231,6 @@ public class RequisitionLineItem extends BaseEntity {
 
   @Setter
   @Getter
-  private BigDecimal maxPeriodsOfStock;
-
-  @Setter
-  @Getter
   private Integer idealStockAmount;
 
   @Setter
@@ -247,7 +255,8 @@ public class RequisitionLineItem extends BaseEntity {
   RequisitionLineItem(Requisition requisition, ApprovedProductDto approvedProduct) {
     this();
     this.requisition = requisition;
-    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
+    this.facilityTypeApprovedProduct = new VersionEntityReference(approvedProduct.getId(),
+        approvedProduct.getVersionId());
 
     OrderableDto orderableDto = approvedProduct.getOrderable();
 
@@ -263,7 +272,7 @@ public class RequisitionLineItem extends BaseEntity {
    * @param original an original line item with data that will be placed in a new line item.
    */
   public RequisitionLineItem(RequisitionLineItem original) {
-    this(null, original.requisition,
+    this(null, null, original.requisition,
         original.beginningBalance, original.totalReceivedQuantity,
         original.totalLossesAndAdjustments, original.stockOnHand, original.requestedQuantity,
         original.totalConsumedQuantity, original.total, original.requestedQuantityExplanation,
@@ -272,10 +281,12 @@ public class RequisitionLineItem extends BaseEntity {
         original.numberOfNewPatientsAdded, original.additionalQuantityRequired,
         original.adjustedConsumption, original.previousAdjustedConsumptions,
         original.averageConsumption, original.maximumStockQuantity,
-        original.calculatedOrderQuantity, null, original.maxPeriodsOfStock,
+        original.calculatedOrderQuantity, null,
         original.idealStockAmount, original.calculatedOrderQuantityIsa);
     setId(original.getId());
     this.orderable = new VersionEntityReference(original.orderable);
+    this.facilityTypeApprovedProduct = new VersionEntityReference(
+        original.facilityTypeApprovedProduct);
     this.stockAdjustments = original
         .stockAdjustments
         .stream()
@@ -316,7 +327,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setAdjustedConsumption(importer.getAdjustedConsumption());
     requisitionLineItem.setAverageConsumption(importer.getAverageConsumption());
     requisitionLineItem.setMaximumStockQuantity(importer.getMaximumStockQuantity());
-    requisitionLineItem.setMaxPeriodsOfStock(importer.getMaxPeriodsOfStock());
     requisitionLineItem.setCalculatedOrderQuantity(importer.getCalculatedOrderQuantity());
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
@@ -421,7 +431,8 @@ public class RequisitionLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Exporter exporter, OrderableDto orderableDto) {
+  public void export(Exporter exporter, OrderableDto orderableDto,
+      ApprovedProductDto approvedProductDto) {
     exporter.setId(id);
     exporter.setOrderable(orderableDto);
     exporter.setApprovedQuantity(approvedQuantity);
@@ -450,7 +461,11 @@ public class RequisitionLineItem extends BaseEntity {
       exporter.setPreviousAdjustedConsumptions(previousAdjustedConsumptions);
     }
     exporter.setMaximumStockQuantity(maximumStockQuantity);
-    exporter.setMaxPeriodsOfStock(maxPeriodsOfStock);
+    exporter.setMaxPeriodsOfStock(Optional
+            .ofNullable(approvedProductDto)
+            .map(item -> item.getMaxPeriodsOfStock())
+            .map(BigDecimal::new)
+            .orElse(null));
     exporter.setAverageConsumption(averageConsumption);
     exporter.setCalculatedOrderQuantity(calculatedOrderQuantity);
     exporter.setIdealStockAmount(idealStockAmount);
@@ -519,15 +534,16 @@ public class RequisitionLineItem extends BaseEntity {
    */
   void calculateAndSetFields(RequisitionTemplate template,
       Collection<StockAdjustmentReason> stockAdjustmentReasons,
-      Integer numberOfMonthsInPeriod) {
+      Integer numberOfMonthsInPeriod,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons, template);
     calculateAndSetStockOnHand(template);
     calculateAndSetTotalConsumedQuantity(template);
     calculateAndSetTotal(template);
     calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
     calculateAndSetAverageConsumption(template);
-    calculateAndSetMaximumStockQuantity(template);
-    calculateAndSetCalculatedOrderQuantity(template);
+    calculateAndSetMaximumStockQuantity(template, approvedProducts);
+    calculateAndSetCalculatedOrderQuantity(template, approvedProducts);
     calculateAndSetCalculatedOrderQuantityIsa(template);
   }
 
@@ -704,9 +720,11 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Maximum Stock Quantity field in {@link RequisitionLineItem}.
    */
-  private void calculateAndSetMaximumStockQuantity(RequisitionTemplate template) {
+  private void calculateAndSetMaximumStockQuantity(RequisitionTemplate template,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     if (template.isColumnInTemplateAndDisplayed(MAXIMUM_STOCK_QUANTITY)) {
-      int calculated = calculateMaximumStockQuantity(this, template);
+      int calculated = calculateMaximumStockQuantity(this, template,
+          getMaxPeriodsOfStockFromApprovedProduct(approvedProducts));
       if (getMaximumStockQuantity() != null
           && !Objects.equals(getMaximumStockQuantity(), calculated)) {
         LOGGER.warn("Passed MaximumStockQuantity does not match calculated one.");
@@ -718,9 +736,11 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Calculated Order Quantity field in {@link RequisitionLineItem}.
    */
-  private void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template) {
+  private void calculateAndSetCalculatedOrderQuantity(RequisitionTemplate template,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     if (template.isColumnInTemplateAndDisplayed(CALCULATED_ORDER_QUANTITY)) {
-      int calculated = calculateCalculatedOrderQuantity(this, template);
+      int calculated = calculateCalculatedOrderQuantity(this, template,
+          getMaxPeriodsOfStockFromApprovedProduct(approvedProducts));
       if (getCalculatedOrderQuantity() != null
           && !Objects.equals(getCalculatedOrderQuantity(), calculated)) {
         LOGGER.warn("Passed CalculatedOrderQuantity does not match calculated one.");
@@ -758,6 +778,14 @@ public class RequisitionLineItem extends BaseEntity {
         .filter(lineItem -> Objects.nonNull(lineItem.getAdditionalQuantityRequired()))
         .mapToInt(RequisitionLineItem::getAdditionalQuantityRequired)
         .sum() + (additionalQuantityRequired != null ? additionalQuantityRequired : 0);
+  }
+
+  private Double getMaxPeriodsOfStockFromApprovedProduct(
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
+    ApprovedProductDto approvedProductDto = approvedProducts
+        .get(new VersionIdentityDto(this.facilityTypeApprovedProduct));
+
+    return approvedProductDto.getMaxPeriodsOfStock();
   }
 
   public interface Exporter {
@@ -862,8 +890,6 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getAdjustedConsumption();
 
     Integer getAverageConsumption();
-
-    BigDecimal getMaxPeriodsOfStock();
 
     Integer getMaximumStockQuantity();
 

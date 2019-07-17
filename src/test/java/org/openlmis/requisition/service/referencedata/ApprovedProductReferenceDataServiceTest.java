@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.service.BaseCommunicationService;
@@ -71,8 +72,13 @@ public class ApprovedProductReferenceDataServiceTest
     ApproveProductsAggregator response = service.getApprovedProducts(facilityId, program.getId());
 
     // then
-    assertThat(response.getOrderableIdentities(), hasSize(1));
-    assertThat(response.getOrderableIdentities(), hasItem(product.getOrderable().getIdentity()));
+    ApprovedProductReference reference = new ApprovedProductReference(
+        product.getId(), product.getVersionId(), product.getOrderable().getId(),
+        product.getOrderable().getVersionId()
+    );
+
+    assertThat(response.getApprovedProductReferences(), hasSize(1));
+    assertThat(response.getApprovedProductReferences(), hasItem(reference));
 
     verifyPageRequest()
         .isGetRequest()

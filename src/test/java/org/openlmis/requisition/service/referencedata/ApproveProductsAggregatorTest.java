@@ -18,8 +18,6 @@ package org.openlmis.requisition.service.referencedata;
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isIn;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
@@ -31,10 +29,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
@@ -43,9 +41,9 @@ public class ApproveProductsAggregatorTest {
   private static final int PRODUCT_COUNT = 25;
 
   private ProgramDto program;
-  private Set<VersionIdentityDto> orderableIdentities = Sets.newHashSet();
-  private Set<VersionIdentityDto> fullSupplyOrderableIdentities = Sets.newHashSet();
-  private Set<VersionIdentityDto> nonFullSupplyOrderableIdentities = Sets.newHashSet();
+  private Set<ApprovedProductReference> references = Sets.newHashSet();
+  private Set<ApprovedProductReference> fullSupplyReferences = Sets.newHashSet();
+  private Set<ApprovedProductReference> nonFullSupplyReferences = Sets.newHashSet();
   private List<ApprovedProductDto> approvedProducts = Lists.newArrayList();
 
   @Before
@@ -53,23 +51,27 @@ public class ApproveProductsAggregatorTest {
     program = new ProgramDtoDataBuilder().buildAsDto();
 
     for (int i = 0; i < PRODUCT_COUNT; ++i) {
+      UUID productId = UUID.randomUUID();
       UUID orderableId = UUID.randomUUID();
-      orderableIdentities.add(new VersionIdentityDto(orderableId, 1L));
+      references.add(new ApprovedProductReference(productId, 1L, orderableId, 1L));
 
       if (i % 3 == 0) {
-        fullSupplyOrderableIdentities.add(new VersionIdentityDto(orderableId, 1L));
+        fullSupplyReferences.add(new ApprovedProductReference(productId, 1L, orderableId, 1L));
       }
     }
 
-    nonFullSupplyOrderableIdentities.addAll(orderableIdentities);
-    nonFullSupplyOrderableIdentities.removeAll(fullSupplyOrderableIdentities);
+    nonFullSupplyReferences.addAll(references);
+    nonFullSupplyReferences.removeAll(fullSupplyReferences);
 
-    for (VersionIdentityDto orderableIdentity : orderableIdentities) {
+    for (ApprovedProductReference reference : references) {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
+          .withId(reference.getFacilityTypeApprovedProduct().getId())
+          .withVersionId(reference.getFacilityTypeApprovedProduct().getVersionId())
           .withOrderable(new OrderableDtoDataBuilder()
-              .withId(orderableIdentity.getId())
+              .withId(reference.getOrderable().getId())
+              .withVersionId(reference.getOrderable().getVersionId())
               .withProgramOrderable(program.getId(),
-                  fullSupplyOrderableIdentities.contains(orderableIdentity))
+                  fullSupplyReferences.contains(reference))
               .buildAsDto())
           .withProgram(program)
           .buildAsDto()
@@ -83,12 +85,16 @@ public class ApproveProductsAggregatorTest {
         approvedProducts, program.getId()
     );
 
-    compareCollections(products.getOrderableIdentities(), orderableIdentities);
+    compareCollections(products.getApprovedProductReferences(), references);
     compareCollections(
         products.getFullSupplyOrderableIds(),
-        fullSupplyOrderableIdentities.stream().map(BaseDto::getId).collect(Collectors.toSet()));
-    compareCollections(products.getNonFullSupplyOrderableIdentities(),
-        nonFullSupplyOrderableIdentities);
+        fullSupplyReferences
+            .stream()
+            .map(ApprovedProductReference::getOrderable)
+            .map(VersionEntityReference::getId)
+            .collect(Collectors.toSet()));
+    compareCollections(products.getNonFullSupplyApprovedProductReferences(),
+        nonFullSupplyReferences);
 
     Collection<ApprovedProductDto> fullSupplyProducts = approvedProducts
         .stream()
@@ -97,21 +103,6 @@ public class ApproveProductsAggregatorTest {
         .collect(Collectors.toList());
 
     compareCollections(products.getFullSupplyProducts(), fullSupplyProducts);
-  }
-
-  @Test
-  public void shouldFindFullSupplyProductByOrderableId() {
-    ApproveProductsAggregator products = new ApproveProductsAggregator(
-        approvedProducts, program.getId()
-    );
-
-    for (VersionIdentityDto orderableIdentity : fullSupplyOrderableIdentities) {
-      assertThat(products.getFullSupplyProduct(orderableIdentity), isIn(approvedProducts));
-    }
-
-    for (VersionIdentityDto orderableIdentity : nonFullSupplyOrderableIdentities) {
-      assertThat(products.getFullSupplyProduct(orderableIdentity), not(isIn(approvedProducts)));
-    }
   }
 
   private <T> void compareCollections(Collection<T> actual, Collection<T> expected) {

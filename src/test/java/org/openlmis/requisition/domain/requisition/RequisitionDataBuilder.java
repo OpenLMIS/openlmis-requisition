@@ -60,7 +60,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   private Long version = 1L;
   private UUID supervisoryNodeId = null;
   private List<Requisition> previousRequisitions = Lists.newArrayList();
-  private Set<VersionEntityReference> availableProducts = Sets.newHashSet();
+  private Set<ApprovedProductReference> availableProducts = Sets.newHashSet();
   private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted =
       new DatePhysicalStockCountCompleted(LocalDate.now().minusMonths(1));
   private List<StockAdjustmentReason> stockAdjustmentReasons = new ArrayList<>();
@@ -165,7 +165,8 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
     requisitionLineItems.add(lineItem);
 
     if (emergency || nonFullSupply) {
-      availableProducts.add(lineItem.getOrderable());
+      availableProducts.add(new ApprovedProductReference(
+          lineItem.getFacilityTypeApprovedProduct(), lineItem.getOrderable()));
     }
 
     return this;

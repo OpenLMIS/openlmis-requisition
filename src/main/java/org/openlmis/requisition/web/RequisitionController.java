@@ -24,13 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -50,6 +55,8 @@ import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -94,6 +101,9 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
+
+  @Autowired
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   /**
    * Allows creating new requisitions.
@@ -150,9 +160,14 @@ public class RequisitionController extends BaseRequisitionController {
         program.getId(), facility.getType().getId(), reportOnly && !emergency
     );
 
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(facility.getId(), program.getId());
+
     profiler.start("INITIATE_REQUISITION");
     Requisition newRequisition = requisitionService.initiate(
-        program, facility, period, emergency, stockAdjustmentReasons, requisitionTemplate
+        program, facility, period, emergency, stockAdjustmentReasons, requisitionTemplate,
+        approvedProducts
     );
 
     profiler.start("VALIDATE_REASONS");
@@ -161,6 +176,7 @@ public class RequisitionController extends BaseRequisitionController {
     RequisitionDto requisitionDto = buildDto(
         profiler, newRequisition,
         findOrderables(profiler, newRequisition::getAllOrderables),
+        approvedProducts.getAllGroupByIdentity(),
         facility, program, period
     );
 
@@ -234,7 +250,10 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
-    validateForStatusChange(requisition, orderables, profiler);
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        () -> getLineItemApprovedProductIdentities(requisition), profiler);
+
+    validateForStatusChange(requisition, orderables, approvedProducts, profiler);
 
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
     checkIfPeriodIsValid(requisition, period, profiler);
@@ -324,9 +343,14 @@ public class RequisitionController extends BaseRequisitionController {
         .getPeriod(requisitionToUpdate.getProcessingPeriodId());
 
     profiler.start("BUILD_REQUISITION_UPDATER");
+    Map<VersionEntityReference, ApprovedProductReference> productReferences = requisitionToUpdate
+        .getAvailableProducts()
+        .stream()
+        .collect(Collectors.toMap(ApprovedProductReference::getOrderable, Function.identity()));
+
     Requisition requisition = RequisitionBuilder.newRequisition(requisitionDto,
         requisitionToUpdate.getTemplate(), requisitionToUpdate.getProgramId(),
-        period, requisitionToUpdate.getStatus(), orderables);
+        period, requisitionToUpdate.getStatus(), orderables, productReferences);
     requisition.setId(requisitionId);
 
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
@@ -339,9 +363,13 @@ public class RequisitionController extends BaseRequisitionController {
 
     FacilityDto facility = findFacility(requisitionToUpdate.getFacilityId(), profiler);
 
-    ETagResource<RequisitionDto> etaggedResource = doUpdate(
-        requisitionToUpdate, requisition, orderables, facility, program, period, profiler
-    );
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        requisitionToUpdate::getAllApprovedProductIdentities, profiler);
+
+    UpdateParams params = new UpdateParams(requisitionToUpdate, requisition,
+        orderables, facility, program, period, approvedProducts);
+
+    ETagResource<RequisitionDto> etaggedResource = doUpdate(params, profiler);
 
     stopProfiler(profiler, etaggedResource.getResource());
 
@@ -366,6 +394,7 @@ public class RequisitionController extends BaseRequisitionController {
     RequisitionDto requisitionDto = buildDto(
         profiler, requisition,
         findOrderables(profiler, requisition::getAllOrderables),
+        findApprovedProducts(requisition::getAllApprovedProductIdentities, profiler),
         findFacility(requisition.getFacilityId(), profiler),
         findProgram(requisition.getProgramId(), profiler),
         null
@@ -501,7 +530,11 @@ public class RequisitionController extends BaseRequisitionController {
     validateIdempotencyKey(request, profiler);
 
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(profiler, requisition);
-    validateForStatusChange(requisition, orderables, profiler);
+
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        () -> getLineItemApprovedProductIdentities(requisition), profiler);
+
+    validateForStatusChange(requisition, orderables, approvedProducts, profiler);
 
     SupervisoryNodeDto supervisoryNodeDto = getSupervisoryNodeDto(profiler, requisition);
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
@@ -608,7 +641,10 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
-    validateForStatusChange(requisition, orderables, profiler);
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        () -> getLineItemApprovedProductIdentities(requisition), profiler);
+
+    validateForStatusChange(requisition, orderables, approvedProducts, profiler);
 
     ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
     checkIfPeriodIsValid(requisition, period, profiler);

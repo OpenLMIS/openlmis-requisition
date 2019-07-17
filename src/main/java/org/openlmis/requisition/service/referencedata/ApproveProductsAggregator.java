@@ -15,76 +15,93 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.Collection;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
-import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 
 public final class ApproveProductsAggregator {
   private Map<VersionIdentityDto, ApprovedProductDto> allProducts;
-  private Map<VersionIdentityDto, ApprovedProductDto> fullSupplyProducts;
-  private Map<VersionIdentityDto, ApprovedProductDto> nonFullSupplyProducts;
+  private Set<ApprovedProductReference> allProductReferences;
+  private Set<VersionIdentityDto> allOrderableIdentities;
+
+  private List<ApprovedProductDto> fullSupplyProducts;
+  private Set<UUID> fullSupplyOrderableIds;
+
+  private Set<ApprovedProductReference> nonFullSupplyProductReferences;
 
   /**
    * Create a new instance of the {@link ApproveProductsAggregator}.
    */
   public ApproveProductsAggregator(List<ApprovedProductDto> products, UUID programId) {
     allProducts = Maps.newHashMap();
-    fullSupplyProducts = Maps.newHashMap();
-    nonFullSupplyProducts = Maps.newHashMap();
+    allProductReferences = Sets.newHashSet();
+    allOrderableIdentities = Sets.newHashSet();
+
+    fullSupplyProducts = Lists.newArrayList();
+    fullSupplyOrderableIds = Sets.newHashSet();
+
+    nonFullSupplyProductReferences = Sets.newHashSet();
+
     groupByOrderableId(products, programId);
   }
 
   private void groupByOrderableId(List<ApprovedProductDto> products, UUID programId) {
     for (ApprovedProductDto approvedProduct : products) {
       OrderableDto orderable = approvedProduct.getOrderable();
+
+      allProducts.put(approvedProduct.getIdentity(), approvedProduct);
+      allProductReferences.add(new ApprovedProductReference(approvedProduct.getId(),
+          approvedProduct.getVersionId(), orderable.getId(), orderable.getVersionId()));
+      allOrderableIdentities.add(orderable.getIdentity());
+
       ProgramOrderableDto po = orderable.getProgramOrderable(programId);
 
-      allProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
-
       if (Objects.equals(true, po.getFullSupply())) {
-        fullSupplyProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
+        fullSupplyProducts.add(approvedProduct);
+        fullSupplyOrderableIds.add(orderable.getId());
       }
 
       if (Objects.equals(false, po.getFullSupply())) {
-        nonFullSupplyProducts.put(approvedProduct.getOrderable().getIdentity(), approvedProduct);
+        nonFullSupplyProductReferences.add(new ApprovedProductReference(approvedProduct.getId(),
+            approvedProduct.getVersionId(), orderable.getId(), orderable.getVersionId()));
       }
     }
   }
 
+  public Set<ApprovedProductReference> getApprovedProductReferences() {
+    return allProductReferences;
+  }
+
   public Set<VersionIdentityDto> getOrderableIdentities() {
-    return allProducts.keySet();
+    return allOrderableIdentities;
   }
 
-  public Set<VersionIdentityDto> getNonFullSupplyOrderableIdentities() {
-    return nonFullSupplyProducts.keySet();
+  public Set<ApprovedProductReference> getNonFullSupplyApprovedProductReferences() {
+    return nonFullSupplyProductReferences;
   }
 
-  public Collection<ApprovedProductDto> getFullSupplyProducts() {
-    return fullSupplyProducts.values();
+  public List<ApprovedProductDto> getFullSupplyProducts() {
+    return fullSupplyProducts;
   }
 
   /**
    * Retrieve full supply orderable ids.
    */
   public Set<UUID> getFullSupplyOrderableIds() {
-    return fullSupplyProducts
-        .keySet()
-        .stream()
-        .map(BaseDto::getId)
-        .collect(Collectors.toSet());
+    return fullSupplyOrderableIds;
   }
 
-  public ApprovedProductDto getFullSupplyProduct(VersionIdentityDto orderableIdentity) {
-    return fullSupplyProducts.get(orderableIdentity);
+  public Map<VersionIdentityDto, ApprovedProductDto> getAllGroupByIdentity() {
+    return allProducts;
   }
 }

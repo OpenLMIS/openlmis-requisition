@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
@@ -100,6 +101,7 @@ import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
@@ -189,6 +191,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     mockSearchSupervisoryNodeByProgramAndFacility();
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(false);
+
+    when(approvedProductReferenceDataService.getApprovedProducts(anyUuid(), anyUuid()))
+        .thenReturn(new ApproveProductsAggregator(emptyList(), UUID.randomUUID()));
+
     ReflectionTestUtils.setField(requisitionController, BaseRequisitionController.class,
         "baseUrl", BASE_URL, String.class);
   }
@@ -1236,7 +1242,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(requisition)
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()));
+            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()),
+            any(ApproveProductsAggregator.class));
     mockValidationSuccess();
 
     // when
@@ -1259,8 +1266,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
-        .initiate(program, facility, period, false,
-            stockAdjustmentReasons, requisition.getTemplate());
+        .initiate(eq(program), eq(facility), eq(period), eq(false),
+            eq(stockAdjustmentReasons), eq(requisition.getTemplate()),
+            any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1291,8 +1299,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // then
     verify(requisitionService, never()).initiate(
         any(ProgramDto.class), any(FacilityDto.class),
-        any(ProcessingPeriodDto.class), anyBoolean(), any(), any()
-    );
+        any(ProcessingPeriodDto.class), anyBoolean(), any(), any(),
+        any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.requestChecks());
   }
 
@@ -1307,7 +1315,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
     given(requisitionService
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), any(RequisitionTemplate.class)))
+            anyListOf(StockAdjustmentReason.class), any(RequisitionTemplate.class),
+            any(ApproveProductsAggregator.class)))
         .willThrow(err);
 
     doReturn(ValidationResult.success())
@@ -1357,7 +1366,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
             any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class),
+            any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1388,7 +1398,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
             any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class),
+            any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1408,7 +1419,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(requisition)
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()));
+            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()),
+                any(ApproveProductsAggregator.class));
     mockValidationSuccess();
 
     // when
@@ -1433,8 +1445,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
-        .initiate(program, facility, period, false,
-            stockAdjustmentReasons, requisition.getTemplate());
+        .initiate(eq(program), eq(facility), eq(period), eq(false),
+            eq(stockAdjustmentReasons), eq(requisition.getTemplate()),
+            any(ApproveProductsAggregator.class));
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
@@ -1458,7 +1471,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(requisition)
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()));
+            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()),
+            any(ApproveProductsAggregator.class));
     mockValidationSuccess();
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
@@ -1481,7 +1495,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
             any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class),
+            any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1501,7 +1516,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(requisition)
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()));
+            anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()),
+            any(ApproveProductsAggregator.class));
     mockValidationSuccess();
 
     // when
@@ -1523,7 +1539,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     verify(requisitionService, never())
         .initiate(any(ProgramDto.class), any(FacilityDto.class),
             any(ProcessingPeriodDto.class), anyBoolean(), anyList(),
-            any(RequisitionTemplate.class));
+            any(RequisitionTemplate.class),
+            any(ApproveProductsAggregator.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

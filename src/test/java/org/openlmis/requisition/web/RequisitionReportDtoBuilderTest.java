@@ -44,6 +44,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -54,6 +55,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
@@ -122,12 +124,23 @@ public class RequisitionReportDtoBuilderTest {
         .withVersionId(nonFullSupply.getOrderable().getVersionId())
         .withProgramOrderable(requisition.getProgramId(), false, Money.of(CurrencyUnit.USD, 2), 3)
         .buildAsDto();
+    final ApprovedProductDto fullSupplyApprovedProductDto = new ApprovedProductDtoDataBuilder()
+        .withId(fullSupply.getFacilityTypeApprovedProduct().getId())
+        .withVersionId(fullSupply.getFacilityTypeApprovedProduct().getVersionId())
+        .withOrderable(fullSupplyOrderable)
+        .buildAsDto();
+    final ApprovedProductDto nonFullSupplyApprovedProductDto = new ApprovedProductDtoDataBuilder()
+        .withId(nonFullSupply.getFacilityTypeApprovedProduct().getId())
+        .withVersionId(nonFullSupply.getFacilityTypeApprovedProduct().getVersionId())
+        .withOrderable(nonFullSupplyOrderable)
+        .buildAsDto();
 
     fullSupplyDtos = new RequisitionLineItemDto();
-    fullSupply.export(fullSupplyDtos, fullSupplyOrderable);
+    fullSupply.export(fullSupplyDtos, fullSupplyOrderable, fullSupplyApprovedProductDto);
 
     nonFullSupplyDtos = new RequisitionLineItemDto();
-    nonFullSupply.export(nonFullSupplyDtos, nonFullSupplyOrderable);
+    nonFullSupply.export(nonFullSupplyDtos, nonFullSupplyOrderable,
+        nonFullSupplyApprovedProductDto);
 
     requisitionDto = new RequisitionDto();
     requisition.export(requisitionDto);

@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.javers.common.collections.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,14 +48,17 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 
@@ -67,6 +71,7 @@ public class RequisitionExportHelperTest {
 
   private Requisition requisition;
   private OrderableDto orderableDto;
+  private ApprovedProductDto approvedProductDto;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -83,6 +88,10 @@ public class RequisitionExportHelperTest {
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Mock
+  private FacilityTypeApprovedProductReferenceDataService
+      facilityTypeApprovedProductReferenceDataService;
+
   @InjectMocks
   private RequisitionExportHelper requisitionExportHelper;
 
@@ -94,6 +103,7 @@ public class RequisitionExportHelperTest {
   private UUID period2 = UUID.randomUUID();
   private UUID period3 = UUID.randomUUID();
   private UUID productId = UUID.randomUUID();
+  private UUID approvedProductId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -104,10 +114,12 @@ public class RequisitionExportHelperTest {
   @Test
   public void shouldExportRequisitionLinesToDtos() {
     RequisitionLineItem requisitionLineItem =
-        generateRequisitionLineItemToExport(orderableDto.getId());
+        generateRequisitionLineItemToExport(orderableDto.getId(), approvedProductDto.getId());
 
     when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
         .thenReturn(Collections.singletonList(orderableDto));
+    when(facilityTypeApprovedProductReferenceDataService.findByIdentities(
+        argumentCaptor.capture())).thenReturn(Collections.singletonList(approvedProductDto));
 
     List<RequisitionLineItemDto> items =
         requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
@@ -131,19 +143,25 @@ public class RequisitionExportHelperTest {
     assertEquals(item.getNumberOfNewPatientsAdded(),
         requisitionLineItem.getNumberOfNewPatientsAdded());
 
-    Set<VersionEntityReference> searchedIdentities = argumentCaptor.getValue();
-    assertThat(searchedIdentities, hasSize(1));
+    List<Set<VersionEntityReference>> searchedIdentities = argumentCaptor.getAllValues();
+    assertThat(searchedIdentities, hasSize(2));
     assertThat(searchedIdentities,
-        hasItem(new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId())));
+        hasItem(Sets.asSet(new VersionEntityReference(orderableDto.getId(),
+            orderableDto.getVersionId()))));
+    assertThat(searchedIdentities,
+        hasItem(Sets.asSet(new VersionEntityReference(approvedProductDto.getId(),
+            approvedProductDto.getVersionId()))));
   }
 
   @Test
   public void exportShouldNotSetOrderableIfNoneReturned() {
     when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
         .thenReturn(Collections.emptyList());
+    when(facilityTypeApprovedProductReferenceDataService.findByIdentities(
+        argumentCaptor.capture())).thenReturn(Collections.emptyList());
 
     RequisitionLineItem requisitionLineItem =
-        generateRequisitionLineItemToExport(orderableDto.getId());
+        generateRequisitionLineItemToExport(orderableDto.getId(), approvedProductDto.getId());
     List<RequisitionLineItemDto> items =
         requisitionExportHelper.exportToDtos(singletonList(requisitionLineItem));
     RequisitionLineItemDto item = items.get(0);
@@ -151,13 +169,18 @@ public class RequisitionExportHelperTest {
 
     assertNull(item.getOrderable());
 
-    Set<VersionEntityReference> searchedIdentities = argumentCaptor.getValue();
-    assertThat(searchedIdentities, hasSize(1));
+    List<Set<VersionEntityReference>> searchedIdentities = argumentCaptor.getAllValues();
+    assertThat(searchedIdentities, hasSize(2));
     assertThat(searchedIdentities,
-        hasItem(new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId())));
+        hasItem(Sets.asSet(new VersionEntityReference(orderableDto.getId(),
+            orderableDto.getVersionId()))));
+    assertThat(searchedIdentities,
+        hasItem(Sets.asSet(new VersionEntityReference(approvedProductDto.getId(),
+            approvedProductDto.getVersionId()))));
   }
 
-  private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid) {
+  private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid,
+      UUID approvedProductDtoId) {
     ProgramOrderableDto programOrderableDto = new ProgramOrderableDtoDataBuilder()
         .withProgramId(program)
         .buildAsDto();
@@ -168,6 +191,7 @@ public class RequisitionExportHelperTest {
     return new RequisitionLineItemDataBuilder()
         .withRequisition(requisition)
         .withOrderable(orderableDtoUuid, 1L)
+        .withFacilityTypeApprovedProduct(approvedProductDtoId, 1L)
         .withId(UUID.randomUUID())
         .withBeginningBalance(3)
         .withTotalReceivedQuantity(4)
@@ -195,6 +219,9 @@ public class RequisitionExportHelperTest {
         .withVersionId(1L)
         .withNetContent(PACK_SIZE)
         .buildAsDto();
+    approvedProductDto = new ApprovedProductDtoDataBuilder()
+        .withVersionId(1L)
+        .buildAsDto();
   }
 
   private Requisition createTestRequisition(UUID facility, UUID period,
@@ -217,6 +244,7 @@ public class RequisitionExportHelperTest {
         .withStockOnHand(stockOnHand)
         .withRequisition(requisition)
         .withOrderable(productId, 1L)
+        .withFacilityTypeApprovedProduct(approvedProductId, 1L)
         .build();
   }
 

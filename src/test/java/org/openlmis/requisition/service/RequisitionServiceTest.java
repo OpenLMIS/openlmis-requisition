@@ -92,6 +92,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.OngoingStubbing;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -132,7 +133,6 @@ import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
-import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -210,9 +210,6 @@ public class RequisitionServiceTest {
 
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
-
-  @Mock
-  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Mock
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
@@ -693,7 +690,8 @@ public class RequisitionServiceTest {
   @Test
   public void shouldInitiateRequisitionIfItDoesNotAlreadyExist() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    final ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
 
@@ -711,7 +709,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
@@ -723,11 +721,12 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
@@ -740,13 +739,14 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     processingPeriod.setExtraData(ImmutableMap.of("reportOnly", "true"));
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     assertTrue(initiatedRequisition.getReportOnly());
   }
@@ -757,13 +757,14 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     processingPeriod.setExtraData(ImmutableMap.of("reportOnly", "true"));
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, true,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     assertFalse(initiatedRequisition.getReportOnly());
   }
@@ -773,11 +774,12 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
@@ -791,11 +793,12 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     stubPreviousPeriod();
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     UUID previousRequisitionId = initiatedRequisition.getPreviousRequisitions().get(0).getId();
     assertEquals(previousRequisition.getId(), previousRequisitionId);
@@ -806,7 +809,8 @@ public class RequisitionServiceTest {
   @Test
   public void shouldAssignIdealStockAmount() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     when(idealStockAmountReferenceDataService.search(any(UUID.class), any(UUID.class)))
         .thenReturn(Lists.newArrayList(new IdealStockAmountDtoDataBuilder()
@@ -815,7 +819,7 @@ public class RequisitionServiceTest {
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     List<RequisitionLineItem> lineItems = initiatedRequisition.getRequisitionLineItems();
     assertThat(lineItems, hasSize(1));
@@ -826,11 +830,12 @@ public class RequisitionServiceTest {
   public void shouldSetEmptyPreviousAdjustedConsumptionsWhenNumberOfPeriodsToAverageIsNull() {
     prepareForTestInitiate(null);
     mockPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     verify(periodService).findPreviousPeriods(any(UUID.class), eq(1));
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
@@ -843,11 +848,12 @@ public class RequisitionServiceTest {
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
     mockNoPreviousRequisition();
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -856,11 +862,12 @@ public class RequisitionServiceTest {
   @Test
   public void shouldNotSetPreviousAdjustedConsumptionsIfNoRequisitionForNoPreviousPeriod() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
@@ -869,11 +876,12 @@ public class RequisitionServiceTest {
   @Test
   public void shouldSetStockAdjustmenReasonsDuringInitiate() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
     assertEquals(stockAdjustmentReasons, initiatedRequisition.getStockAdjustmentReasons());
   }
@@ -881,13 +889,19 @@ public class RequisitionServiceTest {
   @Test
   public void shouldPopulateOnlyNonFullProductsDuringInitiateForRegularRequisition() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, false,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
-    Set<VersionEntityReference> availableProducts = initiatedRequisition.getAvailableProducts();
+    Set<VersionEntityReference> availableProducts = initiatedRequisition
+        .getAvailableProducts()
+        .stream()
+        .map(ApprovedProductReference::getOrderable)
+        .collect(Collectors.toSet());
+
     assertThat(availableProducts, hasSize(1));
     assertThat(availableProducts, hasItems(new VersionEntityReference(NON_FULL_PRODUCT_ID, 1L)));
   }
@@ -895,13 +909,19 @@ public class RequisitionServiceTest {
   @Test
   public void shouldPopulateFullAndNonFullProductsDuringInitiateForEmergencyRequisition() {
     prepareForTestInitiate(SETTING);
-    mockApprovedProduct(new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID, NON_FULL_PRODUCT_ID}, new boolean[]{true, false});
 
     Requisition initiatedRequisition = requisitionService.initiate(
         this.program, facility, processingPeriod, true,
-        stockAdjustmentReasons, requisitionTemplate);
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
 
-    Set<VersionEntityReference> availableProducts = initiatedRequisition.getAvailableProducts();
+    Set<VersionEntityReference> availableProducts = initiatedRequisition
+        .getAvailableProducts()
+        .stream()
+        .map(ApprovedProductReference::getOrderable)
+        .collect(Collectors.toSet());
+
     assertThat(availableProducts, hasSize(2));
     assertThat(availableProducts, hasItems(
         new VersionEntityReference(PRODUCT_ID, 1L),
@@ -923,13 +943,15 @@ public class RequisitionServiceTest {
     periods.add(previousPeriod);
 
     when(periodService
-        .findPreviousPeriods(processingPeriod, new Integer(4)))
+        .findPreviousPeriods(processingPeriod, 4))
         .thenReturn(periods);
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
+        program, facility, processingPeriod, false, stockAdjustmentReasons,
+        requisitionTemplate, aggregator);
 
     assertEquals(stockCardSummaryDto.getStockOnHand(),
         initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
@@ -941,10 +963,12 @@ public class RequisitionServiceTest {
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
     whenGetStockCardSummaries().thenThrow(IllegalStateException.class);
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
+        program, facility, processingPeriod, false, stockAdjustmentReasons,
+        requisitionTemplate, aggregator);
 
     assertNull(initiatedRequisition.getRequisitionLineItems().get(0).getStockOnHand());
     verifyZeroInteractions(stockCardRangeSummaryStockManagementService);
@@ -963,16 +987,18 @@ public class RequisitionServiceTest {
     periods.add(previousPeriod);
 
     when(periodService
-        .findPreviousPeriods(processingPeriod, new Integer(4)))
+        .findPreviousPeriods(processingPeriod, 4))
         .thenReturn(periods);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
     whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     whenGetStockCardSummaries().thenReturn(emptyList());
 
-    mockApprovedProduct(new UUID[]{PRODUCT_ID}, new boolean[]{true});
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     Requisition initiatedRequisition = requisitionService.initiate(
-        program, facility, processingPeriod, false, stockAdjustmentReasons, requisitionTemplate);
+        program, facility, processingPeriod, false, stockAdjustmentReasons,
+        requisitionTemplate, aggregator);
 
     assertTrue(initiatedRequisition.getRequisitionLineItems().isEmpty());
   }
@@ -1557,7 +1583,7 @@ public class RequisitionServiceTest {
         .thenReturn(emptyList());
   }
 
-  private void mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
+  private ApproveProductsAggregator mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
     assertThat(products.length, is(fullSupply.length));
 
     List<ApprovedProductDto> approvedProducts = new ArrayList<>();
@@ -1577,8 +1603,7 @@ public class RequisitionServiceTest {
       );
     }
 
-    when(approvedProductReferenceDataService.getApprovedProducts(any(), any()))
-        .thenReturn(new ApproveProductsAggregator(approvedProducts, program.getId()));
+    return new ApproveProductsAggregator(approvedProducts, program.getId());
   }
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {

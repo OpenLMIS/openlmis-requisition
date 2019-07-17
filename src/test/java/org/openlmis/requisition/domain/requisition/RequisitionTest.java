@@ -127,6 +127,7 @@ public class RequisitionTest {
   private ApprovedProductDto product;
   private OrderableDto orderable;
   private Map<VersionIdentityDto, OrderableDto> orderables;
+  private Map<VersionIdentityDto, ApprovedProductDto> approvedProducts;
 
   private ProcessingPeriodDto period;
 
@@ -185,6 +186,8 @@ public class RequisitionTest {
     product = new ApprovedProductDtoDataBuilder()
         .withOrderable(orderable)
         .buildAsDto();
+
+    approvedProducts = Maps.newHashMap(ImmutableMap.of(product.getIdentity(), product));
 
     period = new ProcessingPeriodDtoDataBuilder().buildAsDto();
   }
@@ -339,7 +342,7 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     requisition.authorize(orderables, UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), orderables, true);
+    requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(times(1));
@@ -507,7 +510,7 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), orderables, true);
+    requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
     verifyStatic(times(1));
   }
 
@@ -538,7 +541,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, orderables, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts,true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(2));
   }
@@ -570,7 +573,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, orderables, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
   }
@@ -620,7 +623,7 @@ public class RequisitionTest {
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, orderables, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
 
     // then
     requisition
@@ -639,7 +642,7 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)).thenReturn(false);
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), orderables, true);
+    requisition.updateFrom(new Requisition(), orderables, approvedProducts, true);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -1139,7 +1142,7 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, orderables, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
 
     assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
   }
@@ -1661,7 +1664,7 @@ public class RequisitionTest {
     Requisition requisition = new Requisition();
     requisition.setDatePhysicalStockCountCompleted(
         new DatePhysicalStockCountCompleted(LocalDate.now()));
-    this.requisition.updateFrom(requisition, orderables, updateStockDate);
+    this.requisition.updateFrom(requisition, orderables, approvedProducts, updateStockDate);
 
     return requisition;
   }

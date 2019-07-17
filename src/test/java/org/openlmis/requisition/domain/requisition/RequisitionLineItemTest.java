@@ -78,6 +78,7 @@ public class RequisitionLineItemTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
+  private UUID approvedProductId = UUID.randomUUID();
   private Money pricePerPack = Money.of(CurrencyUnit.USD, 5.79);
   private double maxPeriodsOfStock = 7.25;
 
@@ -412,9 +413,10 @@ public class RequisitionLineItemTest {
     );
     ProgramOrderableDto programOrderable = ftap.getOrderable().getProgramOrderable(programId);
     OrderableDto orderableDto = generateOrderableDto(programOrderable);
+    ApprovedProductDto approvedProductDto = generateApprovedProductDto(orderableDto);
 
     RequisitionLineItemDto dto = new RequisitionLineItemDto();
-    requisitionLineItem.export(dto, orderableDto);
+    requisitionLineItem.export(dto, orderableDto, approvedProductDto);
 
     assertNotNull(dto);
     assertThat(dto.getOrderableIdentity().getId(), is(requisitionLineItem.getOrderable().getId()));
@@ -637,7 +639,6 @@ public class RequisitionLineItemTest {
 
   private void checkResultsOfConstruction(RequisitionLineItem item) {
     assertEquals(initiatedRequisition, item.getRequisition());
-    assertEquals(maxPeriodsOfStock, item.getMaxPeriodsOfStock().doubleValue(), 0.1);
     assertEquals(orderableId, item.getOrderable().getId());
   }
 
@@ -701,6 +702,14 @@ public class RequisitionLineItemTest {
         .withVersionId(1L)
         .withPrograms(products)
         .buildAsDto();
+  }
+
+  private ApprovedProductDto generateApprovedProductDto(OrderableDto orderableDto) {
+    ApprovedProductDto approvedProductDto = new ApprovedProductDtoDataBuilder()
+        .withId(approvedProductId)
+        .withOrderable(orderableDto)
+        .buildAsDto();
+    return approvedProductDto;
   }
 
   private Requisition mockReq(RequisitionStatus status) {

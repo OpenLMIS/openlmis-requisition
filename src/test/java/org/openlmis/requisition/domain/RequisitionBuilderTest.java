@@ -40,12 +40,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.DatePhysicalStockCountCompleted;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -139,7 +141,7 @@ public class RequisitionBuilderTest {
   public void shouldInitializeRequisitionFromDtoImporterForUpdate() {
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.INITIATED, Maps.newHashMap());
+        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
 
     assertNotNull(requisition);
     assertEquals(processingPeriodDto.getDurationInMonths(),
@@ -171,7 +173,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
             requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.INITIATED, getOrderables());
+        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -187,7 +189,8 @@ public class RequisitionBuilderTest {
 
     RequisitionBuilder
         .newRequisition(requisitionDto, requisitionTemplate, program.getId(),
-            processingPeriodDto, RequisitionStatus.INITIATED, getOrderables());
+            processingPeriodDto, RequisitionStatus.INITIATED,
+            getOrderables(), getProductReferences());
   }
 
   @Test
@@ -196,7 +199,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(),
-        processingPeriodDto, RequisitionStatus.AUTHORIZED, getOrderables());
+        processingPeriodDto, RequisitionStatus.AUTHORIZED, getOrderables(), getProductReferences());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -207,7 +210,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.APPROVED, getOrderables());
+        RequisitionStatus.APPROVED, getOrderables(), getProductReferences());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -218,7 +221,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.INITIATED, getOrderables());
+        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -229,7 +232,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.SUBMITTED, getOrderables());
+        RequisitionStatus.SUBMITTED, getOrderables(), getProductReferences());
 
     assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
@@ -242,7 +245,7 @@ public class RequisitionBuilderTest {
     prepareLineItem(new RequisitionLineItemDto());
     RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, UUID.randomUUID(), processingPeriodDto,
-        RequisitionStatus.INITIATED, getOrderables());
+        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
   }
 
   private void prepareForTestSkipped() {
@@ -269,5 +272,14 @@ public class RequisitionBuilderTest {
         .map(line -> (RequisitionLineItemDto) line)
         .map(RequisitionLineItemDto::getOrderable)
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
+  }
+
+  private Map<VersionEntityReference, ApprovedProductReference> getProductReferences() {
+    return requisitionDto
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new ApprovedProductReference(UUID.randomUUID(), 1L,
+            line.getOrderableIdentity().getId(), line.getOrderableIdentity().getVersionId()))
+        .collect(Collectors.toMap(ApprovedProductReference::getOrderable, Function.identity()));
   }
 }

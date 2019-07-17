@@ -27,6 +27,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALUE_DOES_NOT_MAT
 import java.util.Map;
 import java.util.Objects;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.utils.Message;
@@ -35,28 +36,42 @@ class CalculatedFieldsValidator
     extends AbstractRegularRequisitionFullSupplyLineItemStatusChangeValidator {
 
   private final RequisitionTemplate requisitionTemplate;
-
+  private Map<VersionIdentityDto, ApprovedProductDto> approvedProducts;
 
   CalculatedFieldsValidator(Requisition requisitionToValidate,
       RequisitionTemplate requisitionTemplate,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     super(requisitionToValidate, orderables);
     this.requisitionTemplate = requisitionTemplate;
+    this.approvedProducts = approvedProducts;
   }
 
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
-                                          RequisitionLineItem item) {
-    validateMaximumStockQuantity(errors, item);
-    validateCalculatedOrderQuantity(errors, item);
+      RequisitionLineItem item) {
+    ApprovedProductDto approvedProductDto = approvedProducts
+        .entrySet()
+        .stream()
+        .filter(e -> e.getKey().getId().equals(
+            item.getFacilityTypeApprovedProduct().getId()))
+        .filter(e -> e.getKey().getVersionId().equals(
+            item.getFacilityTypeApprovedProduct().getVersionId()))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(null);
+
+    validateMaximumStockQuantity(errors, item, approvedProductDto.getMaxPeriodsOfStock());
+    validateCalculatedOrderQuantity(errors, item, approvedProductDto.getMaxPeriodsOfStock());
     validateCalculatedOrderQuantityIsa(errors, item);
   }
 
   private void validateCalculatedOrderQuantity(Map<String, Message> errors,
-                                               RequisitionLineItem item) {
+      RequisitionLineItem item, Double maxPeriodsOfStockValue) {
     boolean coqDisplayed = isColumnDisplayed(CALCULATED_ORDER_QUANTITY);
     rejectIfNonNullValueForHiddenColumn(errors, item.getCalculatedOrderQuantity(),
         CALCULATED_ORDER_QUANTITY, coqDisplayed);
-    if (coqDisplayed && calculatedOrderQuantityDoesNotMatchCalculatedValue(item)) {
+    if (coqDisplayed && calculatedOrderQuantityDoesNotMatchCalculatedValue(
+        item, maxPeriodsOfStockValue)) {
       rejectValueDoesNotMatchCalculations(errors, CALCULATED_ORDER_QUANTITY);
     }
   }
@@ -74,11 +89,12 @@ class CalculatedFieldsValidator
   }
 
   private void validateMaximumStockQuantity(Map<String, Message> errors,
-                                            RequisitionLineItem item) {
+      RequisitionLineItem item, Double maxPeriodsOfStockValue) {
     boolean msqDisplayed = isColumnDisplayed(MAXIMUM_STOCK_QUANTITY);
     rejectIfNonNullValueForHiddenColumn(errors, item.getMaximumStockQuantity(),
         MAXIMUM_STOCK_QUANTITY, msqDisplayed);
-    if (msqDisplayed && maximumStockQuantityDoesNotMatchCalculatedValue(item)) {
+    if (msqDisplayed && maximumStockQuantityDoesNotMatchCalculatedValue(
+        item, maxPeriodsOfStockValue)) {
       rejectValueDoesNotMatchCalculations(errors, MAXIMUM_STOCK_QUANTITY);
     }
   }
@@ -87,9 +103,10 @@ class CalculatedFieldsValidator
     return requisitionTemplate.isColumnDisplayed(maximumStockQuantity);
   }
 
-  private boolean calculatedOrderQuantityDoesNotMatchCalculatedValue(RequisitionLineItem item) {
+  private boolean calculatedOrderQuantityDoesNotMatchCalculatedValue(RequisitionLineItem item,
+      Double maxPeriodsOfStockValue) {
     return !Objects.equals(item.getCalculatedOrderQuantity(),
-        calculateCalculatedOrderQuantity(item, requisitionTemplate));
+        calculateCalculatedOrderQuantity(item, requisitionTemplate, maxPeriodsOfStockValue));
   }
 
   private boolean calculatedOrderQuantityIsaDoesNotMatchCalculatedValue(RequisitionLineItem item) {
@@ -97,9 +114,10 @@ class CalculatedFieldsValidator
         calculateCalculatedOrderQuantityIsa(item));
   }
 
-  private boolean maximumStockQuantityDoesNotMatchCalculatedValue(RequisitionLineItem item) {
+  private boolean maximumStockQuantityDoesNotMatchCalculatedValue(RequisitionLineItem item,
+      Double maxPeriodsOfStockValue) {
     return !Objects.equals(item.getMaximumStockQuantity(),
-        calculateMaximumStockQuantity(item, requisitionTemplate));
+        calculateMaximumStockQuantity(item, requisitionTemplate, maxPeriodsOfStockValue));
   }
 
   private void rejectValueDoesNotMatchCalculations(Map<String, Message> errors, String field) {

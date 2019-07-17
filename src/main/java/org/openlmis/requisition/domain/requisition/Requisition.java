@@ -226,14 +226,11 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Requisition> previousRequisitions;
 
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = VersionEntityReference.class)
-  @Column(name = "value")
-  @CollectionTable(
-      name = "available_products",
-      joinColumns = @JoinColumn(name = "requisitionId"))
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "available_products", joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
-  private Set<VersionEntityReference> availableProducts;
+  private Set<ApprovedProductReference> availableProducts;
 
   @Getter
   @Setter
@@ -335,9 +332,10 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public ValidationResult validateCanChangeStatus(LocalDate currentDate,
       boolean isDatePhysicalStockCountCompletedEnabled,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     return new StatusChangeValidationService(this, currentDate,
-        isDatePhysicalStockCountCompletedEnabled, orderables)
+        isDatePhysicalStockCountCompletedEnabled, orderables, approvedProducts)
         .validateRequisitionCanChangeStatus();
   }
 
@@ -352,9 +350,35 @@ public class Requisition extends BaseTimestampedEntity {
         .map(RequisitionLineItem::getOrderable)
         .collect(Collectors.toSet());
 
-    Optional.ofNullable(availableProducts).ifPresent(orderableIds::addAll);
+    Optional
+        .ofNullable(availableProducts)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(ApprovedProductReference::getOrderable)
+        .forEach(orderableIds::add);
 
     return orderableIds;
+  }
+
+  /**
+   * Returns a set of all approved product identities in this requisition.
+   */
+  public Set<VersionEntityReference> getAllApprovedProductIdentities() {
+    Set<VersionEntityReference> approvedProductIdentities = Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(RequisitionLineItem::getFacilityTypeApprovedProduct)
+        .collect(Collectors.toSet());
+
+    Optional
+        .ofNullable(availableProducts)
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(ApprovedProductReference::getFacilityTypeApprovedProduct)
+        .forEach(approvedProductIdentities::add);
+
+    return approvedProductIdentities;
   }
 
   /**
@@ -364,6 +388,7 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products               Collection of orderables.
    */
   public void updateFrom(Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
       boolean isDatePhysicalStockCountCompletedEnabled) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
@@ -376,7 +401,7 @@ public class Requisition extends BaseTimestampedEntity {
     updateReqLines(requisition.getRequisitionLineItems());
 
     profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-    calculateAndValidateTemplateFields(this.template, products);
+    calculateAndValidateTemplateFields(this.template, products, approvedProducts);
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
@@ -1002,10 +1027,12 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   private void calculateAndValidateTemplateFields(RequisitionTemplate template,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(line ->
-            line.calculateAndSetFields(template, stockAdjustmentReasons, numberOfMonthsInPeriod));
+            line.calculateAndSetFields(template, stockAdjustmentReasons,
+                numberOfMonthsInPeriod, approvedProducts));
   }
 
   private void updateConsumptions(Map<VersionIdentityDto, OrderableDto> orderables) {

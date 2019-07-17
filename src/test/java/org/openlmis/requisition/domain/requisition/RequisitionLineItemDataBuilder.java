@@ -27,6 +27,7 @@ import org.joda.money.Money;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.api.DataBuilder;
 import org.openlmis.requisition.testutils.api.DtoDataBuilder;
@@ -37,6 +38,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     RepositoryDataBuilder<RequisitionLineItem>, DtoDataBuilder<RequisitionLineItemDto> {
   private UUID id = UUID.randomUUID();
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
+  private VersionEntityReference facilityTypeApprovedProduct =
+      new VersionEntityReference(UUID.randomUUID(), 1L);
   private Requisition requisition = new RequisitionDataBuilder().build();
   private Integer beginningBalance = 100;
   private Integer totalReceivedQuantity = 50;
@@ -61,7 +64,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   //this needs to be always maximumStockQuantity - stockOnHand
   private Integer calculatedOrderQuantity = 250;
   private List<StockAdjustment> stockAdjustments = new ArrayList<>();
-  private BigDecimal maxPeriodsOfStock = BigDecimal.valueOf(3);
   private Integer idealStockAmount = 100;
   //this needs to be always idealStockAmount - stockOnHand
   private Integer calculatedOrderQuantityIsa = 50;
@@ -106,8 +108,15 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
         .withProgramOrderable(requisition.getProgramId(), true, Money.of(CurrencyUnit.USD, 0), 1)
         .buildAsDto();
 
+    ApprovedProductDto approvedProductDto = new ApprovedProductDtoDataBuilder()
+        .withId(requisitionLineItem.getFacilityTypeApprovedProduct().getId())
+        .withVersionId(requisitionLineItem.getFacilityTypeApprovedProduct().getVersionId())
+        .buildAsDto();
+
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
-    requisitionLineItem.export(requisitionLineItemDto, orderableDto);
+    requisitionLineItemDto.setMaxPeriodsOfStock(new BigDecimal(
+        approvedProductDto.getMaxPeriodsOfStock()));
+    requisitionLineItem.export(requisitionLineItemDto, orderableDto, approvedProductDto);
     return requisitionLineItemDto;
   }
 
@@ -116,12 +125,12 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
    */
   public RequisitionLineItem buildForInitiatedRegularRequisition() {
     RequisitionLineItem lineItem = new RequisitionLineItem(
-        orderable, requisition, beginningBalance, totalReceivedQuantity,
-        totalLossesAndAdjustments, stockOnHand, requestedQuantity, totalConsumedQuantity, total,
-        requestedQuantityExplanation, remarks, approvedQuantity, totalStockoutDays,
-        packsToShip, skipped, totalCost, numberOfNewPatientsAdded, additionalQuantityRequired,
-        adjustedConsumption, previousAdjustedConsumptions, averageConsumption, maximumStockQuantity,
-        calculatedOrderQuantity, stockAdjustments, maxPeriodsOfStock,
+        orderable, facilityTypeApprovedProduct, requisition, beginningBalance,
+        totalReceivedQuantity, totalLossesAndAdjustments, stockOnHand, requestedQuantity,
+        totalConsumedQuantity, total, requestedQuantityExplanation, remarks, approvedQuantity,
+        totalStockoutDays, packsToShip, skipped, totalCost, numberOfNewPatientsAdded,
+        additionalQuantityRequired, adjustedConsumption, previousAdjustedConsumptions,
+        averageConsumption, maximumStockQuantity, calculatedOrderQuantity, stockAdjustments,
         idealStockAmount, calculatedOrderQuantityIsa
     );
     lineItem.setId(id);
@@ -220,11 +229,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
-  public RequisitionLineItemDataBuilder withMaxPeriodsOfStock(BigDecimal maxPeriodsOfStock) {
-    this.maxPeriodsOfStock = maxPeriodsOfStock;
-    return this;
-  }
-
   public RequisitionLineItemDataBuilder addStockAdjustment(StockAdjustment adjustment) {
     this.stockAdjustments.add(adjustment);
     return this;
@@ -243,7 +247,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
    * Sets approved product.
    */
   public RequisitionLineItemDataBuilder withApprovedProduct(ApprovedProductDto approvedProduct) {
-    this.maxPeriodsOfStock = BigDecimal.valueOf(approvedProduct.getMaxPeriodsOfStock());
     OrderableDto orderable = approvedProduct.getOrderable();
     this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionId());
 
@@ -294,6 +297,12 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
+  public RequisitionLineItemDataBuilder withFacilityTypeApprovedProduct(UUID approvedProductId,
+      Long versionId) {
+    this.facilityTypeApprovedProduct = new VersionEntityReference(approvedProductId, versionId);
+    return this;
+  }
+
   public RequisitionLineItemDataBuilder withAverageConsumption(Integer averageConsumption) {
     this.averageConsumption = averageConsumption;
     return this;
@@ -341,7 +350,6 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     averageConsumption = null;
     maximumStockQuantity = null;
     calculatedOrderQuantity = null;
-    maxPeriodsOfStock = null;
     idealStockAmount = null;
     calculatedOrderQuantityIsa = null;
     additionalQuantityRequired = null;

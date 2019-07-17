@@ -24,8 +24,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.BatchApproveRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -37,6 +40,7 @@ import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.RequisitionExportHelper;
@@ -64,6 +68,10 @@ public class RequisitionDtoBuilder {
 
   @Autowired
   private RequisitionExportHelper requisitionExportHelper;
+
+  @Autowired
+  private FacilityTypeApprovedProductReferenceDataService
+      facilityTypeApprovedProductReferenceDataService;
 
   /**
    * Create a list of {@link RequisitionDto} based on passed data.
@@ -124,8 +132,16 @@ public class RequisitionDtoBuilder {
         .stream()
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
 
+    profiler.start("GET_APPROVED_PRODUCTS");
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts =
+        facilityTypeApprovedProductReferenceDataService
+          .findByIdentities(requisition.getAllApprovedProductIdentities())
+          .stream()
+          .collect(Collectors.toMap(ApprovedProductDto::getIdentity, Function.identity()));
+
     profiler.start("CALL_REQUISITION_DTO_BUILD");
-    RequisitionDto requisitionDto = build(requisition, orderables, facility, program, null);
+    RequisitionDto requisitionDto = build(requisition, orderables, approvedProducts,
+        facility, program, null);
 
     profiler.stop().log();
     XLOGGER.exit(requisitionDto);
@@ -141,6 +157,7 @@ public class RequisitionDtoBuilder {
    */
   public RequisitionDto build(Requisition requisition,
       Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
       FacilityDto facility, ProgramDto program, ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility, program);
     if (null == requisition) {
@@ -164,7 +181,8 @@ public class RequisitionDtoBuilder {
 
     profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, false);
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables,
+            approvedProducts, false);
 
     profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
@@ -190,8 +208,9 @@ public class RequisitionDtoBuilder {
    * null}.
    */
   public RequisitionDto buildBatch(Requisition requisition, FacilityDto facility,
-                                   Map<VersionIdentityDto, OrderableDto> orderables,
-                                   ProcessingPeriodDto period) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      ProcessingPeriodDto period) {
     XLOGGER.entry(requisition, facility);
     if (null == requisition) {
       XLOGGER.exit();
@@ -212,7 +231,8 @@ public class RequisitionDtoBuilder {
 
     profiler.start("EXPORT_LINE_ITEMS_TO_DTOS");
     List<RequisitionLineItemDto> requisitionLineItemDtoList =
-        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables, true);
+        requisitionExportHelper.exportToDtos(requisitionLineItems, orderables,
+            approvedProducts, true);
 
     profiler.start("SET_LINE_ITEMS");
     requisitionDto.setRequisitionLineItems(requisitionLineItemDtoList);
@@ -244,9 +264,18 @@ public class RequisitionDtoBuilder {
 
   private void setAvailableProductsDto(RequisitionDto requisitionDto, Requisition requisition,
       Collection<OrderableDto> orderables) {
-    Collection<OrderableDto> localOrderables = null == orderables
-        ? orderableReferenceDataService.findByIdentities(requisition.getAvailableProducts())
-        : orderables;
+    Collection<OrderableDto> localOrderables;
+    if (null == orderables) {
+      Set<VersionEntityReference> availableProducts = requisition
+          .getAvailableProducts()
+          .stream()
+          .map(ApprovedProductReference::getOrderable)
+          .collect(Collectors.toSet());
+
+      localOrderables = orderableReferenceDataService.findByIdentities(availableProducts);
+    } else {
+      localOrderables = orderables;
+    }
 
     Set<OrderableDto> availableFullSupply = new HashSet<>();
     Set<OrderableDto> availableNonFullSupply = new HashSet<>();

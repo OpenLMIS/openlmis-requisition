@@ -229,7 +229,7 @@ public final class LineItemFieldsCalculator {
    * @return a {@link Integer} object representing the maximum stock quantity for this line.
    */
   public static int calculateMaximumStockQuantity(RequisitionLineItem line,
-                                                  RequisitionTemplate template) {
+      RequisitionTemplate template, Double maxPeriodsOfStockValue) {
     RequisitionTemplateColumn column = template
         .findColumn(RequisitionLineItem.MAXIMUM_STOCK_QUANTITY);
     AvailableRequisitionColumnOption option = column.getOption();
@@ -246,7 +246,7 @@ public final class LineItemFieldsCalculator {
     }
 
     int averageConsumption = zeroIfNull(line.getAverageConsumption());
-    BigDecimal maxPeriodsOfStock = zeroIfNull(line.getMaxPeriodsOfStock());
+    BigDecimal maxPeriodsOfStock = zeroIfNull(BigDecimal.valueOf(maxPeriodsOfStockValue));
 
     return BigDecimal.valueOf(averageConsumption)
         .multiply(maxPeriodsOfStock)
@@ -263,12 +263,12 @@ public final class LineItemFieldsCalculator {
    * @return a {@link Integer} object representing the Calculated Order Quantity for this line.
    */
   public static int calculateCalculatedOrderQuantity(RequisitionLineItem line,
-                                                     RequisitionTemplate template) {
+      RequisitionTemplate template, Double maxPeriodsOfStockValue) {
     Integer maximumStockQuantity = line.getMaximumStockQuantity();
     Integer stockOnHand = line.getStockOnHand();
 
     if (null == maximumStockQuantity) {
-      maximumStockQuantity = calculateMaximumStockQuantity(line, template);
+      maximumStockQuantity = calculateMaximumStockQuantity(line, template, maxPeriodsOfStockValue);
     }
 
     if (null == stockOnHand) {

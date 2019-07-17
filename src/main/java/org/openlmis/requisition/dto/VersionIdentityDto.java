@@ -41,5 +41,4 @@ public final class VersionIdentityDto extends BaseDto {
   public VersionIdentityDto(VersionEntityReference reference) {
     this(reference.getId(), reference.getVersionId());
   }
-
 }

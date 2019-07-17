@@ -28,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -66,6 +67,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -79,6 +81,7 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
@@ -108,6 +111,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   private List<ApproveRequisitionDto> approveRequisitions;
   private List<UUID> requisitionIds;
   private Map<VersionIdentityDto, OrderableDto> orderables;
+  private Map<VersionIdentityDto, ApprovedProductDto> ftaps;
   private List<String> permissionStrings;
   private UserDto user;
 
@@ -136,6 +140,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .readDistinctByIdIn(anySetOf(UUID.class));
 
     orderables = Maps.newHashMap();
+    ftaps = Maps.newHashMap();
 
     for (Requisition requisition : requisitions) {
       requisition
@@ -148,6 +153,15 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
               .withProgramOrderable(requisition.getProgramId(), true)
               .buildAsDto())
           .forEach(orderable -> orderables.put(orderable.getIdentity(), orderable));
+
+      requisition
+          .getRequisitionLineItems()
+          .stream()
+          .map(line -> new ApprovedProductDtoDataBuilder()
+              .withId(line.getFacilityTypeApprovedProduct().getId())
+              .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+              .buildAsDto())
+          .forEach(ftap -> ftaps.put(ftap.getIdentity(), ftap));
     }
 
     permissionStrings = requisitions
@@ -180,6 +194,10 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     doReturn(Lists.newArrayList(orderables.values()))
         .when(orderableReferenceDataService)
         .findByIdentities(anySetOf(VersionEntityReference.class));
+
+    doReturn(Lists.newArrayList(ftaps.values()))
+        .when(facilityTypeApprovedProductReferenceDataService)
+        .findByIdentities(anySet());
 
     program.setEnableDatePhysicalStockCountCompleted(false);
 
@@ -229,7 +247,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     requisitions.forEach(req -> {
       verify(requisitionDtoBuilder)
           .buildBatch(eq(req), facilityCaptor.capture(),
-              eq(orderables), periodCaptor.capture());
+              eq(orderables), eq(ftaps), periodCaptor.capture());
 
       assertEquals(req.getProcessingPeriodId(), periodCaptor.getValue().getId());
       assertEquals(req.getFacilityId(), facilityCaptor.getValue().getId());
@@ -278,7 +296,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     doReturn(ValidationResult.fieldErrors(ImmutableMap.of("someField", new Message("some-key"))))
         .when(requisitions.get(0))
-        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
+        .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap(), anyMap());
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkValidationErrorResponseBody(response, 400,
@@ -534,7 +552,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     requisitions.forEach(requisition -> {
       Requisition spy = spy(requisition);
       requisitionSpies.add(spy);
-      when(spy.validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap()))
+      when(spy.validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap(), anyMap()))
           .thenReturn(ValidationResult.success());
     });
 

@@ -15,14 +15,18 @@
 
 package org.openlmis.requisition.testutils;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.MetadataDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
 public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedProductDto> {
   private UUID id = UUID.randomUUID();
+  private String versionId = "1";
+  private ZonedDateTime lastUpdated = ZonedDateTime.now();
   private OrderableDto orderable = new OrderableDtoDataBuilder().buildAsDto();
   private ProgramDto program = new ProgramDtoDataBuilder().buildAsDto();
   private Double maxPeriodsOfStock = 3.0;
@@ -44,13 +48,29 @@ public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedPro
     return this;
   }
 
+  public ApprovedProductDtoDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
+  public ApprovedProductDtoDataBuilder withVersionId(Long versionId) {
+    this.versionId = versionId.toString();
+    return this;
+  }
+
   /**
    * Creates new instance of {@link ApprovedProductDto} with properties.
    * @return created approved product dto
    */
   public ApprovedProductDto buildAsDto() {
-    return new ApprovedProductDto(
-        id, orderable, program, maxPeriodsOfStock, minPeriodsOfStock, emergencyOrderPoint
-    );
+    ApprovedProductDto dto = new ApprovedProductDto();
+    dto.setId(id);
+    dto.setMaxPeriodsOfStock(maxPeriodsOfStock);
+    dto.setMinPeriodsOfStock(minPeriodsOfStock);
+    dto.setEmergencyOrderPoint(emergencyOrderPoint);
+    dto.setOrderable(orderable);
+    dto.setProgram(program);
+    dto.setMeta(new MetadataDto(versionId, lastUpdated));
+    return dto;
   }
 }

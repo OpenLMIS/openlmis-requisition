@@ -13,34 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.service.referencedata;
 
-import java.util.UUID;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.openlmis.requisition.dto.VersionIdentityDto;
 
+@EqualsAndHashCode
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class ApprovedProductDto {
-  private UUID id;
-  private OrderableDto orderable;
-  private ProgramDto program;
-  private Double maxPeriodsOfStock;
-  private Double minPeriodsOfStock;
-  private Double emergencyOrderPoint;
-  private MetadataDto meta = new MetadataDto();
-
-  public Long getVersionId() {
-    return Long.valueOf(this.meta.getVersionId());
-  }
-
-  public VersionIdentityDto getIdentity() {
-    return new VersionIdentityDto(this.id, getVersionId());
-  }
+public class FacilityTypeApprovedProductSearchParams {
+  private List<String> facilityTypeCodes;
+  private String programCode;
+  private Boolean active;
+  private List<VersionIdentityDto> identities;
+  private Integer page;
+  private Integer size;
 }

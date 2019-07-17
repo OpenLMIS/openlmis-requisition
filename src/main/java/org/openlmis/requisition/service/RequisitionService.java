@@ -48,6 +48,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -56,7 +57,6 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
-import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -79,7 +79,6 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
-import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
@@ -119,9 +118,6 @@ public class RequisitionService {
 
   @Autowired
   private PeriodService periodService;
-
-  @Autowired
-  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Autowired
   private UserFulfillmentFacilitiesReferenceDataService fulfillmentFacilitiesReferenceDataService;
@@ -178,7 +174,7 @@ public class RequisitionService {
   public Requisition initiate(ProgramDto program, FacilityDto facility,
       ProcessingPeriodDto period, boolean emergency,
       List<StockAdjustmentReason> stockAdjustmentReasons,
-      RequisitionTemplate requisitionTemplate) {
+      RequisitionTemplate requisitionTemplate, ApproveProductsAggregator approvedProducts) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
 
@@ -198,10 +194,6 @@ public class RequisitionService {
     } else {
       numberOfPreviousPeriodsToAverage--;
     }
-
-    profiler.start("FIND_APPROVED_PRODUCTS");
-    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
-        .getApprovedProducts(facility.getId(), program.getId());
 
     profiler.start("FIND_STOCK_ON_HANDS");
     Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
@@ -280,15 +272,11 @@ public class RequisitionService {
         stockCardRangeSummariesToAverage, previousPeriods);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
-    Set<VersionIdentityDto> availableProductIdentities = emergency
-        ? approvedProducts.getOrderableIdentities()
-        : approvedProducts.getNonFullSupplyOrderableIdentities();
+    Set<ApprovedProductReference> availableProductIdentities = emergency
+        ? approvedProducts.getApprovedProductReferences()
+        : approvedProducts.getNonFullSupplyApprovedProductReferences();
 
-    requisition.setAvailableProducts(
-        availableProductIdentities
-            .stream()
-            .map(id -> new VersionEntityReference(id.getId(), id.getVersionId()))
-            .collect(toSet()));
+    requisition.setAvailableProducts(availableProductIdentities);
 
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);

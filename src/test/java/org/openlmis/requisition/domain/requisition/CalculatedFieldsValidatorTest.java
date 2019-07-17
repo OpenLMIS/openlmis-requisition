@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.Test;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 
@@ -117,7 +119,17 @@ public class CalculatedFieldsValidatorTest {
             .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
 
-    return new CalculatedFieldsValidator(requisition, requisition.getTemplate(), orderables);
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts =  requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(line -> new ApprovedProductDtoDataBuilder()
+            .withId(line.getFacilityTypeApprovedProduct().getId())
+            .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+            .buildAsDto())
+        .collect(Collectors.toMap(ApprovedProductDto::getIdentity, Function.identity()));
+
+    return new CalculatedFieldsValidator(
+        requisition, requisition.getTemplate(), orderables, approvedProducts);
   }
 
 }

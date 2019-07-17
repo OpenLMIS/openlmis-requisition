@@ -49,6 +49,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
+import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
 import org.openlmis.requisition.dto.FacilityDto;
@@ -77,6 +78,7 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
@@ -175,6 +177,10 @@ public abstract class BaseRequisitionController extends BaseController {
   private RequisitionSplitter requisitionSplitter;
 
   @Autowired
+  FacilityTypeApprovedProductReferenceDataService
+      facilityTypeApprovedProductReferenceDataService;
+
+  @Autowired
   private ValidReasonStockmanagementService validReasonStockmanagementService;
 
   ETagResource<RequisitionDto> doUpdate(Requisition requisitionToUpdate, Requisition requisition) {
@@ -185,30 +191,21 @@ public abstract class BaseRequisitionController extends BaseController {
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
         profiler, requisitionToUpdate::getAllOrderables
     );
+    Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
+        requisitionToUpdate::getAllApprovedProductIdentities, profiler);
 
-    ETagResource<RequisitionDto> dto = doUpdate(
-        requisitionToUpdate, requisition, orderables, facility, program, null, profiler
-    );
+    UpdateParams params = new UpdateParams(requisitionToUpdate, requisition, orderables,
+        facility, program, null, approvedProducts);
+
+    ETagResource<RequisitionDto> dto = doUpdate(params, profiler);
 
     stopProfiler(profiler, dto);
     return dto;
   }
 
-  ETagResource<RequisitionDto> doUpdate(Requisition toUpdate, Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
-      ProcessingPeriodDto period, Profiler profiler) {
-    profiler.start("UPDATE");
-
-    toUpdate.updateFrom(requisition, orderables,
-        datePhysicalStockCountCompletedEnabledPredicate.exec(program));
-
-    profiler.start("SAVE");
-    toUpdate = requisitionRepository.save(toUpdate);
-    logger.debug("Requisition with id {} saved", toUpdate.getId());
-
-    return new ETagResource<>(
-        buildDto(profiler, toUpdate, orderables, facility, program, period),
-        toUpdate.getVersion());
+  ETagResource<RequisitionDto> doUpdate(UpdateParams params, Profiler profiler) {
+    params.updateAndSave(profiler);
+    return params.createETagResource(profiler);
   }
 
   void doApprove(Requisition requisition, ApproveParams approveParams) {
@@ -334,6 +331,23 @@ public abstract class BaseRequisitionController extends BaseController {
         .collect(Collectors.toSet());
   }
 
+  Set<VersionEntityReference> getLineItemApprovedProductIdentities(Requisition requisition) {
+    return requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(RequisitionLineItem::getFacilityTypeApprovedProduct)
+        .collect(Collectors.toSet());
+  }
+
+  Set<VersionEntityReference> getLineItemApprovedProductIdentities(
+      Collection<Requisition> requisitions) {
+    return requisitions
+        .stream()
+        .map(this::getLineItemApprovedProductIdentities)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet());
+  }
+
   void checkIfPeriodIsValid(Requisition requisition, ProcessingPeriodDto period,
       Profiler profiler) {
     profiler.start("CHECK_IF_PERIOD_IS_VALID");
@@ -365,11 +379,12 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   ValidationResult getValidationResultForStatusChange(Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     return requisition.validateCanChangeStatus(
         dateHelper.getCurrentDateWithSystemZone(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(requisition.getProgramId()),
-        orderables);
+        orderables, approvedProducts);
   }
 
   Profiler getProfiler(String name, Object... entryArgs) {
@@ -432,15 +447,27 @@ public abstract class BaseRequisitionController extends BaseController {
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
   }
 
+  Map<VersionIdentityDto, ApprovedProductDto> findApprovedProducts(
+      Supplier<Set<VersionEntityReference>> supplier, Profiler profiler) {
+
+    profiler.start("GET_APPROVED_PRODUCTS");
+    return facilityTypeApprovedProductReferenceDataService
+        .findByIdentities(supplier.get())
+        .stream()
+        .collect(Collectors.toMap(ApprovedProductDto::getIdentity, Function.identity()));
+  }
+
   void checkPermission(Profiler profiler, Supplier<ValidationResult> supplier) {
     profiler.start("CHECK_PERMISSION");
     supplier.get().throwExceptionIfHasErrors();
   }
 
   void validateForStatusChange(Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables, Profiler profiler) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      Profiler profiler) {
     profiler.start("VALIDATE_CAN_CHANGE_STATUS");
-    getValidationResultForStatusChange(requisition, orderables)
+    getValidationResultForStatusChange(requisition, orderables, approvedProducts)
         .throwExceptionIfHasErrors();
   }
 
@@ -511,10 +538,12 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   RequisitionDto buildDto(Profiler profiler, Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables, FacilityDto facility, ProgramDto program,
-      ProcessingPeriodDto period) {
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      FacilityDto facility, ProgramDto program, ProcessingPeriodDto period) {
     profiler.start("BUILD_REQUISITION_DTO");
-    return requisitionDtoBuilder.build(requisition, orderables, facility, program, period);
+    return requisitionDtoBuilder.build(requisition, orderables, approvedProducts,
+        facility, program, period);
   }
 
   BasicRequisitionDto buildBasicDto(Profiler profiler, Requisition requisition) {
@@ -530,6 +559,34 @@ public abstract class BaseRequisitionController extends BaseController {
     private Map<VersionIdentityDto, OrderableDto> orderables;
     private List<SupplyLineDto> supplyLines;
     private ProcessingPeriodDto period;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  class UpdateParams {
+    private Requisition toUpdate;
+    private Requisition requisition;
+    private Map<VersionIdentityDto, OrderableDto> orderables;
+    private FacilityDto facility;
+    private ProgramDto program;
+    private ProcessingPeriodDto period;
+    private Map<VersionIdentityDto, ApprovedProductDto> approvedProducts;
+
+    void updateAndSave(Profiler profiler) {
+      profiler.start("UPDATE");
+      toUpdate.updateFrom(requisition, orderables, approvedProducts,
+          datePhysicalStockCountCompletedEnabledPredicate.exec(program));
+
+      profiler.start("SAVE");
+      toUpdate = requisitionRepository.save(toUpdate);
+      logger.debug("Requisition with id {} saved", toUpdate.getId());
+    }
+
+    ETagResource<RequisitionDto> createETagResource(Profiler profiler) {
+      RequisitionDto dto = buildDto(profiler, toUpdate, orderables,
+          approvedProducts, facility, program, period);
+      return new ETagResource<>(dto, toUpdate.getVersion());
+    }
   }
 
 }

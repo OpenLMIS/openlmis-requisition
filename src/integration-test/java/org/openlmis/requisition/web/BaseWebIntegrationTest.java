@@ -78,7 +78,9 @@ import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
@@ -212,6 +214,13 @@ public abstract class BaseWebIntegrationTest {
   @MockBean
   RequisitionVersionValidator requisitionVersionValidator;
 
+  @MockBean
+  protected ApprovedProductReferenceDataService approvedProductReferenceDataService;
+
+  @MockBean(name = "facilityTypeApprovedProductReferenceDataService")
+  FacilityTypeApprovedProductReferenceDataService
+      facilityTypeApprovedProductReferenceDataService;
+
   @Autowired
   protected ObjectMapper objectMapper;
 
@@ -327,6 +336,7 @@ public abstract class BaseWebIntegrationTest {
   private List<RequisitionLineItem> generateRequisitionLineItems(Requisition requisition) {
     RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
         .withOrderable(UUID.randomUUID(), 1L)
+        .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
         .build();
 
@@ -375,7 +385,8 @@ public abstract class BaseWebIntegrationTest {
 
     given(requisitionRepository.findOne(requisition.getId())).willReturn(requisitionSpy);
     doReturn(ValidationResult.success())
-        .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap());
+        .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean(),
+        anyMap(), anyMap());
     return requisitionSpy;
   }
 
