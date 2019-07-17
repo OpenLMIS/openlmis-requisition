@@ -50,15 +50,7 @@ class CalculatedFieldsValidator
   protected void validateFullSupplyLineItem(Map<String, Message> errors,
       RequisitionLineItem item) {
     ApprovedProductDto approvedProductDto = approvedProducts
-        .entrySet()
-        .stream()
-        .filter(e -> e.getKey().getId().equals(
-            item.getFacilityTypeApprovedProduct().getId()))
-        .filter(e -> e.getKey().getVersionId().equals(
-            item.getFacilityTypeApprovedProduct().getVersionId()))
-        .map(Map.Entry::getValue)
-        .findFirst()
-        .orElse(null);
+        .get(new VersionIdentityDto(item.getFacilityTypeApprovedProduct()));
 
     validateMaximumStockQuantity(errors, item, approvedProductDto.getMaxPeriodsOfStock());
     validateCalculatedOrderQuantity(errors, item, approvedProductDto.getMaxPeriodsOfStock());

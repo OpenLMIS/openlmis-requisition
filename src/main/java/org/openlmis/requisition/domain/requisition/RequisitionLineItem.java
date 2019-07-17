@@ -463,7 +463,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setMaximumStockQuantity(maximumStockQuantity);
     exporter.setMaxPeriodsOfStock(Optional
             .ofNullable(approvedProductDto)
-            .map(item -> item.getMaxPeriodsOfStock())
+            .map(ApprovedProductDto::getMaxPeriodsOfStock)
             .map(BigDecimal::new)
             .orElse(null));
     exporter.setAverageConsumption(averageConsumption);
