@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -471,10 +472,11 @@ public class RequisitionRepositoryIntegrationTest
 
     List<Requisition> foundRequisitions = Lists.newArrayList(repository.findAll(
         Lists.newArrayList(id1, id2, UUID.randomUUID())));
-    assertNotNull(foundRequisitions);
-    assertEquals(2, foundRequisitions.size());
-    assertEquals(requisitions.get(0), foundRequisitions.get(0));
-    assertEquals(requisitions.get(1), foundRequisitions.get(1));
+
+    assertThat(foundRequisitions, is(notNullValue()));
+    assertThat(foundRequisitions, hasSize(2));
+    assertThat(foundRequisitions, hasItem(hasProperty("id", is(id1))));
+    assertThat(foundRequisitions, hasItem(hasProperty("id", is(id2))));
   }
 
   @Test
