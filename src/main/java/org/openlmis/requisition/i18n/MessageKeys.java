@@ -313,6 +313,11 @@ public abstract class MessageKeys {
   public static final String ERROR_SPECIAL_REASON_NOT_VALID =
       ERROR_PREFIX + ".specialReason.notValid";
 
+  public static final String ERROR_SIZE_NULL
+      = "requisition.error.pageable.size.null";
+  public static final String ERROR_SIZE_NOT_POSITIVE
+      = "requisition.error.pageable.size.notPositive";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }

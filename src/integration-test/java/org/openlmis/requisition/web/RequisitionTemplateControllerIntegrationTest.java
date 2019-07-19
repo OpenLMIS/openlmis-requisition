@@ -52,6 +52,8 @@ import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.Errors;
@@ -118,6 +120,49 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     assertNotNull(result);
     assertEquals(2, result.length);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowPaginationWithZeroSize() {
+    // given
+    RequisitionTemplate another = new RequisitionTemplateDataBuilder()
+            .withAssignment(UUID.randomUUID(), null)
+            .build();
+    Pageable page = new PageRequest(0, 0);
+    List<RequisitionTemplate> templates = Arrays.asList(template, another);
+    given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
+
+    // when
+    restAssured.given()
+            .queryParam("page", page.getPageNumber())
+            .queryParam("size", page.getPageSize())
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(400);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowPaginationWithoutSize() {
+    // given
+    RequisitionTemplate another = new RequisitionTemplateDataBuilder()
+            .withAssignment(UUID.randomUUID(), null)
+            .build();
+    Pageable page = new PageRequest(0, 0);
+    List<RequisitionTemplate> templates = Arrays.asList(template, another);
+    given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
+
+    // when
+    restAssured.given()
+            .queryParam("page", page.getPageNumber())
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(400);
   }
 
   // POST /api/requisitionTemplates
