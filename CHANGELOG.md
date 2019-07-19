@@ -4,6 +4,7 @@
 New functionality:
 * [OLMIS-6413](https://openlmis.atlassian.net/browse/OLMIS-6413): Added support for orderable versioning
 * [OLMIS-6414](https://openlmis.atlassian.net/browse/OLMIS-6414): Added support for ftap versioning
+* [OLMIS-6415](https://openlmis.atlassian.net/browse/OLMIS-6415): Added new versions of requisition endpoints for better support orderable and FTAP versioning
 
 Improvements:
 * [OLMIS-6332](https://openlmis.atlassian.net/browse/OLMIS-6332): Changed default page size to max integer.
