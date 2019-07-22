@@ -38,7 +38,7 @@ public final class ApprovedProductReference {
   @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
-      @AttributeOverride(name = "versionId", column = @Column(name = "orderableVersionId"))
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
   })
   private VersionEntityReference orderable;
 
@@ -46,15 +46,15 @@ public final class ApprovedProductReference {
   @AttributeOverrides({
       @AttributeOverride(name = "id", column = @Column(
           name = "facilityTypeApprovedProductId")),
-      @AttributeOverride(name = "versionId", column = @Column(
-          name = "facilityTypeApprovedProductVersionId"))
+      @AttributeOverride(name = "versionNumber", column = @Column(
+          name = "facilityTypeApprovedProductVersionNumber"))
   })
   private VersionEntityReference facilityTypeApprovedProduct;
 
-  public ApprovedProductReference(UUID id, Long versionId,
-      UUID orderableId, Long orderableVersionId) {
-    this.facilityTypeApprovedProduct = new VersionEntityReference(id, versionId);
-    this.orderable = new VersionEntityReference(orderableId, orderableVersionId);
+  public ApprovedProductReference(UUID id, Long versionNumber,
+      UUID orderableId, Long orderableVersionNumber) {
+    this.facilityTypeApprovedProduct = new VersionEntityReference(id, versionNumber);
+    this.orderable = new VersionEntityReference(orderableId, orderableVersionNumber);
   }
 
 }

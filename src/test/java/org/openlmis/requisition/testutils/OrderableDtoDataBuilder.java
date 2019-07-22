@@ -34,7 +34,7 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
   private static int instanceNumber = 0;
 
   private UUID id;
-  private String versionId;
+  private Long versionNumber;
   private ZonedDateTime lastUpdated;
   private String productCode;
   private String fullProductName;
@@ -52,7 +52,7 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     instanceNumber++;
 
     id = UUID.randomUUID();
-    versionId = "1";
+    versionNumber = 1L;
     lastUpdated = ZonedDateTime.now();
     productCode = "P" + instanceNumber;
     fullProductName = "Product " + instanceNumber;
@@ -99,8 +99,8 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     return this;
   }
 
-  public OrderableDtoDataBuilder withVersionId(Long versionId) {
-    this.versionId = versionId.toString();
+  public OrderableDtoDataBuilder withVersionNumber(Long versionNumber) {
+    this.versionNumber = versionNumber;
     return this;
   }
 
@@ -140,7 +140,7 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
     dto.setPrograms(programs);
     dto.setDispensable(dispensable);
     dto.setIdentifiers(identifiers);
-    dto.setMeta(new MetadataDto(versionId, lastUpdated));
+    dto.setMeta(new MetadataDto(versionNumber, lastUpdated));
 
     return dto;
   }

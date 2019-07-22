@@ -66,10 +66,10 @@ public class ApproveProductsAggregatorTest {
     for (ApprovedProductReference reference : references) {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withId(reference.getFacilityTypeApprovedProduct().getId())
-          .withVersionId(reference.getFacilityTypeApprovedProduct().getVersionId())
+          .withVersionNumber(reference.getFacilityTypeApprovedProduct().getVersionNumber())
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(reference.getOrderable().getId())
-              .withVersionId(reference.getOrderable().getVersionId())
+              .withVersionNumber(reference.getOrderable().getVersionNumber())
               .withProgramOrderable(program.getId(),
                   fullSupplyReferences.contains(reference))
               .buildAsDto())

@@ -37,7 +37,7 @@ public class VersionEntityReference implements Versionable {
   @Type(type = "pg-uuid")
   private UUID id;
 
-  private Long versionId;
+  private Long versionNumber;
 
   /**
    * Copy constructor.
@@ -47,7 +47,7 @@ public class VersionEntityReference implements Versionable {
    */
   public VersionEntityReference(VersionEntityReference original) {
     this.id = original.id;
-    this.versionId = original.versionId;
+    this.versionNumber = original.versionNumber;
   }
 
 }

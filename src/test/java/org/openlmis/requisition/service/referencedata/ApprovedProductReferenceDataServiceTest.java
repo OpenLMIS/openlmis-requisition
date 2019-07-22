@@ -73,8 +73,8 @@ public class ApprovedProductReferenceDataServiceTest
 
     // then
     ApprovedProductReference reference = new ApprovedProductReference(
-        product.getId(), product.getVersionId(), product.getOrderable().getId(),
-        product.getOrderable().getVersionId()
+        product.getId(), product.getVersionNumber(), product.getOrderable().getId(),
+        product.getOrderable().getVersionNumber()
     );
 
     assertThat(response.getApprovedProductReferences(), hasSize(1));

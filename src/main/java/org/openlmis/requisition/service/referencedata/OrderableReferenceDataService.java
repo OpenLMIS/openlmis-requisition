@@ -60,7 +60,7 @@ public class OrderableReferenceDataService
 
     List<VersionIdentityDto> identities = references
         .stream()
-        .map(ref -> new VersionIdentityDto(ref.getId(), ref.getVersionId()))
+        .map(ref -> new VersionIdentityDto(ref.getId(), ref.getVersionNumber()))
         .collect(Collectors.toList());
 
     OrderableSearchParams payload = new OrderableSearchParams(

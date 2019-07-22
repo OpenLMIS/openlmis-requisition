@@ -149,7 +149,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
           .peek(line -> line.setApprovedQuantity(10))
           .map(line -> new OrderableDtoDataBuilder()
               .withId(line.getOrderable().getId())
-              .withVersionId(line.getOrderable().getVersionId())
+              .withVersionNumber(line.getOrderable().getVersionNumber())
               .withProgramOrderable(requisition.getProgramId(), true)
               .buildAsDto())
           .forEach(orderable -> orderables.put(orderable.getIdentity(), orderable));
@@ -159,7 +159,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
           .stream()
           .map(line -> new ApprovedProductDtoDataBuilder()
               .withId(line.getFacilityTypeApprovedProduct().getId())
-              .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+              .withVersionNumber(line.getFacilityTypeApprovedProduct().getVersionNumber())
               .buildAsDto())
           .forEach(ftap -> ftaps.put(ftap.getIdentity(), ftap));
     }

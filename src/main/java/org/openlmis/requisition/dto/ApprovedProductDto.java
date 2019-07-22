@@ -37,11 +37,11 @@ public final class ApprovedProductDto implements Versionable {
   private Double emergencyOrderPoint;
   private MetadataDto meta = new MetadataDto();
 
-  public Long getVersionId() {
-    return Long.valueOf(this.meta.getVersionId());
+  public Long getVersionNumber() {
+    return this.meta.getVersionNumber();
   }
 
   public VersionIdentityDto getIdentity() {
-    return new VersionIdentityDto(this.id, getVersionId());
+    return new VersionIdentityDto(this.id, getVersionNumber());
   }
 }

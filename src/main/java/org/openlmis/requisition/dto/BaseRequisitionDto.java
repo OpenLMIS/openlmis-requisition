@@ -157,7 +157,7 @@ public abstract class BaseRequisitionDto
         .ofNullable(getAvailableNonFullSupplyProducts())
         .orElse(Collections.emptySet())
         .stream()
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
         .collect(Collectors.toSet());
   }
 

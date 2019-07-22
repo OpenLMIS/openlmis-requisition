@@ -83,7 +83,7 @@ public class RequisitionInvariantsValidatorTest {
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisitionUpdater.getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
@@ -173,7 +173,7 @@ public class RequisitionInvariantsValidatorTest {
     RequisitionLineItem newLineItem = new RequisitionLineItemDataBuilder().build();
     OrderableDto newOrderable = new OrderableDtoDataBuilder()
         .withId(newLineItem.getOrderable().getId())
-        .withVersionId(newLineItem.getOrderable().getVersionId())
+        .withVersionNumber(newLineItem.getOrderable().getVersionNumber())
         .withProgramOrderable(requisitionUpdater.getProgramId(), true)
         .buildAsDto();
 
@@ -249,7 +249,7 @@ public class RequisitionInvariantsValidatorTest {
         .build();
     OrderableDto newOrderable = new OrderableDtoDataBuilder()
         .withId(newLineItem.getOrderable().getId())
-        .withVersionId(newLineItem.getOrderable().getVersionId())
+        .withVersionNumber(newLineItem.getOrderable().getVersionNumber())
         .withProgramOrderable(requisitionUpdater.getProgramId(), false)
         .buildAsDto();
 

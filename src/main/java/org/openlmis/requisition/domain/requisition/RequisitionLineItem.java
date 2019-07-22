@@ -106,7 +106,7 @@ public class RequisitionLineItem extends BaseEntity {
   @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
-      @AttributeOverride(name = "versionId", column = @Column(name = "orderableVersionId"))
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
   })
   @Getter
   private VersionEntityReference orderable;
@@ -117,8 +117,8 @@ public class RequisitionLineItem extends BaseEntity {
   @AttributeOverrides({
       @AttributeOverride(name = "id", column = @Column(
           name = "facilityTypeApprovedProductId")),
-      @AttributeOverride(name = "versionId", column = @Column(
-          name = "facilityTypeApprovedProductVersionId"))
+      @AttributeOverride(name = "versionNumber", column = @Column(
+          name = "facilityTypeApprovedProductVersionNumber"))
   })
   private VersionEntityReference facilityTypeApprovedProduct;
 
@@ -256,14 +256,15 @@ public class RequisitionLineItem extends BaseEntity {
     this();
     this.requisition = requisition;
     this.facilityTypeApprovedProduct = new VersionEntityReference(approvedProduct.getId(),
-        approvedProduct.getVersionId());
+        approvedProduct.getVersionNumber());
 
     OrderableDto orderableDto = approvedProduct.getOrderable();
 
     // the method will throw exception if program orderable does not exist.
     orderableDto.getProgramOrderable(requisition.getProgramId());
 
-    this.orderable = new VersionEntityReference(orderableDto.getId(), orderableDto.getVersionId());
+    this.orderable = new VersionEntityReference(orderableDto.getId(),
+        orderableDto.getVersionNumber());
   }
 
   /**
@@ -308,12 +309,12 @@ public class RequisitionLineItem extends BaseEntity {
     if (importer.getOrderableIdentity() != null) {
       VersionIdentityDto orderable = importer.getOrderableIdentity();
       requisitionLineItem.orderable = new VersionEntityReference(
-          orderable.getId(), orderable.getVersionId());
+          orderable.getId(), orderable.getVersionNumber());
     }
     if (importer.getApprovedProductIdentity() != null) {
       VersionIdentityDto approvedProduct = importer.getApprovedProductIdentity();
       requisitionLineItem.facilityTypeApprovedProduct = new VersionEntityReference(
-          approvedProduct.getId(), approvedProduct.getVersionId());
+          approvedProduct.getId(), approvedProduct.getVersionNumber());
     }
     requisitionLineItem.setBeginningBalance(importer.getBeginningBalance());
     requisitionLineItem.setTotalReceivedQuantity(importer.getTotalReceivedQuantity());
@@ -779,7 +780,7 @@ public class RequisitionLineItem extends BaseEntity {
   private Integer getSumOfAdditionalQuantitiesFromPreviousLineItems(
       List<Requisition> previousRequisitions) {
     return previousRequisitions.stream()
-        .map(req -> req.findLineByProduct(orderable.getId(), orderable.getVersionId()))
+        .map(req -> req.findLineByProduct(orderable.getId(), orderable.getVersionNumber()))
         .filter(Objects::nonNull)
         .filter(lineItem -> Objects.nonNull(lineItem.getAdditionalQuantityRequired()))
         .mapToInt(RequisitionLineItem::getAdditionalQuantityRequired)

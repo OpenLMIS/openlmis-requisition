@@ -21,6 +21,6 @@ public interface Versionable {
 
   UUID getId();
 
-  Long getVersionId();
+  Long getVersionNumber();
 
 }

@@ -4,9 +4,9 @@
   "title": "Versioning details",
   "description": "The object contains a resource metadata",
   "properties": {
-    "versionId": {
-      "type": "string",
-      "title": "versionId",
+    "versionNumber": {
+      "type": "number",
+      "title": "versionNumber",
       "description": "The version number of a resource. The property contains the last known version of the resource."
     },
     "lastUpdated": {

@@ -147,10 +147,10 @@ public class RequisitionExportHelperTest {
     assertThat(searchedIdentities, hasSize(2));
     assertThat(searchedIdentities,
         hasItem(Sets.asSet(new VersionEntityReference(orderableDto.getId(),
-            orderableDto.getVersionId()))));
+            orderableDto.getVersionNumber()))));
     assertThat(searchedIdentities,
         hasItem(Sets.asSet(new VersionEntityReference(approvedProductDto.getId(),
-            approvedProductDto.getVersionId()))));
+            approvedProductDto.getVersionNumber()))));
   }
 
   @Test
@@ -173,10 +173,10 @@ public class RequisitionExportHelperTest {
     assertThat(searchedIdentities, hasSize(2));
     assertThat(searchedIdentities,
         hasItem(Sets.asSet(new VersionEntityReference(orderableDto.getId(),
-            orderableDto.getVersionId()))));
+            orderableDto.getVersionNumber()))));
     assertThat(searchedIdentities,
         hasItem(Sets.asSet(new VersionEntityReference(approvedProductDto.getId(),
-            approvedProductDto.getVersionId()))));
+            approvedProductDto.getVersionNumber()))));
   }
 
   private RequisitionLineItem generateRequisitionLineItemToExport(UUID orderableDtoUuid,
@@ -216,11 +216,11 @@ public class RequisitionExportHelperTest {
     requisition.setRequisitionLineItems(new ArrayList<>(
         singletonList(requisitionLineItem)));
     orderableDto = new OrderableDtoDataBuilder()
-        .withVersionId(1L)
+        .withVersionNumber(1L)
         .withNetContent(PACK_SIZE)
         .buildAsDto();
     approvedProductDto = new ApprovedProductDtoDataBuilder()
-        .withVersionId(1L)
+        .withVersionNumber(1L)
         .buildAsDto();
   }
 

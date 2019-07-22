@@ -104,13 +104,13 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
 
     OrderableDto orderableDto = new OrderableDtoDataBuilder()
         .withId(requisitionLineItem.getOrderable().getId())
-        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .withVersionNumber(requisitionLineItem.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true, Money.of(CurrencyUnit.USD, 0), 1)
         .buildAsDto();
 
     ApprovedProductDto approvedProductDto = new ApprovedProductDtoDataBuilder()
         .withId(requisitionLineItem.getFacilityTypeApprovedProduct().getId())
-        .withVersionId(requisitionLineItem.getFacilityTypeApprovedProduct().getVersionId())
+        .withVersionNumber(requisitionLineItem.getFacilityTypeApprovedProduct().getVersionNumber())
         .buildAsDto();
 
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDto();
@@ -248,7 +248,7 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
    */
   public RequisitionLineItemDataBuilder withApprovedProduct(ApprovedProductDto approvedProduct) {
     OrderableDto orderable = approvedProduct.getOrderable();
-    this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionId());
+    this.orderable = new VersionEntityReference(orderable.getId(), orderable.getVersionNumber());
 
     return this;
   }
@@ -292,14 +292,14 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
-  public RequisitionLineItemDataBuilder withOrderable(UUID orderableId, Long versionId) {
-    this.orderable = new VersionEntityReference(orderableId, versionId);
+  public RequisitionLineItemDataBuilder withOrderable(UUID orderableId, Long versionNumber) {
+    this.orderable = new VersionEntityReference(orderableId, versionNumber);
     return this;
   }
 
   public RequisitionLineItemDataBuilder withFacilityTypeApprovedProduct(UUID approvedProductId,
-      Long versionId) {
-    this.facilityTypeApprovedProduct = new VersionEntityReference(approvedProductId, versionId);
+      Long versionNumber) {
+    this.facilityTypeApprovedProduct = new VersionEntityReference(approvedProductId, versionNumber);
     return this;
   }
 

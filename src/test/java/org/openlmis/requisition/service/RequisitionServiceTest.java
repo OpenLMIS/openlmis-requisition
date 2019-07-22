@@ -1504,7 +1504,7 @@ public class RequisitionServiceTest {
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisition.getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
@@ -1593,7 +1593,7 @@ public class RequisitionServiceTest {
       approvedProducts.add(new ApprovedProductDtoDataBuilder()
           .withOrderable(new OrderableDtoDataBuilder()
               .withId(products[i])
-              .withVersionId(1L)
+              .withVersionNumber(1L)
               .withFullProductName(productNamePrefix + i)
               .withIdentifier(COMMODITY_TYPE, COMMODITY_TYPE_ID.toString())
               .withProgramOrderable(program.getId(), fullSupply[i])

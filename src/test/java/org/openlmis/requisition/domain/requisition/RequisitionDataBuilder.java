@@ -347,10 +347,11 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
    * Add available product.
    */
   public RequisitionDataBuilder addAvailableProduct(UUID facilityTypeApprovedProductId,
-      Long facilityTypeApprovedProductVersionId, UUID orderableId, Long orderableVersionId) {
+      Long facilityTypeApprovedProductVersionNumber, UUID orderableId,
+      Long orderableVersionNumber) {
     this.availableProducts.add(new ApprovedProductReference(
-        facilityTypeApprovedProductId, facilityTypeApprovedProductVersionId,
-        orderableId, orderableVersionId));
+        facilityTypeApprovedProductId, facilityTypeApprovedProductVersionNumber,
+        orderableId, orderableVersionNumber));
     return this;
   }
 

@@ -206,7 +206,7 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
           .map(line -> {
             OrderableDto orderableDto = new OrderableDtoDataBuilder()
                 .withId(line.getOrderable().getId())
-                .withVersionId(line.getOrderable().getVersionId())
+                .withVersionNumber(line.getOrderable().getVersionNumber())
                 .withProgramOrderable(line.getRequisition().getProgramId(), true)
                 .withProductCode(RandomStringUtils.randomAlphanumeric(5))
                 .withFullProductName(RandomStringUtils.randomAlphanumeric(5))
@@ -214,7 +214,7 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
 
             ApprovedProductDto approvedProductDto = new ApprovedProductDtoDataBuilder()
                 .withId(line.getFacilityTypeApprovedProduct().getId())
-                .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+                .withVersionNumber(line.getFacilityTypeApprovedProduct().getVersionNumber())
                 .buildAsDto();
 
             RequisitionLineItemDto lineDto = new RequisitionLineItemDto();

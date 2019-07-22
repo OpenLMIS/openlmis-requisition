@@ -65,12 +65,12 @@ public class BasicOrderableDto implements Versionable {
   }
 
   @JsonIgnore
-  public Long getVersionId() {
-    return Long.valueOf(meta.getVersionId());
+  public Long getVersionNumber() {
+    return meta.getVersionNumber();
   }
 
   @JsonIgnore
   public VersionIdentityDto getIdentity() {
-    return new VersionIdentityDto(getId(), getVersionId());
+    return new VersionIdentityDto(getId(), getVersionNumber());
   }
 }

@@ -35,7 +35,7 @@ public class OrderLineItemDtoTest {
         .build();
     OrderableDto product = new OrderableDtoDataBuilder()
         .withId(requisitionLineItem.getOrderable().getId())
-        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .withVersionNumber(requisitionLineItem.getOrderable().getVersionNumber())
         .buildAsDto();
 
     OrderLineItemDto orderLineItem = OrderLineItemDto.newOrderLineItem(

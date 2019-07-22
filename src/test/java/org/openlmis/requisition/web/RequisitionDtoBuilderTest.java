@@ -126,13 +126,13 @@ public class RequisitionDtoBuilderTest {
     requisition = buildRequisition();
     orderableDto = new OrderableDtoDataBuilder()
         .withId(orderableId)
-        .withVersionId(1L)
+        .withVersionNumber(1L)
         .withProgramOrderable(program.getId(), false)
         .buildAsDto();
 
     approvedProductDto = new ApprovedProductDtoDataBuilder()
         .withId(approvedProductId)
-        .withVersionId(1L)
+        .withVersionNumber(1L)
         .withOrderable(orderableDto)
         .buildAsDto();
   }

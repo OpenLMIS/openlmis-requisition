@@ -699,7 +699,7 @@ public class RequisitionLineItemTest {
 
     return new OrderableDtoDataBuilder()
         .withId(orderableId)
-        .withVersionId(1L)
+        .withVersionNumber(1L)
         .withPrograms(products)
         .buildAsDto();
   }

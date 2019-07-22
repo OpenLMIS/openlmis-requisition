@@ -9,13 +9,13 @@
     },
     {
       "properties": {
-        "versionId": {
-          "type": "integer",
-          "title": "versionId"
+        "versionNumber": {
+          "type": "number",
+          "title": "versionNumber"
         }
       },
       "required": [
-        "versionId"
+        "versionNumber"
       ]
     }
   ]

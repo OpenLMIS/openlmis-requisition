@@ -196,7 +196,7 @@ public class StockOnHandValidatorTest {
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisition.getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));

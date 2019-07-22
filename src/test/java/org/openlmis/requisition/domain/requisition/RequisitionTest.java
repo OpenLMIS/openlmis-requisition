@@ -168,7 +168,7 @@ public class RequisitionTest {
 
     orderable = new OrderableDtoDataBuilder()
         .withId(requisitionLineItem.getOrderable().getId())
-        .withVersionId(requisitionLineItem.getOrderable().getVersionId())
+        .withVersionNumber(requisitionLineItem.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true)
         .buildAsDto();
     orderables = Maps.newHashMap(ImmutableMap.of(orderable.getIdentity(), orderable));
@@ -327,7 +327,7 @@ public class RequisitionTest {
     PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
     when(requisitionLineItem.getOrderable())
-        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionNumber()));
 
     requisition.setRequisitionLineItems(new ArrayList<>(
         Collections.singletonList(requisitionLineItem)));
@@ -500,7 +500,7 @@ public class RequisitionTest {
     PowerMockito.spy(LineItemFieldsCalculator.class);
     RequisitionLineItem requisitionLineItem = mock(RequisitionLineItem.class);
     when(requisitionLineItem.getOrderable())
-        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionNumber()));
 
     when(requisitionTemplate.isColumnDisplayed("total")).thenReturn(true);
     when(LineItemFieldsCalculator.calculateStockOnHand(requisitionLineItem))
@@ -522,7 +522,7 @@ public class RequisitionTest {
     RequisitionLineItem fullSupply = new RequisitionLineItemDataBuilder().build();
     OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(fullSupply.getOrderable().getId())
-        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withVersionNumber(fullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true)
         .buildAsDto();
 
@@ -531,7 +531,7 @@ public class RequisitionTest {
     RequisitionLineItem nonFullSupply = new RequisitionLineItemDataBuilder().build();
     OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(nonFullSupply.getOrderable().getId())
-        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withVersionNumber(nonFullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), false)
         .buildAsDto();
 
@@ -551,7 +551,7 @@ public class RequisitionTest {
     RequisitionLineItem fullSupply = new RequisitionLineItemDataBuilder().build();
     OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(fullSupply.getOrderable().getId())
-        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withVersionNumber(fullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true)
         .buildAsDto();
 
@@ -563,7 +563,7 @@ public class RequisitionTest {
     RequisitionLineItem nonFullSupply = new RequisitionLineItemDataBuilder().build();
     OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(nonFullSupply.getOrderable().getId())
-        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withVersionNumber(nonFullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), false)
         .buildAsDto();
 
@@ -615,7 +615,7 @@ public class RequisitionTest {
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisition.getProgramId(), true)
             .buildAsDto())
         .forEach(orderable -> orderables.put(orderable.getIdentity(), orderable));
@@ -1702,7 +1702,7 @@ public class RequisitionTest {
     productMock.setId(requisitionLineItem.getOrderable().getId());
     productMock
         .getMeta()
-        .setVersionId(requisitionLineItem.getOrderable().getVersionId().toString());
+        .setVersionNumber(requisitionLineItem.getOrderable().getVersionNumber());
     setUpValidRequisitionTemplate();
   }
 
@@ -1747,7 +1747,7 @@ public class RequisitionTest {
       int stockOnHand) {
     RequisitionLineItem item = mock(RequisitionLineItem.class);
     when(item.getOrderable())
-        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionId()));
+        .thenReturn(new VersionEntityReference(orderable.getId(), orderable.getVersionNumber()));
     when(item.getStockOnHand()).thenReturn(stockOnHand);
 
     when(requisition.findLineByProduct(productId, 1L)).thenReturn(item);
@@ -1768,7 +1768,7 @@ public class RequisitionTest {
 
     OrderableDto orderable = new OrderableDtoDataBuilder()
         .withId(lineItem.getOrderable().getId())
-        .withVersionId(lineItem.getOrderable().getVersionId())
+        .withVersionNumber(lineItem.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true)
         .buildAsDto();
 

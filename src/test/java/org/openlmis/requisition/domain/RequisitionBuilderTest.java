@@ -279,7 +279,7 @@ public class RequisitionBuilderTest {
         .getRequisitionLineItems()
         .stream()
         .map(line -> new ApprovedProductReference(UUID.randomUUID(), 1L,
-            line.getOrderableIdentity().getId(), line.getOrderableIdentity().getVersionId()))
+            line.getOrderableIdentity().getId(), line.getOrderableIdentity().getVersionNumber()))
         .collect(Collectors.toMap(ApprovedProductReference::getOrderable, Function.identity()));
   }
 }

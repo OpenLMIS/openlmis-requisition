@@ -72,12 +72,12 @@ public class RequestedQuantityValidatorTest {
     Map<VersionIdentityDto, OrderableDto> orderables = Stream
         .of(new OrderableDtoDataBuilder()
                 .withId(fullSupply.getOrderable().getId())
-                .withVersionId(fullSupply.getOrderable().getVersionId())
+                .withVersionNumber(fullSupply.getOrderable().getVersionNumber())
                 .withProgramOrderable(requisitionToValidate.getProgramId(), true)
                 .buildAsDto(),
             new OrderableDtoDataBuilder()
                 .withId(nonFullSupply.getOrderable().getId())
-                .withVersionId(nonFullSupply.getOrderable().getVersionId())
+                .withVersionNumber(nonFullSupply.getOrderable().getVersionNumber())
                 .withProgramOrderable(requisitionToValidate.getProgramId(), false)
                 .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));

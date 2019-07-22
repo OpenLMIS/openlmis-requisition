@@ -11,6 +11,7 @@ Improvements:
 * [OLMIS-6382](https://openlmis.atlassian.net/browse/OLMIS-6382): Removed usage deprecated endpoint `GET api/facilities/supplying` and use instead `GET /api/supplyLines` endpoint.
 * [OLMIS-6374](https://openlmis.atlassian.net/browse/OLMIS-6374): Add new profile for audit logging.
 * [OLMIS-6408](https://openlmis.atlassian.net/browse/OLMIS-6408): Added pageable validator.
+* [OLMIS-6402](https://openlmis.atlassian.net/browse/OLMIS-6402): Renamed versionId field to versionNumber.
 
 Bug fixes:
 * [OLMIS-6230](https://openlmis.atlassian.net/browse/OLMIS-6230): Fixed bug with null value of average consumption when column is not selected in template.

@@ -28,11 +28,11 @@ import org.openlmis.requisition.domain.requisition.Versionable;
 public final class VersionObjectReferenceDto extends ObjectReferenceDto implements Versionable {
 
   @Getter
-  private Long versionId;
+  private Long versionNumber;
 
   public VersionObjectReferenceDto(UUID id, String serviceUrl,
-      String resourceName, Long versionId) {
+      String resourceName, Long versionNumber) {
     super(id, serviceUrl, resourceName);
-    this.versionId = versionId;
+    this.versionNumber = versionNumber;
   }
 }

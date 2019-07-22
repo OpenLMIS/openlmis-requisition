@@ -61,7 +61,7 @@ public final class ApproveProductsAggregator {
 
       allProducts.put(approvedProduct.getIdentity(), approvedProduct);
       allProductReferences.add(new ApprovedProductReference(approvedProduct.getId(),
-          approvedProduct.getVersionId(), orderable.getId(), orderable.getVersionId()));
+          approvedProduct.getVersionNumber(), orderable.getId(), orderable.getVersionNumber()));
       allOrderableIdentities.add(orderable.getIdentity());
 
       ProgramOrderableDto po = orderable.getProgramOrderable(programId);
@@ -73,7 +73,7 @@ public final class ApproveProductsAggregator {
 
       if (Objects.equals(false, po.getFullSupply())) {
         nonFullSupplyProductReferences.add(new ApprovedProductReference(approvedProduct.getId(),
-            approvedProduct.getVersionId(), orderable.getId(), orderable.getVersionId()));
+            approvedProduct.getVersionNumber(), orderable.getId(), orderable.getVersionNumber()));
       }
     }
   }

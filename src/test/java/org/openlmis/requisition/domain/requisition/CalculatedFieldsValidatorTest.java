@@ -114,7 +114,7 @@ public class CalculatedFieldsValidatorTest {
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisition.getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
@@ -124,7 +124,7 @@ public class CalculatedFieldsValidatorTest {
         .stream()
         .map(line -> new ApprovedProductDtoDataBuilder()
             .withId(line.getFacilityTypeApprovedProduct().getId())
-            .withVersionId(line.getFacilityTypeApprovedProduct().getVersionId())
+            .withVersionNumber(line.getFacilityTypeApprovedProduct().getVersionNumber())
             .buildAsDto())
         .collect(Collectors.toMap(ApprovedProductDto::getIdentity, Function.identity()));
 

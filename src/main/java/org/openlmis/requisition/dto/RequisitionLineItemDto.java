@@ -49,7 +49,7 @@ public class RequisitionLineItemDto extends BaseRequisitionLineItemDto {
   public VersionIdentityDto getOrderableIdentity() {
     return Optional
         .ofNullable(orderable)
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
         .orElse(null);
   }
 

@@ -47,7 +47,7 @@ public final class RequisitionLineItemV2Dto extends BaseRequisitionLineItemDto {
   @JsonIgnore
   public void setOrderable(OrderableDto orderableDto) {
     this.orderable = new VersionObjectReferenceDto(
-        orderableDto.getId(), serviceUrl, ORDERABLES, orderableDto.getVersionId());
+        orderableDto.getId(), serviceUrl, ORDERABLES, orderableDto.getVersionNumber());
   }
 
   @JsonSetter("orderable")
@@ -59,7 +59,7 @@ public final class RequisitionLineItemV2Dto extends BaseRequisitionLineItemDto {
   @JsonIgnore
   public void setApprovedProduct(ApprovedProductDto approvedProduct) {
     this.approvedProduct = new VersionObjectReferenceDto(
-        approvedProduct.getId(), serviceUrl, APPROVED_PRODUCTS, approvedProduct.getVersionId());
+        approvedProduct.getId(), serviceUrl, APPROVED_PRODUCTS, approvedProduct.getVersionNumber());
   }
 
   @JsonSetter("approvedProduct")
@@ -72,7 +72,7 @@ public final class RequisitionLineItemV2Dto extends BaseRequisitionLineItemDto {
   public VersionIdentityDto getOrderableIdentity() {
     return Optional
         .ofNullable(orderable)
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
         .orElse(null);
   }
 
@@ -81,7 +81,7 @@ public final class RequisitionLineItemV2Dto extends BaseRequisitionLineItemDto {
   public VersionIdentityDto getApprovedProductIdentity() {
     return Optional
         .ofNullable(approvedProduct)
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionId()))
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
         .orElse(null);
   }
 

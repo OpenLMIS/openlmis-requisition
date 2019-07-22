@@ -25,7 +25,7 @@ import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
 public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedProductDto> {
   private UUID id = UUID.randomUUID();
-  private String versionId = "1";
+  private Long versionNumber = 1L;
   private ZonedDateTime lastUpdated = ZonedDateTime.now();
   private OrderableDto orderable = new OrderableDtoDataBuilder().buildAsDto();
   private ProgramDto program = new ProgramDtoDataBuilder().buildAsDto();
@@ -53,8 +53,8 @@ public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedPro
     return this;
   }
 
-  public ApprovedProductDtoDataBuilder withVersionId(Long versionId) {
-    this.versionId = versionId.toString();
+  public ApprovedProductDtoDataBuilder withVersionNumber(Long versionNumber) {
+    this.versionNumber = versionNumber;
     return this;
   }
 
@@ -70,7 +70,7 @@ public class ApprovedProductDtoDataBuilder implements DtoDataBuilder<ApprovedPro
     dto.setEmergencyOrderPoint(emergencyOrderPoint);
     dto.setOrderable(orderable);
     dto.setProgram(program);
-    dto.setMeta(new MetadataDto(versionId, lastUpdated));
+    dto.setMeta(new MetadataDto(versionNumber, lastUpdated));
     return dto;
   }
 }

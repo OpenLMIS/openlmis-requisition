@@ -116,22 +116,22 @@ public class RequisitionReportDtoBuilderTest {
 
     final OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(fullSupply.getOrderable().getId())
-        .withVersionId(fullSupply.getOrderable().getVersionId())
+        .withVersionNumber(fullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), true, Money.of(CurrencyUnit.USD, 1), 2)
         .buildAsDto();
     final OrderableDto nonFullSupplyOrderable = new OrderableDtoDataBuilder()
         .withId(nonFullSupply.getOrderable().getId())
-        .withVersionId(nonFullSupply.getOrderable().getVersionId())
+        .withVersionNumber(nonFullSupply.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), false, Money.of(CurrencyUnit.USD, 2), 3)
         .buildAsDto();
     final ApprovedProductDto fullSupplyApprovedProductDto = new ApprovedProductDtoDataBuilder()
         .withId(fullSupply.getFacilityTypeApprovedProduct().getId())
-        .withVersionId(fullSupply.getFacilityTypeApprovedProduct().getVersionId())
+        .withVersionNumber(fullSupply.getFacilityTypeApprovedProduct().getVersionNumber())
         .withOrderable(fullSupplyOrderable)
         .buildAsDto();
     final ApprovedProductDto nonFullSupplyApprovedProductDto = new ApprovedProductDtoDataBuilder()
         .withId(nonFullSupply.getFacilityTypeApprovedProduct().getId())
-        .withVersionId(nonFullSupply.getFacilityTypeApprovedProduct().getVersionId())
+        .withVersionNumber(nonFullSupply.getFacilityTypeApprovedProduct().getVersionNumber())
         .withOrderable(nonFullSupplyOrderable)
         .buildAsDto();
 
@@ -245,7 +245,7 @@ public class RequisitionReportDtoBuilderTest {
 
     OrderableDto extraOrderable = new OrderableDtoDataBuilder()
         .withId(extra.getOrderable().getId())
-        .withVersionId(extra.getOrderable().getVersionId())
+        .withVersionNumber(extra.getOrderable().getVersionNumber())
         .withProgramOrderable(requisition.getProgramId(), false, Money.of(CurrencyUnit.USD, 2), 10)
         .buildAsDto();
 

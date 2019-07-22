@@ -1051,7 +1051,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .stream()
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(requisition.getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toList());
@@ -1735,7 +1735,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .flatMap(Collection::stream)
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionId(line.getOrderable().getVersionId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(line.getRequisition().getProgramId(), true)
             .buildAsDto())
         .collect(Collectors.toList());

@@ -197,7 +197,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
           ApprovedProductDto approvedProduct = new ApprovedProductDto(
               line.getFacilityTypeApprovedProduct().getId(), null, null, null,
               null, null, new MetadataDto(
-              line.getFacilityTypeApprovedProduct().getVersionId().toString(), null));
+              line.getFacilityTypeApprovedProduct().getVersionNumber(), null));
 
           RequisitionLineItemV2Dto lineDto = new RequisitionLineItemV2Dto();
           lineDto.setServiceUrl(serviceUrl);
@@ -222,7 +222,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
         .forEach(orderable -> {
           ProgramOrderableDto po = orderable.getProgramOrderable(requisition.getProgramId());
           VersionObjectReferenceDto reference = new VersionObjectReferenceDto(
-              orderable.getId(), serviceUrl, ORDERABLES, orderable.getVersionId());
+              orderable.getId(), serviceUrl, ORDERABLES, orderable.getVersionNumber());
 
           if (po.getFullSupply()) {
             availableFullSupply.add(reference);

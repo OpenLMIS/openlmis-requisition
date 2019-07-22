@@ -32,14 +32,14 @@ import org.openlmis.requisition.domain.requisition.Versionable;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class VersionIdentityDto extends BaseDto implements Versionable {
-  private Long versionId;
+  private Long versionNumber;
 
-  public VersionIdentityDto(UUID id, Long versionId) {
+  public VersionIdentityDto(UUID id, Long versionNumber) {
     this.id = id;
-    this.versionId = versionId;
+    this.versionNumber = versionNumber;
   }
 
   public VersionIdentityDto(VersionEntityReference reference) {
-    this(reference.getId(), reference.getVersionId());
+    this(reference.getId(), reference.getVersionNumber());
   }
 }
