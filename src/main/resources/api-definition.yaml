@@ -363,7 +363,7 @@ resourceTypes:
       /submitted:
           get:
               is: [ secured, paginated ]
-              description: Get all requisitions with submitted status.
+              description: WARNING! Deprecated. Get all requisitions with submitted status.
               responses:
                   "200":
                       body:
