@@ -1,10 +1,11 @@
-8.1.0 / WIP
+8.2.0 / WIP
 ==================
 
 New functionality:
 * [OLMIS-6413](https://openlmis.atlassian.net/browse/OLMIS-6413): Added support for orderable versioning
 * [OLMIS-6414](https://openlmis.atlassian.net/browse/OLMIS-6414): Added support for ftap versioning
 * [OLMIS-6415](https://openlmis.atlassian.net/browse/OLMIS-6415): Added new versions of requisition endpoints for better support orderable and FTAP versioning
+* [OLMIS-6558](https://openlmis.atlassian.net/browse/OLMIS-6558): Add new environment variable - PUBLIC_URL and use to for email generated links
 
 Improvements:
 * [OLMIS-6332](https://openlmis.atlassian.net/browse/OLMIS-6332): Changed default page size to max integer.

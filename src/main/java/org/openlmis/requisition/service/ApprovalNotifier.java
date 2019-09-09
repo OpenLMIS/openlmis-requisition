@@ -75,6 +75,9 @@ public class ApprovalNotifier extends BaseNotifier {
 
   @Value("${requisitionUri}")
   private String requisitionUri;
+  
+  @Value("${publicUrl}")
+  private String publicUrl;
 
   /**
    * Notify requisition's creator that it was converted to order.
@@ -110,8 +113,7 @@ public class ApprovalNotifier extends BaseNotifier {
 
     DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
 
-    String url = System.getenv("BASE_URL")
-        + MessageFormat.format(requisitionUri, requisition.getId());
+    String url = publicUrl + MessageFormat.format(requisitionUri, requisition.getId());
 
     Map<String, String> valuesMap =
         getValuesMap(reqType, period, program, facility, submittedDate, dateTimeFormatter, url);

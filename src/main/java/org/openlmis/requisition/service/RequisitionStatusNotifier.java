@@ -70,6 +70,9 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
   @Value("${requisitionUri}")
   private String requisitionUri;
+  
+  @Value("${publicUrl}")
+  private String publicUrl;
 
   /**
    * Notify user(s) that the requisition's status has changed.
@@ -142,8 +145,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
   }
 
   private String getRequisitionUrl(Requisition requisition) {
-    return System.getenv("BASE_URL") + MessageFormat.format(
-        requisitionUri, requisition.getId());
+    return publicUrl + MessageFormat.format(requisitionUri, requisition.getId());
   }
 
   private Optional<StatusChange> getSubmitAuditEntry(Requisition requisition,

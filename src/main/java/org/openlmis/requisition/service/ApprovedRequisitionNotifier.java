@@ -41,13 +41,12 @@ import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ApprovedRequisitionNotifier extends BaseNotifier {
-
-  private static final String CONVERT_TO_ORDER_URL = System.getenv("BASE_URL")
-      + "/#!/requisitions/convertToOrder";
+  
   static final String NOTIFICATION_TAG = "requisition-requisitionApproved";
 
   @Autowired
@@ -70,6 +69,9 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
 
   @Autowired
   private RequisitionForConvertBuilder requisitionForConvertBuilder;
+  
+  @Value("${publicUrl}")
+  private String publicUrl;
 
   /**
    * Notifies all the clerks that the requisition has been approved and is ready to be converted to
@@ -86,7 +88,7 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
     messageParams.put("requisitionType", getRequisitionType(requisition, locale));
     messageParams.put("finalApprovalDate", getFinalApprovalDate(requisition));
     messageParams.put("facility", getFacilityName(requisition));
-    messageParams.put("url", CONVERT_TO_ORDER_URL);
+    messageParams.put("url", getConvertToOrderUrl());
     messageParams.put("program", getProgram(requisition));
     messageParams.put("period", getPeriod(requisition));
 
@@ -96,6 +98,10 @@ public class ApprovedRequisitionNotifier extends BaseNotifier {
           new StrSubstitutor(messageParams).replace(emailContent),
           new StrSubstitutor(messageParams).replace(smsContent), NOTIFICATION_TAG);
     }
+  }
+
+  private String getConvertToOrderUrl() {
+    return publicUrl + "/#!/requisitions/convertToOrder";
   }
 
   private String getRequisitionType(Requisition requisition, Locale locale) {
