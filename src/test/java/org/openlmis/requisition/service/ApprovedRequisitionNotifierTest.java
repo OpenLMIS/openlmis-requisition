@@ -57,6 +57,7 @@ import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -99,6 +100,8 @@ public class ApprovedRequisitionNotifierTest {
 
   @InjectMocks
   private ApprovedRequisitionNotifier approvedRequisitionNotifier;
+  
+  private String publicUrl;
 
   private Requisition requisition = mock(Requisition.class);
   private UUID requisitionId = UUID.randomUUID();
@@ -125,6 +128,10 @@ public class ApprovedRequisitionNotifierTest {
 
   @Before
   public void setUp() {
+    publicUrl = System.getenv("PUBLIC_URL") != null ? System.getenv("PUBLIC_URL")
+        : System.getenv("BASE_URL");
+    ReflectionTestUtils.setField(approvedRequisitionNotifier, "publicUrl",
+        publicUrl);
     prepareStatusChange();
     prepareRequisition();
     mockServices();
@@ -164,7 +171,7 @@ public class ApprovedRequisitionNotifierTest {
         + "10:15:30 AM for the Period " + processingPeriod.getName()
         + " and " + program.getName() + " at " + facility.getName() + " is ready to be "
         + "converted to an order. Please login to convert the requisition to an order.\\n"
-        + System.getenv("BASE_URL") + "/#!/requisitions/convertToOrder\\n"
+        + publicUrl + "/#!/requisitions/convertToOrder\\n"
         + "Thank you.";
 
     String expectedSmsContent = "The regular requisition approved on May 8, 2017 "
