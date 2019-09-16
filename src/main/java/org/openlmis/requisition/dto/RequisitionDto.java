@@ -15,19 +15,20 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.openlmis.requisition.domain.requisition.Versionable;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -57,17 +58,32 @@ public class RequisitionDto extends BaseRequisitionDto {
   @Setter
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
+  /**
+   * Retrieves a list of available non full supply products or an empty set,
+   * if the property is null.
+   * @return set of available non full supply products
+   */
+  public Set<OrderableDto> getAvailableNonFullSupplyProducts() {
+    return Sets.newHashSet(Optional
+        .ofNullable(availableNonFullSupplyProducts)
+        .orElse(Collections.emptySet()));
+  }
+
+  @Override
+  @JsonIgnore
+  public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
+    return Optional
+        .ofNullable(getAvailableNonFullSupplyProducts())
+        .orElse(Collections.emptySet())
+        .stream()
+        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
+        .collect(Collectors.toSet());
+  }
+
   @Override
   List<BaseRequisitionLineItemDto> getLineItems() {
     return Lists.newArrayList(Optional
         .ofNullable(requisitionLineItems)
         .orElse(Collections.emptyList()));
-  }
-
-  @Override
-  public Set<Versionable> getAvailableNonFullSupplyProducts() {
-    return Sets.newHashSet(Optional
-        .ofNullable(availableNonFullSupplyProducts)
-        .orElse(Collections.emptySet()));
   }
 }

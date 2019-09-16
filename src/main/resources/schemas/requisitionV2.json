@@ -80,18 +80,9 @@
       },
       "uniqueItems": true
     },
-    "availableNonFullSupplyProducts": {
+    "availableProducts": {
       "type": "array",
-      "title": "availableNonFullSupplyProducts",
-      "items": {
-        "type": "object",
-        "$ref": "versionObjectReference.json"
-      },
-      "uniqueItems": true
-    },
-    "availableFullSupplyProducts": {
-      "type": "array",
-      "title": "availableFullSupplyProducts",
+      "title": "availableProducts",
       "items": {
         "type": "object",
         "$ref": "versionObjectReference.json"

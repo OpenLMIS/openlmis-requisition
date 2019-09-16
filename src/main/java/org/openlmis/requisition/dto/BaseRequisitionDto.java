@@ -24,10 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +37,6 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
-import org.openlmis.requisition.domain.requisition.Versionable;
 import org.openlmis.requisition.utils.StatusChangeHelper;
 
 @AllArgsConstructor
@@ -150,17 +147,6 @@ public abstract class BaseRequisitionDto
         .orElse(null);
   }
 
-  @Override
-  @JsonIgnore
-  public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
-    return Optional
-        .ofNullable(getAvailableNonFullSupplyProducts())
-        .orElse(Collections.emptySet())
-        .stream()
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
-        .collect(Collectors.toSet());
-  }
-
   public abstract BaseDto getFacility();
 
   public abstract BaseDto getProgram();
@@ -169,7 +155,5 @@ public abstract class BaseRequisitionDto
 
   @JsonIgnore
   abstract List<BaseRequisitionLineItemDto> getLineItems();
-
-  public abstract Set<Versionable> getAvailableNonFullSupplyProducts();
 
 }
