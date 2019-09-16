@@ -445,9 +445,10 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setPricePerPack(Optional
         .ofNullable(orderableDto)
-        .map(item -> item.findProgramOrderable(requisition.getProgramId())).get()
+        .map(item -> item.findProgramOrderable(requisition.getProgramId()))
+        .orElse(Optional.of(new ProgramOrderableDto()))
         .map(ProgramOrderableDto::getPricePerPack)
-        .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL)));
+        .orElse(Money.of(CurrencyUnit.of(currencyCode), PRICE_PER_PACK_IF_NULL)));
     exporter.setTotalCost(totalCost);
     exporter.setSkipped(skipped);
     exporter.setBeginningBalance(beginningBalance);
