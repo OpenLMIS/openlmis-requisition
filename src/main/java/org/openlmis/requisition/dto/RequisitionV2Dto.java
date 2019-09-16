@@ -16,7 +16,6 @@
 package org.openlmis.requisition.dto;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.openlmis.requisition.domain.requisition.Versionable;
 
 @AllArgsConstructor
 @NoArgsConstructor
