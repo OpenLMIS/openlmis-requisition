@@ -59,7 +59,12 @@ public class RequisitionDto extends BaseRequisitionDto {
   @Setter
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
-  public Set<Versionable> getAvailableNonFullSupplyProducts() {
+  /**
+   * Retrieves a list of available non full supply products or an empty set,
+   * if the property is null.
+   * @return set of available non full supply products
+   */
+  public Set<OrderableDto> getAvailableNonFullSupplyProducts() {
     return Sets.newHashSet(Optional
         .ofNullable(availableNonFullSupplyProducts)
         .orElse(Collections.emptySet()));
