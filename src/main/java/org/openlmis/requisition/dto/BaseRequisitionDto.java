@@ -150,17 +150,6 @@ public abstract class BaseRequisitionDto
         .orElse(null);
   }
 
-  @Override
-  @JsonIgnore
-  public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
-    return Optional
-        .ofNullable(getAvailableNonFullSupplyProducts())
-        .orElse(Collections.emptySet())
-        .stream()
-        .map(item -> new VersionIdentityDto(item.getId(), item.getVersionNumber()))
-        .collect(Collectors.toSet());
-  }
-
   public abstract BaseDto getFacility();
 
   public abstract BaseDto getProgram();
@@ -169,7 +158,5 @@ public abstract class BaseRequisitionDto
 
   @JsonIgnore
   abstract List<BaseRequisitionLineItemDto> getLineItems();
-
-  public abstract Set<Versionable> getAvailableNonFullSupplyProducts();
 
 }

@@ -96,10 +96,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
         request, profiler);
     Requisition requisition = result.getRequisition();
 
-    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
-        profiler, requisition::getAllOrderables);
-
-    RequisitionV2Dto dto = buildDto(requisition, orderables, profiler);
+    RequisitionV2Dto dto = buildDto(requisition, profiler);
 
     addLocationHeader(request, response, dto.getId(), profiler);
 
@@ -138,7 +135,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
 
     ETagResource<RequisitionV2Dto> etaggedResource = new ETagResource<>(
-        buildDto(requisitionToUpdate, result.getOrderables(), profiler),
+        buildDto(requisitionToUpdate, profiler),
         requisitionToUpdate.getVersion());
 
     response.setHeader(HttpHeaders.ETAG, etaggedResource.getEtag());
@@ -163,10 +160,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
 
-    Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
-        profiler, requisition::getAllOrderables);
-
-    RequisitionV2Dto dto = buildDto(requisition, orderables, profiler);
+    RequisitionV2Dto dto = buildDto(requisition, profiler);
     response.setHeader(HttpHeaders.ETAG, ETagResource.buildWeakETag(requisition.getVersion()));
 
     stopProfiler(profiler, dto);
@@ -174,8 +168,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     return dto;
   }
 
-  private RequisitionV2Dto buildDto(Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables, Profiler profiler) {
+  private RequisitionV2Dto buildDto(Requisition requisition, Profiler profiler) {
     profiler.start("BUILD_DTO");
     RequisitionV2Dto dto = new RequisitionV2Dto();
     requisition.export(dto);
@@ -190,10 +183,11 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     List<RequisitionLineItemV2Dto> lineItems = requisitionLineItems
         .stream()
         .map(line -> {
-          OrderableDto orderable = orderables
-              .get(new VersionIdentityDto(line.getOrderable()));
-
           // The whole object is not required here
+          OrderableDto orderable = new OrderableDto();
+          orderable.setId(line.getOrderable().getId());
+          orderable.setMeta(new MetadataDto(line.getOrderable().getVersionNumber(), null));
+
           ApprovedProductDto approvedProduct = new ApprovedProductDto(
               line.getFacilityTypeApprovedProduct().getId(), null, null, null,
               null, null, new MetadataDto(
@@ -201,7 +195,6 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
           RequisitionLineItemV2Dto lineDto = new RequisitionLineItemV2Dto();
           lineDto.setServiceUrl(serviceUrl);
-
           line.export(lineDto, orderable, approvedProduct);
 
           return lineDto;
@@ -210,29 +203,21 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
     dto.setRequisitionLineItems(lineItems);
 
-    Set<VersionObjectReferenceDto> availableFullSupply = new HashSet<>();
-    Set<VersionObjectReferenceDto> availableNonFullSupply = new HashSet<>();
+    Set<VersionObjectReferenceDto> availableProducts = new HashSet<>();
 
     Optional
         .ofNullable(requisition.getAvailableProducts())
         .orElse(Collections.emptySet())
         .stream()
         .map(ApprovedProductReference::getOrderable)
-        .map(identity -> orderables.get(new VersionIdentityDto(identity)))
         .forEach(orderable -> {
-          ProgramOrderableDto po = orderable.getProgramOrderable(requisition.getProgramId());
           VersionObjectReferenceDto reference = new VersionObjectReferenceDto(
               orderable.getId(), serviceUrl, ORDERABLES, orderable.getVersionNumber());
 
-          if (po.getFullSupply()) {
-            availableFullSupply.add(reference);
-          } else {
-            availableNonFullSupply.add(reference);
-          }
+          availableProducts.add(reference);
         });
 
-    dto.setAvailableFullSupplyProducts(availableFullSupply);
-    dto.setAvailableNonFullSupplyProducts(availableNonFullSupply);
+    dto.setAvailableProducts(availableProducts);
     dto.setStockAdjustmentReasons(newInstance(requisition.getStockAdjustmentReasons()));
     return dto;
   }
