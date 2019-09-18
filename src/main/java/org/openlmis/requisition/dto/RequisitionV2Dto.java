@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collections;
@@ -61,6 +62,7 @@ public final class RequisitionV2Dto extends BaseRequisitionDto {
   }
 
   @Override
+  @JsonIgnore
   public Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities() {
     // Available non-full supply products are not available in V2 requisitions
     return Sets.newHashSet();
