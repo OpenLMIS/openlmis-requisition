@@ -18,6 +18,7 @@ Bug fixes:
 * [OLMIS-6230](https://openlmis.atlassian.net/browse/OLMIS-6230): Fixed bug with null value of average consumption when column is not selected in template.
 * [OLMIS-6379](https://openlmis.atlassian.net/browse/OLMIS-6379): Fixed bug with submit requisition when column is hidden and source is stock cards.
 * [OLMIS-6429](https://openlmis.atlassian.net/browse/OLMIS-6429): Marked `GET api/requisitions/submitted` endpoint as deprecated
+* [OLMIS-6597](https://openlmis.atlassian.net/browse/OLMIS-6597): Fixed issue with deserializing JSONs that it stores in the jv_snapshot table.
 
 8.0.0 / 2019-05-27
 ==================

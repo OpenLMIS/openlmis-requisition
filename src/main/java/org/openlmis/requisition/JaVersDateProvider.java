@@ -17,11 +17,11 @@ package org.openlmis.requisition;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import org.javers.common.date.DateProvider;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
 
 /**
  * This class may be used by JaVers to retrieve the LocalDateTime that it associates with commits.
@@ -30,25 +30,19 @@ import org.joda.time.LocalDateTime;
  * system timezone, which may change, when constructing a LocalDateTime.)
  */
 public class JaVersDateProvider implements DateProvider {
-  public static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.UTC;
-  public static final ZoneId ZONE_ID = ZoneId.of(DATE_TIME_ZONE.getID());
+  public static final ZoneOffset ZONE_OFFSET = ZoneOffset.UTC;
+  public static final ZoneId ZONE_ID = ZoneId.of(ZONE_OFFSET.getId());
 
   public LocalDateTime now() {
-    return LocalDateTime.now(DATE_TIME_ZONE);
+    return LocalDateTime.now(ZONE_OFFSET);
   }
 
   /**
    * Converts the specified LocalDateTime to a ZonedDateTime in UTC.
    */
   public static ZonedDateTime getZonedDateTime(LocalDateTime localDateTime) {
-
-    /* Get an instant representing localDateTime with the understanding that it was stored
-       using JaVersDateProvider.DATE_TIME_ZONE */
-    long epoch = localDateTime.toDateTime(DATE_TIME_ZONE).getMillis();
-    Instant instant = Instant.ofEpochMilli(epoch);
-
-    //Convert the instant to a ZonedDateTime in UTC.
-    return ZonedDateTime.ofInstant(instant, ZONE_ID);
+    //Convert the LocalDateTime to a ZonedDateTime in UTC.
+    return ZonedDateTime.of(localDateTime, ZONE_ID);
   }
 
   /**

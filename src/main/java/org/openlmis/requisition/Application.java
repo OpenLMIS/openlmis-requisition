@@ -29,7 +29,7 @@ import org.javers.repository.sql.DialectName;
 import org.javers.repository.sql.JaversSqlRepository;
 import org.javers.repository.sql.SqlRepositoryBuilder;
 import org.javers.spring.auditable.AuthorProvider;
-import org.javers.spring.boot.sql.JaversProperties;
+import org.javers.spring.boot.sql.JaversSqlProperties;
 import org.javers.spring.jpa.TransactionalJaversBuilder;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.i18n.ExposedMessageSourceImpl;
@@ -70,7 +70,7 @@ public class Application {
   private DialectName dialectName;
 
   @Autowired
-  private JaversProperties javersProperties;
+  private JaversSqlProperties javersProperties;
 
   @Value("${spring.jpa.properties.hibernate.default_schema}")
   private String preferredSchema;

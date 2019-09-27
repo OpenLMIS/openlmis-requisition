@@ -15,17 +15,18 @@
 
 package org.openlmis.requisition;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
-import org.joda.time.Seconds;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,17 +46,17 @@ public class JaVersIntegrationTest {
   @Autowired
   private Javers javers;
 
-  private static DateTimeZone defaultZone;
+  private static TimeZone defaultZone;
   private static final String COMMIT_AUTHOR = "author";
 
   @BeforeClass
   public static void beforeClass() {
-    defaultZone = DateTimeZone.getDefault();
+    defaultZone = TimeZone.getDefault();
   }
 
   @After
   public void after() {
-    DateTimeZone.setDefault(defaultZone);
+    TimeZone.setDefault(defaultZone);
   }
 
   @Test
@@ -66,10 +67,10 @@ public class JaVersIntegrationTest {
     code.setCode("code_1");
 
     //when
-    DateTimeZone.setDefault(DateTimeZone.forID("UTC"));
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     javers.commit(COMMIT_AUTHOR, code);
 
-    DateTimeZone.setDefault(DateTimeZone.forID("Africa/Johannesburg"));
+    TimeZone.setDefault(TimeZone.getTimeZone("Africa/Johannesburg"));
     code.setCode("code_2");
     javers.commit(COMMIT_AUTHOR, code);
 
@@ -81,7 +82,7 @@ public class JaVersIntegrationTest {
     LocalDateTime commitTime1 = snapshots.get(0).getCommitMetadata().getCommitDate();
     LocalDateTime commitTime2 = snapshots.get(1).getCommitMetadata().getCommitDate();
 
-    int delta = Math.abs(Seconds.secondsBetween(commitTime1, commitTime2).getSeconds());
-    assertTrue(delta < 1);
+    long delta = SECONDS.between(commitTime1, commitTime2);
+    assertThat(delta, lessThan(1L));
   }
 }
