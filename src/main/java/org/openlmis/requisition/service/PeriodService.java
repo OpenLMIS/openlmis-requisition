@@ -40,6 +40,9 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
@@ -47,6 +50,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PeriodService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PeriodService.class);
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -104,23 +108,30 @@ public class PeriodService {
    */
   public Collection<RequisitionPeriodDto> getPeriods(
       UUID program, UUID facility, boolean emergency) {
+    Profiler profiler = new Profiler("PERIOD_SERVICE");
+    profiler.setLogger(LOGGER);
     Collection<ProcessingPeriodDto> periods;
 
     if (emergency) {
+      profiler.start("GET_CURRENT_PERIODS");
       periods = getCurrentPeriods(program, facility);
     } else {
+      profiler.start("SEARCH_PERIODS_BY_PROGRAM_AND_FACILITY");
       periods = searchByProgramAndFacility(program, facility);
     }
 
     List<RequisitionPeriodDto> requisitionPeriods = new ArrayList<>();
 
     for (ProcessingPeriodDto period : periods) {
+      profiler.start("BUILD_REQUISITION_PERIOD_DTO");
       RequisitionPeriodDto requisitionPeriod = RequisitionPeriodDto.newInstance(period);
       requisitionPeriods.add(requisitionPeriod);
 
+      profiler.start("SEARCH_REQUISITIONS_FOR_PERIOD");
       List<Requisition> requisitions = requisitionRepository.searchRequisitions(
           period.getId(), facility, program, emergency);
 
+      profiler.start("GET_PREAUTHORIZE_REQUISITIONS");
       List<Requisition> preAuthorizeRequisitions = requisitions.stream()
           .filter(requisition -> requisition.getStatus().isPreAuthorize())
           .collect(Collectors.toList());
@@ -134,6 +145,7 @@ public class PeriodService {
         }
       } else if (!requisitions.isEmpty()) {
         if (preAuthorizeRequisitions.isEmpty()) {
+          profiler.start("REMOVE_PERIOD");
           requisitionPeriods.remove(requisitionPeriod);
         } else {
           requisitionPeriod.setRequisitionId(preAuthorizeRequisitions.get(0).getId());
@@ -142,6 +154,7 @@ public class PeriodService {
       }
     }
 
+    profiler.stop().log();
     return requisitionPeriods;
   }
 
