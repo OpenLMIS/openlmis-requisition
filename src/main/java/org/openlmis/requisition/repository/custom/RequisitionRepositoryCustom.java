@@ -16,10 +16,12 @@
 package org.openlmis.requisition.repository.custom;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,6 +32,9 @@ public interface RequisitionRepositoryCustom {
       Pageable pageable);
 
   List<Requisition> searchRequisitions(UUID processingPeriod,
+      UUID facility, UUID program, Boolean emergency);
+
+  List<Map<UUID, RequisitionStatus>> searchRequisitionIdAndStatusPairs(UUID processingPeriod,
       UUID facility, UUID program, Boolean emergency);
 
   Page<Requisition> searchApprovedRequisitions(UUID facilityId,

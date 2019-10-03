@@ -22,6 +22,7 @@ import com.google.common.base.Joiner;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -167,6 +169,51 @@ public class RequisitionRepositoryImpl
     query.where(predicate);
 
     return entityManager.createQuery(query).getResultList();
+  }
+
+  /**
+   * Method returns all ids and statues of requisitions with matched parameters.
+   *
+   * @param processingPeriod ProcessingPeriod of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return List of Map of UUID and Requisition Status with matched parameters.
+   */
+  @Override
+  public List<Map<UUID, RequisitionStatus>> searchRequisitionIdAndStatusPairs(
+      UUID processingPeriod, UUID facility, UUID program, Boolean emergency) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    Profiler profiler = new Profiler("SEARCH_REQUISITION_ID_STATUS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("PREPARE_TUPLE_QUERY");
+    CriteriaQuery<Tuple> query = builder.createTupleQuery();
+    Root<Requisition> root = query.from(Requisition.class);
+    query.multiselect(root.get("id"), root.get(STATUS));
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriod);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, program);
+    query.where(predicate);
+
+    profiler.start("EXECUTE_TUPLE_QUERY");
+    List<Tuple> tupleResult = entityManager.createQuery(query).getResultList();
+
+    profiler.start("CONVERT_TUPLE_LIST_TO_REQUISITION_ID_STATUS_MAP");
+    Map<UUID, RequisitionStatus> requisitionIdStatusPairs =
+        convertTupleListToRequisitionIdAndStatusMap(tupleResult);
+
+    profiler.start("ADD_REQUISITION_ID_STATUS_MAP_TO_LIST");
+    List<Map<UUID, RequisitionStatus>> requisitionIdStatusPairsList = new ArrayList<>();
+    requisitionIdStatusPairsList.add(requisitionIdStatusPairs);
+
+    XLOGGER.exit(requisitionIdStatusPairsList);
+    profiler.stop().log();
+    return requisitionIdStatusPairsList;
   }
 
   /**
@@ -565,5 +612,17 @@ public class RequisitionRepositoryImpl
       return String.format("r.supervisoryNodeId = '%s'", supervisoryNodeId);
     }
     return "";
+  }
+
+  private Map<UUID, RequisitionStatus> convertTupleListToRequisitionIdAndStatusMap(
+      List<Tuple> tupleResult) {
+    Map<UUID, RequisitionStatus> requisitionsIdsAndStatusPairs = new HashMap<>();
+    for (Tuple t : tupleResult) {
+      UUID requisitionId = (UUID) t.get(0);
+      RequisitionStatus requisitionStatus = (RequisitionStatus) t.get(1);
+      requisitionsIdsAndStatusPairs.put(requisitionId, requisitionStatus);
+    }
+
+    return requisitionsIdsAndStatusPairs;
   }
 }

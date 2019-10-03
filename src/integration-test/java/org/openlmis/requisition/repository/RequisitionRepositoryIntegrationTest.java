@@ -349,6 +349,23 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
+  public void testSearchRequisitionIdStatusPairsByPeriodAndEmergencyFlag() {
+    requisitions.forEach(requisition -> {
+      List<Map<UUID, RequisitionStatus>> found = repository.searchRequisitionIdAndStatusPairs(
+          requisition.getProcessingPeriodId(), requisition.getFacilityId(), requisition
+              .getProgramId(), requisition.getEmergency()
+      );
+
+      found.forEach(element -> {
+        assertEquals(requisition.getStatus(), element.entrySet().stream()
+            .findFirst().get().getValue());
+        assertEquals(requisition.getId(), element.entrySet()
+            .stream().findFirst().get().getKey());
+      });
+    });
+  }
+
+  @Test
   public void searchShouldExcludeRequisitionsWithNoMatchingPermissionStrings() {
     // given
     List<String> userPermissionStringSubset = singletonList(
@@ -1030,6 +1047,21 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertThat(result, is(false));
+  }
+
+  @Test
+  public void shouldReturnFalseIfThereAreNoIdStatusPairsWithGivenPeriodFacilityProgram() {
+    // given
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    UUID periodId = UUID.randomUUID();
+
+    // when
+    boolean exists = repository.existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
+        periodId, facilityId, programId, false);
+
+    // then
+    assertThat(exists, is(false));
   }
 
   private RequisitionLineItem generateLineItem(Requisition requisition) {

@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.toMap;
 import static org.openlmis.requisition.dto.BasicProcessingPeriodDto.START_DATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FINISH_PROVIOUS_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD;
@@ -26,7 +27,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -50,6 +53,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PeriodService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(PeriodService.class);
 
   @Autowired
@@ -66,7 +70,7 @@ public class PeriodService {
   }
 
   public Collection<ProcessingPeriodDto> searchByProgramAndFacility(UUID programId,
-                                                                    UUID facilityId) {
+      UUID facilityId) {
     return periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
   }
 
@@ -127,29 +131,40 @@ public class PeriodService {
       RequisitionPeriodDto requisitionPeriod = RequisitionPeriodDto.newInstance(period);
       requisitionPeriods.add(requisitionPeriod);
 
-      profiler.start("SEARCH_REQUISITIONS_FOR_PERIOD");
-      List<Requisition> requisitions = requisitionRepository.searchRequisitions(
-          period.getId(), facility, program, emergency);
+      profiler.start("REQUISITION_EXISTS_BY_PERIOD_FACILITY_PROGRAM_AND_EMERGENCY");
+      boolean existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency =
+          requisitionRepository.existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
+              period.getId(), facility, program, emergency);
 
-      profiler.start("GET_PREAUTHORIZE_REQUISITIONS");
-      List<Requisition> preAuthorizeRequisitions = requisitions.stream()
-          .filter(requisition -> requisition.getStatus().isPreAuthorize())
-          .collect(Collectors.toList());
+      List<Map<UUID, RequisitionStatus>> listOfRequisitionIdStatusMap = new ArrayList<>();
+      if (existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency) {
+        profiler.start("SEARCH_REQUISITION_ID_STATUS_FOR_PERIOD");
+        listOfRequisitionIdStatusMap = requisitionRepository
+            .searchRequisitionIdAndStatusPairs(period.getId(), facility, program, emergency);
+      }
+
+      profiler.start("GET_PREAUTHORIZE_REQUISITION_ID_STATUS_PAIRS");
+      Map<UUID, RequisitionStatus> preAuthorizeRequisitionsIdStatusMap =
+          getPreAuthorizeRequisitions(listOfRequisitionIdStatusMap);
 
       if (emergency) {
-        for (Requisition requisition : preAuthorizeRequisitions) {
+        for (Map.Entry<UUID, RequisitionStatus> requisitionIdStatus :
+            preAuthorizeRequisitionsIdStatusMap.entrySet()) {
           RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
-          additionalPeriod.setRequisitionId(requisition.getId());
-          additionalPeriod.setRequisitionStatus(requisition.getStatus());
+          additionalPeriod.setRequisitionId(requisitionIdStatus.getKey());
+          additionalPeriod.setRequisitionStatus(requisitionIdStatus.getValue());
           requisitionPeriods.add(additionalPeriod);
         }
-      } else if (!requisitions.isEmpty()) {
-        if (preAuthorizeRequisitions.isEmpty()) {
+      } else if (!listOfRequisitionIdStatusMap.isEmpty()) {
+        if (preAuthorizeRequisitionsIdStatusMap.isEmpty()) {
           profiler.start("REMOVE_PERIOD");
           requisitionPeriods.remove(requisitionPeriod);
         } else {
-          requisitionPeriod.setRequisitionId(preAuthorizeRequisitions.get(0).getId());
-          requisitionPeriod.setRequisitionStatus(preAuthorizeRequisitions.get(0).getStatus());
+          profiler.start("SET_REQUISITION_ID_AND_STATUS");
+          requisitionPeriod.setRequisitionId(preAuthorizeRequisitionsIdStatusMap.entrySet()
+              .stream().findFirst().get().getKey());
+          requisitionPeriod.setRequisitionStatus(preAuthorizeRequisitionsIdStatusMap.entrySet()
+              .stream().findFirst().get().getValue());
         }
       }
     }
@@ -285,6 +300,28 @@ public class PeriodService {
     }
 
     return result;
+  }
+
+  private Map<UUID, RequisitionStatus> getPreAuthorizeRequisitions(
+      List<Map<UUID, RequisitionStatus>> listOfRequisitionIdStatusMap) {
+
+    Map<UUID, RequisitionStatus> preAuthorizeRequisitionsIdStatusMap = new HashMap<>();
+    for (Map<UUID, RequisitionStatus> map : listOfRequisitionIdStatusMap) {
+      Map<UUID, RequisitionStatus> currentPreAuthorizeRequisitionIdStatusMap = map.entrySet()
+          .stream()
+          .filter(pair -> pair.getValue().isPreAuthorize())
+          .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+      if (!currentPreAuthorizeRequisitionIdStatusMap.isEmpty()) {
+        preAuthorizeRequisitionsIdStatusMap.put(
+            currentPreAuthorizeRequisitionIdStatusMap.entrySet()
+                .stream().findFirst().get().getKey(),
+            currentPreAuthorizeRequisitionIdStatusMap.entrySet()
+                .stream().findFirst().get().getValue());
+      }
+    }
+
+    return preAuthorizeRequisitionsIdStatusMap;
   }
 
 }
