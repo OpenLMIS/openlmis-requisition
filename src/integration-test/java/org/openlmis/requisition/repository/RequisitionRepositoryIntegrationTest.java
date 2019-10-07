@@ -550,7 +550,7 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
 
-    // simulation that the requisition has been rejected 4 times
+    // simulation that the requisition has been rejected 3 times
     matchingRequisition1
         .getStatusChanges()
         .add(new StatusChangeDataBuilder()
@@ -584,7 +584,7 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
 
-    // simulation that the requisition has been rejected 3 times
+    // simulation that the requisition has been rejected 2 times
     matchingRequisition2
         .getStatusChanges()
         .add(new StatusChangeDataBuilder()
@@ -632,7 +632,7 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setEmergency(false);
     matchingRequisition1.getStatusChanges().clear();
 
-    // simulation that the requisition has been rejected 2 times
+    // simulation that the requisition has been rejected 1 times
     matchingRequisition1
         .getStatusChanges()
         .add(new StatusChangeDataBuilder()
