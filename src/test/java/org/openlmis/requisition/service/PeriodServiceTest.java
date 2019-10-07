@@ -47,9 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -60,6 +58,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
@@ -79,18 +78,6 @@ import org.springframework.data.domain.Sort.Direction;
 public class PeriodServiceTest {
 
   @Mock
-  private Map<UUID, RequisitionStatus> requisitionIdInitiatedStatusMap;
-
-  @Mock
-  private Map<UUID, RequisitionStatus> requisitionIdSubmittedStatusMap;
-
-  @Mock
-  private Map<UUID, RequisitionStatus> requisitionIdAuthorizedStatusMap;
-
-  @Mock
-  private Map<UUID, RequisitionStatus> requisitionIdApprovedStatusMap;
-
-  @Mock
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Mock
@@ -105,6 +92,7 @@ public class PeriodServiceTest {
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private UUID facility2Id = UUID.randomUUID();
+  private UUID requisitionId = UUID.randomUUID();
 
   private ProcessingPeriodDto currentPeriod;
   private ProcessingPeriodDto period1;
@@ -123,43 +111,6 @@ public class PeriodServiceTest {
     period2 = createPeriod(2);
     period3 = createPeriod(3);
     period4 = createPeriod(4);
-
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            currentPeriod.getId(), facilityId, programId, false);
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            period1.getId(), facilityId, programId, false);
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            period2.getId(), facilityId, programId, false);
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            period3.getId(), facilityId, programId, false);
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            period4.getId(), facilityId, programId, false);
-
-    doReturn(Collections.emptyList())
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdInitiatedStatusMap))
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period1.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdSubmittedStatusMap))
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period2.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdAuthorizedStatusMap))
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period3.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdApprovedStatusMap))
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period4.getId(), facilityId, programId, false);
   }
 
   @Test
@@ -168,12 +119,12 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Map<UUID, RequisitionStatus> requisitionIdSubmittedStatusMap = new HashMap<>();
-    requisitionIdSubmittedStatusMap.put(UUID.randomUUID(), SUBMITTED);
+    RequisitionPeriod requisitionPeriodSubmitted =
+        createRequisitionPeriod(requisitionId, SUBMITTED, currentPeriod.getId());
 
-    doReturn(singletonList(requisitionIdSubmittedStatusMap))
+    doReturn(singletonList(requisitionPeriodSubmitted))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -184,8 +135,8 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnCurrentPeriodsIfThereIsMoreThanOne() throws Exception {
-    Map<UUID, RequisitionStatus> requisitionIdSubmittedStatusMap = new HashMap<>();
-    requisitionIdSubmittedStatusMap.put(UUID.randomUUID(), SUBMITTED);
+    RequisitionPeriod requisitionPeriodSubmitted =
+        createRequisitionPeriod(requisitionId, SUBMITTED, currentPeriod.getId());
 
     ProcessingPeriodDto period6 = new ProcessingPeriodDtoDataBuilder()
         .withStartDate(currentPeriod.getStartDate())
@@ -196,12 +147,12 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    doReturn(singletonList(requisitionIdSubmittedStatusMap))
+    doReturn(singletonList(requisitionPeriodSubmitted))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdSubmittedStatusMap))
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
+    doReturn(singletonList(requisitionPeriodSubmitted))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period6.getId(), facilityId, programId, false);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -223,7 +174,7 @@ public class PeriodServiceTest {
 
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -245,16 +196,16 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldReturnCurrentPeriodIfThereIsNonSubmittedRequisition() throws Exception {
-    Map<UUID, RequisitionStatus> requisitionIdInitiatedStatusMap = new HashMap<>();
-    requisitionIdSubmittedStatusMap.put(UUID.randomUUID(), INITIATED);
+    RequisitionPeriod requisitionPeriodInitiated =
+        createRequisitionPeriod(requisitionId, INITIATED, currentPeriod.getId());
 
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    doReturn(singletonList(requisitionIdInitiatedStatusMap))
+    doReturn(singletonList(requisitionPeriodInitiated))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -272,39 +223,48 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Map<UUID, RequisitionStatus> requisitionIdInitiatedStatusMap1 = new HashMap<>();
-    requisitionIdInitiatedStatusMap1.put(UUID.randomUUID(), INITIATED);
-    Map<UUID, RequisitionStatus> requisitionIdInitiatedStatusMap2 = new HashMap<>();
-    requisitionIdInitiatedStatusMap2.put(UUID.randomUUID(), INITIATED);
-    Map<UUID, RequisitionStatus> requisitionIdSubmittedStatusMap = new HashMap<>();
-    requisitionIdSubmittedStatusMap.put(UUID.randomUUID(), SUBMITTED);
-    Map<UUID, RequisitionStatus> requisitionIdAuthorizedStatusMap = new HashMap<>();
-    requisitionIdAuthorizedStatusMap.put(UUID.randomUUID(), AUTHORIZED);
-    Map<UUID, RequisitionStatus> requisitionIdApprovedStatusMap = new HashMap<>();
-    requisitionIdApprovedStatusMap.put(UUID.randomUUID(), APPROVED);
+    RequisitionPeriod requisitionPeriodInitiated1 =
+        createRequisitionPeriod(UUID.randomUUID(), INITIATED, currentPeriod.getId());
+    RequisitionPeriod requisitionPeriodInitiated2 =
+        createRequisitionPeriod(UUID.randomUUID(), INITIATED, period1.getId());
+    RequisitionPeriod requisitionPeriodSubmitted =
+        createRequisitionPeriod(UUID.randomUUID(), SUBMITTED, period2.getId());
+    RequisitionPeriod requisitionPeriodAuthorized =
+        createRequisitionPeriod(UUID.randomUUID(), AUTHORIZED, period3.getId());
+    RequisitionPeriod requisitionPeriodApproved =
+        createRequisitionPeriod(UUID.randomUUID(), APPROVED, period4.getId());
 
-    doReturn(singletonList(requisitionIdInitiatedStatusMap1))
+    doReturn(false)
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdInitiatedStatusMap2))
+        .existsByIdAndProcessingPeriodId(requisitionPeriodInitiated1.getRequisitionId(),
+            currentPeriod.getId());
+    doReturn(true)
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period1.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdSubmittedStatusMap))
+        .existsByIdAndProcessingPeriodId(requisitionPeriodInitiated2.getRequisitionId(),
+            period1.getId());
+    doReturn(true)
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period2.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdAuthorizedStatusMap))
+        .existsByIdAndProcessingPeriodId(requisitionPeriodSubmitted.getRequisitionId(),
+            period2.getId());
+    doReturn(true)
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period3.getId(), facilityId, programId, false);
-    doReturn(singletonList(requisitionIdApprovedStatusMap))
+        .existsByIdAndProcessingPeriodId(requisitionPeriodAuthorized.getRequisitionId(),
+            period3.getId());
+    doReturn(true)
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(period4.getId(), facilityId, programId, false);
+        .existsByIdAndProcessingPeriodId(requisitionPeriodApproved.getRequisitionId(),
+            period4.getId());
+
+    doReturn(Arrays.asList(requisitionPeriodInitiated1, requisitionPeriodInitiated2,
+        requisitionPeriodSubmitted, requisitionPeriodAuthorized, requisitionPeriodApproved))
+        .when(requisitionRepository)
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
 
-    verify(requisitionRepository, times(5))
-        .searchRequisitionIdAndStatusPairs(
-            any(UUID.class), any(UUID.class), any(UUID.class), any());
+    verify(requisitionRepository, times(1))
+        .searchRequisitionIdAndStatusPairs(any(UUID.class), any(UUID.class), any());
 
     assertNotNull(periods);
     assertEquals(3, periods.size());
@@ -325,18 +285,12 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    UUID requisitionId = UUID.randomUUID();
-    Map<UUID, RequisitionStatus> requisitionIdStatusMap = new HashMap<>();
-    requisitionIdStatusMap.put(requisitionId, INITIATED);
+    RequisitionPeriod requisitionPeriodInitiated =
+        createRequisitionPeriod(requisitionId, INITIATED, currentPeriod.getId());
 
-    doReturn(true)
+    doReturn(singletonList(requisitionPeriodInitiated))
         .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            currentPeriod.getId(), facilityId, programId, false);
-
-    doReturn(singletonList(requisitionIdStatusMap))
-        .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, false);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, false);
 
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, false);
@@ -344,17 +298,8 @@ public class PeriodServiceTest {
     assertNotNull(periods);
     assertThat(periods, hasSize(1));
     RequisitionPeriodDto period = periods.iterator().next();
-    assertEquals(period.getRequisitionId(), requisitionIdStatusMap.keySet()
-        .stream()
-        .findFirst()
-        .orElse(null));
-    assertEquals(period.getRequisitionStatus(), requisitionIdStatusMap.entrySet()
-        .stream()
-        .findFirst()
-        .get()
-        .getValue());
-    assertEquals(period.getRequisitionStatus(),
-        requisitionIdStatusMap.get(period.getRequisitionId()));
+    assertEquals(period.getRequisitionId(), requisitionPeriodInitiated.getRequisitionId());
+    assertEquals(period.getRequisitionStatus(), requisitionPeriodInitiated.getRequisitionStatus());
   }
 
   @Test
@@ -363,19 +308,14 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-            currentPeriod.getId(), facilityId, programId, true);
+    RequisitionPeriod requisitionPeriodInitiated =
+        createRequisitionPeriod(UUID.randomUUID(), INITIATED, currentPeriod.getId());
+    RequisitionPeriod requisitionPeriodSubmitted =
+        createRequisitionPeriod(UUID.randomUUID(), SUBMITTED, currentPeriod.getId());
 
-    Map<UUID, RequisitionStatus> requisitionIdInitiatedStatusMap = new HashMap<>();
-    Map<UUID, RequisitionStatus> requisitionIdSubmittedStatusMap = new HashMap<>();
-    requisitionIdInitiatedStatusMap.put(UUID.randomUUID(), INITIATED);
-    requisitionIdSubmittedStatusMap.put(UUID.randomUUID(), SUBMITTED);
-
-    doReturn(Arrays.asList(requisitionIdInitiatedStatusMap, requisitionIdSubmittedStatusMap))
+    doReturn(Arrays.asList(requisitionPeriodInitiated, requisitionPeriodSubmitted))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, true);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, true);
 
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, true);
@@ -390,8 +330,8 @@ public class PeriodServiceTest {
         .stream()
         .map(RequisitionPeriodDto::getRequisitionId)
         .collect(Collectors.toList());
-    assertTrue(requisitionIds.contains(requisitionIdInitiatedStatusMap
-        .entrySet().stream().findAny().get().getKey()));
+    assertTrue(requisitionIds.contains(requisitionPeriodInitiated.getRequisitionId()));
+    assertTrue(requisitionIds.contains(requisitionPeriodSubmitted.getRequisitionId()));
     // should allow to initiate another requisition for the same period
     assertTrue(requisitionIds.contains(null));
   }
@@ -402,15 +342,14 @@ public class PeriodServiceTest {
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
 
-    Map<UUID, RequisitionStatus> requisitionIdApprovedStatusMap = new HashMap<>();
-    requisitionIdApprovedStatusMap.put(UUID.randomUUID(), APPROVED);
+    RequisitionPeriod requisitionPeriodApproved =
+        createRequisitionPeriod(UUID.randomUUID(), APPROVED, currentPeriod.getId());
+    RequisitionPeriod requisitionPeriodReleased =
+        createRequisitionPeriod(UUID.randomUUID(), RELEASED, currentPeriod.getId());
 
-    Map<UUID, RequisitionStatus> requisitionIdReleasedStatusMap = new HashMap<>();
-    requisitionIdApprovedStatusMap.put(UUID.randomUUID(), RELEASED);
-
-    doReturn(Arrays.asList(requisitionIdApprovedStatusMap, requisitionIdReleasedStatusMap))
+    doReturn(Arrays.asList(requisitionPeriodApproved, requisitionPeriodReleased))
         .when(requisitionRepository)
-        .searchRequisitionIdAndStatusPairs(currentPeriod.getId(), facilityId, programId, true);
+        .searchRequisitionIdAndStatusPairs(facilityId, programId, true);
 
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, true);
@@ -630,6 +569,11 @@ public class PeriodServiceTest {
     return new RequisitionDataBuilder()
         .withStatus(status)
         .build();
+  }
+
+  private RequisitionPeriod createRequisitionPeriod(UUID requisitionId, RequisitionStatus status,
+      UUID periodId) {
+    return new RequisitionPeriod(requisitionId, status, periodId);
   }
 
   private void mockRequisitionFound(

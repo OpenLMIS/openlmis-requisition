@@ -63,6 +63,5 @@ public interface RequisitionRepository extends
   )
   boolean existsByOriginalRequisitionId(@Param("originalRequisitionId") UUID originalRequisitionId);
 
-  boolean existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-      UUID periodId, UUID facilityId, UUID programId, boolean emergency);
+  boolean existsByIdAndProcessingPeriodId(UUID id, UUID periodId);
 }

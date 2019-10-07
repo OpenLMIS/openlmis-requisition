@@ -54,6 +54,7 @@ import org.hibernate.type.PostgresUUIDType;
 import org.hibernate.type.ZonedDateTimeType;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionPermissionString;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
@@ -174,46 +175,36 @@ public class RequisitionRepositoryImpl
   /**
    * Method returns all ids and statues of requisitions with matched parameters.
    *
-   * @param processingPeriod ProcessingPeriod of searched Requisitions.
    * @param emergency        if {@code true}, the method will look only for emergency requisitions,
    *                         if {@code false}, the method will look only for standard requisitions,
    *                         if {@code null} the method will check all requisitions.
    * @return List of Map of UUID and Requisition Status with matched parameters.
    */
   @Override
-  public List<Map<UUID, RequisitionStatus>> searchRequisitionIdAndStatusPairs(
-      UUID processingPeriod, UUID facility, UUID program, Boolean emergency) {
+  public List<RequisitionPeriod> searchRequisitionIdAndStatusPairs(UUID facility,
+      UUID program, Boolean emergency) {
     CriteriaBuilder builder = getCriteriaBuilder();
 
     Profiler profiler = new Profiler("SEARCH_REQUISITION_ID_STATUS");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("PREPARE_TUPLE_QUERY");
-    CriteriaQuery<Tuple> query = builder.createTupleQuery();
+    CriteriaQuery<RequisitionPeriod> query = builder.createQuery(RequisitionPeriod.class);
     Root<Requisition> root = query.from(Requisition.class);
-    query.multiselect(root.get("id"), root.get(STATUS));
+    query.multiselect(root.get("id"), root.get(STATUS), root.get(PROCESSING_PERIOD_ID));
 
     Predicate predicate = builder.conjunction();
     predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
-    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriod);
     predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
     predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, program);
     query.where(predicate);
 
-    profiler.start("EXECUTE_TUPLE_QUERY");
-    List<Tuple> tupleResult = entityManager.createQuery(query).getResultList();
+    profiler.start("EXECUTE_QUERY_TO_FIND_REQUISITION_PERIODS");
+    List<RequisitionPeriod> requisitionIdStatusList = entityManager.createQuery(query)
+        .getResultList();
 
-    profiler.start("CONVERT_TUPLE_LIST_TO_REQUISITION_ID_STATUS_MAP");
-    Map<UUID, RequisitionStatus> requisitionIdStatusPairs =
-        convertTupleListToRequisitionIdAndStatusMap(tupleResult);
-
-    profiler.start("ADD_REQUISITION_ID_STATUS_MAP_TO_LIST");
-    List<Map<UUID, RequisitionStatus>> requisitionIdStatusPairsList = new ArrayList<>();
-    requisitionIdStatusPairsList.add(requisitionIdStatusPairs);
-
-    XLOGGER.exit(requisitionIdStatusPairsList);
+    XLOGGER.exit(requisitionIdStatusList);
     profiler.stop().log();
-    return requisitionIdStatusPairsList;
+    return requisitionIdStatusList;
   }
 
   /**

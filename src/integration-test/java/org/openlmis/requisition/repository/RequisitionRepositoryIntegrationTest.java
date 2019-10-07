@@ -65,6 +65,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
@@ -351,16 +352,13 @@ public class RequisitionRepositoryIntegrationTest
   @Test
   public void testSearchRequisitionIdStatusPairsByPeriodAndEmergencyFlag() {
     requisitions.forEach(requisition -> {
-      List<Map<UUID, RequisitionStatus>> found = repository.searchRequisitionIdAndStatusPairs(
-          requisition.getProcessingPeriodId(), requisition.getFacilityId(), requisition
-              .getProgramId(), requisition.getEmergency()
+      List<RequisitionPeriod> found = repository.searchRequisitionIdAndStatusPairs(
+          requisition.getFacilityId(), requisition.getProgramId(), requisition.getEmergency()
       );
 
       found.forEach(element -> {
-        assertEquals(requisition.getStatus(), element.entrySet().stream()
-            .findFirst().get().getValue());
-        assertEquals(requisition.getId(), element.entrySet()
-            .stream().findFirst().get().getKey());
+        assertEquals(requisition.getStatus(), element.getRequisitionStatus());
+        assertEquals(requisition.getId(), element.getRequisitionId());
       });
     });
   }
@@ -1050,15 +1048,13 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldReturnFalseIfThereAreNoIdStatusPairsWithGivenPeriodFacilityProgram() {
+  public void shouldReturnFalseIfThereIsNoRequisitionForPeriod() {
     // given
-    UUID facilityId = UUID.randomUUID();
-    UUID programId = UUID.randomUUID();
+    UUID requisitionId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
 
     // when
-    boolean exists = repository.existsByProcessingPeriodIdAndFacilityIdAndProgramIdAndEmergency(
-        periodId, facilityId, programId, false);
+    boolean exists = repository.existsByIdAndProcessingPeriodId(requisitionId, periodId);
 
     // then
     assertThat(exists, is(false));
