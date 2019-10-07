@@ -16,22 +16,14 @@
 package org.openlmis.requisition.repository;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTHORIZED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.IN_APPROVAL;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.REJECTED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIPPED;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
-import com.google.common.collect.Lists;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -39,7 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
-import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
@@ -95,7 +86,12 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
           .withDraftStatusMessage("draft status message " + nextInstanceNumber)
           .buildAsNew();
 
-    addStatusChanges(requisition, 0);
+    StatusChange statusChange = new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withStatus(INITIATED)
+        .buildAsNew();
+
+    requisition.getStatusChanges().add(statusChange);
 
     StockAdjustmentReason reason = generateStockAdjustmentReason();
     requisition.setStockAdjustmentReasons(newArrayList(reason));
@@ -105,109 +101,11 @@ public abstract class BaseRequisitionRepositoryIntegrationTest extends
     return requisition;
   }
 
-  protected StockAdjustmentReason generateStockAdjustmentReason() {
-    StockAdjustmentReason reason = new StockAdjustmentReasonDataBuilder()
+  private StockAdjustmentReason generateStockAdjustmentReason() {
+    return new StockAdjustmentReasonDataBuilder()
         .withIsFreeTextAllowed(false)
         .withName(RandomStringUtils.random(5))
         .build();
-    return reason;
   }
 
-  /**
-   * Adds status changes for the given requisition.
-   *
-   * @param requisition the given requisition
-   * @param rejectedCount define how many times the given requisition should be rejected. Zero means
-   *                      that the given requisition will not have rejected status change.
-   */
-  void addStatusChanges(Requisition requisition, int rejectedCount) {
-    requisition.setStatusChanges(Lists.newArrayList());
-
-    if (requisition.getStatus() == RequisitionStatus.INITIATED) {
-      addStatusChangesForInitiatedRequisition(requisition);
-    } else if (requisition.getStatus() == RequisitionStatus.SKIPPED) {
-      addStatusChangesForSkippedRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.REJECTED) {
-      addStatusChangesForRejectedRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.SUBMITTED) {
-      addStatusChangesForSubmittedRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.AUTHORIZED) {
-      addStatusChangesForAuthorizedRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.IN_APPROVAL) {
-      addStatusChangesForInApprovalRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.APPROVED) {
-      addStatusChangesForApprovedRequisition(requisition, rejectedCount);
-    } else if (requisition.getStatus() == RequisitionStatus.RELEASED
-        || requisition.getStatus() == RequisitionStatus.RELEASED_WITHOUT_ORDER) {
-      addStatusChangesForReleasedRequisition(requisition, rejectedCount);
-    }
-  }
-
-  private void addStatusChangesForInitiatedRequisition(Requisition requisition) {
-    addStatusChange(requisition, INITIATED);
-  }
-
-  private void addStatusChangesForRejectedRequisition(Requisition requisition,
-      int rejectedCount) {
-    addStatusChangesForInitiatedRequisition(requisition);
-
-    for (int i = 0; i < rejectedCount; ++i) {
-      addStatusChange(requisition, SUBMITTED);
-      addStatusChange(requisition, AUTHORIZED);
-      addStatusChange(requisition, IN_APPROVAL);
-      addStatusChange(requisition, REJECTED);
-    }
-  }
-
-  private void addStatusChangesForSkippedRequisition(Requisition requisition,
-      int rejectedCount) {
-    addStatusChangesForRejectedRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, SKIPPED);
-  }
-
-  private void addStatusChangesForSubmittedRequisition(Requisition requisition,
-      int rejectedCount) {
-    addStatusChangesForRejectedRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, SUBMITTED);
-  }
-
-  private void addStatusChangesForAuthorizedRequisition(Requisition requisition,
-      int rejectedCount) {
-    addStatusChangesForSubmittedRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, AUTHORIZED);
-  }
-
-  private void addStatusChangesForInApprovalRequisition(Requisition requisition,
-      int rejectedCount) {
-    addStatusChangesForAuthorizedRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, IN_APPROVAL);
-  }
-
-  private void addStatusChangesForApprovedRequisition(Requisition requisition, int rejectedCount) {
-    addStatusChangesForInApprovalRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, APPROVED);
-  }
-
-  private void addStatusChangesForReleasedRequisition(Requisition requisition, int rejectedCount) {
-    addStatusChangesForApprovedRequisition(requisition, rejectedCount);
-    addStatusChange(requisition, requisition.getStatus());
-  }
-
-  private void addStatusChange(Requisition requisition, RequisitionStatus status) {
-    StatusChange statusChange = new StatusChangeDataBuilder()
-        .withRequisition(requisition)
-        .withStatus(status)
-        .buildAsNew();
-
-    requisition.getStatusChanges().add(statusChange);
-
-    try {
-      // we use createdDate which is set automatically before saving into the database
-      // because of that we wait some time between statuses.
-      TimeUnit.MILLISECONDS.sleep(10);
-    } catch (InterruptedException exp) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException(exp);
-    }
-  }
 }

@@ -90,7 +90,7 @@ public class RequisitionRepositoryIntegrationTest
     extends BaseRequisitionRepositoryIntegrationTest {
 
   private List<Requisition> requisitions;
-  
+
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
@@ -521,7 +521,7 @@ public class RequisitionRepositoryIntegrationTest
     UUID programId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
 
-    Requisition requisition1 =  generateInstance(facilityId, programId, periodId);
+    Requisition requisition1 = generateInstance(facilityId, programId, periodId);
     requisition1.setSupervisoryNodeId(supervisoryNodeId);
 
     Requisition requisition2 = generateInstance(facilityId, programId, periodId);
@@ -541,7 +541,7 @@ public class RequisitionRepositoryIntegrationTest
     UUID programId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
 
-    Requisition regularRequisition =  generateInstance(facilityId, programId, periodId);
+    Requisition regularRequisition = generateInstance(facilityId, programId, periodId);
     Requisition emergencyRequisition1 = generateInstance(facilityId, programId, periodId);
     Requisition emergencyRequisition2 = generateInstance(facilityId, programId, periodId);
 
@@ -553,7 +553,7 @@ public class RequisitionRepositoryIntegrationTest
 
     entityManager.flush();
   }
-  
+
   @Test
   public void searchByProgramSupervisoryNodePairsShouldFindIfIdsAndStatusMatch() {
     // given
@@ -564,14 +564,63 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setProgramId(programId);
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
-    addStatusChanges(matchingRequisition1, 4);
-    repository.save(matchingRequisition1);
+
+    // simulation that the requisition has been rejected 4 times
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
     matchingRequisition2.setProgramId(programId);
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
-    addStatusChanges(matchingRequisition2, 3);
+
+    // simulation that the requisition has been rejected 3 times
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
     repository.save(matchingRequisition2);
 
     Set<Pair<UUID, UUID>> programNodePairs =
@@ -580,7 +629,7 @@ public class RequisitionRepositoryIntegrationTest
     // when
     Page<Requisition> results = repository
         .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
-    
+
     // then
     assertEquals(2, results.getTotalElements());
   }
@@ -596,16 +645,37 @@ public class RequisitionRepositoryIntegrationTest
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
     matchingRequisition1.setEmergency(false);
-    addStatusChanges(matchingRequisition1, 2);
-    repository.save(matchingRequisition1);
+    matchingRequisition1.getStatusChanges().clear();
+
+    // simulation that the requisition has been rejected 2 times
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
 
     Requisition matchingRequisition2 = requisitions.get(1);
     matchingRequisition2.setProgramId(programId);
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
     matchingRequisition2.setEmergency(true);
-    addStatusChanges(matchingRequisition2, 0);
-    repository.save(matchingRequisition2);
+    matchingRequisition2.getStatusChanges().clear();
+
+    // simulation that the requisition has not been rejected
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
 
     Set<Pair<UUID, UUID>> programNodePairs =
         singleton(new ImmutablePair<>(programId, supervisoryNodeId));
@@ -767,15 +837,15 @@ public class RequisitionRepositoryIntegrationTest
 
     Set<Pair<UUID, UUID>> programNodePairs =
         singleton(new ImmutablePair<>(programId, supervisoryNodeId));
-    
+
     // when
     Page<Requisition> results = repository
         .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
-    
+
     // then
     assertEquals(0, results.getTotalElements());
   }
-  
+
   @Test
   public void searchByProgramSupervisoryNodePairsShouldNotFindIfStatusDoesNotMatch() {
     // given

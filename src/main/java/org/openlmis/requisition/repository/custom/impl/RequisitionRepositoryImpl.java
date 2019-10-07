@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -47,7 +46,6 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SQLQuery;
-import org.hibernate.annotations.QueryHints;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.LongType;
 import org.hibernate.type.PostgresUUIDType;
@@ -283,10 +281,6 @@ public class RequisitionRepositoryImpl
       return page;
     }
 
-    profiler.start("CREATE_ENTITY_GRAPH");
-    EntityGraph graph = entityManager.createEntityGraph(Requisition.class);
-    graph.addSubgraph(Requisition.STATUS_CHANGES);
-
     profiler.start("GET_MAX_AND_FIRST");
     final Pair<Integer, Integer> maxAndFirst = PageableUtil.querysMaxAndFirstResult(pageable);
 
@@ -296,7 +290,6 @@ public class RequisitionRepositoryImpl
 
     profiler.start("EXECUTE_MAIN_QUERY");
     List<Requisition> requisitions = entityManager.createQuery(query)
-        .setHint(QueryHints.LOADGRAPH, graph)
         .setMaxResults(maxAndFirst.getLeft())
         .setFirstResult(maxAndFirst.getRight())
         .getResultList();
@@ -418,15 +411,13 @@ public class RequisitionRepositoryImpl
     if (isCountQuery) {
       CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
       query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
-    } else {
-      query.distinct(true);
     }
 
     Predicate pairPredicate = createProgramNodePairPredicate(builder, root, programNodePairs);
 
-    Predicate statusPredicate = builder.or(
-        builder.equal(root.get(STATUS), RequisitionStatus.AUTHORIZED),
-        builder.equal(root.get(STATUS), RequisitionStatus.IN_APPROVAL));
+    Predicate statusPredicate = root
+        .get(STATUS)
+        .in(RequisitionStatus.AUTHORIZED, RequisitionStatus.IN_APPROVAL);
 
     Predicate predicate = builder.and(pairPredicate, statusPredicate);
 
@@ -439,6 +430,7 @@ public class RequisitionRepositoryImpl
           builder.equal(subRoot.get(STATUS), RequisitionStatus.AUTHORIZED),
           builder.equal(subRoot.get("requisition"), root)));
 
+      // partner requisitions (in the IN_APPROVAL status) does not have status changes
       ListJoin<Object, Object> statusChanges = root
           .joinList(Requisition.STATUS_CHANGES, JoinType.LEFT);
 
