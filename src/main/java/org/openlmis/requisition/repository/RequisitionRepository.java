@@ -62,6 +62,4 @@ public interface RequisitionRepository extends
       nativeQuery = true
   )
   boolean existsByOriginalRequisitionId(@Param("originalRequisitionId") UUID originalRequisitionId);
-
-  boolean existsByIdAndProcessingPeriodId(UUID id, UUID periodId);
 }

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -127,7 +126,7 @@ public class PeriodService {
     List<RequisitionPeriod> requisitionIdStatusList = requisitionRepository
         .searchRequisitionIdAndStatusPairs(facility, program, emergency);
 
-    profiler.start("BUILD_REQUISITION_PERIOD_DTO");
+    profiler.start("BUILD_REQUISITION_PERIOD_DTOS");
     List<RequisitionPeriodDto> periodDtos = periods.stream()
         .map(RequisitionPeriodDto::newInstance)
         .collect(Collectors.toList());
@@ -152,27 +151,17 @@ public class PeriodService {
       );
     } else {
       profiler.start("GET_PREAUTHORIZE_PERIODS_FOR_REGULAR_REQUISITIONS");
-      requisitionIdStatusList.forEach(requisitionPeriod -> {
-        Optional<RequisitionPeriodDto> preauthorizeRequisitionPeriod = periodDtos.stream()
-            .filter(period -> requisitionExistsForGivenPeriod(
-                requisitionPeriod.getRequisitionId(), period.getId())
-                && requisitionPeriod.getRequisitionStatus().isPreAuthorize())
-            .findFirst();
-
-        preauthorizeRequisitionPeriod.ifPresent(period ->
-            requisitionPeriods.add(preauthorizeRequisitionPeriod.get())
-        );
-      });
-
-      profiler.start("GET_NOT_EXISTING_PERIODS_FOR_REGULAR_REQUISITIONS");
-      List<RequisitionPeriodDto> notExistingRequisitionPeriods = periodDtos.stream()
-          .filter(period ->
-              requisitionIdStatusList.stream()
-                  .noneMatch(requisitionPeriod -> requisitionExistsForGivenPeriod(
-                      requisitionPeriod.getRequisitionId(), period.getId()))
-          )
+      requisitionPeriods.addAll(periodDtos);
+      List<RequisitionPeriod> postAuthorizeRequisitionsPeriods = requisitionIdStatusList.stream()
+          .filter(requisitionPeriod ->  !requisitionPeriod.getRequisitionStatus().isPreAuthorize())
           .collect(Collectors.toList());
-      requisitionPeriods.addAll(notExistingRequisitionPeriods);
+
+      postAuthorizeRequisitionsPeriods.forEach(postAuthorizeRequisitionPeriod -> requisitionPeriods
+            .stream()
+            .filter(period -> period.getId().equals(postAuthorizeRequisitionPeriod.getPeriodId()))
+            .findFirst()
+            .ifPresent(requisitionPeriods::remove)
+      );
 
       profiler.start("SET_REQUISITION_ID_AND_STATUS_FOR_REQUISITION_PERIODS");
       requisitionPeriods.forEach(requisitionPeriodDto -> requisitionIdStatusList
@@ -317,10 +306,6 @@ public class PeriodService {
     }
 
     return result;
-  }
-
-  private boolean requisitionExistsForGivenPeriod(UUID requisitionId, UUID periodId) {
-    return requisitionRepository.existsByIdAndProcessingPeriodId(requisitionId, periodId);
   }
 
   private void setRequisitionPeriodStatusAndId(RequisitionPeriodDto requisitionPeriodDto,

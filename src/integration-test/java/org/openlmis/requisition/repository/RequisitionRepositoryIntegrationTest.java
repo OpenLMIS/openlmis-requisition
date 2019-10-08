@@ -1117,19 +1117,6 @@ public class RequisitionRepositoryIntegrationTest
     assertThat(result, is(false));
   }
 
-  @Test
-  public void shouldReturnFalseIfThereIsNoRequisitionForPeriod() {
-    // given
-    UUID requisitionId = UUID.randomUUID();
-    UUID periodId = UUID.randomUUID();
-
-    // when
-    boolean exists = repository.existsByIdAndProcessingPeriodId(requisitionId, periodId);
-
-    // then
-    assertThat(exists, is(false));
-  }
-
   private RequisitionLineItem generateLineItem(Requisition requisition) {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
         .withRequisition(requisition)

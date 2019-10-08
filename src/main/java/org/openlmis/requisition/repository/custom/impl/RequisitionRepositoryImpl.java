@@ -22,7 +22,6 @@ import com.google.common.base.Joiner;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -595,17 +593,5 @@ public class RequisitionRepositoryImpl
       return String.format("r.supervisoryNodeId = '%s'", supervisoryNodeId);
     }
     return "";
-  }
-
-  private Map<UUID, RequisitionStatus> convertTupleListToRequisitionIdAndStatusMap(
-      List<Tuple> tupleResult) {
-    Map<UUID, RequisitionStatus> requisitionsIdsAndStatusPairs = new HashMap<>();
-    for (Tuple t : tupleResult) {
-      UUID requisitionId = (UUID) t.get(0);
-      RequisitionStatus requisitionStatus = (RequisitionStatus) t.get(1);
-      requisitionsIdsAndStatusPairs.put(requisitionId, requisitionStatus);
-    }
-
-    return requisitionsIdsAndStatusPairs;
   }
 }

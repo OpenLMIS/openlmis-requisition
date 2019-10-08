@@ -234,27 +234,6 @@ public class PeriodServiceTest {
     RequisitionPeriod requisitionPeriodApproved =
         createRequisitionPeriod(UUID.randomUUID(), APPROVED, period4.getId());
 
-    doReturn(false)
-        .when(requisitionRepository)
-        .existsByIdAndProcessingPeriodId(requisitionPeriodInitiated1.getRequisitionId(),
-            currentPeriod.getId());
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByIdAndProcessingPeriodId(requisitionPeriodInitiated2.getRequisitionId(),
-            period1.getId());
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByIdAndProcessingPeriodId(requisitionPeriodSubmitted.getRequisitionId(),
-            period2.getId());
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByIdAndProcessingPeriodId(requisitionPeriodAuthorized.getRequisitionId(),
-            period3.getId());
-    doReturn(true)
-        .when(requisitionRepository)
-        .existsByIdAndProcessingPeriodId(requisitionPeriodApproved.getRequisitionId(),
-            period4.getId());
-
     doReturn(Arrays.asList(requisitionPeriodInitiated1, requisitionPeriodInitiated2,
         requisitionPeriodSubmitted, requisitionPeriodAuthorized, requisitionPeriodApproved))
         .when(requisitionRepository)
