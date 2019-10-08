@@ -150,12 +150,14 @@ public class PeriodService {
           })
       );
     } else {
-      profiler.start("GET_PREAUTHORIZE_PERIODS_FOR_REGULAR_REQUISITIONS");
       requisitionPeriods.addAll(periodDtos);
+
+      profiler.start("GET_POSTAUTHORIZE_PERIODS_FOR_REGULAR_REQUISITIONS");
       List<RequisitionPeriod> postAuthorizeRequisitionsPeriods = requisitionIdStatusList.stream()
           .filter(requisitionPeriod ->  !requisitionPeriod.getRequisitionStatus().isPreAuthorize())
           .collect(Collectors.toList());
 
+      profiler.start("REMOVE_POSTAUTHORIZE_PERIODS_FROM_REQUISITION_PERIODS");
       postAuthorizeRequisitionsPeriods.forEach(postAuthorizeRequisitionPeriod -> requisitionPeriods
             .stream()
             .filter(period -> period.getId().equals(postAuthorizeRequisitionPeriod.getPeriodId()))
