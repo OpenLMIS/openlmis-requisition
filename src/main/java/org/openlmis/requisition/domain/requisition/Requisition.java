@@ -133,6 +133,7 @@ public class Requisition extends BaseTimestampedEntity {
   static final String EXTRA_DATA_ORIGINAL_REQUISITION_ID = "originalRequisition";
 
   private static final int LINE_ITEMS_BATCH_SIZE = 100;
+  private static final int AVAILABLE_PRODUCTS_BATCH_SIZE = 1000;
 
   @OneToMany(
       mappedBy = "requisition",
@@ -226,7 +227,8 @@ public class Requisition extends BaseTimestampedEntity {
   @Setter
   private List<Requisition> previousRequisitions;
 
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.LAZY)
+  @BatchSize(size = AVAILABLE_PRODUCTS_BATCH_SIZE)
   @CollectionTable(name = "available_products", joinColumns = @JoinColumn(name = "requisitionId"))
   @Getter
   @Setter
