@@ -51,7 +51,7 @@ scenarios:
                     log.info(prev.getResponseDataAsString())
               - url: ${__P(base-uri)}/api/requisitions/${id}
                 method: GET
-                abel: GetRequisitionToUpdate
+                label: GetRequisitionToUpdate
                 headers:
                   Authorization: Bearer ${access_token}
                   Content-Type: application/json
