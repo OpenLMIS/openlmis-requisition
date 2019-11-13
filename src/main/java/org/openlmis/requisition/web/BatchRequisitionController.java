@@ -490,16 +490,19 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private void setNullForCalculatedFields(Requisition requisition) {
     for (RequisitionLineItem lineItem : requisition.getRequisitionLineItems()) {
       for (RequisitionTemplateColumn column : requisition.getTemplate().viewColumns().values()) {
-        if (isFalse(column.getIsDisplayed()) && ("pricePerPack".equals(column.getName())
-              || "orderable.dispensable.displayUnit".equals(column.getName())
-              || "orderable.productCode".equals(column.getName()))) {
-          continue;
-        }
-        if (isFalse(column.getIsDisplayed()) || column.getSource() == SourceType.CALCULATED) {
+        if (getColumnDisplayConditions(column)) {
           setNullForField(lineItem, column);
         }
       }
     }
+  }
+
+  private boolean getColumnDisplayConditions(RequisitionTemplateColumn column) {
+
+    return (isFalse(column.getIsDisplayed()) && !("pricePerPack".equals(column.getName())
+            || "orderable.dispensable.displayUnit".equals(column.getName())
+            || "orderable.productCode".equals(column.getName())))
+            || column.getSource() == SourceType.CALCULATED;
   }
 
   private void setNullForField(RequisitionLineItem lineItem, RequisitionTemplateColumn column) {
