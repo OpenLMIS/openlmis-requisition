@@ -307,7 +307,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     setExtraData(original.getExtraData());
 
-    System.out.println("Available Products size1: " + original.availableProducts.size());
     permissionStrings = original
         .permissionStrings
         .stream()
