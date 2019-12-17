@@ -373,15 +373,6 @@ public class Requisition extends BaseTimestampedEntity {
         .map(RequisitionLineItem::getFacilityTypeApprovedProduct)
         .collect(Collectors.toSet());
 
-    if (emergency) {
-      Optional
-          .ofNullable(availableProducts)
-          .orElse(Collections.emptySet())
-          .stream()
-          .map(ApprovedProductReference::getFacilityTypeApprovedProduct)
-          .forEach(approvedProductIdentities::add);
-    }
-
     return approvedProductIdentities;
   }
 
@@ -404,8 +395,10 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.start("UPDATE_LINE_ITEMS");
     updateReqLines(requisition.getRequisitionLineItems());
 
-    profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-    calculateAndValidateTemplateFields(this.template, products, approvedProducts);
+    if (!emergency) {
+      profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
+      calculateAndValidateTemplateFields(this.template, products, approvedProducts);
+    }
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
