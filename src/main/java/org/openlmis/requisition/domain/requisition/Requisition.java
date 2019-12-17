@@ -366,14 +366,12 @@ public class Requisition extends BaseTimestampedEntity {
    * Returns a set of all approved product identities in this requisition.
    */
   public Set<VersionEntityReference> getAllApprovedProductIdentities() {
-    Set<VersionEntityReference> approvedProductIdentities = Optional
+    return Optional
         .ofNullable(requisitionLineItems)
         .orElse(Collections.emptyList())
         .stream()
         .map(RequisitionLineItem::getFacilityTypeApprovedProduct)
         .collect(Collectors.toSet());
-
-    return approvedProductIdentities;
   }
 
   /**
