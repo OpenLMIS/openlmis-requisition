@@ -1,3 +1,11 @@
+8.2.1 / WIP
+==================
+Improvements:
+* [OLMIS-6707](https://openlmis.atlassian.net/browse/OLMIS-6707): Changed fetching FTAPs only for regular Requisition Line Items rather than for all available products.
+
+Bug fixes:
+* [OLMIS-6671](https://openlmis.atlassian.net/browse/OLMIS-6671): Changed setNullForCalculatedFields to fix error with saving many requisitions when a template column is hidden.
+
 8.2.0 / 2019-10-17
 ==================
 
@@ -21,7 +29,6 @@ Bug fixes:
 * [OLMIS-6379](https://openlmis.atlassian.net/browse/OLMIS-6379): Fixed bug with submit requisition when column is hidden and source is stock cards.
 * [OLMIS-6429](https://openlmis.atlassian.net/browse/OLMIS-6429): Marked `GET api/requisitions/submitted` endpoint as deprecated
 * [OLMIS-6597](https://openlmis.atlassian.net/browse/OLMIS-6597): Fixed issue with deserializing JSONs that it stores in the jv_snapshot table.
-* [OLMIS-6671](https://openlmis.atlassian.net/browse/OLMIS-6671): Changed setNullForCalculatedFields to fix error with saving many requisitions when a template column is hidden.
 
 8.0.0 / 2019-05-27
 ==================
