@@ -1,4 +1,4 @@
-8.2.1 / WIP
+8.2.1 / 2019-12-19
 ==================
 Improvements:
 * [OLMIS-6707](https://openlmis.atlassian.net/browse/OLMIS-6707): Changed fetching FTAPs only for regular Requisition Line Items rather than for all available products.
