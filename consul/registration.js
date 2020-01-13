@@ -174,16 +174,17 @@ function RegistrationService(host, port) {
 
   self.register = function(args) {
     console.log("Registering service...");
-    registrationBase(args, 'register');
+    registrationBase(args);
     console.log("Registration finished!");
   }
   self.deregister = function(args) {
     console.log("Deregistering service...");
-    registrationBase(args, 'deregister');
+    deregistrationBase(args);
     console.log("Deregistration finished!");
   }
 
-  function registrationBase(args, mode) {
+  function registrationBase(args) {
+    var mode = 'register';
     registerService(args.service, mode);
 
     if (args.raml) {
@@ -194,6 +195,20 @@ function RegistrationService(host, port) {
       registerPath(args.service, args.path, mode);
     }
   }
+
+  function deregistrationBase(args) {
+    var mode = 'deregister';
+    if (args.raml) {
+      registerRaml(args.service, args.raml, mode);
+    }
+
+    if (args.path) {
+      registerPath(args.service, args.path, mode);
+    }
+
+    registerService(args.service, mode);
+  }
+
   function registerService(service, mode) {
     service.ID = generateServiceId(service.Name);
 
@@ -379,8 +394,8 @@ function CommandLineResolver() {
     return false;
   }
 
-  var consulHost = process.env.CONSUL_HOST || 'consul';
-  var consulPort = process.env.CONSUL_PORT || '8500';
+  var consulHost = 'localhost';
+  var consulPort = '8500';
 
   if (!awaitConsul(consulHost, consulPort)) {
     throw new Error("The Consul service has not started up properly.");
