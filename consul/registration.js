@@ -394,8 +394,8 @@ function CommandLineResolver() {
     return false;
   }
 
-  var consulHost = 'localhost';
-  var consulPort = '8500';
+  var consulHost = process.env.CONSUL_HOST || 'consul';
+  var consulPort = process.env.CONSUL_PORT || '8500';
 
   if (!awaitConsul(consulHost, consulPort)) {
     throw new Error("The Consul service has not started up properly.");
