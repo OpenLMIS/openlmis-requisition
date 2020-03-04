@@ -18,9 +18,7 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.dto.BasicProcessingPeriodDto.START_DATE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FINISH_PROVIOUS_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_MUST_BELONG_TO_THE_SAME_SCHEDULE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,13 +31,10 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ScheduleReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +54,6 @@ public class PeriodService {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
-
-  @Autowired
-  private ScheduleReferenceDataService scheduleReferenceDataService;
 
   public Collection<ProcessingPeriodDto> search(UUID scheduleId, LocalDate endDate) {
     return periodReferenceDataService.search(scheduleId, endDate);
@@ -244,21 +236,6 @@ public class PeriodService {
         || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
       throw new ValidationMessageException(new Message(
           ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED));
-    }
-
-    Collection<ProcessingScheduleDto> schedules =
-        scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId);
-
-    if (schedules == null || schedules.isEmpty()) {
-      throw new ContentNotFoundMessageException(new Message(
-          ERROR_REQUISITION_GROUP_PROGRAM_SCHEDULE_WITH_PROGRAM_AND_FACILITY_NOT_FOUND));
-    }
-
-    ProcessingScheduleDto scheduleDto = schedules.iterator().next();
-
-    if (!scheduleDto.getId().equals(period.getProcessingSchedule().getId())) {
-      throw new ValidationMessageException(new Message(
-          ERROR_PERIOD_MUST_BELONG_TO_THE_SAME_SCHEDULE));
     }
 
     return period;

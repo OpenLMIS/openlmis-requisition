@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -394,17 +395,6 @@ public class PeriodServiceTest {
         periodService.findPreviousPeriods(period4.getId(), 5);
 
     assertThat(previousPeriods, hasItems(period3, period2, period1, currentPeriod));
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldThrowExceptionIfScheduleDoesNotExist()
-      throws ContentNotFoundMessageException {
-    when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Lists.newArrayList(currentPeriod));
-    when(scheduleReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(null);
-
-    periodService.findPeriod(programId, facilityId, null, false);
   }
 
   @Test(expected = ValidationMessageException.class)
