@@ -1,3 +1,9 @@
+8.2.2 / WIP
+==================
+Improvements:
+* [OLMIS-6741](https://openlmis.atlassian.net/browse/OLMIS-6741): Improved performance of finding processing periods on requisition initiate:
+  * removed searching for processing schedules to verify processing period on requisition initiate as referencedata service returns periods with proper schedules.
+
 8.2.1 / 2019-12-19
 ==================
 Improvements:
