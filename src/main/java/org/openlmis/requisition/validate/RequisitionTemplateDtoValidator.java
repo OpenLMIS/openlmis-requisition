@@ -28,7 +28,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMED_QUANTITY_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
@@ -76,10 +75,8 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
   static final String STOCK_ON_HAND = "stockOnHand";
   static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
-  static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
   static final String BEGINNING_BALANCE = "beginningBalance";
   static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
-  static final String MAXIMUM_STOCK_QUANTITY = "maximumStockQuantity";
   static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
   static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
   static final int MAX_COLUMN_DEFINITION_LENGTH = 140;
@@ -128,13 +125,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
 
     if (template.isPopulateStockOnHandFromStockCards()) {
       validateStockManagementFields(template);
-    } else {
-      if (template.isColumnInTemplate(CALCULATED_ORDER_QUANTITY_ISA)
-          && template.findColumn(CALCULATED_ORDER_QUANTITY_ISA).getIsDisplayed()) {
-        rejectIfDisplayed(errors, template, CALCULATED_ORDER_QUANTITY_ISA, COLUMNS_MAP,
-            new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS,
-                CALCULATED_ORDER_QUANTITY_ISA));
-      }
     }
 
     if (null == programReferenceDataService.findOne(template.getProgramId())) {

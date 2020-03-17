@@ -33,7 +33,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_REQ
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_AVERAGE_CONSUMPTION_IS_CALCULATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_DISPLAYED_WHEN_CONSUMPTION_IS_CALCULATED;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS_ACCEPTED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
@@ -50,7 +49,6 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.BEGINNING_BALANCE;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY;
-import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.COLUMNS_MAP;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE_ID;
@@ -67,7 +65,6 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
@@ -589,24 +586,6 @@ public class RequisitionTemplateDtoValidatorTest {
     template.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS).setIsDisplayed(true);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
-  }
-
-  @Test
-  public void shouldRejectWhenCalcOrderQtyIsaIsDisplayedAndStockFlagIsDisabled() {
-    RequisitionTemplate template = baseTemplateBuilder()
-        .withColumn(CALCULATED_ORDER_QUANTITY_ISA, "S", CALCULATED, ImmutableSet.of(CALCULATED))
-        .build();
-
-    RequisitionTemplateDto dto = buildDto(template);
-    mockResponses(dto);
-
-    dto.getColumnsMap().get(CALCULATED_ORDER_QUANTITY_ISA).setIsDisplayed(true);
-
-    validator.validate(dto, errors);
-
-    verify(errors).rejectValue(COLUMNS_MAP,
-        new Message(ERROR_MUST_NOT_BE_DISPLAYED_WHEN_SOH_POPULATED_FROM_STOCK_CARDS,
-            CALCULATED_ORDER_QUANTITY_ISA).toString());
   }
 
   private RequisitionTemplateDataBuilder baseTemplateBuilder() {
