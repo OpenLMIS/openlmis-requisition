@@ -70,6 +70,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import lombok.AllArgsConstructor;
@@ -1139,6 +1140,11 @@ public class Requisition extends BaseTimestampedEntity {
 
   public boolean hasOriginalRequisitionId() {
     return this.extraData.containsKey(EXTRA_DATA_ORIGINAL_REQUISITION_ID);
+  }
+
+  @PrePersist
+  private void initModifiedDate() {
+    this.setModifiedDate(this.getCreatedDate());
   }
 
   public interface Exporter extends ExtraDataExporter {

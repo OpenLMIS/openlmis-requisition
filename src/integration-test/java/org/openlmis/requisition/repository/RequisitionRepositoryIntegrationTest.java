@@ -171,7 +171,7 @@ public class RequisitionRepositoryIntegrationTest
       assertTrue(
           receivedRequisition.getCreatedDate().isAfter(
               requisitionToCopy.getCreatedDate().minusDays(1)));
-      assertEquals(receivedRequisition.getModifiedDate(), requisitionToCopy.getModifiedDate());
+      assertEquals(receivedRequisition.getModifiedDate(), receivedRequisition.getCreatedDate());
       assertEquals(receivedRequisition.getNumberOfMonthsInPeriod(), Integer.valueOf(1));
       assertEquals(receivedRequisition.getEmergency(), requisitionToCopy.getEmergency());
     }
@@ -974,6 +974,18 @@ public class RequisitionRepositoryIntegrationTest
     repository.save(requisition);
 
     entityManager.flush();
+  }
+
+  @Test
+  public void shouldInitCreatedAndModifiedDate() {
+    Requisition requisition = generateInstance();
+    requisition.setCreatedDate(null);
+    requisition.setModifiedDate(null);
+
+    repository.saveAndFlush(requisition);
+
+    assertNotNull(requisition.getCreatedDate());
+    assertEquals(requisition.getCreatedDate(), requisition.getModifiedDate());
   }
 
   @Test
