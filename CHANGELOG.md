@@ -1,9 +1,12 @@
 8.2.2 / WIP
 ==================
+
 Improvements:
 * [OLMIS-6741](https://openlmis.atlassian.net/browse/OLMIS-6741): Improved performance of finding processing periods on requisition initiate:
   * removed searching for processing schedules to verify processing period on requisition initiate as referencedata service returns periods with proper schedules.
 * [OLMIS-6793](https://openlmis.atlassian.net/browse/OLMIS-6793): Allowed Calculated Order Quantity ISA column to be used in non Stock Based Requisitions.
+
+Bug fixes:
 * [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
   * A mechanism to retry authentication load after encountering the error was introduced.
 
