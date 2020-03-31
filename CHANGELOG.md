@@ -9,6 +9,7 @@ Improvements:
 Bug fixes:
 * [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
   * A mechanism to retry authentication load after encountering the error was introduced.
+* [OLMIS-6812](https://openlmis.atlassian.net/browse/OLMIS-6812): Set Requisition modified date before persisting it in the db.
 
 8.2.1 / 2019-12-19
 ==================
