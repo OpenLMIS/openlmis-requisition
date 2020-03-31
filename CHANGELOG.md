@@ -9,7 +9,8 @@ Improvements:
 Bug fixes:
 * [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
   * A mechanism to retry authentication load after encountering the error was introduced.
-* [OLMIS-6812](https://openlmis.atlassian.net/browse/OLMIS-6812): Set Requisition modified date before persisting it in the db.
+* [OLMIS-6812](https://openlmis.atlassian.net/browse/OLMIS-6812): Fixed issue with endpoint '/api/requisitions/search' with 'modifiedDateFrom' parameter not returning all data:
+  * Updated requisition to set the value of created date as the modified date when initiating.
 
 8.2.1 / 2019-12-19
 ==================
