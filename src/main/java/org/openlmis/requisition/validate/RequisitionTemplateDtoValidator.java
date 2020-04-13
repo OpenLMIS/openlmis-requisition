@@ -219,7 +219,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     AvailableRequisitionColumn actual = AvailableRequisitionColumn
         .newInstance(column.getColumnDefinition());
     AvailableRequisitionColumn expected = availableRequisitionColumnRepository
-        .findOne(actual.getId());
+        .findById(actual.getId()).orElse(null);
 
     if (null == expected) {
       rejectValue(

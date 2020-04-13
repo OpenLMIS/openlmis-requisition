@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -168,10 +167,10 @@ public class ExtraDataConverterTest {
           .when(mapper)
           .writeValueAsString(anyMapOf(String.class, String.class));
 
-      doThrow(new IOException())
+      doThrow(mock(JsonProcessingException.class))
           .when(mapper)
           .readValue(anyString(), any(TypeReference.class));
-    } catch (IOException exp) {
+    } catch (JsonProcessingException exp) {
       throw new IllegalStateException(exp);
     }
   }

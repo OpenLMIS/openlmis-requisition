@@ -17,6 +17,7 @@ package org.openlmis.requisition.web;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -84,12 +85,12 @@ public abstract class BaseRequisitionWebIntegrationTest extends BaseWebIntegrati
     given(requisitionDtoBuilder
         .build(any(Requisition.class), anyMapOf(VersionIdentityDto.class, OrderableDto.class),
             anyMapOf(VersionIdentityDto.class, ApprovedProductDto.class),
-            any(FacilityDto.class), any(ProgramDto.class), any(ProcessingPeriodDto.class)))
+            any(FacilityDto.class), any(ProgramDto.class), nullable(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.buildBatch(any(Requisition.class), any(FacilityDto.class),
         anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyMapOf(VersionIdentityDto.class, ApprovedProductDto.class),
-        any(ProcessingPeriodDto.class)))
+        nullable(ProcessingPeriodDto.class)))
         .willAnswer(new BuildRequisitionDtoAnswer());
     given(requisitionDtoBuilder.build(anyListOf(Requisition.class)))
         .willAnswer(new BuildListOfRequisitionDtosAnswer());

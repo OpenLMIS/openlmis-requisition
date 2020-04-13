@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -564,9 +565,10 @@ public class RequisitionControllerTest {
     when(requisitionDto.getProgramId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getProcessingPeriodId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
+    when(requisitionDto.getModifiedDate()).thenReturn(ZonedDateTime.now());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
-
+    when(initiatedRequsition.getFacilityId()).thenReturn(UUID.randomUUID());
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
     when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
@@ -603,8 +605,10 @@ public class RequisitionControllerTest {
     when(requisitionDto.getProgramId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getProcessingPeriodId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getSupervisoryNode()).thenReturn(UUID.randomUUID());
+    when(requisitionDto.getModifiedDate()).thenReturn(ZonedDateTime.now());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
+    when(initiatedRequsition.getFacilityId()).thenReturn(UUID.randomUUID());
     when(initiatedRequsition.getSupervisoryNodeId()).thenReturn(null);
     when(initiatedRequsition.getId()).thenReturn(uuid1);
     when(initiatedRequsition.validateCanBeUpdated(any(RequisitionValidationService.class)))
@@ -645,6 +649,7 @@ public class RequisitionControllerTest {
     when(requisitionDto.getFacilityId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getProgramId()).thenReturn(UUID.randomUUID());
     when(requisitionDto.getProcessingPeriodId()).thenReturn(UUID.randomUUID());
+    when(requisitionDto.getModifiedDate()).thenReturn(ZonedDateTime.now());
     when(requisitionService.validateCanSaveRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
 
@@ -700,6 +705,8 @@ public class RequisitionControllerTest {
         any(FacilityDto.class), any(ProgramDto.class),
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
+    when(requisitionTemplateService.findTemplate(any(UUID.class), any(UUID.class), eq(true)))
+        .thenReturn(mock(RequisitionTemplate.class));
 
     when(periodService.findPeriod(programUuid, facilityUuid, null, false))
         .thenReturn(processingPeriod);
@@ -745,6 +752,8 @@ public class RequisitionControllerTest {
         any(FacilityDto.class), any(ProgramDto.class),
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
+    when(requisitionTemplateService.findTemplate(any(UUID.class), any(UUID.class), eq(false)))
+        .thenReturn(mock(RequisitionTemplate.class));
 
     when(periodService.findPeriod(programUuid, facilityUuid, null, true))
         .thenReturn(processingPeriod);
@@ -1267,7 +1276,8 @@ public class RequisitionControllerTest {
         UUID.randomUUID(), RequisitionStatus.INITIATED, false);
     repositoryRequisition.setReportOnly(true);
     repositoryRequisition.setTemplate(repositoryTemplate);
-    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(repositoryRequisition);
+    when(requisitionRepository.findById(any(UUID.class)))
+        .thenReturn(Optional.of(repositoryRequisition));
 
     //when
     Requisition foundRequisition = requisitionController.findRequisition(UUID.randomUUID(),
@@ -1291,7 +1301,7 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
 
     when(initiatedRequsition.getTemplate()).thenReturn(template);
-    when(requisitionRepository.findOne(uuid1)).thenReturn(initiatedRequsition);
+    when(requisitionRepository.findById(uuid1)).thenReturn(Optional.of(initiatedRequsition));
     when(programReferenceDataService.findOne(any(UUID.class))).thenReturn(
         new ProgramDtoDataBuilder().buildWithNotSkippedAuthorizationStep());
   }
@@ -1352,12 +1362,12 @@ public class RequisitionControllerTest {
         .thenReturn(Collections.singletonList(approvedRequsition));
     when(requisitionRepository.save(initiatedRequsition))
         .thenReturn(initiatedRequsition);
-    when(requisitionRepository.findOne(uuid1))
-        .thenReturn(initiatedRequsition);
-    when(requisitionRepository.findOne(authorizedRequsition.getId()))
-        .thenReturn(authorizedRequsition);
-    when(requisitionRepository.findOne(submittedRequsition.getId()))
-        .thenReturn(submittedRequsition);
+    when(requisitionRepository.findById(uuid1))
+        .thenReturn(Optional.of(initiatedRequsition));
+    when(requisitionRepository.findById(authorizedRequsition.getId()))
+        .thenReturn(Optional.of(authorizedRequsition));
+    when(requisitionRepository.findById(submittedRequsition.getId()))
+        .thenReturn(Optional.of(submittedRequsition));
   }
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {

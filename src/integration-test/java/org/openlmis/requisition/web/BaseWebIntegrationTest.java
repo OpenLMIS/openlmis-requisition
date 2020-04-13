@@ -43,6 +43,7 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.assertj.core.util.Lists;
@@ -97,9 +98,9 @@ import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -124,7 +125,7 @@ public abstract class BaseWebIntegrationTest {
   static final String PAGE = "page";
 
   static final Pageable FIRST_PAGE =
-      new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+      PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
@@ -277,7 +278,7 @@ public abstract class BaseWebIntegrationTest {
 
     requisition.setRequisitionLineItems(generateRequisitionLineItems(requisition));
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
     return requisition;
   }
 
@@ -294,7 +295,7 @@ public abstract class BaseWebIntegrationTest {
         .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
     return requisition;
   }
 
@@ -365,7 +366,8 @@ public abstract class BaseWebIntegrationTest {
   private Requisition spyRequisitionAndStubRepository(Requisition requisition) {
     Requisition requisitionSpy = spy(requisition);
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisitionSpy);
+    given(requisitionRepository.findById(requisition.getId()))
+        .willReturn(Optional.of(requisitionSpy));
     doReturn(ValidationResult.success())
         .when(requisitionSpy).validateCanChangeStatus(any(LocalDate.class), anyBoolean(),
         anyMap(), anyMap());

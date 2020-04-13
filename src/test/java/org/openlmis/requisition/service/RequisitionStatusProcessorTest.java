@@ -15,16 +15,13 @@
 
 package org.openlmis.requisition.service;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Locale;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,9 +63,6 @@ public class RequisitionStatusProcessorTest {
   @Before
   public void setUp() {
     supervisoryNodeDto = new SupervisoryNodeDtoDataBuilder().buildAsDto();
-
-    doReturn(supervisoryNodeDto).when(supervisoryNodeReferenceDataService)
-        .findSupervisoryNode(any(UUID.class), any(UUID.class));
   }
 
   @Test

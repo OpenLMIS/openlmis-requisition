@@ -86,7 +86,7 @@ public final class RequestParameters {
       set(PAGE, pageable.getPageNumber());
       set(SIZE, pageable.getPageSize());
 
-      if (null != pageable.getSort()) {
+      if (!pageable.getSort().isEmpty()) {
         Set<String> sort = StreamSupport
             .stream(pageable.getSort().spliterator(), false)
             .map(order -> String.format("%s,%s", order.getProperty(), order.getDirection()))

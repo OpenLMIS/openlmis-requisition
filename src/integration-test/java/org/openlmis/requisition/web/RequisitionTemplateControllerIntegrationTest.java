@@ -36,6 +36,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
@@ -86,7 +87,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     mockUserAuthenticated();
 
-    given(requisitionTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(requisitionTemplateRepository.findById(template.getId()))
+        .willReturn(Optional.of(template));
 
     // Mock saving objects
     given(requisitionTemplateRepository.save(any(RequisitionTemplate.class)))
@@ -128,7 +130,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
             .withAssignment(UUID.randomUUID(), null)
             .build();
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
 
@@ -150,7 +152,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
             .withAssignment(UUID.randomUUID(), null)
             .build();
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
 
@@ -239,7 +241,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldNotGetNonExistentRequisitionTemplate() {
     // given
-    given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
+    given(requisitionTemplateRepository.findById(anyUuid())).willReturn(Optional.empty());
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when
@@ -337,11 +339,11 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldCreateNewRequisitionTemplateIfDoesNotExist() {
     // given
-    given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
+    given(requisitionTemplateRepository.findById(anyUuid())).willReturn(Optional.empty());
     mockValidationSuccess();
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
-    given(requisitionTemplateRepository.findOne(templateDto.getId())).willReturn(null);
+    given(requisitionTemplateRepository.findById(templateDto.getId())).willReturn(null);
 
     // when
     RequisitionTemplateDto result = restAssured.given()
@@ -414,7 +416,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldNotDeleteNonExistentRequisitionTemplate() {
     // given
-    given(requisitionTemplateRepository.findOne(anyUuid())).willReturn(null);
+    given(requisitionTemplateRepository.findById(anyUuid())).willReturn(Optional.empty());
     doReturn(ValidationResult.success()).when(permissionService).canManageRequisitionTemplate();
 
     // when

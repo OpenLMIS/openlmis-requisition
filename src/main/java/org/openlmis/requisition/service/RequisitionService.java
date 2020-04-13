@@ -300,7 +300,7 @@ public class RequisitionService {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);
     } else {
       statusMessageRepository
-          .delete(statusMessageRepository.findByRequisitionId(requisition.getId()));
+          .deleteAll(statusMessageRepository.findByRequisitionId(requisition.getId()));
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
     }
@@ -456,7 +456,7 @@ public class RequisitionService {
    * @return ValidationResult instance containing the outcome of this validation
    */
   public ValidationResult validateCanSaveRequisition(UUID requisitionId) {
-    Requisition requisition = requisitionRepository.findOne(requisitionId);
+    Requisition requisition = requisitionRepository.findById(requisitionId).orElse(null);
 
     if (isNull(requisition)) {
       return ValidationResult.notFound(ERROR_REQUISITION_NOT_FOUND, requisitionId);
@@ -511,7 +511,7 @@ public class RequisitionService {
     profiler.start("RELEASE");
     for (ReleasableRequisitionDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
-      Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
+      Requisition loadedRequisition = requisitionRepository.findById(requisitionId).orElse(null);
       isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
@@ -552,7 +552,7 @@ public class RequisitionService {
     profiler.start("RELEASE_WITHOUT_ORDER");
     for (ReleasableRequisitionDto convertToOrderDto : releaseWithoutOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
-      Requisition loadedRequisition = requisitionRepository.findOne(requisitionId);
+      Requisition loadedRequisition = requisitionRepository.findById(requisitionId).orElse(null);
       validateIfEligibleForReleasingWithoutOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.releaseWithoutOrder(authenticationHelper.getCurrentUser().getId());
       releasedRequisitions.add(loadedRequisition);

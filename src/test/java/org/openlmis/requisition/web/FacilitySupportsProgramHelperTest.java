@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +59,7 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto = new FacilityDtoDataBuilder().buildAsDto();
 
     when(facilityReferenceDataService.findOne(facilityId)).thenReturn(facilityDto);
-    when(dateHelper.isDateBeforeNow(any(LocalDate.class))).thenReturn(true);
+    when(dateHelper.isDateBeforeNow(nullable(LocalDate.class))).thenReturn(true);
   }
 
   @Test(expected = ValidationMessageException.class)

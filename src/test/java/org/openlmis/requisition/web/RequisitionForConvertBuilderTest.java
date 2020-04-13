@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -156,7 +157,7 @@ public class RequisitionForConvertBuilderTest {
         .thenReturn(singletonList(program1));
     when(supplyLineReferenceDataService.getPage(any(RequestParameters.class)))
         .thenReturn(Pagination.getPage(asList(supplyLine1, supplyLine2, supplyLine3),
-            new PageRequest(0, Integer.MAX_VALUE), 2));
+            PageRequest.of(0, Integer.MAX_VALUE), 2));
   }
 
   @Test
@@ -190,8 +191,8 @@ public class RequisitionForConvertBuilderTest {
 
   @Test
   public void shouldGetAvailableSupplyingDepots() {
-    when(requisitionRepository.findOne(requisitionDto.getId()))
-            .thenReturn(requisition1);
+    when(requisitionRepository.findById(requisitionDto.getId()))
+            .thenReturn(Optional.of(requisition1));
     when(supplyLineReferenceDataService
             .search(requisition1.getProgramId(), requisition1.getSupervisoryNodeId()))
             .thenReturn(asList(supplyLine1, supplyLine4));

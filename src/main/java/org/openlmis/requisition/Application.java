@@ -19,7 +19,8 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
 import javax.annotation.PostConstruct;
-import org.flywaydb.core.api.callback.FlywayCallback;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.callback.Callback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
 import org.javers.core.diff.ListCompareAlgorithm;
@@ -40,10 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -83,15 +88,6 @@ public class Application {
 
   @Value("${db.clustering.enabled}")
   private boolean dbClusteringEnabled;
-
-  @Value("${redis.url}")
-  private String redisUrl;
-
-  @Value("${redis.port}")
-  private int redisPort;
-
-  @Value("${redis.password}")
-  private String redisPassword;
 
   @Value("${currencyCode}")
   private String currencyCode;
@@ -186,14 +182,14 @@ public class Application {
   public FlywayMigrationStrategy cleanMigrationStrategy() {
     return flyway -> {
       logger.info("Using clean-migrate flyway strategy -- production profile not active");
-      flyway.setCallbacks(flywayCallback());
+      Flyway.configure().callbacks(flywayCallback());
       flyway.clean();
       flyway.migrate();
     };
   }
 
   @Bean
-  public FlywayCallback flywayCallback() {
+  public Callback flywayCallback() {
     return new ExportSchemaFlywayCallback();
   }
 
@@ -203,20 +199,18 @@ public class Application {
   }
 
   @Bean
-  JedisConnectionFactory connectionFactory() {
-    JedisConnectionFactory factory = new JedisConnectionFactory();
-    factory.setHostName(redisUrl);
-    factory.setPort(redisPort);
-    factory.setPassword(redisPassword);
-
-    factory.setUsePool(true);
-    return factory;
+  RedisConnectionFactory connectionFactory(RedisProperties properties) {
+    RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(
+        properties.getHost(), properties.getPort());
+    config.setPassword(properties.getPassword());
+    JedisClientConfiguration clientConfig = JedisClientConfiguration.builder().usePooling().build();
+    return new JedisConnectionFactory(config, clientConfig);
   }
 
   @Bean
-  RedisTemplate<Object, Object> redisTemplate(JedisConnectionFactory factory) {
+  RedisTemplate<Object, Object> redisTemplate(RedisProperties properties) {
     RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
-    redisTemplate.setConnectionFactory(factory);
+    redisTemplate.setConnectionFactory(connectionFactory(properties));
     return redisTemplate;
   }
 

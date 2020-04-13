@@ -185,7 +185,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .collect(Collectors.toList());
 
     doReturn(requisitions)
-        .when(requisitionRepository).findAll(requisitionIds);
+        .when(requisitionRepository).findAllById(requisitionIds);
 
     doReturn(ValidationResult.success())
         .when(requisitionVersionValidator)

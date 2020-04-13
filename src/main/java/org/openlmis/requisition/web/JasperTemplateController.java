@@ -15,10 +15,10 @@
 
 package org.openlmis.requisition.web;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -30,9 +30,13 @@ import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.utils.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,8 +46,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Controller
 @Transactional
@@ -55,7 +57,7 @@ public class JasperTemplateController extends BaseController {
   private static final String REPORTING_RATE_REPORT = "Reporting Rate Report";
   private static final int DUE_DAYS = 10;
 
-  private static final Logger LOGGER = Logger.getLogger(JasperTemplateController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JasperTemplateController.class);
 
   @Autowired
   private JasperTemplateService jasperTemplateService;
@@ -130,12 +132,9 @@ public class JasperTemplateController extends BaseController {
   @ResponseBody
   public JasperTemplateDto getTemplate(@PathVariable("id") UUID templateId) {
     permissionService.canViewReports().throwExceptionIfHasErrors();
-    JasperTemplate jasperTemplate =
-        jasperTemplateRepository.findOne(templateId);
-    if (jasperTemplate == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
-    }
+    JasperTemplate jasperTemplate = jasperTemplateRepository.findById(templateId)
+        .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
+            MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId)));
 
     return JasperTemplateDto.newInstance(jasperTemplate);
   }
@@ -149,13 +148,11 @@ public class JasperTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteTemplate(@PathVariable("id") UUID templateId) {
     permissionService.canEditReportTemplates().throwExceptionIfHasErrors();
-    JasperTemplate jasperTemplate = jasperTemplateRepository.findOne(templateId);
-    if (jasperTemplate == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
-    } else {
-      jasperTemplateRepository.delete(jasperTemplate);
-    }
+    JasperTemplate jasperTemplate = jasperTemplateRepository.findById(templateId)
+        .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
+            MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId)));
+
+    jasperTemplateRepository.delete(jasperTemplate);
   }
 
   /**
@@ -168,19 +165,14 @@ public class JasperTemplateController extends BaseController {
    */
   @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
   @ResponseBody
-  public ModelAndView generateReport(HttpServletRequest request,
+  public ResponseEntity<byte[]> generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
     permissionService.canViewReports().throwExceptionIfHasErrors();
 
-    JasperTemplate template = jasperTemplateRepository.findOne(templateId);
-    if (template == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId));
-    }
-
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsView(template, request);
+    JasperTemplate template = jasperTemplateRepository.findById(templateId)
+        .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
+            MessageKeys.ERROR_JASPER_TEMPLATE_NOT_FOUND, templateId)));
 
     Map<String, Object> map = jasperTemplateService
         .mapRequestParametersToTemplate(request, template);
@@ -188,16 +180,33 @@ public class JasperTemplateController extends BaseController {
     map.put("dateTimeFormat", dateTimeFormat);
     map.put("timeZoneId", timeZoneId);
 
+    byte[] reportData;
+    
     if (TIMELINESS_REPORT.equals(template.getType())) {
-      return jasperReportsViewService.getTimelinessJasperReportView(jasperView, map);
-    }
-
-    if (REPORTING_RATE_REPORT.equals(template.getType())) {
+      reportData = jasperReportsViewService.generateTimelinessReport(template, map);
+    } else if (REPORTING_RATE_REPORT.equals(template.getType())) {
       map.putIfAbsent("DueDays", String.valueOf(DUE_DAYS));
-      jasperView = jasperReportsViewService
-          .getReportingRateJasperReportsView(template, request, map);
+      reportData = jasperReportsViewService.generateReportingRateReport(template, map);
+    } else {
+      reportData = jasperReportsViewService.generateReport(template, map);
     }
 
-    return new ModelAndView(jasperView, map);
+    MediaType mediaType;
+    if ("csv".equals(format)) {
+      mediaType = new MediaType("text", "csv", StandardCharsets.UTF_8);
+    } else if ("xls".equals(format)) {
+      mediaType = new MediaType("application", "vnd.ms-excel", StandardCharsets.UTF_8);
+    } else if ("html".equals(format)) {
+      mediaType = new MediaType("text", "html", StandardCharsets.UTF_8);
+    } else {
+      mediaType = new MediaType("application", "pdf", StandardCharsets.UTF_8);
+    }
+    String fileName = template.getName().replaceAll("\\s+", "_");
+
+    return ResponseEntity
+        .ok()
+        .contentType(mediaType)
+        .header("Content-Disposition", "inline; filename=" + fileName + "." + format)
+        .body(reportData);
   }
 }

@@ -524,10 +524,11 @@ public abstract class BaseRequisitionController extends BaseController {
 
   Requisition findRequisition(UUID requisitionId, Profiler profiler) {
     profiler.start("GET_REQUISITION_BY_ID");
-    Requisition requisition = findResource(
-        profiler, requisitionId, requisitionRepository::findOne, ERROR_REQUISITION_NOT_FOUND
-    );
-    if (null != requisition && isTrue(requisition.getReportOnly())) {
+    Requisition requisition = requisitionRepository.findById(requisitionId).orElse(null);
+    if (null == requisition) {
+      stopProfiler(profiler);
+      throw new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND, requisitionId);
+    } else if (isTrue(requisition.getReportOnly())) {
       RequisitionTemplate templateCopy = new RequisitionTemplate(requisition.getTemplate());
       templateCopy.hideOrderRelatedColumns();
       requisition.setTemplate(templateCopy);

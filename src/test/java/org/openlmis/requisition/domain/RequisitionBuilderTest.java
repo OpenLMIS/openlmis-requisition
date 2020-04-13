@@ -48,7 +48,6 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
-import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -74,15 +73,10 @@ public class RequisitionBuilderTest {
   @Mock
   private RequisitionTemplate requisitionTemplate;
 
-  @Mock
-  private BasicRequisitionTemplateDto requisitionTemplateDto;
-
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
   private ProcessingPeriodDto processingPeriodDto = DtoGenerator.of(ProcessingPeriodDto.class);
 
-  private UUID requisitionUuid = UUID.randomUUID();
-  private UUID supervisoryNodeUuid = UUID.randomUUID();
   private ZonedDateTime modifiedDate = ZonedDateTime.now();
 
   private List<RequisitionLineItem.Importer> lineItemDtos = new ArrayList<>();
@@ -94,17 +88,9 @@ public class RequisitionBuilderTest {
 
   @Before
   public void setUp() {
-    when(requisitionDto.getId()).thenReturn(requisitionUuid);
-    when(requisitionDto.getFacilityId()).thenReturn(facility.getId());
-    when(requisitionDto.getProgramId()).thenReturn(program.getId());
-    when(requisitionDto.getProcessingPeriodId()).thenReturn(processingPeriodDto.getId());
-    when(requisitionDto.getSupervisoryNode()).thenReturn(supervisoryNodeUuid);
-    when(requisitionDto.getTemplate()).thenReturn(requisitionTemplateDto);
     when(requisitionDto.getRequisitionLineItems()).thenReturn(lineItemDtos);
-    when(requisitionDto.getStatus()).thenReturn(RequisitionStatus.INITIATED);
     when(requisitionDto.getModifiedDate()).thenReturn(modifiedDate);
     when(requisitionDto.getDraftStatusMessage()).thenReturn(DRAFT_STATUS_MESSAGE);
-    when(requisitionDto.getEmergency()).thenReturn(false);
     when(requisitionDto.getDatePhysicalStockCountCompleted()).thenReturn(LocalDate.now());
     when(requisitionDto.getExtraData()).thenReturn(extraData);
   }
@@ -167,8 +153,6 @@ public class RequisitionBuilderTest {
 
   @Test
   public void shouldReturnFalseIfSkippedIsNotSetInDto() {
-    when(requisitionTemplate.isColumnDisplayed(RequisitionLineItem.SKIPPED_COLUMN))
-        .thenReturn(true);
     prepareLineItem(new RequisitionLineItemDto());
 
     Requisition requisition = RequisitionBuilder.newRequisition(

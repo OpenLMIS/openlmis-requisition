@@ -264,6 +264,8 @@ resourceTypes:
                   schema: approveRequisitionDtoArray
           responses:
               "200":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: requisitionsProcessingStatus
@@ -287,6 +289,8 @@ resourceTypes:
                   repeat: true
           responses:
               "200":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: requisitionsProcessingStatus
@@ -310,6 +314,8 @@ resourceTypes:
                   repeat: true
           responses:
               "200":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: requisitionsProcessingStatus
@@ -346,6 +352,8 @@ resourceTypes:
                       repeat: false
               responses:
                   "201":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                   "400":
@@ -353,10 +361,14 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -366,6 +378,8 @@ resourceTypes:
               description: WARNING! Deprecated. Get all requisitions with submitted status.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                   "403":
@@ -384,16 +398,22 @@ resourceTypes:
               description: Delete chosen requisition.
               responses:
                   "204":
+                      headers:
+                        Keep-Alive:
                   "400":
                       body:
                         application/json:
                           schema: localizedMessage
                   "404":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   "409":
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -402,13 +422,19 @@ resourceTypes:
               description: Get chosen requisition.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                   "404":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -447,6 +473,8 @@ resourceTypes:
               description: Skip chosen requisition period.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDto
@@ -455,14 +483,20 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "404":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -478,6 +512,8 @@ resourceTypes:
               description: Reject requisition which is waiting for approval.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDto
@@ -490,10 +526,14 @@ resourceTypes:
                         application/json:
                           schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -503,6 +543,8 @@ resourceTypes:
               description: Submit earlier initiated requisition.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDto
@@ -510,10 +552,14 @@ resourceTypes:
                       body:
                         application/json:
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -529,6 +575,8 @@ resourceTypes:
               description: Authorize submitted requisition.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDto
@@ -538,10 +586,14 @@ resourceTypes:
                             schema: localizedMessage
                   "404":
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -557,12 +609,16 @@ resourceTypes:
               description: Print requisition to a pdf file.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
 #                        application/vnd.ms-excel:
                         application/pdf:
 #                        text/html:
 #                        text/csv:
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -572,10 +628,14 @@ resourceTypes:
               description: Get status messages associated with a requisition.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: statusMessageArray
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -636,6 +696,8 @@ resourceTypes:
                       repeat: false
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: basicRequisitionDtoPage
@@ -653,6 +715,8 @@ resourceTypes:
               description: Approve specified by id requisition.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDto
@@ -661,10 +725,14 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -681,6 +749,8 @@ resourceTypes:
                       repeat: false
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: basicRequisitionDtoPage
@@ -704,6 +774,8 @@ resourceTypes:
                       repeat: false
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: requisitionWithSupplyingDepotsDtoPage
@@ -717,6 +789,8 @@ resourceTypes:
                   schema: convertToOrderDtoArray
               responses:
                   "201":
+                    headers:
+                      Keep-Alive:
                   "400":
                       body:
                         application/json:
@@ -735,6 +809,8 @@ resourceTypes:
                   schema: releasableRequisitionBatchDto
               responses:
                   "201":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: requisitionsProcessingStatus
@@ -743,6 +819,8 @@ resourceTypes:
                         application/json:
                             schema: requisitionsProcessingStatus
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -778,6 +856,8 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "403":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -807,6 +887,8 @@ resourceTypes:
                          repeat: false
           responses:
                 200:
+                  headers:
+                    Keep-Alive:
                 403:
                     body:
                       application/json:
@@ -816,6 +898,8 @@ resourceTypes:
           description: Get all templates.
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: templateDtoArray
@@ -839,11 +923,15 @@ resourceTypes:
               description: Delete chosen template.
               responses:
                   204:
+                    headers:
+                      Keep-Alive:
                   403:
                       body:
                         application/json:
                             schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -852,6 +940,8 @@ resourceTypes:
               description: Get chosen template.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: jasperTemplateDto
@@ -860,6 +950,8 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -885,6 +977,8 @@ resourceTypes:
                             application/json:
                                 schema: localizedMessage
                       404:
+                          headers:
+                            Keep-Alive:
                           body:
                             application/json:
                                 schema: localizedMessage
@@ -896,6 +990,8 @@ resourceTypes:
           description: Get all requisitionTemplates.
           responses:
               "200":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: requisitionTemplateArray
@@ -908,6 +1004,8 @@ resourceTypes:
                 schema: requisitionTemplate
           responses:
               "201":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: requisitionTemplate
@@ -930,6 +1028,8 @@ resourceTypes:
               description: Delete chosen requisitionTemplate.
               responses:
                   "204":
+                    headers:
+                      Keep-Alive:
                   "400":
                       body:
                         application/json:
@@ -939,6 +1039,8 @@ resourceTypes:
                         application/json:
                             schema: localizedMessage
                   "404":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -948,10 +1050,14 @@ resourceTypes:
               description: Get chosen requisitionTemplate.
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: requisitionTemplate
                   "404":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: localizedMessage
@@ -963,6 +1069,8 @@ resourceTypes:
                     schema: requisitionTemplate
               responses:
                   "200":
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                             schema: requisitionTemplate
@@ -981,6 +1089,8 @@ resourceTypes:
           description: Get page of Available Requisition Columns.
           responses:
               "200":
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                         schema: availableRequisitionColumnPage
@@ -1016,6 +1126,8 @@ resourceTypes:
                     responses:
                         201:
                             description: The request is valid and the given requisition has been created.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: requisitionV2
@@ -1030,11 +1142,15 @@ resourceTypes:
                                 application/json:
                         403:
                             description: The server understood the request but refuses to authorize it.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                      schema: localizedMessage
                         409:
                             description: There is a conflict while the request is handled.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage
@@ -1051,6 +1167,8 @@ resourceTypes:
                     responses:
                         200:
                             description: The request is valid and the given requisition will be returned.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: requisitionV2
@@ -1060,11 +1178,15 @@ resourceTypes:
                                 application/json:
                         403:
                             description: The server understood the request but refuses to authorize it.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage
                         404:
                             description: The server understood the request but can not find the requisition.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage
@@ -1077,6 +1199,8 @@ resourceTypes:
                     responses:
                         200:
                             description: The request is valid and the given requisition will be updated and returned.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: requisitionV2
@@ -1091,16 +1215,22 @@ resourceTypes:
                                 application/json:
                         403:
                             description: The server understood the request but refuses to authorize it.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage
                         404:
                             description: The server understood the request but can not find the requisition.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage
                         409:
                             description: There is a conflict while the request is handled.
+                            headers:
+                              Keep-Alive:
                             body:
                                 application/json:
                                     schema: localizedMessage

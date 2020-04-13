@@ -17,6 +17,7 @@ package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -78,7 +79,7 @@ public class ReportingRateDtoBuilderTest {
         .sorted(Comparator.comparing(BasicProcessingPeriodDto::getStartDate))
         .collect(Collectors.toList());
 
-    when(periodReferenceDataService.search(any(UUID.class), any(LocalDate.class)))
+    when(periodReferenceDataService.search(any(UUID.class), nullable(LocalDate.class)))
         .thenReturn(periods);
 
     // when
@@ -105,9 +106,6 @@ public class ReportingRateDtoBuilderTest {
   public void shouldGetOnlyLatestPeriodWhenPreviousNonExistent() {
     // given
     List<ProcessingPeriodDto> periods = generateProcessingPeriods(1, null);
-
-    when(periodReferenceDataService.search(any(UUID.class), any(LocalDate.class)))
-        .thenReturn(periods);
 
     // when
     Collection<ProcessingPeriodDto> result =
@@ -238,9 +236,7 @@ public class ReportingRateDtoBuilderTest {
     when(zone.getId()).thenReturn(zoneId);
 
     MinimalFacilityDto facility = mock(MinimalFacilityDto.class);
-    UUID facilityId = UUID.randomUUID();
 
-    when(facility.getId()).thenReturn(facilityId);
     when(facility.getActive()).thenReturn(facilityActive);
     when(facility.getGeographicZone()).thenReturn(zone);
     List<MinimalFacilityDto> facilitiesForZone = Collections.singletonList(facility);

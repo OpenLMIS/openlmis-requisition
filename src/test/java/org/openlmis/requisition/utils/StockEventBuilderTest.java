@@ -24,7 +24,6 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TO
 
 import com.google.common.collect.Maps;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +75,6 @@ public class StockEventBuilderTest {
   private static final DatePhysicalStockCountCompleted DATE_PHYSICAL_STOCK_COUNT_COMPLETED =
       new DatePhysicalStockCountCompleted(LocalDate.now().minusDays(3));
   private static final LocalDate PERIOD_END_DATE = LocalDate.now().minusDays(1);
-  private static final ZoneId ZONE_ID = ZoneId.systemDefault();
 
   private Requisition requisition;
 
@@ -111,9 +109,6 @@ public class StockEventBuilderTest {
   private Map<VersionIdentityDto, OrderableDto> orderables = Maps.newHashMap();
 
   @Mock
-  private DateHelper dateHelper;
-
-  @Mock
   private PeriodReferenceDataService periodReferenceDataService;
 
   @Mock
@@ -140,7 +135,6 @@ public class StockEventBuilderTest {
     when(configurationSettingService.getReasonIdForBeginningBalanceInsufficiency())
         .thenReturn(beginningBalanceInsufficiency.getReasonId());
 
-    when(dateHelper.getZone()).thenReturn(ZONE_ID);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     when(stockCardStockManagementService.getStockCards(
         requisition.getFacilityId(),

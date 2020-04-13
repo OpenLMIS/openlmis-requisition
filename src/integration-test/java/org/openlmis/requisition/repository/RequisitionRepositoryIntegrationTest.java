@@ -91,7 +91,7 @@ public class RequisitionRepositoryIntegrationTest
 
   private List<Requisition> requisitions;
 
-  private Pageable pageRequest = new PageRequest(
+  private Pageable pageRequest = PageRequest.of(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Autowired
@@ -485,7 +485,7 @@ public class RequisitionRepositoryIntegrationTest
     UUID id1 = requisitions.get(0).getId();
     UUID id2 = requisitions.get(1).getId();
 
-    List<Requisition> foundRequisitions = Lists.newArrayList(repository.findAll(
+    List<Requisition> foundRequisitions = Lists.newArrayList(repository.findAllById(
         Lists.newArrayList(id1, id2, UUID.randomUUID())));
 
     assertThat(foundRequisitions, is(notNullValue()));
@@ -501,7 +501,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition.setPreviousRequisitions(requisitions);
 
     requisition = repository.save(requisition);
-    requisition = repository.findOne(requisition.getId());
+    requisition = repository.findById(requisition.getId()).orElse(null);
 
     assertEquals(5, requisition.getPreviousRequisitions().size());
   }
@@ -530,7 +530,7 @@ public class RequisitionRepositoryIntegrationTest
     requisition1.setEmergency(false);
     requisition2.setEmergency(false);
 
-    repository.save(asList(requisition1, requisition2));
+    repository.saveAll(asList(requisition1, requisition2));
 
     entityManager.flush();
   }
@@ -549,7 +549,7 @@ public class RequisitionRepositoryIntegrationTest
     emergencyRequisition2.setEmergency(true);
     regularRequisition.setEmergency(false);
 
-    repository.save(asList(regularRequisition, emergencyRequisition1, emergencyRequisition2));
+    repository.saveAll(asList(regularRequisition, emergencyRequisition1, emergencyRequisition2));
 
     entityManager.flush();
   }
@@ -680,7 +680,7 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair<UUID, UUID>> programNodePairs =
         singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
-    Pageable sortPageRequest = new PageRequest(
+    Pageable sortPageRequest = PageRequest.of(
         Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, Direction.DESC, "emergency");
 
     // when
@@ -776,7 +776,7 @@ public class RequisitionRepositoryIntegrationTest
     Set<Pair<UUID, UUID>> programNodePairs =
         singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
-    Pageable sortPageRequest = new PageRequest(
+    Pageable sortPageRequest = PageRequest.of(
         Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION, direction, "authorizedDate");
 
     // make sure that data have been retrieved from the database
@@ -861,7 +861,7 @@ public class RequisitionRepositoryIntegrationTest
     requisitions.get(2).setStatus(APPROVED);
     requisitions.get(3).setStatus(RELEASED);
     requisitions.get(4).setStatus(SKIPPED);
-    repository.save(requisitions);
+    repository.saveAll(requisitions);
 
     Set<Pair<UUID, UUID>> programNodePairs =
         singleton(new ImmutablePair<>(programId, supervisoryNodeId));
@@ -902,7 +902,7 @@ public class RequisitionRepositoryIntegrationTest
   public void searchShouldUseSortProperties() {
     Requisition requisitionToCopy = requisitions.get(1);
 
-    pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
+    pageRequest = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
         Sort.Direction.ASC, "createdDate");
 
     Requisition requisition = new RequisitionDataBuilder()
@@ -939,7 +939,7 @@ public class RequisitionRepositoryIntegrationTest
     assertTrue(receivedRequisitions.get(0).getCreatedDate()
         .compareTo(receivedRequisitions.get(1).getCreatedDate()) < 0);
 
-    pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
+    pageRequest = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION,
         Sort.Direction.DESC, "createdDate");
 
     receivedRequisitions = repository
@@ -1107,7 +1107,7 @@ public class RequisitionRepositoryIntegrationTest
       }
     }
 
-    repository.save(requisitions);
+    repository.saveAll(requisitions);
 
     // when
     boolean result = repository.existsByOriginalRequisitionId(originalRequisitionId);
@@ -1120,7 +1120,7 @@ public class RequisitionRepositoryIntegrationTest
   public void shouldReturnFalseIfThereAreNoRequisitionsWithOriginalRequisitionId() {
     // given
     requisitions.forEach(requisition -> requisition.setOriginalRequisitionId(null));
-    repository.save(requisitions);
+    repository.saveAll(requisitions);
 
     // when
     boolean result = repository.existsByOriginalRequisitionId(requisitions.get(3).getId());

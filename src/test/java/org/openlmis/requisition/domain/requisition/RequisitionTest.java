@@ -33,7 +33,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.CurrencyConfig.currencyCode;
@@ -345,7 +344,8 @@ public class RequisitionTest {
     requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
-    verifyStatic(times(1));
+    verifyStatic(LineItemFieldsCalculator.class);
+    LineItemFieldsCalculator.calculateTotal(any(RequisitionLineItem.class));
   }
 
   @Test
@@ -511,7 +511,8 @@ public class RequisitionTest {
 
     requisition.setTemplate(requisitionTemplate);
     requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
-    verifyStatic(times(1));
+    verifyStatic(LineItemFieldsCalculator.class);
+    LineItemFieldsCalculator.calculateStockOnHand(any(RequisitionLineItem.class));
   }
 
   @Test

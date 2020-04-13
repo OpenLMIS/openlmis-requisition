@@ -120,7 +120,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.setLogger(XLOGGER);
 
     profiler.start("FIND_ALL_REQUISITIONS_BY_IDS");
-    List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAll(uuids));
+    List<Requisition> requisitions = Lists.newArrayList(requisitionRepository.findAllById(uuids));
 
     Map<UUID, FacilityDto> facilities = findFacilities(requisitions, profiler);
     profiler.start("FIND_ALL_ORDERABLES_FOR_REQUISITIONS");

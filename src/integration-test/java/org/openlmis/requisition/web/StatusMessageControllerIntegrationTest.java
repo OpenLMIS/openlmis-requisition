@@ -24,6 +24,7 @@ import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIE
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,7 +113,7 @@ public class StatusMessageControllerIntegrationTest extends BaseWebIntegrationTe
         .withStatus(requisition.getStatus())
         .build();
 
-    given(statusMessageRepository.findOne(messageId)).willReturn(message);
+    given(statusMessageRepository.findById(messageId)).willReturn(Optional.of(message));
     return message;
   }
 }

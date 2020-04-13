@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_REQUISITION_APPROVED_CONTENT;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_EMERGENCY;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_TYPE_REGULAR;
 
 import java.time.ZonedDateTime;
@@ -120,7 +119,6 @@ public class ApprovedRequisitionNotifierTest {
   private ZonedDateTime createdDate = ZonedDateTime.parse("2017-05-08T10:15:30+01:00");
 
   private Message regularRequisitionMessage = new Message(REQUISITION_TYPE_REGULAR);
-  private Message emergencyRequisitionMessage = new Message(REQUISITION_TYPE_EMERGENCY);
 
   private RightDto right = DtoGenerator.of(RightDto.class);
 
@@ -272,8 +270,6 @@ public class ApprovedRequisitionNotifierTest {
   private void mockMessages() {
     when(messageService.localize(eq(regularRequisitionMessage), eq(locale)))
         .thenReturn(regularRequisitionMessage.new LocalizedMessage("regular"));
-    when(messageService.localize(eq(emergencyRequisitionMessage), eq(locale)))
-        .thenReturn(emergencyRequisitionMessage.new LocalizedMessage("emergency"));
 
     Message requisitionApprovedSubject =
         new Message(REQUISITION_EMAIL_REQUISITION_APPROVED_SUBJECT);

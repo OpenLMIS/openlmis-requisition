@@ -86,7 +86,7 @@ public class JasperTemplateService {
       throws ReportingException {
     JasperTemplate templateTmp = jasperTemplateRepository.findByName(jasperTemplate.getName());
     if (templateTmp != null) {
-      jasperTemplateRepository.delete(templateTmp.getId());
+      jasperTemplateRepository.deleteById(templateTmp.getId());
     }
     validateFileAndSetData(jasperTemplate, file);
     saveWithParameters(jasperTemplate);

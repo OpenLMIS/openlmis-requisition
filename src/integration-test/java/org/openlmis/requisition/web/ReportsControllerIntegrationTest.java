@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -95,7 +96,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldNotPrintRequisitionWhenDoesNotExist() {
     // given
-    given(requisitionRepository.findOne(anyUuid())).willReturn(null);
+    given(requisitionRepository.findById(anyUuid())).willReturn(Optional.empty());
 
     // when
     restAssured.given()

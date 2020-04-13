@@ -22,11 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,14 +47,10 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.OrderableDto;
-import org.openlmis.requisition.dto.ProcessingPeriodDto;
-import org.openlmis.requisition.dto.ProcessingScheduleDto;
-import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
@@ -74,18 +67,6 @@ public class RequisitionExportHelperTest {
   private ApprovedProductDto approvedProductDto;
 
   @Mock
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Mock
-  private ProcessingPeriodDto periodDto1;
-
-  @Mock
-  private ProcessingPeriodDto periodDto2;
-
-  @Mock
-  private ProcessingPeriodDto periodDto3;
-
-  @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
@@ -100,15 +81,12 @@ public class RequisitionExportHelperTest {
 
   private UUID program = UUID.randomUUID();
   private UUID period1 = UUID.randomUUID();
-  private UUID period2 = UUID.randomUUID();
-  private UUID period3 = UUID.randomUUID();
   private UUID productId = UUID.randomUUID();
   private UUID approvedProductId = UUID.randomUUID();
 
   @Before
   public void setUp() {
     generateInstances();
-    mockRepositories();
   }
 
   @Test
@@ -246,25 +224,5 @@ public class RequisitionExportHelperTest {
         .withOrderable(productId, 1L)
         .withFacilityTypeApprovedProduct(approvedProductId, 1L)
         .build();
-  }
-
-  private void mockRepositories() {
-    when(programReferenceDataService
-        .findOne(any()))
-        .thenReturn(new ProgramDto());
-    when(periodDto1.getProcessingSchedule())
-        .thenReturn(new ProcessingScheduleDto());
-    when(periodDto1.getStartDate())
-        .thenReturn(LocalDate.of(2016, Month.MARCH, 10));
-    when(periodDto2.getStartDate())
-        .thenReturn(LocalDate.of(2016, Month.FEBRUARY, 10));
-    when(periodDto3.getStartDate())
-        .thenReturn(LocalDate.of(2016, Month.JANUARY, 10));
-    when(periodDto1.getId())
-        .thenReturn(period1);
-    when(periodDto2.getId())
-        .thenReturn(period2);
-    when(periodDto3.getId())
-        .thenReturn(period3);
   }
 }

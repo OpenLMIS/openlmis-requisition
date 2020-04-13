@@ -15,23 +15,16 @@
 
 package org.openlmis.requisition.service;
 
-import static java.io.File.createTempFile;
-import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
-import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_FORMAT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -39,20 +32,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
@@ -87,12 +79,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Service
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class JasperReportsViewService {
   private static final String DATASOURCE = "datasource";
   private static final String REQUISITION_REPORT_DIR = "/jasperTemplates/requisition.jrxml";
@@ -139,42 +128,29 @@ public class JasperReportsViewService {
   private String currencyLocale;
 
   /**
-   * Create Jasper Report View.
-   * Create Jasper Report (".jasper" file) from bytes from Template entity.
-   * Set 'Jasper' exporter parameters, JDBC data source, web application context, url to file.
+   * Generate Jasper Report.
    *
-   * @param jasperTemplate template that will be used to create a view
-   * @param request  it is used to take web application context
-   * @return created jasper view.
-   * @throws JasperReportViewException if there will be any problem with creating the view.
+   * @param jasperTemplate template that will be used to generate the report
+   * @param params report parameters
+   * @return generated report.
+   * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public JasperReportsMultiFormatView getJasperReportsView(
-      JasperTemplate jasperTemplate, HttpServletRequest request) throws JasperReportViewException {
-    JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
-    setExportParams(jasperView);
-    jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
-    jasperView.setJdbcDataSource(replicationDataSource);
-
-    if (getApplicationContext(request) != null) {
-      jasperView.setApplicationContext(getApplicationContext(request));
-    }
-    return jasperView;
+  public byte[] generateReport(JasperTemplate jasperTemplate, Map<String, Object> params)
+      throws JasperReportViewException {
+    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), params);
   }
 
   /**
-   * Get customized Jasper Report View for Reporting Rate Report.
+   * Generate Jasper Reporting Rate Report.
    *
-   * @param jasperTemplate jasper template for report
-   * @param request http request for filling application context
-   * @param params template parameters populated with values from the request
-   * @return customized jasper view.
+   * @param jasperTemplate template that will be used to generate the report
+   * @param params report parameters
+   * @return generated report.
+   * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public JasperReportsMultiFormatView getReportingRateJasperReportsView(
-      JasperTemplate jasperTemplate, HttpServletRequest request, Map<String, Object> params)
+  public byte[] generateReportingRateReport(JasperTemplate jasperTemplate,
+      Map<String, Object> params)
       throws JasperReportViewException {
-    JasperReportsMultiFormatView jasperView = createJasperMultiFormatView();
-    setExportParams(jasperView);
-    jasperView.setUrl(getReportUrlForReportData(jasperTemplate));
 
     UUID programId = (UUID) processParameter(params, "Program", true, UUID.class);
     ProgramDto program = programReferenceDataService.findOne(programId);
@@ -196,26 +172,22 @@ public class JasperReportsViewService {
 
     ReportingRateReportDto reportDto = reportingRateReportDtoBuilder.build(program, period, zone,
         dueDays);
-    params.put(DATASOURCE, new JRBeanCollectionDataSource(Collections.singletonList(reportDto)));
+    params.put(DATASOURCE, Collections.singletonList(reportDto));
     params.put("dateFormat", dateFormat);
     params.put("decimalFormat", createDecimalFormat());
 
-    if (getApplicationContext(request) != null) {
-      jasperView.setApplicationContext(getApplicationContext(request));
-    }
-    return jasperView;
+    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), params);
   }
 
   /**
-   * Create custom Jasper Report View for printing a requisition.
+   * Generate Jasper Report for printing a requisition.
    *
-   * @param requisition requisition to render report for.
-   * @param request  it is used to take web application context.
-   * @return created jasper view.
-   * @throws JasperReportViewException if there will be any problem with creating the view.
+   * @param requisition requisition for printing the report.
+   * @return generated report.
+   * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public ModelAndView getRequisitionJasperReportView(
-      Requisition requisition, HttpServletRequest request) throws JasperReportViewException {
+  public byte[] generateRequisitionReport(Requisition requisition)
+      throws JasperReportViewException {
     RequisitionReportDto reportDto = requisitionReportDtoBuilder.build(requisition);
     RequisitionTemplate template = requisition.getTemplate();
 
@@ -229,25 +201,20 @@ public class JasperReportsViewService {
     params.put("currencyDecimalFormat",
         NumberFormat.getCurrencyInstance(getLocaleFromService()));
 
-    JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
-    setExportParams(jasperView);
-    setCustomizedJasperTemplateForRequisitionReport(jasperView);
-
-    if (getApplicationContext(request) != null) {
-      jasperView.setApplicationContext(getApplicationContext(request));
-    }
-    return new ModelAndView(jasperView, params);
+    return fillAndExportReport(compileReportFromTemplateUrl(REQUISITION_REPORT_DIR), params);
   }
 
   /**
-   * Get customized Jasper Report View for Timeliness Report.
+   * Generate Jasper Reporting Rate Report.
    *
-   * @param jasperView generic jasper report view
-   * @param parameters template parameters populated with values from the request
-   * @return customized jasper view.
+   * @param jasperTemplate template that will be used to generate the report
+   * @param parameters report parameters
+   * @return generated report.
+   * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public ModelAndView getTimelinessJasperReportView(JasperReportsMultiFormatView jasperView,
-                                                    Map<String, Object> parameters) {
+  public byte[] generateTimelinessReport(JasperTemplate jasperTemplate,
+      Map<String, Object> parameters)
+      throws JasperReportViewException {
     ProgramDto program = programReferenceDataService.findOne(
         UUID.fromString(parameters.get("program").toString())
     );
@@ -262,12 +229,12 @@ public class JasperReportsViewService {
     }
     List<FacilityDto> facilities = getFacilitiesForTimelinessReport(program, period, district);
 
-    parameters.put(DATASOURCE, new JRBeanCollectionDataSource(facilities));
+    parameters.put(DATASOURCE, facilities);
     parameters.put("program", program);
     parameters.put("period", period);
     parameters.put("district", district);
 
-    return new ModelAndView(jasperView, parameters);
+    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), parameters);
   }
 
   private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template,
@@ -292,76 +259,73 @@ public class JasperReportsViewService {
     }
   }
 
-  private void setCustomizedJasperTemplateForRequisitionReport(
-      JasperReportsMultiFormatView jasperView) throws JasperReportViewException {
-    try (InputStream inputStream = getClass().getResourceAsStream(REQUISITION_REPORT_DIR)) {
-      File reportTempFile = createTempFile("requisitionReport_temp", ".jasper");
-      JasperReport report = JasperCompileManager.compileReport(inputStream);
-
-      ByteArrayOutputStream bos = createByteArrayOutputStream();
-      try (ObjectOutputStream out = createObjectOutputStream(bos)) {
-
-        out.writeObject(report);
-        writeByteArrayToFile(reportTempFile, bos.toByteArray());
-
-        jasperView.setUrl(reportTempFile.toURI().toURL().toString());
-      }
-    } catch (IOException err) {
-      throw new JasperReportViewException(err, ERROR_IO, err.getMessage());
-    } catch (JRException err) {
-      throw new JasperReportViewException(err, ERROR_JASPER_FILE_FORMAT, err.getMessage());
-    }
-  }
-
   /**
-   * Set export parameters in jasper view.
+   * Fill in and export a compiled report.
    */
-  private void setExportParams(JasperReportsMultiFormatView jasperView) {
-    Map<JRExporterParameter, Object> reportFormatMap = new HashMap<>();
-    reportFormatMap.put(IS_USING_IMAGES_TO_ALIGN, false);
-    jasperView.setExporterParameters(reportFormatMap);
-  }
-
-  /**
-   * Get application context from servlet.
-   */
-  public WebApplicationContext getApplicationContext(HttpServletRequest servletRequest) {
-    ServletContext servletContext = servletRequest.getSession().getServletContext();
-    return WebApplicationContextUtils.getWebApplicationContext(servletContext);
-  }
-
-  /**
-   * Create ".jasper" file with byte array from Template.
-   *
-   * @return Url to ".jasper" file.
-   */
-  private String getReportUrlForReportData(JasperTemplate jasperTemplate)
+  byte[] fillAndExportReport(JasperReport compiledReport, Map<String, Object> params)
       throws JasperReportViewException {
-    File tmpFile;
+
+    byte[] bytes;
 
     try {
-      tmpFile = createTempFile(jasperTemplate.getName() + "_temp", ".jasper");
-    } catch (IOException exp) {
-      throw new JasperReportViewException(
-          exp, ERROR_JASPER_FILE_CREATION
-      );
+      JasperPrint jasperPrint;
+      if (params.containsKey(DATASOURCE)) {
+        jasperPrint = JasperFillManager.fillReport(compiledReport, params,
+            new JRBeanCollectionDataSource((List) params.get(DATASOURCE)));
+      } else {
+        jasperPrint = JasperFillManager.fillReport(compiledReport, params,
+            replicationDataSource.getConnection());
+      }
+
+      JasperExporter exporter;
+      String format = (String) params.get("format");
+      if ("csv".equals(format)) {
+        exporter = new JasperCsvExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else if ("xls".equals(format)) {
+        exporter = new JasperXlsExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else if ("html".equals(format)) {
+        exporter = new JasperHtmlExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else {
+        bytes = JasperExportManager.exportReportToPdf(jasperPrint);
+      }
+    } catch (Exception e) {
+      throw new JasperReportViewException(e, ERROR_JASPER_FILE_FORMAT, e.getMessage());
     }
 
+    return bytes;
+  }
+
+  /**
+   * Return a compiled report from a Jasper template URL string.
+   */
+  private JasperReport compileReportFromTemplateUrl(String templateUrl)
+      throws JasperReportViewException {
+    try (InputStream inputStream = getClass().getResourceAsStream(templateUrl)) {
+
+      return JasperCompileManager.compileReport(inputStream);
+    } catch (IOException ex) {
+      throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
+    } catch (JRException ex) {
+      throw new JasperReportViewException(ex, ERROR_JASPER_FILE_FORMAT, ex.getMessage());
+    }
+  }
+
+  /**
+   * Get (compiled) Jasper report from Jasper template.
+   */
+  private JasperReport getReportFromTemplateData(JasperTemplate jasperTemplate)
+      throws JasperReportViewException {
+
     try (ObjectInputStream inputStream = createObjectInputStream(jasperTemplate)) {
-      JasperReport jasperReport = readReportData(inputStream);
 
-      try (ByteArrayOutputStream bos = createByteArrayOutputStream();
-           ObjectOutputStream out = createObjectOutputStream(bos)) {
-
-        out.writeObject(jasperReport);
-        writeByteArrayToFile(tmpFile, bos.toByteArray());
-
-        return tmpFile.toURI().toURL().toString();
-      }
-    } catch (IOException exp) {
-      throw new JasperReportViewException(exp, ERROR_IO, exp.getMessage());
-    } catch (ClassNotFoundException exp) {
-      throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
+      return readReportData(inputStream);
+    } catch (IOException ex) {
+      throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
+    } catch (ClassNotFoundException ex) {
+      throw new JasperReportViewException(ex, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
     }
   }
 
@@ -386,7 +350,7 @@ public class JasperReportsViewService {
             facility.getId(), program.getId(), processingPeriod.getId(),
             null, null, null, null, null, null, validStatuses);
 
-        PageRequest pageRequest = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER,
+        PageRequest pageRequest = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER,
             Pagination.NO_PAGINATION);
 
         List<Requisition> requisitions = requisitionService
@@ -443,22 +407,11 @@ public class JasperReportsViewService {
     return decimalFormat;
   }
 
-  protected ByteArrayOutputStream createByteArrayOutputStream() {
-    return new ByteArrayOutputStream();
-  }
-
-  protected ObjectOutputStream createObjectOutputStream(ByteArrayOutputStream bos)
-      throws IOException {
-    return new ObjectOutputStream(bos);
-  }
-
+  // These methods are here so that the tests are easier to write.
+  
   protected ObjectInputStream createObjectInputStream(JasperTemplate jasperTemplate)
       throws IOException {
     return new ObjectInputStream(new ByteArrayInputStream(jasperTemplate.getData()));
-  }
-
-  protected JasperReportsMultiFormatView createJasperMultiFormatView() {
-    return new JasperReportsMultiFormatView();
   }
 
   protected JasperReport readReportData(ObjectInputStream objectInputStream)

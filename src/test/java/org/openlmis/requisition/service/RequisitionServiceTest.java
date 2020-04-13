@@ -33,11 +33,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -73,6 +70,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -280,7 +278,7 @@ public class RequisitionServiceTest {
       .buildAsDto();
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private ProcessingPeriodDto processingPeriod = DtoGenerator.of(ProcessingPeriodDto.class);
-  private PageRequest pageRequest = new PageRequest(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
+  private PageRequest pageRequest = PageRequest.of(DEFAULT_PAGE_NUMBER, NO_PAGINATION);
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private Requisition previousRequisition;
   private SupplyLineDto supplyLine = new SupplyLineDtoDataBuilder()
@@ -363,7 +361,7 @@ public class RequisitionServiceTest {
 
     requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
-    verify(statusMessageRepository).delete(statusMessages);
+    verify(statusMessageRepository).deleteAll(statusMessages);
   }
 
   @Test(expected = ValidationMessageException.class)
@@ -445,11 +443,6 @@ public class RequisitionServiceTest {
 
     requisition.setStatus(IN_APPROVAL);
 
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
-        .thenReturn(true);
     when(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
         .thenReturn(true);
 
@@ -463,12 +456,6 @@ public class RequisitionServiceTest {
 
     requisition.setStatus(IN_APPROVAL);
     requisition.setOriginalRequisitionId(UUID.randomUUID());
-
-    when(permissionService.canApproveRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
-        .thenReturn(true);
 
     requisitionService.reject(requisition, emptyMap());
   }
@@ -652,9 +639,7 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldFailValidationIfRequisitionDoesNotExistOnSave() {
-    when(permissionService.canUpdateRequisition(any(Requisition.class)))
-        .thenReturn(ValidationResult.success());
-    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(null);
+    when(requisitionRepository.findById(requisitionDto.getId())).thenReturn(Optional.empty());
 
     ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
 
@@ -666,7 +651,8 @@ public class RequisitionServiceTest {
   public void shouldFailValidationIfRequisitionIsInIncorrectStatus() {
     when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
-    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
+    when(requisitionRepository.findById(requisitionDto.getId()))
+        .thenReturn(Optional.of(requisition));
     requisition.setStatus(RELEASED);
 
     ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
@@ -679,7 +665,8 @@ public class RequisitionServiceTest {
   public void shouldPassValidationIfUserCanUpdateRequisition() {
     when(permissionService.canUpdateRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
-    when(requisitionRepository.findOne(requisitionDto.getId())).thenReturn(requisition);
+    when(requisitionRepository.findById(requisitionDto.getId()))
+        .thenReturn(Optional.of(requisition));
     requisition.setStatus(SUBMITTED);
 
     ValidationResult result = requisitionService.validateCanSaveRequisition(requisitionDto.getId());
@@ -695,17 +682,10 @@ public class RequisitionServiceTest {
 
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
 
-    when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(null);
-
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setStartDate(LocalDate.of(2016, 11, 1));
     periodDto.setEndDate(LocalDate.of(2016, 11, 30));
     periodDto.setDurationInMonths(1);
-    doReturn(periodDto)
-        .when(periodService)
-        .findPeriod(program.getId(), facility.getId(), processingPeriod.getId(), false);
 
     Requisition initiatedRequisition = requisitionService.initiate(
         program, facility, processingPeriod, false,
@@ -847,7 +827,6 @@ public class RequisitionServiceTest {
     prepareForTestInitiate(SETTING);
     when(periodService.findPreviousPeriods(any(UUID.class), eq(SETTING - 1)))
         .thenReturn(singletonList(new ProcessingPeriodDto()));
-    mockNoPreviousRequisition();
     ApproveProductsAggregator aggregator = mockApprovedProduct(
         new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
@@ -990,7 +969,6 @@ public class RequisitionServiceTest {
         .findPreviousPeriods(processingPeriod, 4))
         .thenReturn(periods);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     whenGetStockCardSummaries().thenReturn(emptyList());
 
     ApproveProductsAggregator aggregator = mockApprovedProduct(
@@ -1086,8 +1064,6 @@ public class RequisitionServiceTest {
   public void shouldCallApproveRequisition() {
     OrderableDto fullSupplyOrderable = new OrderableDtoDataBuilder().buildAsDto();
     SupplyLineDto supplyLineDto = new SupplyLineDtoDataBuilder().buildAsDto();
-    when(orderableReferenceDataService.findByIdentities(any())).thenReturn(
-        singletonList(fullSupplyOrderable));
 
     UUID parentId = UUID.randomUUID();
 
@@ -1304,9 +1280,6 @@ public class RequisitionServiceTest {
     when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(user.getId(),
         convertToOrderRight.getId())).thenReturn(facilities);
 
-    doThrow(new ValidationMessageException(("test"))).when(
-      orderFulfillmentService).create(any(List.class));
-
     // when
     requisitionService.convertToOrder(list, user);
   }
@@ -1419,7 +1392,6 @@ public class RequisitionServiceTest {
     // given
     List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(1,
         APPROVED);
-    when(requisitionTemplate.isColumnInTemplateAndDisplayed(APPROVED_QUANTITY)).thenReturn(false);
 
     // when
     List<Requisition> result = requisitionService.releaseWithoutOrder(requisitions);
@@ -1451,7 +1423,7 @@ public class RequisitionServiceTest {
   }
 
   private Pageable mockPageable(int pageNumber, int pageSize) {
-    return new PageRequest(pageNumber, pageSize, new Sort(Sort.Direction.DESC, "programName"));
+    return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "programName"));
   }
 
   private List<ReleasableRequisitionDto> setUpReleaseRequisitionsAsOrder(
@@ -1474,7 +1446,8 @@ public class RequisitionServiceTest {
       requisition.setRequisitionLineItems(Lists.newArrayList());
       requisition.setTemplate(requisitionTemplate);
 
-      when(requisitionRepository.findOne(requisition.getId())).thenReturn(requisition);
+      when(requisitionRepository.findById(requisition.getId()))
+          .thenReturn(Optional.of(requisition));
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
 
       result.add(new ReleasableRequisitionDto(requisition.getId(), facility.getId()));
@@ -1577,12 +1550,6 @@ public class RequisitionServiceTest {
         .thenReturn(singletonList(previousRequisition));
   }
 
-  private void mockNoPreviousRequisition() {
-    when(requisitionRepository
-        .searchRequisitions(any(UUID.class), any(UUID.class), any(UUID.class), any(Boolean.class)))
-        .thenReturn(emptyList());
-  }
-
   private ApproveProductsAggregator mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
     assertThat(products.length, is(fullSupply.length));
 
@@ -1608,17 +1575,6 @@ public class RequisitionServiceTest {
 
   private void prepareForTestInitiate(Integer numberOfPeriodsToAverage) {
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
-
-    when(requisitionRepository.findOne(requisition.getId())).thenReturn(null);
-
-    when(facilityReferenceDataService.findOne(facility.getId()))
-        .thenReturn(new FacilityDto());
-    when(programReferenceDataService.findOne(program.getId()))
-        .thenReturn(new ProgramDto());
-
-    when(periodService.findPeriod(
-        eq(program.getId()), eq(facility.getId()), eq(processingPeriod.getId()), anyBoolean()))
-        .thenReturn(processingPeriod);
   }
 
   private List<Requisition> mockSearchRequisitionsForApproval() {
@@ -1637,17 +1593,14 @@ public class RequisitionServiceTest {
 
   private void mockRepositories() {
     when(requisitionRepository
-        .findOne(requisition.getId()))
-        .thenReturn(requisition);
+        .findById(requisition.getId()))
+        .thenReturn(Optional.of(requisition));
     when(requisitionRepository
         .save(requisition))
         .thenReturn(requisition);
     when(requisitionRepository
         .save(requisition))
         .thenReturn(requisition);
-    when(programReferenceDataService
-        .findOne(any()))
-        .thenReturn(program);
     when(authenticationHelper
         .getRight(ORDERS_EDIT))
         .thenReturn(convertToOrderRight);
@@ -1656,16 +1609,6 @@ public class RequisitionServiceTest {
         .thenReturn(approveRequisitionRight);
 
     processingPeriod.setDurationInMonths(1);
-    when(periodService
-        .getPeriod(any()))
-        .thenReturn(processingPeriod);
-
-    when(periodService
-        .findPeriod(program.getId(), facility.getId(), processingPeriod.getId(), false))
-        .thenReturn(processingPeriod);
-
-    when(scheduleReferenceDataService.searchByProgramAndFacility(any(), any()))
-        .thenReturn(singletonList(processingPeriod.getProcessingSchedule()));
 
     when(periodService.searchByProgramAndFacility(any(), any()))
         .thenReturn(singletonList(processingPeriod));
@@ -1742,16 +1685,9 @@ public class RequisitionServiceTest {
             any(LocalDate.class)));
   }
 
-  private OngoingStubbing<List<StockCardRangeSummaryDto>> whenGetStockCardRangeSummaries() {
-    return when(stockCardRangeSummaryStockManagementService
-        .search(any(UUID.class), any(UUID.class), anySetOf(VersionIdentityDto.class),
-            any(String.class), any(LocalDate.class), any(LocalDate.class)));
-  }
-
   private void prepareForGetStockOnHandTest() {
     prepareForTestInitiate(SETTING);
     when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
-    whenGetStockCardRangeSummaries().thenReturn(singletonList(stockCardRangeSummaryDto));
     when(stockCardSummariesStockManagementService
         .search(program.getId(), facility.getId(), singleton(PRODUCT_ID),
             processingPeriod.getEndDate()))

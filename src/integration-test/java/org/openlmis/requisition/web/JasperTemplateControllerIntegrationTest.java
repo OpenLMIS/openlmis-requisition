@@ -18,20 +18,19 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.JasperTemplate;
@@ -44,7 +43,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -141,7 +139,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   @Test
   public void shouldNotDeleteNonExistentTemplate() {
     // given
-    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
+    given(jasperTemplateRepository.findById(any(UUID.class))).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -183,7 +181,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   @Test
   public void shouldNotGetNonExistentTemplate() {
     // given
-    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
+    given(jasperTemplateRepository.findById(any(UUID.class))).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -204,7 +202,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   @Test
   public void generateReportShouldReturnNotFoundWhenReportTemplateDoesNotExist() {
     // given
-    given(jasperTemplateRepository.findOne(any(UUID.class))).willReturn(null);
+    given(jasperTemplateRepository.findById(any(UUID.class))).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -248,15 +246,10 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     // given
     JasperTemplate template = generateTemplate();
 
-    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
-    given(view.getContentType()).willReturn(contentType);
-    given(view.getContentDispositionMappings()).willReturn(mock(Properties.class));
-    given(view.getContentDispositionMappings().getProperty("attachment.pdf")).willReturn("text");
-
-    given(jasperTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(jasperTemplateRepository.findById(template.getId())).willReturn(Optional.of(template));
     given(jasperReportsViewService
-        .getJasperReportsView(any(JasperTemplate.class), any(HttpServletRequest.class)))
-        .willReturn(view);
+        .generateReport(any(JasperTemplate.class), anyMap()))
+        .willReturn(new byte[1]);
 
     // when
     restAssured.given()
@@ -280,7 +273,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     template.setName("name");
 
     if (persistent) {
-      given(jasperTemplateRepository.findOne(template.getId())).willReturn(template);
+      given(jasperTemplateRepository.findById(template.getId())).willReturn(Optional.of(template));
     }
 
     return template;

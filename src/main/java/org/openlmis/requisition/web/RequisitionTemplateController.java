@@ -139,7 +139,8 @@ public class RequisitionTemplateController extends BaseController {
 
     RequisitionTemplate template = RequisitionTemplate.newInstance(requisitionTemplateDto,
         findColumnNamesWithTagRequired());
-    RequisitionTemplate toUpdate = requisitionTemplateRepository.findOne(requisitionTemplateId);
+    RequisitionTemplate toUpdate = requisitionTemplateRepository.findById(requisitionTemplateId)
+        .orElse(null);
     RequisitionTemplate toSave;
 
     if (toUpdate == null) {
@@ -181,13 +182,11 @@ public class RequisitionTemplateController extends BaseController {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
     RequisitionTemplate requisitionTemplate =
-        requisitionTemplateRepository.findOne(requisitionTemplateId);
-    if (requisitionTemplate == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
-    } else {
-      return dtoBuilder.newInstance(requisitionTemplate);
-    }
+        requisitionTemplateRepository.findById(requisitionTemplateId)
+            .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
+                MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId)));
+
+    return dtoBuilder.newInstance(requisitionTemplate);
   }
 
   /**
@@ -199,13 +198,9 @@ public class RequisitionTemplateController extends BaseController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisitionTemplate(@PathVariable("id") UUID requisitionTemplateId) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
-    RequisitionTemplate template = requisitionTemplateRepository
-        .findOne(requisitionTemplateId);
-
-    if (template == null) {
-      throw new ContentNotFoundMessageException(new Message(
-          MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId));
-    }
+    RequisitionTemplate template = requisitionTemplateRepository.findById(requisitionTemplateId)
+        .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
+            MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND_FOR_ID, requisitionTemplateId)));
 
     if (!requisitionRepository.findByTemplateId(template.getId()).isEmpty()) {
       throw new ValidationMessageException(new Message(

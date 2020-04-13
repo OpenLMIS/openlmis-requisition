@@ -52,7 +52,7 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
    * @return A list of periods matching search criteria
    */
   public Collection<ProcessingPeriodDto> search(UUID processingScheduleId, LocalDate endDate) {
-    return search(processingScheduleId, endDate, new PageRequest(0, Integer.MAX_VALUE));
+    return search(processingScheduleId, endDate, PageRequest.of(0, Integer.MAX_VALUE));
   }
 
   /**

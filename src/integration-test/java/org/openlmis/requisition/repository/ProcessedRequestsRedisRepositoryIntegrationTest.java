@@ -44,7 +44,7 @@ public class ProcessedRequestsRedisRepositoryIntegrationTest {
 
   @Autowired
   private ProcessedRequestsRedisRepository redisRepository;
-
+  
   @Test
   public void shouldSaveAndFindIdempotencyKeysWithoutLocation() {
     redisRepository.addOrUpdate(idempotencyKey1, null);
@@ -73,5 +73,4 @@ public class ProcessedRequestsRedisRepositoryIntegrationTest {
     redisRepository.addOrUpdate(idempotencyKey1, resource2);
     assertEquals(resource2, redisRepository.findByIdempotencyKey(idempotencyKey1));
   }
-
 }

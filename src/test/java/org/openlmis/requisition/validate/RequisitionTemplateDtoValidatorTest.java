@@ -65,6 +65,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
@@ -191,8 +192,8 @@ public class RequisitionTemplateDtoValidatorTest {
         .getColumnsMap()
         .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
 
-    when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-        .thenReturn(column.getColumnDefinition());
+    when(availableRequisitionColumnRepository.findById(column.getColumnDefinition().getId()))
+        .thenReturn(Optional.of(column.getColumnDefinition()));
 
     validator.validate(template, errors);
 
@@ -228,8 +229,8 @@ public class RequisitionTemplateDtoValidatorTest {
         .getColumnsMap()
         .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
 
-    when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-        .thenReturn(column.getColumnDefinition());
+    when(availableRequisitionColumnRepository.findById(column.getColumnDefinition().getId()))
+        .thenReturn(Optional.of(column.getColumnDefinition()));
 
     validator.validate(template, errors);
 
@@ -294,8 +295,8 @@ public class RequisitionTemplateDtoValidatorTest {
         .getColumnsMap()
         .put(TOTAL_STOCKOUT_DAYS, RequisitionTemplateColumnDto.newInstance(column));
 
-    when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-        .thenReturn(column.getColumnDefinition());
+    when(availableRequisitionColumnRepository.findById(column.getColumnDefinition().getId()))
+        .thenReturn(Optional.of(column.getColumnDefinition()));
 
     validator.validate(requisitionTemplate, errors);
 
@@ -437,8 +438,8 @@ public class RequisitionTemplateDtoValidatorTest {
   public void shouldRejectIfColumnDefinitionCannotBeFound() throws Exception {
     RequisitionTemplateDto template = generateTemplate();
 
-    when(availableRequisitionColumnRepository.findOne(template.getColumnsMap().get(STOCK_ON_HAND)
-        .getColumnDefinition().getId())).thenReturn(null);
+    when(availableRequisitionColumnRepository.findById(template.getColumnsMap().get(STOCK_ON_HAND)
+        .getColumnDefinition().getId())).thenReturn(Optional.empty());
 
     validator.validate(template, errors);
 
@@ -451,8 +452,8 @@ public class RequisitionTemplateDtoValidatorTest {
     RequisitionTemplateDto template = generateTemplate();
 
     when(availableRequisitionColumnRepository
-        .findOne(template.getColumnsMap().get(STOCK_ON_HAND).getColumnDefinition().getId()))
-        .thenReturn(new AvailableRequisitionColumn());
+        .findById(template.getColumnsMap().get(STOCK_ON_HAND).getColumnDefinition().getId()))
+        .thenReturn(Optional.of(new AvailableRequisitionColumn()));
 
     validator.validate(template, errors);
 
@@ -693,8 +694,9 @@ public class RequisitionTemplateDtoValidatorTest {
 
   private void mockResponses(RequisitionTemplateDto template) {
     for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
-      when(availableRequisitionColumnRepository.findOne(column.getColumnDefinition().getId()))
-          .thenReturn(AvailableRequisitionColumn.newInstance(column.getColumnDefinition()));
+      when(availableRequisitionColumnRepository.findById(column.getColumnDefinition().getId()))
+          .thenReturn(Optional.of(
+              AvailableRequisitionColumn.newInstance(column.getColumnDefinition())));
     }
 
     when(programReferenceDataService.findOne(template.getProgramId())).thenReturn(

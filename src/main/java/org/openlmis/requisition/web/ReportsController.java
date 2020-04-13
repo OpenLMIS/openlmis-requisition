@@ -15,8 +15,8 @@
 
 package org.openlmis.requisition.web;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
@@ -26,12 +26,13 @@ import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class ReportsController extends BaseController {
@@ -54,16 +55,20 @@ public class ReportsController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
   @ResponseBody
-  public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
+  public ResponseEntity<byte[]> print(@PathVariable("id") UUID id)
       throws JasperReportViewException {
     permissionService.canViewRequisition(id).throwExceptionIfHasErrors();
 
-    Requisition requisition = requisitionRepository.findOne(id);
-    if (requisition == null) {
-      throw new ContentNotFoundMessageException(
-          new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id));
-    }
+    Requisition requisition = requisitionRepository.findById(id)
+        .orElseThrow(() -> new ContentNotFoundMessageException(
+            new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id)));
 
-    return jasperReportsViewService.getRequisitionJasperReportView(requisition, request);
+    byte[] bytes = jasperReportsViewService.generateRequisitionReport(requisition);
+
+    return ResponseEntity
+        .ok()
+        .contentType(new MediaType("application", "pdf", StandardCharsets.UTF_8))
+        .header("Content-Disposition", "inline; filename=requisition" + id.toString() + ".pdf")
+        .body(bytes);
   }
 }

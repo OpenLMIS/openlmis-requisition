@@ -186,7 +186,7 @@ public class PermissionService {
    * @return ValidationResult containing info about the result of this check
    */
   public ValidationResult canViewRequisition(UUID requisitionId) {
-    return canViewRequisition(requisitionRepository.findOne(requisitionId));
+    return canViewRequisition(requisitionRepository.findById(requisitionId).orElse(null));
   }
 
   /**
@@ -214,7 +214,7 @@ public class PermissionService {
         .collect(Collectors.toSet());
 
     Map<UUID, Requisition> requisitions = requisitionRepository
-        .findAll(requisitionIds)
+        .findAllById(requisitionIds)
         .stream()
         .collect(Collectors.toMap(BaseEntity::getId, Function.identity()));
 

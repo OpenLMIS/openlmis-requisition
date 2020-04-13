@@ -379,16 +379,16 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   private AvailableRequisitionColumn getColumn() {
-    return availableRequisitionColumnRepository.findOne(
-        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999"));
+    return availableRequisitionColumnRepository.findById(
+        UUID.fromString("4a2e9fd3-1127-4b68-9912-84a5c00f6999")).orElse(null);
   }
 
   private AvailableRequisitionColumn getColumnWithOption() {
-    return availableRequisitionColumnRepository.findOne(
-        UUID.fromString("5708ebf9-9317-4420-85aa-71b2ae92643d"));
+    return availableRequisitionColumnRepository.findById(
+        UUID.fromString("5708ebf9-9317-4420-85aa-71b2ae92643d")).orElse(null);
   }
 
   private AvailableRequisitionColumnOption getOption(String uuid) {
-    return availableRequisitionColumnOptionRepository.findOne(UUID.fromString(uuid));
+    return availableRequisitionColumnOptionRepository.findById(UUID.fromString(uuid)).orElse(null);
   }
 }

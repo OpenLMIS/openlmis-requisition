@@ -1,6 +1,6 @@
 /*
  * This program is part of the OpenLMIS logistics management information system platform software.
- * Copyright © 2017 VillageReach
+ * Copyright © 2020 VillageReach
  *
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
@@ -15,27 +15,38 @@
 
 package org.openlmis.requisition.utils;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.data.domain.Sort;
 
-public class CustomSortDeserializer extends JsonDeserializer<Sort> {
+@JsonComponent
+public class CustomSortSerializer extends JsonSerializer<Sort> {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(CustomSortSerializer.class);
 
   @Override
-  public Sort deserialize(JsonParser parser, DeserializationContext context)
+  public void serialize(Sort value, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
-    ArrayNode node = parser.getCodec().readTree(parser);
-    Sort.Order[] orders = new Sort.Order[node.size()];
-    int index = 0;
-    for (JsonNode obj : node) {
-      orders[index] =  new Sort.Order(Sort.Direction.valueOf(obj.get("direction").asText()),
-          obj.get("property").asText());
-      index++;
-    }
-    return Sort.by(orders);
+    gen.writeStartArray();
+
+    value.iterator().forEachRemaining(v -> {
+      try {
+        gen.writeObject(v);
+      } catch (IOException e) {
+        XLOGGER.warn("Could not serialize sort", e);
+      }
+    });
+
+    gen.writeEndArray();
+  }
+
+  @Override
+  public Class<Sort> handledType() {
+    return Sort.class;
   }
 }

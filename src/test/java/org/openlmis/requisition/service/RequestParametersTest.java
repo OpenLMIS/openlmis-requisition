@@ -45,8 +45,8 @@ public class RequestParametersTest {
   private static final String KEY = "key";
   private static final String VALUE = "value";
 
-  private static final Pageable PAGE_WITHOUT_SORT = new PageRequest(0, 10);
-  private static final Pageable PAGE_WITH_SORT = new PageRequest(1, 15, Direction.DESC, "test");
+  private static final Pageable PAGE_WITHOUT_SORT = PageRequest.of(0, 10);
+  private static final Pageable PAGE_WITH_SORT = PageRequest.of(1, 15, Direction.DESC, "test");
 
   @Test
   public void equalsContract() {

@@ -48,7 +48,7 @@ public class AvailableRequisitionColumnControllerIntegrationTest extends BaseWeb
     mockUserAuthenticated();
 
     column = new AvailableRequisitionColumnDataBuilder().build();
-    pageable = new PageRequest(0, 10);
+    pageable = PageRequest.of(0, 10);
   }
 
   @Test

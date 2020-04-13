@@ -54,7 +54,7 @@ public class GlobalErrorHandlingTest {
   public void setUp() {
     when(messageService.localize(any(Message.class)))
         .thenAnswer(invocation -> {
-          Message message = invocation.getArgumentAt(0, Message.class);
+          Message message = invocation.getArgument(0, Message.class);
           return message.localMessage(messageSource, ENGLISH_LOCALE);
         });
   }

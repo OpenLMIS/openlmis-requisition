@@ -46,6 +46,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -318,7 +319,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
   @Test
   public void shouldNotGetRequisitionWhenUserHasNoRight() {
     // given
-    doReturn(mock(Requisition.class)).when(requisitionRepository).findOne(anyUuid());
+    doReturn(Optional.of(mock(Requisition.class))).when(requisitionRepository).findById(anyUuid());
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, REQUISITION_AUTHORIZE))
         .when(permissionService)
         .canViewRequisition(any(Requisition.class));
@@ -341,15 +342,17 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
   @Test
   public void shouldNotGetRequisitionIfItDoesNotExist() {
     // given
+    UUID testRequisitionId = UUID.randomUUID();
+    given(requisitionRepository.findById(testRequisitionId)).willReturn(Optional.empty());
     doReturn(ValidationResult.success())
         .when(permissionService)
-        .canViewRequisition(anyUuid());
+        .canViewRequisition(any(Requisition.class));
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", UUID.randomUUID())
+        .pathParam("id", testRequisitionId)
         .when()
         .get(ID_URL)
         .then()
@@ -374,9 +377,9 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
     RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition);
 
-    doReturn(requisition)
+    doReturn(Optional.of(requisition))
         .when(requisitionRepository)
-        .findOne(requisition.getId());
+        .findById(requisition.getId());
 
     doReturn(ValidationResult.success())
         .when(permissionService)
@@ -431,7 +434,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     doReturn(ValidationResult.fieldErrors(
         Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))
         .when(requisition).validateCanBeUpdated(any(RequisitionValidationService.class));
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
+    when(requisitionRepository.findById(requisitionId)).thenReturn(Optional.of(requisition));
 
     RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition);
 
@@ -480,7 +483,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     when(requisitionVersionValidator
         .validateRequisitionTimestamps(any(ZonedDateTime.class), any(Requisition.class)))
         .thenReturn(ValidationResult.success());
-    doReturn(mock(Requisition.class)).when(requisitionRepository).findOne(anyUuid());
+    doReturn(Optional.of(mock(Requisition.class))).when(requisitionRepository).findById(anyUuid());
 
     // when
     restAssured.given()
@@ -507,9 +510,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     when(requisitionService
         .validateCanSaveRequisition(requisition))
         .thenReturn(ValidationResult.success());
-    doReturn(null)
-        .when(requisitionRepository)
-        .findOne(anyUuid());
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -646,7 +647,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
     when(approvedProductReferenceDataService.getApprovedProducts(anyUuid(), anyUuid()))
         .thenAnswer(invocation -> new ApproveProductsAggregator(
-            approvedProducts, invocation.getArgumentAt(1, UUID.class)));
+            approvedProducts, invocation.getArgument(1, UUID.class)));
 
     return approvedProducts;
   }

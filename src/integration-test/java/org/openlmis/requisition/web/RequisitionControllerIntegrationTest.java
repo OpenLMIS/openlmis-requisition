@@ -67,6 +67,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -98,6 +99,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.DataRetrievalException;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.service.PermissionService;
@@ -227,7 +229,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotGetChosenRequisitionWhenUserHasNoRightForView() {
     // given
     String missingPermission = REQUISITION_AUTHORIZE;
-    doReturn(mock(Requisition.class)).when(requisitionRepository).findOne(anyUuid());
+    doReturn(Optional.of(mock(Requisition.class))).when(requisitionRepository).findById(anyUuid());
     doReturn(ValidationResult.noPermission(PERMISSION_ERROR_MESSAGE, missingPermission))
         .when(permissionService).canViewRequisition(any(Requisition.class));
 
@@ -284,7 +286,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.fieldErrors(
         Collections.singletonMap(REQUISITION_LINE_ITEMS, new Message(ERROR_INCORRECT_VALUE))))
         .when(requisition).validateCanBeUpdated(any(RequisitionValidationService.class));
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
+    when(requisitionRepository.findById(requisitionId)).thenReturn(Optional.of(requisition));
 
     // when
     RequisitionDto requisitionDto = DtoGenerator.of(RequisitionDto.class);
@@ -355,7 +357,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotDeleteNonExistentRequisition() {
     // given
     UUID requisitionId = UUID.randomUUID();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(null);
+    given(requisitionRepository.findById(requisitionId)).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -724,7 +726,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
 
     // when
     restAssured.given()
@@ -746,7 +748,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -771,7 +773,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(true);
 
@@ -795,7 +797,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     doReturn(ValidationResult.success())
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -816,7 +818,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotSkipRequisitionIfRequisitionNotExist() {
     // given
     UUID requisitionId = UUID.randomUUID();
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(null);
+    when(requisitionRepository.findById(requisitionId)).thenReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -838,7 +840,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldNotSkipRequisitionIfUserHasNoRightForCreate() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
 
     String missingPermission = REQUISITION_CREATE;
 
@@ -869,7 +871,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(permissionService).canUpdateRequisition(requisition);
     mockValidationSuccess();
 
-    given(requisitionRepository.findOne(requisition.getId())).willReturn(requisition);
+    given(requisitionRepository.findById(requisition.getId())).willReturn(Optional.of(requisition));
     given(programReferenceDataService.findOne(requisition.getProgramId())).willReturn(null);
 
     // when
@@ -1012,7 +1014,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
     UUID requisitionId = requisition.getId();
-    given(requisitionRepository.findOne(requisitionId)).willReturn(requisition);
+    given(requisitionRepository.findById(requisitionId)).willReturn(Optional.of(requisition));
 
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
@@ -1741,7 +1743,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .collect(Collectors.toList());
 
     given(requisitionService.searchRequisitions(
-        any(QueryRequisitionSearchParams.class), any(Pageable.class)))
+        any(RequisitionSearchParams.class), any(Pageable.class)))
         .willReturn(Pagination.getPage(Arrays.asList(requisitions), FIRST_PAGE));
 
     given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
@@ -1865,7 +1867,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     given(requisitionService.searchApprovedRequisitions(
         eq(facilityId), eq(programId), any(Pageable.class)))
-        .willReturn(Pagination.getPage(singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), PageRequest.of(0, 1)));
 
     // when
     PageDto response = restAssured.given()
@@ -1908,7 +1910,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     given(requisitionService.searchApprovedRequisitions(
         eq(facilityId), eq(programId), sortByCaptor.capture()))
-        .willReturn(Pagination.getPage(singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), PageRequest.of(0, 1)));
 
     // when
     PageDto response = restAssured.given()
@@ -1961,7 +1963,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     given(requisitionService.searchApprovedRequisitions(
         eq(null), eq(null), any(Pageable.class)))
-        .willReturn(Pagination.getPage(Collections.singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), PageRequest.of(0, 1)));
 
     // when
     PageDto response = restAssured.given()
@@ -1987,7 +1989,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
     List<Requisition> requisitions = Collections.singletonList(requisition);
     long totalElements = 14L;
-    Pageable pageable = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, 1);
+    Pageable pageable = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, 1);
 
     given(requisitionService.getRequisitionsForApproval(
         eq(user), eq(null), any(Pageable.class)))
@@ -2016,7 +2018,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // given
     given(requisitionService.searchApprovedRequisitions(
         any(), any(), any()))
-        .willReturn(Pagination.getPage(Collections.emptyList(), null));
+        .willReturn(Pagination.getPage(Collections.emptyList(), PageRequest.of(0, 1)));
 
     // when
     PageDto response = restAssured.given()
@@ -2043,7 +2045,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     given(requisitionService.searchApprovedRequisitions(
         any(), any(), any()))
-        .willReturn(Pagination.getPage(singletonList(requisition), null));
+        .willReturn(Pagination.getPage(singletonList(requisition), PageRequest.of(0, 1)));
 
     // when
     PageDto response = restAssured.given()

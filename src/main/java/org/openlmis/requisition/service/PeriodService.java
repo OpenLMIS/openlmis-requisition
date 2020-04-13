@@ -200,7 +200,7 @@ public class PeriodService {
     return periodReferenceDataService.search(
         period.getProcessingSchedule().getId(),
         period.getStartDate().minusDays(1),
-        new PageRequest(0, amount, Direction.DESC, START_DATE));
+        PageRequest.of(0, amount, Direction.DESC, START_DATE));
   }
 
   /**

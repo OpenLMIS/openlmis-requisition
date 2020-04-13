@@ -232,7 +232,7 @@ public class RequisitionRepositoryImpl
     // hibernate always returns a list of array of objects
     @SuppressWarnings("unchecked")
     List<Object[]> list = Collections.checkedList(searchQuery
-            .setFirstResult(pageable.getOffset())
+            .setFirstResult(Math.toIntExact(pageable.getOffset()))
             .setMaxResults(pageable.getPageSize())
             .getResultList(),
             Object[].class);
@@ -361,7 +361,7 @@ public class RequisitionRepositoryImpl
 
     query.distinct(true);
 
-    if (!count && pageable != null && pageable.getSort() != null) {
+    if (!count && pageable != null && !pageable.getSort().isEmpty()) {
       query = addSortProperties(builder, query, root, pageable);
     }
 
@@ -439,7 +439,7 @@ public class RequisitionRepositoryImpl
               .or(statusChanges.isNull(), statusChanges.get(CREATED_DATE).in(subquery)));
     }
 
-    if (!isCountQuery && pageable != null && pageable.getSort() != null) {
+    if (!isCountQuery && pageable != null && !pageable.getSort().isEmpty()) {
       query = addSortProperties(builder, query, root, pageable);
     }
 
@@ -513,7 +513,7 @@ public class RequisitionRepositoryImpl
       builder.append(')');
     }
 
-    if (!count && pageable.getSort() != null) {
+    if (!count && !pageable.getSort().isEmpty()) {
       builder.append(ORDER_BY);
       builder.append(getOrderPredicate(pageable));
     }

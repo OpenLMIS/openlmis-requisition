@@ -29,6 +29,7 @@ import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.openlmis.requisition.service.PageDto;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @Getter(AccessLevel.PACKAGE)
 // we keep implementation classes inside this one to give a single access point by ofXXX methods.
@@ -132,7 +133,7 @@ public abstract class Merger<T> {
           .distinct()
           .collect(Collectors.toList());
 
-      Page<T> page = Pagination.getPage(content);
+      Page<T> page = Pagination.getPage(content, PageRequest.of(0, content.size()));
       return new PageDto<>(page);
     }
   }

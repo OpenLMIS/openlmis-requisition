@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +75,6 @@ public class PermissionServiceTest {
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private UUID supervisoryNodeId = UUID.randomUUID();
   private ReleasableRequisitionDto releasableRequisitionDto;
   private List<ReleasableRequisitionDto> releasableDtos = new ArrayList<>();
 
@@ -89,12 +89,10 @@ public class PermissionServiceTest {
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
     when(requisition.getFacilityId()).thenReturn(facilityId);
-    when(requisition.getSupplyingFacilityId()).thenReturn(facilityId);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.SUBMITTED);
-    when(requisition.getSupervisoryNodeId()).thenReturn(supervisoryNodeId);
 
-    when(requisitionRepository.findOne(requisitionId)).thenReturn(requisition);
-    when(requisitionRepository.findAll(ImmutableSet.of(requisitionId)))
+    when(requisitionRepository.findById(requisitionId)).thenReturn(Optional.of(requisition));
+    when(requisitionRepository.findAllById(ImmutableSet.of(requisitionId)))
         .thenReturn(Lists.newArrayList(requisition));
   }
 

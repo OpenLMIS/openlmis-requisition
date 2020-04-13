@@ -15,13 +15,11 @@
 
 package org.openlmis.requisition.utils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
-import org.openlmis.requisition.exception.EncodingException;
 import org.openlmis.requisition.service.RequestHeaders;
 import org.openlmis.requisition.service.RequestParameters;
 import org.springframework.http.HttpEntity;
@@ -52,13 +50,9 @@ public final class RequestHelper {
         .init()
         .setAll(parameters)
         .forEach(e -> e.getValue().forEach(one -> {
-          try {
-            builder.queryParam(e.getKey(),
-                UriUtils.encodeQueryParam(String.valueOf(one),
-                    StandardCharsets.UTF_8.name()));
-          } catch (UnsupportedEncodingException ex) {
-            throw new EncodingException(ex);
-          }
+          builder.queryParam(e.getKey(),
+              UriUtils.encodeQueryParam(String.valueOf(one),
+                  StandardCharsets.UTF_8.name()));
         }));
 
     return builder.build(true).toUri();

@@ -89,7 +89,7 @@ public class PeriodReferenceDataServiceTest
     // when
     ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
     Collection<ProcessingPeriodDto> result = service.search(scheduleId, date,
-        new PageRequest(0, 10));
+        PageRequest.of(0, 10));
 
     // then
     assertThat(result, hasSize(1));

@@ -21,8 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRException;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,6 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
-import org.springframework.web.servlet.ModelAndView;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 public class ReportsControllerTest {
@@ -73,26 +72,26 @@ public class ReportsControllerTest {
     when(permissionService.canViewRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.notFound("requisition.not.found"));
     // when
-    reportsController.print(mock(HttpServletRequest.class), UUID.randomUUID());
+    reportsController.print(UUID.randomUUID());
   }
 
   @Test
   public void shouldPrintRequisition()
       throws JasperReportViewException, IOException, JRException {
     // given
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    ModelAndView view = new ModelAndView();
+    byte[] reportData = new byte[1];
 
-    when(requisitionRepository.findOne(any(UUID.class))).thenReturn(mock(Requisition.class));
-    when(jasperReportsViewService.getRequisitionJasperReportView(
-        any(Requisition.class), any(HttpServletRequest.class))).thenReturn(view);
+    when(requisitionRepository.findById(any(UUID.class)))
+        .thenReturn(Optional.of(mock(Requisition.class)));
+    when(jasperReportsViewService.generateRequisitionReport(
+        any(Requisition.class))).thenReturn(reportData);
     when(permissionService.canViewRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.success());
 
     // when
-    ModelAndView result = reportsController.print(request, UUID.randomUUID());
+    byte[] actualReportData = reportsController.print(UUID.randomUUID()).getBody();
 
     // then
-    assertEquals(result, view);
+    assertEquals(reportData, actualReportData);
   }
 }

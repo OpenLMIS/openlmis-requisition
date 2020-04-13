@@ -29,7 +29,7 @@ import org.jadira.usertype.spi.shared.IntegratorConfiguredType;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
-@EqualsAndHashCode(exclude = {"columnMapper", "sqlTypes"}, callSuper = false)
+@EqualsAndHashCode(callSuper = false)
 public final class CustomSingleColumnMoneyUserType
     extends AbstractSingleColumnUserType<Money, BigDecimal, BigDecimalColumnMoneyMapper>
     implements ParameterizedType, IntegratorConfiguredType {
