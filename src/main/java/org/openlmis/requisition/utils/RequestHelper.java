@@ -49,11 +49,11 @@ public final class RequestHelper {
     RequestParameters
         .init()
         .setAll(parameters)
-        .forEach(e -> e.getValue().forEach(one -> {
+        .forEach(e -> e.getValue().forEach(one ->
           builder.queryParam(e.getKey(),
               UriUtils.encodeQueryParam(String.valueOf(one),
-                  StandardCharsets.UTF_8.name()));
-        }));
+                  StandardCharsets.UTF_8.name()))
+        ));
 
     return builder.build(true).toUri();
   }

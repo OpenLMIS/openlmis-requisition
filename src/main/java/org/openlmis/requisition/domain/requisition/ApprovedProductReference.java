@@ -17,7 +17,6 @@ package org.openlmis.requisition.domain.requisition;
 
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
@@ -36,19 +35,14 @@ import lombok.ToString;
 public final class ApprovedProductReference {
 
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
-      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
-  })
+  @AttributeOverride(name = "id", column = @Column(name = "orderableId"))
+  @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
   private VersionEntityReference orderable;
 
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "id", column = @Column(
-          name = "facilityTypeApprovedProductId")),
-      @AttributeOverride(name = "versionNumber", column = @Column(
-          name = "facilityTypeApprovedProductVersionNumber"))
-  })
+  @AttributeOverride(name = "id", column = @Column(name = "facilityTypeApprovedProductId"))
+  @AttributeOverride(name = "versionNumber", column = @Column(
+      name = "facilityTypeApprovedProductVersionNumber"))
   private VersionEntityReference facilityTypeApprovedProduct;
 
   public ApprovedProductReference(UUID id, Long versionNumber,

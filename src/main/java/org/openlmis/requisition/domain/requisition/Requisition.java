@@ -55,7 +55,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -238,10 +237,8 @@ public class Requisition extends BaseTimestampedEntity {
   @Getter
   @Setter
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "localDate",
-          column = @Column(name = "datephysicalstockcountcompleted"))
-      })
+  @AttributeOverride(name = "localDate",
+      column = @Column(name = "datephysicalstockcountcompleted"))
   private DatePhysicalStockCountCompleted datePhysicalStockCountCompleted;
 
   @OneToMany(

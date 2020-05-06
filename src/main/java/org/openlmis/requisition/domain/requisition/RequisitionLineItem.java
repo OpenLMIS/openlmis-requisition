@@ -42,7 +42,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -104,22 +103,17 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
 
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
-      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
-  })
+  @AttributeOverride(name = "id", column = @Column(name = "orderableId"))
+  @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
   @Getter
   private VersionEntityReference orderable;
 
   @Setter
   @Getter
   @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "id", column = @Column(
-          name = "facilityTypeApprovedProductId")),
-      @AttributeOverride(name = "versionNumber", column = @Column(
+  @AttributeOverride(name = "id", column = @Column(name = "facilityTypeApprovedProductId"))
+  @AttributeOverride(name = "versionNumber", column = @Column(
           name = "facilityTypeApprovedProductVersionNumber"))
-  })
   private VersionEntityReference facilityTypeApprovedProduct;
 
   @ManyToOne(cascade = CascadeType.REFRESH)

@@ -43,7 +43,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.SQLQuery;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.LongType;
 import org.hibernate.type.PostgresUUIDType;
@@ -528,7 +528,7 @@ public class RequisitionRepositoryImpl
   }
 
   private void addScalars(Query query) {
-    SQLQuery sql = query.unwrap(SQLQuery.class);
+    NativeQuery sql = query.unwrap(NativeQuery.class);
     sql.addScalar("req_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("req_emergency", BooleanType.INSTANCE);
     sql.addScalar("facility_id", PostgresUUIDType.INSTANCE);
@@ -539,7 +539,7 @@ public class RequisitionRepositoryImpl
   }
 
   private void addScalarsForCount(Query query) {
-    SQLQuery sql = query.unwrap(SQLQuery.class);
+    NativeQuery sql = query.unwrap(NativeQuery.class);
     sql.addScalar("count", LongType.INSTANCE);
   }
 

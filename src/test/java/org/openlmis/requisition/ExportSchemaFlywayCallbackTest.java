@@ -16,7 +16,9 @@
 package org.openlmis.requisition;
 
 import static org.flywaydb.core.api.callback.Event.AFTER_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_MIGRATE;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -59,5 +61,12 @@ public class ExportSchemaFlywayCallbackTest {
   public void afterMigrateShouldProcessStreams() {
 
     callback.handle(AFTER_MIGRATE, mockContext);
+  }
+
+  @Test
+  public void shouldNotProcessStreamsWithEventDifferentThanAfterMigrate() {
+
+    callback.handle(BEFORE_MIGRATE, mockContext);
+    verifyNoInteractions(proc);
   }
 }

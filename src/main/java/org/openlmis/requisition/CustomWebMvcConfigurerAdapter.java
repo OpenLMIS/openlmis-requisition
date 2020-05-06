@@ -16,7 +16,6 @@
 package org.openlmis.requisition;
 
 import java.util.List;
-
 import org.openlmis.requisition.interceptor.MvcInterceptor;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +28,11 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableCaching
-public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
+public class CustomWebMvcConfigurerAdapter implements WebMvcConfigurer {
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -47,14 +46,12 @@ public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
         .setViewName("redirect:" + serviceUrl + "/requisition/docs/");
     registry.addViewController("/requisition/docs/")
         .setViewName("forward:/requisition/docs/index.html");
-    super.addViewControllers(registry);
   }
 
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     registry.addResourceHandler("/requisition/webjars/**")
         .addResourceLocations("classpath:/META-INF/resources/webjars/");
-    super.addResourceHandlers(registry);
   }
 
   @Override
@@ -65,7 +62,6 @@ public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
                                       Pagination.DEFAULT_PAGE_NUMBER,
                                       Pagination.NO_PAGINATION));
     argumentResolvers.add(resolver);
-    super.addArgumentResolvers(argumentResolvers);
   }
 
   @Override
