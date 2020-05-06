@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -113,6 +114,7 @@ public class JasperReportsViewServiceTest {
   private static final String DISTRICT = "district";
   private static final String DEFAULT_LOCALE = "en";
   private static final String CURRENCY_LOCALE = "US";
+  private static final String PARAM_KEY_FORMAT = "format";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -202,7 +204,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnReport() throws Exception {
+  public void generateReportShouldReturnPdfReport() throws Exception {
     //given
     when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
 
@@ -213,14 +215,49 @@ public class JasperReportsViewServiceTest {
     PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
         .thenReturn(expectedReportData);
 
-
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
     
     //then
     assertEquals(expectedReportData, reportData);
   }
-  
+
+  @Test
+  public void generateReportShouldReturnCsvReport() throws Exception {
+    //given
+    when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
+    reportParams.put(PARAM_KEY_FORMAT, "csv");
+
+    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
+    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
+        any(Connection.class)))
+        .thenReturn(jasperPrint);
+
+    //when
+    byte[] reportData = service.generateReport(jasperTemplate, reportParams);
+
+    //then
+    assertNotNull(reportData);
+  }
+
+  @Test
+  public void generateReportShouldReturnHtmlReport() throws Exception {
+    //given
+    when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
+    reportParams.put(PARAM_KEY_FORMAT, "html");
+
+    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
+    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
+        any(Connection.class)))
+        .thenReturn(jasperPrint);
+
+    //when
+    byte[] reportData = service.generateReport(jasperTemplate, reportParams);
+
+    //then
+    assertNotNull(reportData);
+  }
+
   @Test
   public void generateTimelinessReportShouldSetViewParams() throws Exception {
     //given
