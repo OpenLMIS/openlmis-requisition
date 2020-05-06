@@ -72,6 +72,7 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RequisitionRepository;
@@ -511,7 +512,9 @@ public class RequisitionService {
     profiler.start("RELEASE");
     for (ReleasableRequisitionDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
-      Requisition loadedRequisition = requisitionRepository.findById(requisitionId).orElse(null);
+      Requisition loadedRequisition = requisitionRepository.findById(requisitionId)
+          .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
+              requisitionId));
       isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
@@ -552,7 +555,9 @@ public class RequisitionService {
     profiler.start("RELEASE_WITHOUT_ORDER");
     for (ReleasableRequisitionDto convertToOrderDto : releaseWithoutOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
-      Requisition loadedRequisition = requisitionRepository.findById(requisitionId).orElse(null);
+      Requisition loadedRequisition = requisitionRepository.findById(requisitionId)
+          .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
+              requisitionId));
       validateIfEligibleForReleasingWithoutOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.releaseWithoutOrder(authenticationHelper.getCurrentUser().getId());
       releasedRequisitions.add(loadedRequisition);
