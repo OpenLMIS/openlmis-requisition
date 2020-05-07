@@ -48,10 +48,6 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.repository.RequisitionTemplateRepository;
-import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,15 +60,6 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
   private static final String RESOURCE_URL = "/api/requisitionTemplates";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-
-  @MockBean
-  private RequisitionTemplateRepository requisitionTemplateRepository;
-
-  @MockBean
-  private RequisitionTemplateDtoValidator requisitionTemplateDtoValidator;
-
-  @SpyBean
-  private RequisitionTemplateDtoBuilder dtoBuilder;
 
   private RequisitionTemplate template;
   private RequisitionTemplateDto templateDto;

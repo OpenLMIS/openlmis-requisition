@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -40,6 +41,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRBand;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -270,26 +272,22 @@ public class JasperReportsViewService {
     try {
       JasperPrint jasperPrint;
       if (params.containsKey(DATASOURCE)) {
-        jasperPrint = JasperFillManager.fillReport(compiledReport, params,
+        jasperPrint = fillJasperReport(compiledReport, params,
             new JRBeanCollectionDataSource((List) params.get(DATASOURCE)));
       } else {
-        jasperPrint = JasperFillManager.fillReport(compiledReport, params,
+        jasperPrint = fillJasperReport(compiledReport, params,
             replicationDataSource.getConnection());
       }
 
-      JasperExporter exporter;
       String format = (String) params.get("format");
       if ("csv".equals(format)) {
-        exporter = new JasperCsvExporter(jasperPrint);
-        bytes = exporter.exportReport();
+        bytes = exportJasperReportToCsv(jasperPrint);
       } else if ("xls".equals(format)) {
-        exporter = new JasperXlsExporter(jasperPrint);
-        bytes = exporter.exportReport();
+        bytes = exportJasperReportToXls(jasperPrint);
       } else if ("html".equals(format)) {
-        exporter = new JasperHtmlExporter(jasperPrint);
-        bytes = exporter.exportReport();
+        bytes = exportJasperReportToHtml(jasperPrint);
       } else {
-        bytes = JasperExportManager.exportReportToPdf(jasperPrint);
+        bytes = exportJasperReportToPdf(jasperPrint);
       }
     } catch (Exception e) {
       throw new JasperReportViewException(e, ERROR_JASPER_FILE_FORMAT, e.getMessage());
@@ -417,6 +415,32 @@ public class JasperReportsViewService {
   protected JasperReport readReportData(ObjectInputStream objectInputStream)
       throws ClassNotFoundException, IOException {
     return (JasperReport) objectInputStream.readObject();
+  }
+
+  JasperPrint fillJasperReport(JasperReport jasperReport, Map<String,Object> parameters,
+      JRDataSource dataSource) throws JRException {
+    return JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+  }
+
+  JasperPrint fillJasperReport(JasperReport jasperReport, Map<String,Object> parameters,
+      Connection connection) throws JRException {
+    return JasperFillManager.fillReport(jasperReport, parameters, connection);
+  }
+
+  byte[] exportJasperReportToCsv(JasperPrint jasperPrint) throws JRException {
+    return new JasperCsvExporter(jasperPrint).exportReport();
+  }
+
+  byte[] exportJasperReportToXls(JasperPrint jasperPrint) throws JRException {
+    return new JasperXlsExporter(jasperPrint).exportReport();
+  }
+
+  byte[] exportJasperReportToHtml(JasperPrint jasperPrint) throws JRException {
+    return new JasperHtmlExporter(jasperPrint).exportReport();
+  }
+
+  byte[] exportJasperReportToPdf(JasperPrint jasperPrint) throws JRException {
+    return JasperExportManager.exportReportToPdf(jasperPrint);
   }
 
   protected Locale getLocaleFromService() {

@@ -17,8 +17,8 @@ package org.openlmis.requisition.service;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -31,8 +31,6 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.AUTH
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INITIATED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED_WITHOUT_ORDER;
-import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -50,15 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +63,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
@@ -79,12 +75,9 @@ import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
-import org.openlmis.requisition.dto.ReportingRateReportDto;
-import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
-import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -94,16 +87,11 @@ import org.openlmis.requisition.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({JasperReportsViewService.class, JasperFillManager.class,
-    JasperExportManager.class})
+@RunWith(MockitoJUnitRunner.class)
 public class JasperReportsViewServiceTest {
 
   private static final String DATE_FORMAT = "dd/MM/yyyy";
@@ -129,7 +117,7 @@ public class JasperReportsViewServiceTest {
   private GeographicZoneReferenceDataService geographicZoneReferenceDataService;
 
   @Mock
-  private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
+  private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder; //NOPMD
 
   @Mock
   private RequisitionService requisitionService;
@@ -138,13 +126,16 @@ public class JasperReportsViewServiceTest {
   private ObjectInputStream objectInputStream;
 
   @Mock
+  private JasperTemplate jasperTemplate;
+
+  @Mock
   private JasperReport jasperReport;
 
   @Mock
-  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
+  private JasperPrint jasperPrint;
 
   @Mock
-  private RequisitionRepository requisitionRepository;
+  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
 
   @Mock
   private RequisitionLineItem lineItem1;
@@ -153,7 +144,7 @@ public class JasperReportsViewServiceTest {
   private RequisitionLineItem lineItem2;
   
   @Mock
-  private DataSource dataSource;
+  private DataSource replicationDataSource; //NOPMD
 
   @InjectMocks
   private JasperReportsViewService service;
@@ -166,14 +157,11 @@ public class JasperReportsViewServiceTest {
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
   private ProcessingPeriodDto period = DtoGenerator.of(ProcessingPeriodDto.class);
   private GeographicZoneDto district = DtoGenerator.of(GeographicZoneDto.class);
-  private RequisitionDto requisitionDto = DtoGenerator.of(RequisitionDto.class);
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
   private Locale locale = new Locale(DEFAULT_LOCALE, CURRENCY_LOCALE);
 
   private Map<String, Object> reportParams = new HashMap<>();
-
-  private JasperTemplate jasperTemplate;
 
   private byte[] expectedReportData;
 
@@ -188,32 +176,22 @@ public class JasperReportsViewServiceTest {
     ReflectionTestUtils.setField(service, "defaultLocale", DEFAULT_LOCALE);
     ReflectionTestUtils.setField(service, "currencyLocale", CURRENCY_LOCALE);
 
-    jasperTemplate = mock(JasperTemplate.class);
-    when(jasperTemplate.getName()).thenReturn("report1.jrxml");
-    byte[] reportByteData = new byte[1];
-    when(jasperTemplate.getData()).thenReturn(reportByteData);
     expectedReportData = new byte[1];
 
-    doReturn(objectInputStream).when(service).createObjectInputStream(jasperTemplate);
+    doReturn(objectInputStream).when(service).createObjectInputStream(any(JasperTemplate.class));
     doReturn(jasperReport).when(service).readReportData(objectInputStream);
-    
-    mockStatic(JasperFillManager.class);
-    mockStatic(JasperExportManager.class);
+    doReturn(jasperPrint).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
+    doReturn(jasperPrint).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), any(JRDataSource.class));
+    doReturn(expectedReportData).when(service).exportJasperReportToPdf(any(JasperPrint.class));
 
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void generateReportShouldReturnPdfReport() throws Exception {
+  public void generateReportShouldReturnPdfReportAsDefault() throws Exception {
     //given
-    when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
-
-    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
-    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
-        any(Connection.class)))
-        .thenReturn(jasperPrint);
-    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
-        .thenReturn(expectedReportData);
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
@@ -225,37 +203,40 @@ public class JasperReportsViewServiceTest {
   @Test
   public void generateReportShouldReturnCsvReport() throws Exception {
     //given
-    when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
     reportParams.put(PARAM_KEY_FORMAT, "csv");
-
-    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
-    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
-        any(Connection.class)))
-        .thenReturn(jasperPrint);
+    doReturn(expectedReportData).when(service).exportJasperReportToCsv(any(JasperPrint.class));
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
 
     //then
-    assertNotNull(reportData);
+    assertEquals(expectedReportData, reportData);
+  }
+
+  @Test
+  public void generateReportShouldReturnXlsReport() throws Exception {
+    //given
+    reportParams.put(PARAM_KEY_FORMAT, "xls");
+    doReturn(expectedReportData).when(service).exportJasperReportToXls(any(JasperPrint.class));
+
+    //when
+    byte[] reportData = service.generateReport(jasperTemplate, reportParams);
+
+    //then
+    assertEquals(expectedReportData, reportData);
   }
 
   @Test
   public void generateReportShouldReturnHtmlReport() throws Exception {
     //given
-    when(dataSource.getConnection()).thenReturn(PowerMockito.mock(Connection.class));
     reportParams.put(PARAM_KEY_FORMAT, "html");
-
-    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
-    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
-        any(Connection.class)))
-        .thenReturn(jasperPrint);
+    doReturn(expectedReportData).when(service).exportJasperReportToHtml(any(JasperPrint.class));
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
 
     //then
-    assertNotNull(reportData);
+    assertEquals(expectedReportData, reportData);
   }
 
   @Test
@@ -269,13 +250,6 @@ public class JasperReportsViewServiceTest {
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
 
-    JasperPrint jasperPrint = PowerMockito.mock(JasperPrint.class);
-    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), eq(reportParams),
-        any(JRBeanCollectionDataSource.class)))
-        .thenReturn(jasperPrint);
-    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
-        .thenReturn(expectedReportData);
-
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
     ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
@@ -285,19 +259,18 @@ public class JasperReportsViewServiceTest {
 
     // then
     assertEquals(expectedReportData, reportData);
-    Assert.assertEquals(facilities, Collections.emptyList());
+    Assert.assertEquals(Collections.emptyList(), facilities);
     Assert.assertEquals(program, outputParams.get(PROGRAM));
     Assert.assertEquals(period, outputParams.get(PERIOD));
     Assert.assertEquals(district, outputParams.get(DISTRICT));
   }
 
   @Test
-  public void shouldGetTimelinessReportViewWithActiveFacilitiesMissingRnR()
+  public void generateTimelinessReportShouldGetReportWithActiveFacilitiesMissingRnR()
       throws JasperReportViewException {
     // given
     reportParams.put(PROGRAM, program.getId().toString());
     reportParams.put(PERIOD, period.getId().toString());
-
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
@@ -327,6 +300,7 @@ public class JasperReportsViewServiceTest {
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
+    assertEquals(expectedReportData, reportData);
     assertEquals(2, facilities.size());
     List<UUID> facilityIds = facilities.stream()
         .map(FacilityDto::getId).collect(Collectors.toList());
@@ -335,7 +309,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void shouldGetTimelinessReportViewWithFacilitiesFromSpecifiedDistrict()
+  public void generateTimelinessReportShouldGetReportWithFacilitiesFromSpecifiedDistrict()
       throws JasperReportViewException {
     //given
     UUID districtId = UUID.randomUUID();
@@ -352,7 +326,6 @@ public class JasperReportsViewServiceTest {
         mockBasicFacility(true, true, UUID.randomUUID(), "child-zone", "f2");
 
     GeographicLevelDto childLevel = mock(GeographicLevelDto.class);
-    when(childLevel.getLevelNumber()).thenReturn(DISTRICT_LEVEL + 1);
 
     GeographicZoneDto childZone = childFacility.getGeographicZone();
     childZone.setParent(facility.getGeographicZone());
@@ -372,6 +345,7 @@ public class JasperReportsViewServiceTest {
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
+    assertEquals(expectedReportData, reportData);
     assertEquals(2, facilities.size());
     List<UUID> facilityIds = facilities.stream()
         .map(FacilityDto::getId).collect(Collectors.toList());
@@ -380,7 +354,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void shouldGetTimelinessReportViewWithFacilitiesFromAllZonesIfDistrictNotSpecified()
+  public void generateTimelinessReportShouldGetReportWithFacilitiesAllZonesIfDistrictNotSpecified()
       throws JasperReportViewException {
     //given
     reportParams.put(PROGRAM, program.getId().toString());
@@ -410,6 +384,7 @@ public class JasperReportsViewServiceTest {
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
+    assertEquals(expectedReportData, reportData);
     assertEquals(4, facilities.size());
     List<UUID> facilityIds = facilities.stream()
         .map(FacilityDto::getId).collect(Collectors.toList());
@@ -419,7 +394,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void shouldSortFacilitiesReturnedWithTimelinessReportView()
+  public void generateTimelinessReportShouldGetReportWithSortedFacilities()
       throws JasperReportViewException {
     //given
     reportParams.put(PROGRAM, program.getId().toString());
@@ -447,6 +422,7 @@ public class JasperReportsViewServiceTest {
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
+    assertEquals(expectedReportData, reportData);
     assertEquals(4, facilities.size());
     assertEquals(facility1A.getId(), facilities.get(0).getId());
     assertEquals(facility1B.getId(), facilities.get(1).getId());
@@ -455,17 +431,13 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void shouldSetParamsForReportingRateReport() throws Exception {
+  public void generateReportingRateReportShouldSetParams() throws Exception {
     UUID districtId = UUID.randomUUID();
     reportParams.put("Program", program.getId().toString());
     reportParams.put("Period", period.getId().toString());
     reportParams.put("GeographicZone", districtId.toString());
     reportParams.put("DueDays", "10");
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
-
-    ReportingRateReportDto reportingRateReportDto = DtoGenerator.of(ReportingRateReportDto.class);
-    when(reportingRateReportDtoBuilder.build(program, period, district, 10))
-        .thenReturn(reportingRateReportDto);
 
     service.generateReportingRateReport(jasperTemplate, reportParams);
 
@@ -474,10 +446,8 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void shouldSetParamsForRequisitionReport() throws Exception {
+  public void generateRequisitionReportShouldSetParams() throws Exception {
     doReturn(locale).when(service).getLocaleFromService();
-    when(requisitionRepository.findById(requisitionDto.getId()))
-        .thenReturn(Optional.of(requisition));
     reportParams.put("Requisition", requisition.getId());
 
     RequisitionReportDto requisitionReportDto = DtoGenerator.of(RequisitionReportDto.class);
@@ -488,6 +458,7 @@ public class JasperReportsViewServiceTest {
     verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
     Map<String, Object> outputParams = paramArg.getValue();
 
+    assertEquals(expectedReportData, reportData);
     assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
     assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
     assertEquals(NumberFormat.getCurrencyInstance(locale),
@@ -539,9 +510,6 @@ public class JasperReportsViewServiceTest {
     when(geographicZoneDto.getId()).thenReturn(districtId);
     when(geographicZoneDto.getName()).thenReturn(districtName);
 
-    GeographicLevelDto geographicLevelDto = mock(GeographicLevelDto.class);
-    when(geographicLevelDto.getLevelNumber()).thenReturn(DISTRICT_LEVEL);
-    when(geographicZoneDto.getLevel()).thenReturn(geographicLevelDto);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(geographicZoneDto);
 
     Requisition mockRequisition = mock(Requisition.class);

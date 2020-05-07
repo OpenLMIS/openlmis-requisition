@@ -80,7 +80,6 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PermissionService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
@@ -89,7 +88,6 @@ import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -101,9 +99,6 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   private static final String APPROVE_ALL = "approveAll";
   private static final String SAVE_ALL = "saveAll";
   private static final String ID = "id";
-
-  @MockBean(name = "userReferenceDataService")
-  private UserReferenceDataService userReferenceDataService;
 
   private ProgramDto program = DtoGenerator.of(ProgramDto.class);
 

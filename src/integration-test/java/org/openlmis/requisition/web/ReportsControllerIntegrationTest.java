@@ -73,7 +73,6 @@ import org.openlmis.requisition.testutils.ProgramOrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.RequisitionReportDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupportedProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -81,9 +80,6 @@ import org.springframework.http.MediaType;
 public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String PRINT_URL = "/api/requisitions/{id}/print";
-
-  @MockBean
-  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
 
   @Before
   public void setUp() {

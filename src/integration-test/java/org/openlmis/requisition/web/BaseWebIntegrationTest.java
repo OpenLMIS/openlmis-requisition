@@ -65,9 +65,13 @@ import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
+import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
+import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
+import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
@@ -83,6 +87,7 @@ import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDa
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
@@ -95,11 +100,13 @@ import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPred
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.StockEventBuilder;
 import org.openlmis.requisition.validate.ReasonsValidator;
+import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -213,6 +220,30 @@ public abstract class BaseWebIntegrationTest {
   @MockBean(name = "facilityTypeApprovedProductReferenceDataService")
   FacilityTypeApprovedProductReferenceDataService
       facilityTypeApprovedProductReferenceDataService;
+
+  @MockBean
+  AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @MockBean(name = "userReferenceDataService")
+  UserReferenceDataService userReferenceDataService;
+
+  @MockBean
+  JasperTemplateRepository jasperTemplateRepository;
+
+  @MockBean
+  JasperReportsViewService jasperReportsViewService;
+
+  @MockBean
+  RequisitionReportDtoBuilder requisitionReportDtoBuilder;
+
+  @MockBean
+  RequisitionTemplateRepository requisitionTemplateRepository;
+
+  @MockBean
+  RequisitionTemplateDtoValidator requisitionTemplateDtoValidator;
+
+  @SpyBean
+  RequisitionTemplateDtoBuilder dtoBuilder;
 
   @Autowired
   protected ObjectMapper objectMapper;

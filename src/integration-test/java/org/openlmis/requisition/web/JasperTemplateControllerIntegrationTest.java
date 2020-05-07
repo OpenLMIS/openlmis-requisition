@@ -37,9 +37,6 @@ import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.JasperReportViewException;
-import org.openlmis.requisition.repository.JasperTemplateRepository;
-import org.openlmis.requisition.service.JasperReportsViewService;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -51,12 +48,6 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String FORMAT_PARAM = "format";
   private static final String REPORT_URL = ID_URL + "/{" + FORMAT_PARAM + "}";
-
-  @MockBean
-  private JasperTemplateRepository jasperTemplateRepository;
-
-  @MockBean
-  private JasperReportsViewService jasperReportsViewService;
 
   @Before
   public void setUp() {

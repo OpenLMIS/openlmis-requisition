@@ -24,11 +24,9 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -36,9 +34,6 @@ import org.springframework.http.HttpHeaders;
 public class AvailableRequisitionColumnControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/availableRequisitionColumns";
-
-  @MockBean
-  private AvailableRequisitionColumnRepository repository;
 
   private AvailableRequisitionColumn column;
   private Pageable pageable;
@@ -54,7 +49,7 @@ public class AvailableRequisitionColumnControllerIntegrationTest extends BaseWeb
   @Test
   public void shouldReturnPageOfAvailableRequisitionColumns() {
     doReturn(Pagination.getPage(singletonList(column), pageable))
-        .when(repository).findAll(pageable);
+        .when(availableRequisitionColumnRepository).findAll(pageable);
 
     PageDto resultPage = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
