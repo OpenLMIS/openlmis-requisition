@@ -31,6 +31,12 @@ public class JasperExporterTest {
   }
 
   @Test
+  public void xlsExportReportShouldReturnData() throws JRException {
+    JasperXlsExporter exporter = new JasperXlsExporter(new JasperPrint());
+    assertNotNull(exporter.exportReport());
+  }
+
+  @Test
   public void htmlExportReportShouldReturnData() throws JRException {
     JasperHtmlExporter exporter = new JasperHtmlExporter(mock(JasperPrint.class));
     assertNotNull(exporter.exportReport());
