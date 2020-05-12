@@ -23,7 +23,7 @@ public class TogglzReferenceDataService extends BaseReferenceDataService<TogglzF
 
   @Override
   protected String getUrl() {
-    return "/togglz";
+    return "/actuator/togglz";
   }
 
   @Override
