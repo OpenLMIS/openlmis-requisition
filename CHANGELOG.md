@@ -1,3 +1,9 @@
+8.3.1 / WIP
+==================
+
+Bug fixes:
+* [OLMIS-6868](https://openlmis.atlassian.net/browse/OLMIS-6868): Allowed approval of requisition to locally fulfilled facilities without additional fulfillment role.
+
 8.3.0 / 2020-06-01
 ==================
 New functionality added in a backwards-compatible manner:

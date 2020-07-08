@@ -496,7 +496,8 @@ public class RequisitionService {
    * @return list of released requisitions
    */
   private List<Requisition> releaseRequisitionsAsOrder(
-      List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user) {
+      List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user,
+      Boolean isLocallyFulfilled) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_AS_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -505,7 +506,8 @@ public class RequisitionService {
     List<Requisition> releasedRequisitions = new ArrayList<>();
 
     profiler.start("GET_USER_FULFILLMENT_FACILITIES");
-    Set<UUID> userFacilities = fulfillmentFacilitiesReferenceDataService
+    Set<UUID> userFacilities = isLocallyFulfilled
+            ? null : fulfillmentFacilitiesReferenceDataService
         .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
         .collect(toSet());
 
@@ -521,7 +523,8 @@ public class RequisitionService {
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
       Set<UUID> validFacilities = requisitionForConvertBuilder
           .getAvailableSupplyingDepots(requisitionId).stream()
-          .filter(f -> userFacilities.contains(f.getId())).map(FacilityDto::getId)
+          .filter(f -> isLocallyFulfilled
+                  || userFacilities.contains(f.getId())).map(FacilityDto::getId)
           .collect(toSet());
 
       if (validFacilities.contains(facilityId)) {
@@ -637,14 +640,23 @@ public class RequisitionService {
   }
 
   /**
-   * Converting Requisition list to Orders.
+   * Converting Requisition list to Orders when supplying facility is not locally fulfilled.
    */
   public List<Requisition> convertToOrder(List<ReleasableRequisitionDto> list, UserDto user) {
+    return convertToOrder(list, user, Boolean.FALSE);
+  }
+
+  /**
+   * Converting Requisition list to Orders.
+   */
+  public List<Requisition> convertToOrder(List<ReleasableRequisitionDto> list, UserDto user,
+                                          Boolean isLocallyFulfilled) {
     Profiler profiler = new Profiler("CONVERT_TO_ORDER");
     profiler.setLogger(LOGGER);
 
     profiler.start("RELEASE_REQUISITIONS_AS_ORDER");
-    List<Requisition> releasedRequisitions = releaseRequisitionsAsOrder(list, user);
+    List<Requisition> releasedRequisitions =
+            releaseRequisitionsAsOrder(list, user, isLocallyFulfilled);
 
     profiler.start("BUILD_ORDER_DTOS_AND_SAVE_REQUISITION");
     List<OrderDto> orders = new ArrayList<>();

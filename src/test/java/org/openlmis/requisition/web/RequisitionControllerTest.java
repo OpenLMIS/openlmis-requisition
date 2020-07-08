@@ -1032,7 +1032,7 @@ public class RequisitionControllerTest {
     ReleasableRequisitionDto entry = new ReleasableRequisitionDto(uuid4,
         supplyLineDto.getSupplyingFacility().getId());
     ImmutableList<ReleasableRequisitionDto> list = ImmutableList.of(entry);
-    verify(requisitionService).convertToOrder(eq(list), any(UserDto.class));
+    verify(requisitionService).convertToOrder(eq(list), any(UserDto.class), eq(Boolean.TRUE));
   }
 
   @Test

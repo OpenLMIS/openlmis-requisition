@@ -415,7 +415,8 @@ public abstract class BaseRequisitionController extends BaseController {
         profiler.start("CONVERT_TO_ORDER");
         ReleasableRequisitionDto entry = new ReleasableRequisitionDto(requisition.getId(),
             facility.getId());
-        requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user);
+        requisitionService.convertToOrder(ImmutableList.of(entry), approveParams.user,
+                Boolean.TRUE);
       }
     }
 

@@ -1005,6 +1005,28 @@ public class RequisitionServiceTest {
     }
   }
 
+  @Test
+  public void shouldReleaseRequisitionsAsOrderIfFacilityIsLocallyFulfilled() {
+    // given
+    List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
+            APPROVED);
+    List<FacilityDto> facilities = requisitions.stream()
+            .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+            .collect(toList());
+
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+            .thenReturn(facilities);
+
+    // when
+    List<Requisition> expectedRequisitions = requisitionService
+            .convertToOrder(requisitions, user, Boolean.TRUE);
+
+    // then
+    for (Requisition requisition : expectedRequisitions) {
+      assertEquals(RELEASED, requisition.getStatus());
+    }
+  }
+
   @Test(expected = ValidationMessageException.class)
   public void shouldNotReleaseRequisitionsAsOrderIfSupplyingDepotsNotProvided() {
     // given
