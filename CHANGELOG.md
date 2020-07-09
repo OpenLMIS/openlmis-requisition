@@ -3,6 +3,7 @@
 
 Bug fixes:
 * [OLMIS-6868](https://openlmis.atlassian.net/browse/OLMIS-6868): Allowed approval of requisition to locally fulfilled facilities without additional fulfillment role.
+* [OLMIS-6866](https://openlmis.atlassian.net/browse/OLMIS-6866): Fixed Beginning balance empty column issue for Stock Based Requisitions.
 
 8.3.0 / 2020-06-01
 ==================

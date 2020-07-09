@@ -1470,6 +1470,28 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldSetBeginningBalanceForLineItemsToZeroIfNoPreviousSoH() {
+    // given
+    Map<UUID, Integer> currentStockOnHand = Maps.newHashMap();
+    currentStockOnHand.put(orderable.getId(), 10);
+
+    // when
+    Requisition req = createRequisitionWithStatusOf(RequisitionStatus.INITIATED);
+    template = mockStockBasedRequisitionTemplate();
+    when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    req.initiate(template, singletonList(product), emptyList(), 0, null, emptyMap(),
+        UUID.randomUUID(), new StockData(currentStockOnHand, null),
+        singletonList(stockCardRangeSummaryDto), singletonList(stockCardRangeSummaryDto),
+        singletonList(period));
+
+    // then
+    List<RequisitionLineItem> lineItems = req.getRequisitionLineItems();
+
+    assertEquals(1, lineItems.size());
+    assertThat(req.findLineByProduct(orderable.getId(), 1L).getBeginningBalance(), is(0));
+  }
+
+  @Test
   public void shouldCopySkippedValueFromPreviousRequisition() {
     // given
     Requisition previousReq = mock(Requisition.class);
