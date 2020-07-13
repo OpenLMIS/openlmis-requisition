@@ -102,6 +102,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 @Service
@@ -659,20 +661,28 @@ public class RequisitionService {
             releaseRequisitionsAsOrder(list, user, isLocallyFulfilled);
 
     profiler.start("BUILD_ORDER_DTOS_AND_SAVE_REQUISITION");
-    List<OrderDto> orders = new ArrayList<>();
-    for (Requisition requisition : releasedRequisitions) {
-      OrderDto order = orderDtoBuilder.build(requisition, user);
-      orders.add(order);
-
-      requisitionRepository.save(requisition);
-      requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
-    }
+    List<OrderDto> orders = buildOrders(releasedRequisitions, user);
 
     profiler.start("CREATE_ORDER_IN_FULFILLMENT");
     orderFulfillmentService.create(orders);
 
     profiler.stop().log();
     return releasedRequisitions;
+  }
+
+  /**
+   * Building Orders list.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<OrderDto> buildOrders(List<Requisition> releasedRequisitions, UserDto user) {
+    List<OrderDto> orders = new ArrayList<>();
+    for (Requisition requisition : releasedRequisitions) {
+      orders.add(orderDtoBuilder.build(requisition, user));
+
+      requisitionRepository.save(requisition);
+      requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
+    }
+    return orders;
   }
 
   /**
