@@ -1,3 +1,8 @@
+9.0.0 / 2020-09-16
+==================
+New functionality:
+* [TZUP-124](https://openlmis.atlassian.net/browse/TZUP-124): Added budget, source of funds and budget line items migration script tables for facility budget file upload
+
 8.3.1 / WIP
 ==================
 
