@@ -317,6 +317,8 @@ public abstract class MessageKeys {
       = "requisition.error.pageable.size.null";
   public static final String ERROR_SIZE_NOT_POSITIVE
       = "requisition.error.pageable.size.notPositive";
+  public static final String ERROR_NOT_FOUND
+      = "requisition.error.pageable.size.notPositive";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

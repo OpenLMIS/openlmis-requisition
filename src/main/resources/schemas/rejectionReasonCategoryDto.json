@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "rejectionReasonCategoryDto",
+  "description": "A single rejection reason category",
+  "properties": {
+    "code": {
+      "type": "string",
+      "title": "code"
+    },
+    "name": {
+      "type": "string",
+      "title": "name"
+    }
+  },
+  "required": [
+    "name",
+    "code"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "rejectionReasonDto",
+  "description": "A single rejection reason",
+  "properties": {
+    "code": {
+      "type": "string",
+      "title": "code"
+    },
+    "name": {
+      "type": "string",
+      "title": "name"
+    },
+    "rejectionReasonCategory": {
+      "id": {
+        "type": "string",
+        "title": "id"
+      },
+      "name": {
+        "type": "string",
+        "title": "name"
+      },
+      "code": {
+        "type": "string",
+        "title": "code"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "code",
+    "rejectionReasonCategory"
+  ]
+}
