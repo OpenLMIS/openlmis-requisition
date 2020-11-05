@@ -3,7 +3,7 @@ create TABLE IF NOT EXISTS rejection_reason_category
   id uuid NOT NULL,
   active boolean DEFAULT true NOT NULL,
   name text,
-  code character varying(255) NOT NULL,
+  code text NOT NULL,
   CONSTRAINT rejection_reason_category_pkey PRIMARY KEY (id)
 );
 
@@ -13,7 +13,7 @@ create TABLE IF NOT EXISTS rejection_reason
   id uuid NOT NULL,
   active boolean DEFAULT true NOT NULL,
   name text,
-  code character varying(255) NOT NULL,
+  code text NOT NULL,
   rejectionreasoncategoryid uuid NOT NULL,
   CONSTRAINT rejections_pkey PRIMARY KEY (id)
 );

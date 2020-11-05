@@ -13,18 +13,13 @@
       "title": "name"
     },
     "rejectionReasonCategory": {
-      "id": {
-        "type": "string",
-        "title": "id"
+      "type": "object",
+      "title": "Rejection Reason Category",
+      "items": {
+        "type": "object",
+        "$ref": "rejectionReasonCategoryDto.json"
       },
-      "name": {
-        "type": "string",
-        "title": "name"
-      },
-      "code": {
-        "type": "string",
-        "title": "code"
-      }
+      "uniqueItems": true
     }
   },
   "required": [

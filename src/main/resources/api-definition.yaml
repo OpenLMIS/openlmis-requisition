@@ -157,6 +157,39 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/statusMessage.json" }
       }
 
+
+  - rejectionReason: !include schemas/rejectionReasonDto.json
+
+  - rejectionReasonCategory: !include schemas/rejectionReasonCategoryDto.json
+
+  - rejectionReasonArray: |
+     {
+     "type": "array",
+     "items": { "type": "object", "$ref": "schemas/rejectionReasonDto.json" }
+     }
+
+
+  - rejectionReasonCategoryArray: |
+      {
+      "type": "array",
+      "items": { "type": "object", "$ref": "schemas/rejectionReasonCategoryDto.json" }
+      }
+
+
+  - localizedErrorResponse: |
+        {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema",
+            "title": "LocalizedErrorResponse",
+            "description": "Localized Error response",
+            "properties": {
+                "messageKey": { "type": "string", "title": "message key" },
+                "message": { "type": "string", "title": "message" }
+            },
+            "required": ["messageKey"]
+        }
+
+
 traits:
     - secured:
           queryParameters:
@@ -1234,3 +1267,251 @@ resourceTypes:
                             body:
                                 application/json:
                                     schema: localizedMessage
+  /rejectionReasons:
+    displayName: Rejection Reason
+    put:
+      is: [ secured ]
+      description: Save a rejection reason.
+      body:
+        application/json:
+          schema: rejectionReason
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReason
+        "400":
+          body:
+            application/json:
+        "403":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: localizedErrorResponse
+    get:
+      is: [ secured ]
+      description: Get all rejection reason.
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonArray
+        "403":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: localizedErrorResponse
+    /{id}:
+      uriParameters:
+        id:
+          displayName: Rejection Reason ID
+          type: string
+          required: true
+          repeat: false
+      get:
+        is: [ secured ]
+        description: Get chosen rejection reason.
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReason
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+      delete:
+        is: [ secured ]
+        description: "[AVOID USING] Completely removes rejection reason. This action is not recoverable."
+        responses:
+          "204":
+            headers:
+              Keep-Alive:
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+    /search:
+      get:
+        is: [ secured ]
+        description: Search for rejection reason.
+        queryParameters:
+          name:
+            displayName: Name of the rejection reason to find
+            type: string
+            required: false
+            repeat: false
+          code:
+            displayName: Code of the rejection reason to find
+            type: string
+            required: false
+            repeat: false
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonArray
+          "400":
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            body:
+              application/json:
+                schema: localizedErrorResponse
+
+  /rejectionReasonCategories:
+    displayName: Rejection Reason Category
+    put:
+      is: [ secured ]
+      description: Save a rejection reason category.
+      body:
+        application/json:
+          schema: rejectionReasonCategory
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonCategory
+        "400":
+          body:
+            application/json:
+        "403":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: localizedErrorResponse
+    get:
+      is: [ secured ]
+      description: Get all rejection reason category.
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonCategoryArray
+        "403":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: localizedErrorResponse
+    /{id}:
+      uriParameters:
+        id:
+          displayName: Rejection Reason Category ID
+          type: string
+          required: true
+          repeat: false
+      get:
+        is: [ secured ]
+        description: Get chosen rejection reason category.
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+      delete:
+        is: [ secured ]
+        description: "[AVOID USING] Completely removes rejection reason. This action is not recoverable."
+        responses:
+          "204":
+            headers:
+              Keep-Alive:
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+    /search:
+      get:
+        is: [ secured ]
+        description: Search for rejection reason category.
+        queryParameters:
+          name:
+            displayName: Name of the rejection reason category to find
+            type: string
+            required: false
+            repeat: false
+          code:
+            displayName: Code of the rejection reason category to find
+            type: string
+            required: false
+            repeat: false
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonCategoryArray
+          "400":
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "404":
+            body:
+              application/json:
+                schema: localizedErrorResponse

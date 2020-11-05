@@ -30,7 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
-import org.openlmis.requisition.exception.NotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 
@@ -113,7 +113,7 @@ public class RejectionReasonCategoryControllerTest {
     assertEquals(rejectionReasonCategoryDto, rejectionReasonCategoryDto);
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldNotGetNonExistingRejectionReason() {
     //given
     when(repository.findById(rejectionReasonCategory1.getId())).thenReturn(Optional.empty());
@@ -145,7 +145,7 @@ public class RejectionReasonCategoryControllerTest {
     verify(repository).deleteById(rejectionReasonCategory1.getId());
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test(expected = ContentNotFoundMessageException.class)
   public void shouldNotDeleteNonExistingRejectionReason() {
     //given
     when(repository.findById(rejectionReasonCategory1.getId())).thenReturn(Optional.empty());

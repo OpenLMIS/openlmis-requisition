@@ -45,7 +45,7 @@ public class RejectionReasonCategory extends BaseEntity {
   private String code;
 
 
-  private RejectionReasonCategory(String name, String code) {
+  public RejectionReasonCategory(String name, String code) {
     this.name = name;
     this.code = code;
   }

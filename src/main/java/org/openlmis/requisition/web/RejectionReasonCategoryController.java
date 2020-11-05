@@ -25,9 +25,10 @@ import java.util.stream.Collectors;
 import lombok.NoArgsConstructor;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
-import org.openlmis.requisition.exception.NotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
+import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,7 @@ public class RejectionReasonCategoryController extends BaseController {
    *
    * @return all rejection reason categories in the system.
    */
-  @RequestMapping(value = "/rejectionReasonCategory", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasonCategories", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Set<RejectionReasonCategoryDto> getAllRejectionReasonCategories() {
@@ -81,20 +82,18 @@ public class RejectionReasonCategoryController extends BaseController {
    * @param id id of the rejection reason to get.
    * @return the rejection reason category.
    */
-  @RequestMapping(value = "/rejectionReasonCategory/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasonCategories/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RejectionReasonCategoryDto getRejectionReasonCategory(@PathVariable("id")
                                                                        UUID id) {
 
     RejectionReasonCategory rejectionReasonCategory = rejectionReasonCategoryRepository
-            .findById(id).orElse(null);
+            .findById(id)
+            .orElseThrow(() -> new ContentNotFoundMessageException(
+                    new Message(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND, id)));
 
-    if (rejectionReasonCategory == null) {
-      throw new NotFoundException(MessageKeys.ERROR_NOT_FOUND);
-    } else {
-      return exportToDto(rejectionReasonCategory);
-    }
+    return exportToDto(rejectionReasonCategory);
   }
 
   /**
@@ -105,7 +104,7 @@ public class RejectionReasonCategoryController extends BaseController {
    * @param rejectionReasonCategoryDto provided rejection reason DTO.
    * @return the saved reason.
    */
-  @RequestMapping(value = "/rejectionReasonCategory", method = RequestMethod.PUT)
+  @RequestMapping(value = "/rejectionReasonCategories", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RejectionReasonCategoryDto saveRejectionReasonCategory(
@@ -136,15 +135,13 @@ public class RejectionReasonCategoryController extends BaseController {
    *
    * @param id id of the rejection reason category to delete.
    */
-  @RequestMapping(value = "/rejectionReasonCategory/{id}", method = RequestMethod.DELETE)
+  @RequestMapping(value = "/rejectionReasonCategories/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRejectionReasonCategory(@PathVariable("id") UUID id) {
 
-    RejectionReasonCategory rejectionReasonCategory = rejectionReasonCategoryRepository
-            .findById(id).orElse(null);
-    if (rejectionReasonCategory == null) {
-      throw new NotFoundException(MessageKeys.ERROR_NOT_FOUND);
-    }
+    rejectionReasonCategoryRepository.findById(id)
+            .orElseThrow(() -> new ContentNotFoundMessageException(
+                    new Message(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND, id)));
 
     LOGGER.debug("Deleting rejection reason category");
     rejectionReasonCategoryRepository.deleteById(id);
@@ -153,7 +150,7 @@ public class RejectionReasonCategoryController extends BaseController {
   /**
    * Finds rejection reason categories matching all of the provided parameters.
    */
-  @RequestMapping(value = "/rejectionReasonCategory/search", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasonCategories/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Set<RejectionReasonCategoryDto> searchRejectionReasonCategory(

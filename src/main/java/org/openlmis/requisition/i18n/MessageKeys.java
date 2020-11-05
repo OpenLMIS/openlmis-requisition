@@ -317,8 +317,10 @@ public abstract class MessageKeys {
       = "requisition.error.pageable.size.null";
   public static final String ERROR_SIZE_NOT_POSITIVE
       = "requisition.error.pageable.size.notPositive";
-  public static final String ERROR_NOT_FOUND
-      = "requisition.error.pageable.size.notPositive";
+  public static final String ERROR_REJECTION_REASON_NOT_FOUND
+          = "requisition.error.rejection.reason.not.found";
+  public static final String ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND
+          = "requisition.error.rejection.reason.category.not.found";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

@@ -28,9 +28,10 @@ import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.dto.RejectionReasonDto;
-import org.openlmis.requisition.exception.NotFoundException;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RejectionReasonRepository;
+import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class RejectionReasonController extends BaseController {
    *
    * @return all rejection reasons in the system.
    */
-  @RequestMapping(value = "/rejectionReason", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasons", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Set<RejectionReasonDto> getAllRejectionReasons() {
@@ -81,19 +82,16 @@ public class RejectionReasonController extends BaseController {
    * @param rejectionReasonId id of the rejection reason to get.
    * @return the rejection reason.
    */
-  @RequestMapping(value = "/rejectionReason/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasons/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RejectionReasonDto getRejectionReason(@PathVariable("id") UUID rejectionReasonId) {
 
     RejectionReason rejectionReasons =
-            rejectionReasonsRepository.findById(rejectionReasonId).orElse(null);
-
-    if (rejectionReasons == null) {
-      throw new NotFoundException(MessageKeys.ERROR_NOT_FOUND);
-    } else {
-      return exportToDto(rejectionReasons);
-    }
+            rejectionReasonsRepository.findById(rejectionReasonId)
+                    .orElseThrow(() -> new ContentNotFoundMessageException(
+            new Message(MessageKeys.ERROR_REJECTION_REASON_NOT_FOUND, rejectionReasonId)));
+    return exportToDto(rejectionReasons);
   }
 
   /**
@@ -112,7 +110,7 @@ public class RejectionReasonController extends BaseController {
             rejectionReasonsRepository.findRejectionReasonsByCategory(rejectionReasonCategoryId);
 
     if (rejectionReasons.size() == 0) {
-      throw new NotFoundException(MessageKeys.ERROR_NOT_FOUND);
+      throw new ContentNotFoundMessageException(MessageKeys.ERROR_REJECTION_REASON_NOT_FOUND);
     } else {
       return rejectionReasons.stream().map(this::exportToDto).collect(toSet());
     }
@@ -126,10 +124,10 @@ public class RejectionReasonController extends BaseController {
    * @param rejectionReasonDto provided rejection reason DTO.
    * @return the saved rejection reasons.
    */
-  @RequestMapping(value = "/rejectionReason", method = RequestMethod.PUT)
+  @RequestMapping(value = "/rejectionReasons", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RejectionReasonDto saveRejectionReason(
+  public RejectionReasonDto saveRejectionReasons(
           @RequestBody RejectionReasonDto rejectionReasonDto) {
 
     RejectionReason rejectionReasonsToSave = RejectionReason.newRejectionReason(rejectionReasonDto);
@@ -152,26 +150,24 @@ public class RejectionReasonController extends BaseController {
   /**
    * Delete an existing rejection reason.
    *
-   * @param rejectionReasonId id of the rejection reasons to delete.
+   * @param id id of the rejection reasons to delete.
    */
-  @RequestMapping(value = "/rejectionReason/{rejectionReasonId}", method = RequestMethod.DELETE)
+  @RequestMapping(value = "/rejectionReasons/{id}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRejectionReason(@PathVariable("rejectionReasonId") UUID rejectionReasonId) {
+  public void deleteRejectionReason(@PathVariable("id") UUID id) {
 
-    RejectionReason rejectionReasons =
-            rejectionReasonsRepository.findById(rejectionReasonId).orElse(null);
-    if (rejectionReasons == null) {
-      throw new NotFoundException(MessageKeys.ERROR_NOT_FOUND);
-    }
+    rejectionReasonsRepository.findById(id)
+                    .orElseThrow(() -> new ContentNotFoundMessageException(
+                            new Message(MessageKeys.ERROR_REJECTION_REASON_NOT_FOUND, id)));
 
     LOGGER.debug("Deleting rejection reason");
-    rejectionReasonsRepository.deleteById(rejectionReasonId);
+    rejectionReasonsRepository.deleteById(id);
   }
 
   /**
    * Finds rejection reasons matching all of the provided parameters.
    */
-  @RequestMapping(value = "/rejectionReason/search", method = RequestMethod.GET)
+  @RequestMapping(value = "/rejectionReasons/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Set<RejectionReasonDto> searchRejectionReason(
