@@ -25,6 +25,7 @@ public class RejectionReasonCategoryDataBuilder {
   private UUID id;
   private String name;
   private String code;
+  private Boolean active;
 
   /**
    * Builds instance of {@link RejectionReasonCategoryDataBuilder} with sample data.
@@ -42,7 +43,7 @@ public class RejectionReasonCategoryDataBuilder {
    */
   public RejectionReasonCategory build() {
     RejectionReasonCategory rejectionReasonCategory =
-            RejectionReasonCategory.newRejectionReasonCategory(name, code);
+            RejectionReasonCategory.newRejectionReasonCategory(name, code, active);
     rejectionReasonCategory.setId(id);
     return rejectionReasonCategory;
   }
@@ -66,6 +67,11 @@ public class RejectionReasonCategoryDataBuilder {
 
   public RejectionReasonCategoryDataBuilder withCode(String code) {
     this.code = code;
+    return this;
+  }
+
+  public RejectionReasonCategoryDataBuilder withActive(Boolean active) {
+    this.active = active;
     return this;
   }
 }

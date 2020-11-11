@@ -27,7 +27,7 @@ import lombok.Setter;
 import org.javers.core.metamodel.annotation.TypeName;
 
 @Entity
-@Table(name = "rejection_reason_category")
+@Table(name = "rejection_reason_categories")
 @NoArgsConstructor
 @TypeName("RejectionReasonCategory")
 @SuppressWarnings({"PMD.UnusedPrivateField"})
@@ -44,15 +44,33 @@ public class RejectionReasonCategory extends BaseEntity {
   @Setter
   private String code;
 
+  @Getter
+  @Setter
+  private Boolean active;
 
-  public RejectionReasonCategory(String name, String code) {
+
+  /**
+   * Static factory method for constructing a new rejection reason category with a name and code.
+   *
+   * @param name rejection reason category name
+   * @param code rejection reason category  code
+   * @param active rejection reason category  active
+   */
+  public RejectionReasonCategory(String name, String code, Boolean active) {
     this.name = name;
     this.code = code;
+    this.active = active;
   }
 
+  /**
+   * Static factory method for updating a new rejection reason category.
+   *
+   * @param rejectionReasonsCategory rejection reason category
+   */
   public void updateFrom(RejectionReasonCategory rejectionReasonsCategory) {
     this.name = rejectionReasonsCategory.getName();
     this.code = rejectionReasonsCategory.getCode();
+    this.active = rejectionReasonsCategory.getActive();
   }
 
   /**
@@ -60,9 +78,11 @@ public class RejectionReasonCategory extends BaseEntity {
    *
    * @param name rejection reason category name
    * @param code rejection reason category  code
+   * @param active rejection reason category  active
    */
-  public static RejectionReasonCategory newRejectionReasonCategory(String name, String code) {
-    return new RejectionReasonCategory(name, code);
+  public static RejectionReasonCategory newRejectionReasonCategory(
+          String name, String code, Boolean active) {
+    return new RejectionReasonCategory(name, code, active);
   }
 
   /**
@@ -73,9 +93,11 @@ public class RejectionReasonCategory extends BaseEntity {
   public static RejectionReasonCategory newRejectionReasonCategory(
           RejectionReasonCategory.Importer importer) {
     RejectionReasonCategory newRejectionReasonCategory =
-            new RejectionReasonCategory(importer.getName(), importer.getCode());
+            new RejectionReasonCategory(importer.getName(),
+                    importer.getCode(), importer.getActive());
     newRejectionReasonCategory.id = importer.getId();
     newRejectionReasonCategory.code = importer.getCode();
+    newRejectionReasonCategory.active = importer.getActive();
 
     return newRejectionReasonCategory;
   }
@@ -89,6 +111,7 @@ public class RejectionReasonCategory extends BaseEntity {
     exporter.setId(id);
     exporter.setName(name);
     exporter.setCode(code);
+    exporter.setActive(active);
   }
 
   public interface Exporter {
@@ -97,6 +120,8 @@ public class RejectionReasonCategory extends BaseEntity {
     void setName(String name);
 
     void setCode(String code);
+
+    void setActive(Boolean active);
   }
 
   public interface Importer {
@@ -105,5 +130,7 @@ public class RejectionReasonCategory extends BaseEntity {
     String getName();
 
     String getCode();
+
+    Boolean getActive();
   }
 }

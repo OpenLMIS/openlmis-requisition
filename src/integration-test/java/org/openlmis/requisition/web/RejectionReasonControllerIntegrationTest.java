@@ -15,26 +15,28 @@
 
 package org.openlmis.requisition.web;
 
-import static org.hamcrest.core.Is.is;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Sets;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonDto;
+import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
+import org.openlmis.requisition.utils.Pagination;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -46,16 +48,15 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String REJECTION_REASON_NAME_ONE = "reason1";
-  private static final String REJECTION_REASON_NAME_TWO = "reason2";
   private static final String REJECTION_REASON_CODE_ONE = "RRC6";
   private static final String REJECTION_REASON_CATEGORY_NAME = "cat1";
   private static final String REJECTION_REASON_CATEGORY_CODE = "code1";
 
   private RejectionReason rejectionReason1;
-  private RejectionReason rejectionReason2;
   private RejectionReasonCategory rejectionReasonCategory;
   private RejectionReasonDto rejectionReasonDto;
   private UUID rejectionReasonId;
+  private Pageable pageable;
 
   /**
    * Constructor for test class.
@@ -65,45 +66,40 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
     rejectionReasonCategory = new RejectionReasonCategoryDataBuilder()
             .withCode(REJECTION_REASON_CATEGORY_CODE)
             .withName(REJECTION_REASON_CATEGORY_NAME)
+            .withActive(true)
             .buildAsNew();
     rejectionReason1 = new RejectionReasonDataBuilder()
             .withName(REJECTION_REASON_NAME_ONE)
             .withCategory(rejectionReasonCategory)
             .withCode(REJECTION_REASON_CODE_ONE)
-            .buildAsNew();
-
-    rejectionReason2 = new RejectionReasonDataBuilder()
-            .withName(REJECTION_REASON_NAME_TWO)
-            .withCategory(rejectionReasonCategory)
-            .withCode(REJECTION_REASON_CODE_ONE)
+            .withActive(true)
             .buildAsNew();
 
     rejectionReasonDto = new RejectionReasonDto();
     rejectionReason1.export(rejectionReasonDto);
     rejectionReasonId = UUID.randomUUID();
+    pageable = PageRequest.of(0, 10);
   }
 
   @Test
-  public void getAllShouldGetAllRejectionReasons() {
+  public void shouldReturnPageOfRejectionReason() {
+    doReturn(Pagination.getPage(singletonList(rejectionReason1), pageable))
+            .when(rejectionReasonRepository).findAll();
 
-    Set<RejectionReason> storedRejectionReasons = Sets.newHashSet(rejectionReason1,
-        RejectionReason.newRejectionReason("rejectionReason2",
-                "RRC5", new RejectionReasonCategory()));
-    given(rejectionReasonRepository.findAll()).willReturn(storedRejectionReasons);
+    PageDto resultPage = restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .queryParam("page", pageable.getPageNumber())
+            .queryParam("size", pageable.getPageSize())
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(200)
+            .extract().as(PageDto.class);
 
-    RejectionReasonDto[] response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(RejectionReasonDto[].class);
-
-    List<RejectionReasonDto> rejectionReasons = Arrays.asList(response);
-    assertThat(rejectionReasons.size(), is(2));
+    assertEquals(1, resultPage.getContent().size());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
 
   @Test
   public void getShouldGetRejectionReason() {
@@ -127,24 +123,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void getShouldReturnNotFoundForNonExistingRejectionReason() {
-
-    given(rejectionReasonRepository.findById(rejectionReasonId)).willReturn(Optional.empty());
-
-    restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", rejectionReasonId)
-        .when()
-        .get(ID_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void putShouldCreateNewRejectionReasonForNonExistingRejectionReason() {
+  public void postShouldCreateNewRejectionReason() {
 
     given(rejectionReasonRepository.findFirstByName(REJECTION_REASON_NAME_ONE))
             .willReturn(null);
@@ -156,7 +135,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(rejectionReasonDto)
         .when()
-        .put(RESOURCE_URL)
+        .post(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(RejectionReasonDto.class);
@@ -167,21 +146,20 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void putShouldUpdateRightForExistingRight() {
+  public void putShouldUpdateRejectionReason() {
 
-    given(rejectionReasonRepository.findFirstByName(REJECTION_REASON_NAME_TWO))
-            .willReturn(rejectionReason2);
-    given(rejectionReasonRepository.findFirstByName(REJECTION_REASON_NAME_ONE))
-            .willReturn(rejectionReason1);
+    when(rejectionReasonRepository.findById(rejectionReasonId))
+            .thenReturn(Optional.of(rejectionReason1));
     given(rejectionReasonRepository.save(rejectionReason1)).willReturn(rejectionReason1);
 
     RejectionReasonDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", rejectionReasonId)
         .body(rejectionReasonDto)
         .when()
-        .put(RESOURCE_URL)
+        .put(ID_URL)
         .then()
         .statusCode(200)
         .extract().as(RejectionReasonDto.class);
@@ -191,40 +169,6 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test
-  public void deleteShouldDeleteRejectionReason() {
-
-    given(rejectionReasonRepository.findById(rejectionReasonId))
-            .willReturn(Optional.of(rejectionReason1));
-
-    restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", rejectionReasonId)
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(204);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void deleteShouldReturnNotFoundForNonExistingRejectionReason() {
-
-    given(rejectionReasonRepository.findById(rejectionReasonId)).willReturn(Optional.empty());
-
-    restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", rejectionReasonId)
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
 
   @Test
   public void searchShouldFindRejectionReasonByNameAndCode() {
@@ -247,6 +191,22 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
     RejectionReasonDto rejectionReasonDto = response[0];
     assertEquals(REJECTION_REASON_NAME_ONE, rejectionReasonDto.getName());
     assertEquals(REJECTION_REASON_CODE_ONE, rejectionReasonDto.getCode());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenSearchThrowsException() {
+
+    // when
+    restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(400);
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

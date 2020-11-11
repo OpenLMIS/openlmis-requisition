@@ -30,7 +30,7 @@ import lombok.Setter;
 import org.javers.core.metamodel.annotation.TypeName;
 
 @Entity
-@Table(name = "rejection_reason")
+@Table(name = "rejection_reasons")
 @NoArgsConstructor
 @TypeName("RejectionReason")
 @SuppressWarnings({"PMD.UnusedPrivateField"})
@@ -52,11 +52,17 @@ public class RejectionReason extends BaseEntity {
   @Setter
   private RejectionReasonCategory rejectionReasonCategory;
 
+  @Getter
+  @Setter
+  private Boolean active;
+
   private RejectionReason(String name, String code,
-                          RejectionReasonCategory rejectionReasonCategory) {
+                          RejectionReasonCategory rejectionReasonCategory,
+                          Boolean active) {
     this.name = name;
     this.code = code;
     this.rejectionReasonCategory = rejectionReasonCategory;
+    this.active = active;
   }
 
   /**
@@ -67,6 +73,7 @@ public class RejectionReason extends BaseEntity {
     this.name = rejectionReason.getName();
     this.code = rejectionReason.getCode();
     this.rejectionReasonCategory = rejectionReason.getRejectionReasonCategory();
+    this.active = rejectionReason.getActive();
   }
 
   /**
@@ -79,8 +86,9 @@ public class RejectionReason extends BaseEntity {
    *                                reason  category
    */
   public static RejectionReason newRejectionReason(
-          String name, String code, RejectionReasonCategory rejectionReasonCategory) {
-    return new RejectionReason(name, code, rejectionReasonCategory);
+          String name, String code,
+          RejectionReasonCategory rejectionReasonCategory, Boolean active) {
+    return new RejectionReason(name, code, rejectionReasonCategory, active);
   }
 
   /**
@@ -90,10 +98,12 @@ public class RejectionReason extends BaseEntity {
    */
   public static RejectionReason newRejectionReason(RejectionReason.Importer importer) {
     RejectionReason newRejectionReason = new RejectionReason(importer.getName(),
-            importer.getCode(), importer.getRejectionReasonCategory());
+            importer.getCode(), importer.getRejectionReasonCategory(),
+            importer.getActive());
     newRejectionReason.id = importer.getId();
     newRejectionReason.code = importer.getCode();
     newRejectionReason.rejectionReasonCategory = importer.getRejectionReasonCategory();
+    newRejectionReason.active = importer.getActive();
     return newRejectionReason;
   }
 
@@ -107,6 +117,7 @@ public class RejectionReason extends BaseEntity {
     exporter.setName(name);
     exporter.setCode(code);
     exporter.setRejectionReasonCategory(rejectionReasonCategory);
+    exporter.setActive(active);
   }
 
   @Override
@@ -134,6 +145,8 @@ public class RejectionReason extends BaseEntity {
     void setCode(String code);
 
     void setRejectionReasonCategory(RejectionReasonCategory rejectionReasonCategory);
+
+    void setActive(Boolean active);
   }
 
   public interface Importer {
@@ -144,5 +157,7 @@ public class RejectionReason extends BaseEntity {
     String getCode();
 
     RejectionReasonCategory getRejectionReasonCategory();
+
+    Boolean getActive();
   }
 }

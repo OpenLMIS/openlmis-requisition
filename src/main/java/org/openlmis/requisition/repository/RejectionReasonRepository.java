@@ -34,7 +34,7 @@ public interface RejectionReasonRepository extends
   RejectionReason findFirstByName(String name);
 
   @Query(value = "SELECT rr.*"
-          + " FROM requisition.rejection_reason rr"
+          + " FROM requisition.rejection_reasons rr"
           + " WHERE rr.rejectionreasoncategoryid  = :rejectionReasonCategoryId",
           nativeQuery = true
   )
@@ -44,7 +44,7 @@ public interface RejectionReasonRepository extends
   @Query(value = "SELECT\n"
           + "    r.*\n"
           + "FROM\n"
-          + "    requisition.rejection_reason r\n"
+          + "    requisition.rejection_reasons r\n"
           + " ",
           nativeQuery = true)
   Page<RejectionReason> findAllWithoutSnapshots(Pageable pageable);

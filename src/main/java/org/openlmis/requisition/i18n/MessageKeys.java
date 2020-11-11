@@ -321,6 +321,8 @@ public abstract class MessageKeys {
           = "requisition.error.rejection.reason.not.found";
   public static final String ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND
           = "requisition.error.rejection.reason.category.not.found";
+  public static final String ERROR_MISSING_MANDATORY_ITEMS =
+          "validation.missing.mandatory.items";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

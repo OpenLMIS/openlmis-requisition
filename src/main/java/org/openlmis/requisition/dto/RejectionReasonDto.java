@@ -35,6 +35,10 @@ public class RejectionReasonDto extends BaseDto implements RejectionReason.Expor
 
   @Getter
   @Setter
+  private Boolean active;
+
+  @Getter
+  @Setter
   private RejectionReasonCategory rejectionReasonCategory;
 
 

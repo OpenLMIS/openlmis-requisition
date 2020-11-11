@@ -190,6 +190,8 @@ schemas:
         }
 
 
+  - rejectionReasonCategoryPage: !include schemas/rejectionReasonCategoryPage.json
+  - rejectionReasonPage: !include schemas/rejectionReasonPage.json
 traits:
     - secured:
           queryParameters:
@@ -1269,7 +1271,7 @@ resourceTypes:
                                     schema: localizedMessage
   /rejectionReasons:
     displayName: Rejection Reason
-    put:
+    post:
       is: [ secured ]
       description: Save a rejection reason.
       body:
@@ -1285,28 +1287,17 @@ resourceTypes:
         "400":
           body:
             application/json:
-        "403":
-          headers:
-            Keep-Alive:
-          body:
-            application/json:
-              schema: localizedErrorResponse
+              schema: localizedMessage
     get:
-      is: [ secured ]
-      description: Get all rejection reason.
+      is: [ secured, paginated ]
+      description: Get a page rejection reason.
       responses:
         "200":
           headers:
             Keep-Alive:
           body:
             application/json:
-              schema: rejectionReasonArray
-        "403":
-          headers:
-            Keep-Alive:
-          body:
-            application/json:
-              schema: localizedErrorResponse
+              schema: rejectionReasonPage
     /{id}:
       uriParameters:
         id:
@@ -1314,6 +1305,23 @@ resourceTypes:
           type: string
           required: true
           repeat: false
+      put:
+        is: [ secured ]
+        description: Update existing rejection reason.
+        body:
+          application/json:
+            schema: rejectionReason
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReason
+          "400":
+            body:
+              application/json:
+                schema: localizedErrorResponse
       get:
         is: [ secured ]
         description: Get chosen rejection reason.
@@ -1324,32 +1332,7 @@ resourceTypes:
             body:
               application/json:
                 schema: rejectionReason
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-      delete:
-        is: [ secured ]
-        description: "[AVOID USING] Completely removes rejection reason. This action is not recoverable."
-        responses:
-          "204":
-            headers:
-              Keep-Alive:
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
+          "400":
             headers:
               Keep-Alive:
             body:
@@ -1381,20 +1364,10 @@ resourceTypes:
             body:
               application/json:
                 schema: localizedErrorResponse
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
-            body:
-              application/json:
-                schema: localizedErrorResponse
 
   /rejectionReasonCategories:
     displayName: Rejection Reason Category
-    put:
+    post:
       is: [ secured ]
       description: Save a rejection reason category.
       body:
@@ -1410,28 +1383,17 @@ resourceTypes:
         "400":
           body:
             application/json:
-        "403":
-          headers:
-            Keep-Alive:
-          body:
-            application/json:
               schema: localizedErrorResponse
     get:
-      is: [ secured ]
-      description: Get all rejection reason category.
+      is: [ secured, paginated ]
+      description: Get a page of rejection reason category.
       responses:
         "200":
           headers:
             Keep-Alive:
           body:
             application/json:
-              schema: rejectionReasonCategoryArray
-        "403":
-          headers:
-            Keep-Alive:
-          body:
-            application/json:
-              schema: localizedErrorResponse
+              schema: rejectionReasonCategoryPage
     /{id}:
       uriParameters:
         id:
@@ -1439,6 +1401,23 @@ resourceTypes:
           type: string
           required: true
           repeat: false
+      put:
+        is: [ secured ]
+        description: Update existing rejection reason.
+        body:
+          application/json:
+            schema: rejectionReasonCategory
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonCategory
+          "400":
+            body:
+              application/json:
+                schema: localizedErrorResponse
       get:
         is: [ secured ]
         description: Get chosen rejection reason category.
@@ -1448,32 +1427,8 @@ resourceTypes:
               Keep-Alive:
             body:
               application/json:
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-      delete:
-        is: [ secured ]
-        description: "[AVOID USING] Completely removes rejection reason. This action is not recoverable."
-        responses:
-          "204":
-            headers:
-              Keep-Alive:
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
+                schema: rejectionReasonCategory
+          "400":
             headers:
               Keep-Alive:
             body:
@@ -1502,16 +1457,6 @@ resourceTypes:
               application/json:
                 schema: rejectionReasonCategoryArray
           "400":
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "403":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
-          "404":
             body:
               application/json:
                 schema: localizedErrorResponse

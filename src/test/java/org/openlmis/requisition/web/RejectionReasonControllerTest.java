@@ -15,14 +15,17 @@
 
 package org.openlmis.requisition.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,9 +38,17 @@ import org.openlmis.requisition.dto.RejectionReasonDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RejectionReasonRepository;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.TooManyMethods"})
 public class RejectionReasonControllerTest {
+
+  @Mock
+  private Pageable pageable;
+
+  @Mock
+  private BaseController baseController;
 
   @Mock
   private RejectionReasonRepository repository;
@@ -55,6 +66,7 @@ public class RejectionReasonControllerTest {
   private RejectionReasonDto rejectionReasonDto1;
   private RejectionReasonDto rejectionReasonDto2;
   private RejectionReasonCategory rejectionReasonCategory;
+
 
   /**
    * Constructor for test.
@@ -101,15 +113,16 @@ public class RejectionReasonControllerTest {
   @Test
   public void shouldGetAllRejectionReason() {
     //given
-    Set<RejectionReasonDto> expectedRejectionReasonDtos = Sets.newHashSet(rejectionReasonDto1,
+    List<RejectionReasonDto> expectedRejectionReasonDtos = Lists.newArrayList(rejectionReasonDto1,
             rejectionReasonDto2);
     when(repository.findAll()).thenReturn(rejectionReasons);
 
     //when
-    Set<RejectionReasonDto> rejectionReasonDto1s = controller.getAllRejectionReasons();
+    Page<RejectionReasonDto> rejectionReasonDto1s = controller.getAllRejectionReasons(pageable);
 
     //then
-    assertEquals(expectedRejectionReasonDtos, rejectionReasonDto1s);
+    assertThat(rejectionReasonDto1s.getTotalElements())
+            .isEqualTo(expectedRejectionReasonDtos.size());
   }
 
   @Test
@@ -144,7 +157,7 @@ public class RejectionReasonControllerTest {
     when(repository.save(any())).thenReturn(rejectionReason1);
 
     //when
-    controller.saveRejectionReasons(rejectionReasonDto1);
+    controller.saveRejectionReason(rejectionReasonDto1);
 
     //then
     verify(repository).save(rejectionReason1);
@@ -157,29 +170,7 @@ public class RejectionReasonControllerTest {
     when(repository.save(any())).thenReturn(rejectionReason1);
 
     //when
-    controller.saveRejectionReasons(rejectionReasonDto1);
+    controller.saveRejectionReason(rejectionReasonDto1);
   }
 
-  @Test
-  public void shouldDeleteExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReason1.getId()))
-            .thenReturn(Optional.of(rejectionReason1));
-
-    //when
-    controller.deleteRejectionReason(rejectionReason1.getId());
-
-    //then
-    verify(repository).deleteById(rejectionReason1.getId());
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldNotDeleteNonExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReason1.getId()))
-            .thenReturn(Optional.empty());
-
-    //when
-    controller.deleteRejectionReason(rejectionReason1.getId());
-  }
 }

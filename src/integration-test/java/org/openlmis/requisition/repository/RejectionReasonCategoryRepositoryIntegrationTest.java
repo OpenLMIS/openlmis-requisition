@@ -45,7 +45,6 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
 
   RejectionReasonCategory generateInstance() {
-    repository.deleteAll();
     return new RejectionReasonCategoryDataBuilder()
             .withCode("RRC2")
             .withName("name")
@@ -73,7 +72,6 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     //then
     assertEquals(rejectionReasonCategory, foundRejectionReasonCategory);
-    repository.deleteAll();
   }
 
   @Test
@@ -94,11 +92,10 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
     assertEquals(3, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream()
             .allMatch(result -> result.contains(rejectionReasonCategory)));
-    repository.deleteAll();
   }
 
   @Test
-  public void shouldNotFindRejectionReasonIfIncorrectParametersAreProvided() {
+  public void shouldNotFindRejectionReasonCategoryIfIncorrectParametersAreProvided() {
 
     setUp();
     //given
@@ -120,7 +117,6 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
     assertEquals(5, rejectionReasonResults.size());
     assertTrue(rejectionReasonResults.stream()
             .noneMatch(result -> result.contains(rejectionReasonCategory)));
-    repository.deleteAll();
   }
 
   @Test
@@ -134,7 +130,6 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     //then
     assertNull(foundRejectionReasonCategory);
-    repository.deleteAll();
   }
 
 }

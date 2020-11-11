@@ -15,14 +15,16 @@
 
 package org.openlmis.requisition.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import  org.junit.Test;
@@ -33,9 +35,14 @@ import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.TooManyMethods"})
 public class RejectionReasonCategoryControllerTest {
+
+  @Mock
+  private Pageable pageable;
 
   @Mock
   private RejectionReasonCategoryRepository repository;
@@ -88,15 +95,18 @@ public class RejectionReasonCategoryControllerTest {
   @Test
   public void shouldGetAllRejectionReasonCategories() {
     //given
-    Set<RejectionReasonCategoryDto> expectedRejectionReasonCategoryDtos =
-            Sets.newHashSet(rejectionReasonCategoryDto1,rejectionReasonCategoryDto2);
+    List<RejectionReasonCategoryDto> expectedRejectionReasonCategoryDtos =
+            Lists.newArrayList(rejectionReasonCategoryDto1,rejectionReasonCategoryDto2);
+
     when(repository.findAll()).thenReturn(rejectionReasonCategories);
+
     //when
-    Set<RejectionReasonCategoryDto> rejectionReasonCategoryDtos =
-            controller.getAllRejectionReasonCategories();
+    Page<RejectionReasonCategoryDto> rejectionReasonCategoryDtos =
+            controller.getAllRejectionReasonCategories(pageable);
 
     //then
-    assertEquals(expectedRejectionReasonCategoryDtos, rejectionReasonCategoryDtos);
+    assertThat(rejectionReasonCategoryDtos.getTotalElements())
+            .isEqualTo(expectedRejectionReasonCategoryDtos.size());
   }
 
   @Test
@@ -132,25 +142,4 @@ public class RejectionReasonCategoryControllerTest {
     controller.saveRejectionReasonCategory(rejectionReasonCategoryDto1);
   }
 
-  @Test
-  public void shouldDeleteExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReasonCategory1.getId()))
-            .thenReturn(Optional.of(rejectionReasonCategory1));
-
-    //when
-    controller.deleteRejectionReasonCategory(rejectionReasonCategory1.getId());
-
-    //then
-    verify(repository).deleteById(rejectionReasonCategory1.getId());
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldNotDeleteNonExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReasonCategory1.getId())).thenReturn(Optional.empty());
-
-    //when
-    controller.deleteRejectionReasonCategory(rejectionReasonCategory1.getId());
-  }
 }

@@ -26,6 +26,7 @@ public class RejectionReasonDataBuilder {
   private UUID id;
   private String name;
   private String code;
+  private Boolean active;
   private RejectionReasonCategory rejectionReasonCategory;
 
   /**
@@ -45,7 +46,7 @@ public class RejectionReasonDataBuilder {
    */
   public RejectionReason build() {
     RejectionReason rejectionReason = RejectionReason.newRejectionReason(name, code,
-            rejectionReasonCategory);
+            rejectionReasonCategory, active);
     rejectionReason.setId(id);
     return rejectionReason;
   }
@@ -74,6 +75,11 @@ public class RejectionReasonDataBuilder {
 
   public RejectionReasonDataBuilder withCategory(RejectionReasonCategory rejectionReasonCategory) {
     this.rejectionReasonCategory = rejectionReasonCategory;
+    return this;
+  }
+
+  public RejectionReasonDataBuilder withActive(Boolean active) {
+    this.active = active;
     return this;
   }
 }

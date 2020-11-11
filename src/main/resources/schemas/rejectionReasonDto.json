@@ -12,6 +12,10 @@
       "type": "string",
       "title": "name"
     },
+    "active": {
+      "type": "boolean",
+      "title": "active"
+    },
     "rejectionReasonCategory": {
       "type": "object",
       "title": "Rejection Reason Category",

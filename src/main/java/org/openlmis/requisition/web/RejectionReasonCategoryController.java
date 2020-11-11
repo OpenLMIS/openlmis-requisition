@@ -26,12 +26,15 @@ import lombok.NoArgsConstructor;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 
 @NoArgsConstructor
 @Controller
@@ -68,12 +70,16 @@ public class RejectionReasonCategoryController extends BaseController {
   @RequestMapping(value = "/rejectionReasonCategories", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Set<RejectionReasonCategoryDto> getAllRejectionReasonCategories() {
+  public Page<RejectionReasonCategoryDto> getAllRejectionReasonCategories(Pageable pageable) {
 
     LOGGER.debug("Getting all rejection reason categories");
     Set<RejectionReasonCategory> rejectionReasonCategories = Sets
             .newHashSet(rejectionReasonCategoryRepository.findAll());
-    return rejectionReasonCategories.stream().map(this::exportToDto).collect(Collectors.toSet());
+    Set<RejectionReasonCategoryDto> rejectionReasonCategoryDtos =
+            rejectionReasonCategories.stream().map(this::exportToDto).collect(Collectors.toSet());
+    Page<RejectionReasonCategoryDto> page = toPage(rejectionReasonCategoryDtos, pageable);
+
+    return page;
   }
 
   /**
@@ -104,21 +110,19 @@ public class RejectionReasonCategoryController extends BaseController {
    * @param rejectionReasonCategoryDto provided rejection reason DTO.
    * @return the saved reason.
    */
-  @RequestMapping(value = "/rejectionReasonCategories", method = RequestMethod.PUT)
+  @RequestMapping(value = "/rejectionReasonCategories", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public RejectionReasonCategoryDto saveRejectionReasonCategory(
           @RequestBody RejectionReasonCategoryDto rejectionReasonCategoryDto) {
 
+    if (rejectionReasonCategoryDto.getCode() == null
+            || rejectionReasonCategoryDto.getName() == null) {
+      throw new ValidationMessageException(MessageKeys.ERROR_MISSING_MANDATORY_ITEMS);
+    }
+
     RejectionReasonCategory rejectionReasonCategoryToSave = RejectionReasonCategory
             .newRejectionReasonCategory(rejectionReasonCategoryDto);
-
-    RejectionReasonCategory storedRejectionReasonCategory = rejectionReasonCategoryRepository
-            .findFirstByName(rejectionReasonCategoryToSave.getName());
-    if (storedRejectionReasonCategory != null) {
-      LOGGER.debug("Rejection Reason Category found in the system, assign id");
-      rejectionReasonCategoryToSave.setId(storedRejectionReasonCategory.getId());
-    }
 
     LOGGER.debug("Saving rejection reason category");
     rejectionReasonCategoryToSave = rejectionReasonCategoryRepository
@@ -130,21 +134,36 @@ public class RejectionReasonCategoryController extends BaseController {
     return exportToDto(rejectionReasonCategoryToSave);
   }
 
+
   /**
-   * Delete an existing rejection reason category.
+   * Allows updating Rejection Reasons.
    *
-   * @param id id of the rejection reason category to delete.
+   * @param rejectionReasonCategoryDto   a rejectionReasonCategoryDto bound to the request body.
+   * @param rejectionReasonCategoryId the UUID of Rejection Reason Category which we want to
+   *                                  update.
+   * @return the updated RejectionReasonDto.
    */
-  @RequestMapping(value = "/rejectionReasonCategories/{id}", method = RequestMethod.DELETE)
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRejectionReasonCategory(@PathVariable("id") UUID id) {
+  @RequestMapping(value = "/rejectionReasonCategories/{id}", method = RequestMethod.PUT)
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RejectionReasonCategoryDto updateRejectionReasonCategory(
+          @RequestBody RejectionReasonCategoryDto rejectionReasonCategoryDto,
+          @PathVariable("id") UUID rejectionReasonCategoryId) {
 
-    rejectionReasonCategoryRepository.findById(id)
+    rejectionReasonCategoryRepository
+            .findById(rejectionReasonCategoryId)
             .orElseThrow(() -> new ContentNotFoundMessageException(
-                    new Message(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND, id)));
+                    new Message(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND,
+                            rejectionReasonCategoryId)));
 
-    LOGGER.debug("Deleting rejection reason category");
-    rejectionReasonCategoryRepository.deleteById(id);
+    RejectionReasonCategory rejectionReasonCategoryToSave =
+            RejectionReasonCategory.newRejectionReasonCategory(rejectionReasonCategoryDto);
+    rejectionReasonCategoryToSave.setId(rejectionReasonCategoryId);
+
+    LOGGER.debug("Updating Rejection Reason Category");
+    rejectionReasonCategoryToSave = rejectionReasonCategoryRepository
+            .save(rejectionReasonCategoryToSave);
+    return exportToDto(rejectionReasonCategoryToSave);
   }
 
   /**
@@ -157,9 +176,12 @@ public class RejectionReasonCategoryController extends BaseController {
           @RequestParam(value = "name", required = false) String name,
           @RequestParam(value = "code", required = false) String code) {
 
-    Set<RejectionReasonCategory> foundRejectionReasonCategory = rejectionReasonCategoryRepository
-            .searchRejectionReasonCategory(name, code);
+    if (name == null && code == null) {
+      throw new ValidationMessageException(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND);
+    }
 
+    Set<RejectionReasonCategory> foundRejectionReasonCategory = rejectionReasonCategoryRepository
+              .searchRejectionReasonCategory(name, code);
     return exportToDtos(foundRejectionReasonCategory);
 
   }

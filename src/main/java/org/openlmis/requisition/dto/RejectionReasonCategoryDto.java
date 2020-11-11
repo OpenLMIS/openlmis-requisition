@@ -32,9 +32,25 @@ public class RejectionReasonCategoryDto extends BaseDto implements
   @Setter
   private String code;
 
+  @Getter
+  @Setter
+  private Boolean active;
+
   @Override
   public int hashCode() {
     return name.hashCode();
+  }
+
+  /**
+   * Creates new instance of {@link RejectionReasonCategoryDto} based on passed rejection reason
+   * category.
+   */
+  public static RejectionReasonCategoryDto newInstance(
+          RejectionReasonCategory rejectionReasonCategory) {
+    RejectionReasonCategoryDto dto = new RejectionReasonCategoryDto();
+    rejectionReasonCategory.export(dto);
+
+    return dto;
   }
 
   @Override

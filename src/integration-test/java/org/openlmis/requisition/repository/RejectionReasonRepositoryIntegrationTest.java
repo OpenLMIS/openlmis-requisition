@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
@@ -44,6 +45,10 @@ public class RejectionReasonRepositoryIntegrationTest
 
   private RejectionReason rejectionReason;
 
+  @After
+  public void cleanUp() {
+    repository.deleteAll();
+  }
 
   @Override
   RejectionReasonRepository getRepository() {
@@ -84,7 +89,6 @@ public class RejectionReasonRepositoryIntegrationTest
 
     //then
     assertEquals(rejectionReason, foundRejectionReason);
-    repository.deleteAll();
   }
 
   @Test
@@ -105,7 +109,6 @@ public class RejectionReasonRepositoryIntegrationTest
     assertEquals(3, rejectionReasonResults.size());
     assertTrue(rejectionReasonResults.stream()
             .allMatch(result -> result.contains(rejectionReason)));
-    repository.deleteAll();
   }
 
   @Test
@@ -130,7 +133,6 @@ public class RejectionReasonRepositoryIntegrationTest
     assertEquals(5, rejectionReasonResults.size());
     assertTrue(rejectionReasonResults.stream()
             .noneMatch(result -> result.contains(rejectionReason)));
-    repository.deleteAll();
   }
 
   @Test
@@ -144,7 +146,6 @@ public class RejectionReasonRepositoryIntegrationTest
 
     //then
     assertNull(foundRejectionReason);
-    repository.deleteAll();
   }
 
 

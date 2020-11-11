@@ -15,8 +15,6 @@
 
 package org.openlmis.requisition.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
-import java.util.List;
 import java.util.UUID;
 
 import org.openlmis.requisition.domain.RejectionReasonCategory;
@@ -32,18 +30,11 @@ public interface RejectionReasonCategoryRepository extends
         BaseAuditableRepository<RejectionReasonCategory, UUID> {
   RejectionReasonCategory findFirstByName(String name);
 
-  @Query(value = "SELECT rr.*"
-          + " FROM requisition.rejection_reason rr"
-          + " WHERE rr.rejectionreasoncategoryid  = :rejectionReasonCategoryId",
-          nativeQuery = true
-  )
-  List<RejectionReasonCategory> findRejectionReasonsByCategory(@Param(
-          "rejectionReasonCategoryId") UUID rejectionReasonCategoryId);
 
   @Query(value = "SELECT\n"
           + "    r.*\n"
           + "FROM\n"
-          + "    requisition.rejection_reason r\n"
+          + "    requisition.rejection_reason_categories r\n"
           + " ",
           nativeQuery = true)
   Page<RejectionReasonCategory> findAllWithoutSnapshots(Pageable pageable);

@@ -11,6 +11,10 @@
     "name": {
       "type": "string",
       "title": "name"
+    },
+    "active": {
+      "type": "boolean",
+      "title": "active"
     }
   },
   "required": [
