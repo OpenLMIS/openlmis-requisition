@@ -131,6 +131,7 @@ public class RequisitionTemplateController extends BaseController {
       BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
+    System.out.println(requisitionTemplateDto.isRejectionReasonWindowVisible());
     validator.validate(requisitionTemplateDto, bindingResult);
 
     if (bindingResult.hasErrors()) {
@@ -142,7 +143,6 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate toUpdate = requisitionTemplateRepository.findById(requisitionTemplateId)
         .orElse(null);
     RequisitionTemplate toSave;
-
     if (toUpdate == null) {
       LOGGER.info("Creating new requisition template");
       toSave = template;

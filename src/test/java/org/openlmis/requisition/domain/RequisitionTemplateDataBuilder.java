@@ -60,6 +60,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumn> columnsMap;
   private Set<Pair<UUID, UUID>> templateAssignments;
+  private Boolean rejectionReasonWindowVisible;
 
   /**
    * Builder for {@link RequisitionTemplate} class.
@@ -74,6 +75,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
     populateStockOnHandFromStockCards = false;
     name = "template-name-" + instanceNumber;
     columnsMap = new HashMap<>();
+    rejectionReasonWindowVisible = false;
 
     templateAssignments = new HashSet<>();
   }
@@ -89,7 +91,8 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   @Override
   public RequisitionTemplate build() {
     RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
-        populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>());
+        populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>(),
+            rejectionReasonWindowVisible);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
 

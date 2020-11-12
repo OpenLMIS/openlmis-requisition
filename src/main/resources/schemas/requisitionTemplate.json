@@ -38,6 +38,10 @@
       "$ref": "referenceObjectDto.json",
       "title": "program"
     },
+    "rejectionReasonWindowVisible": {
+      "type": "boolean",
+      "title": "rejectionReasonWindowVisible"
+    },
     "facilityTypes": {
       "type": "array",
       "title": "facilityTypes",
