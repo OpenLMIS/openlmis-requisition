@@ -131,7 +131,6 @@ public class RequisitionTemplateController extends BaseController {
       BindingResult bindingResult) {
     permissionService.canManageRequisitionTemplate().throwExceptionIfHasErrors();
 
-    System.out.println(requisitionTemplateDto.isRejectionReasonWindowVisible());
     validator.validate(requisitionTemplateDto, bindingResult);
 
     if (bindingResult.hasErrors()) {
