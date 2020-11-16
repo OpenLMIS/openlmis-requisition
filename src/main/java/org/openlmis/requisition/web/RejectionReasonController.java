@@ -26,10 +26,12 @@ import lombok.NoArgsConstructor;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonDto;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
 import org.openlmis.requisition.repository.RejectionReasonRepository;
+import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,17 +87,18 @@ public class RejectionReasonController extends BaseController {
   /**
    * Get chosen rejection reason.
    *
-   * @param rejectionReasonId id of the rejection reason to get.
+   * @param id id of the rejection reason to get.
    * @return the rejection reason.
    */
   @RequestMapping(value = "/rejectionReasons/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public RejectionReasonDto getRejectionReason(@PathVariable("id") UUID rejectionReasonId) {
+  public RejectionReasonDto getRejectionReason(@PathVariable("id") UUID id) {
 
     RejectionReason rejectionReasons =
-            rejectionReasonsRepository.findById(rejectionReasonId)
-                    .orElse(null);
+            rejectionReasonsRepository.findById(id)
+                    .orElseThrow(() -> new ContentNotFoundMessageException(
+                            new Message(MessageKeys.ERROR_REJECTION_REASON_NOT_FOUND, id)));
     return exportToDto(rejectionReasons);
   }
 
@@ -148,7 +151,7 @@ public class RejectionReasonController extends BaseController {
     if (rejectionReasonToUpdate == null) {
       LOGGER.debug("Create new  rejection reason");
       rejectionReasonToSave = template;
-      rejectionReasonToSave.setId(null);
+      rejectionReasonToSave.setId(rejectionReasonId);
     } else {
       LOGGER.debug("Update  rejection reason");
       rejectionReasonToSave = rejectionReasonToUpdate;
@@ -175,7 +178,7 @@ public class RejectionReasonController extends BaseController {
           @RequestParam(value = "active", required = false) Boolean active) {
     Set<RejectionReason> foundRejectionReasons;
     if (active != null) {
-      foundRejectionReasons = rejectionReasonsRepository.searchActiveRejectionReason(active);
+      foundRejectionReasons = rejectionReasonsRepository.findByActive(active);
     } else {
       if (name == null && code == null && rejectionReasonCategoryId == null) {
         throw new ValidationMessageException(MessageKeys.ERROR_MISSING_MANDATORY_ITEMS);

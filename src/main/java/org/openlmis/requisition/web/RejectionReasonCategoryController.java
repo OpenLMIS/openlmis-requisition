@@ -25,9 +25,11 @@ import java.util.stream.Collectors;
 import lombok.NoArgsConstructor;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
+import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
+import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +94,9 @@ public class RejectionReasonCategoryController extends BaseController {
                                                                        UUID id) {
     RejectionReasonCategory rejectionReasonCategory = rejectionReasonCategoryRepository
             .findById(id)
-            .orElse(null);
+            .orElseThrow(() -> new ContentNotFoundMessageException(
+                    new Message(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NOT_FOUND, id)));
+
     return exportToDto(rejectionReasonCategory);
   }
 
@@ -146,7 +150,7 @@ public class RejectionReasonCategoryController extends BaseController {
     RejectionReasonCategory rejectionReasonCategoryToSave;
     if (rejectionReasonCategoryToUpdate == null) {
       rejectionReasonCategoryToSave = template;
-      rejectionReasonCategoryToSave.setId(null);
+      rejectionReasonCategoryToSave.setId(rejectionReasonCategoryId);
     } else {
       rejectionReasonCategoryToSave = rejectionReasonCategoryToUpdate;
       rejectionReasonCategoryToSave.updateFrom(template);
@@ -173,7 +177,7 @@ public class RejectionReasonCategoryController extends BaseController {
     Set<RejectionReasonCategory> foundRejectionReasonCategory;
     if (active != null) {
       foundRejectionReasonCategory =
-              rejectionReasonCategoryRepository.searchActiveRejectionReasonCategory(active);
+              rejectionReasonCategoryRepository.findByActive(active);
     } else {
       if (name == null && code == null) {
         throw new ValidationMessageException(MessageKeys.ERROR_MISSING_MANDATORY_ITEMS);

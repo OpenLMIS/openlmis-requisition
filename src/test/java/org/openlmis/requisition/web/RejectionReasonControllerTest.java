@@ -35,7 +35,6 @@ import org.mockito.Mock;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RejectionReasonRepository;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
 import org.springframework.data.domain.Page;

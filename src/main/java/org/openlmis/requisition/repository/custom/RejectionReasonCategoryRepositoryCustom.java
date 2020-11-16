@@ -21,6 +21,4 @@ import org.openlmis.requisition.domain.RejectionReasonCategory;
 public interface RejectionReasonCategoryRepositoryCustom {
 
   Set<RejectionReasonCategory> searchRejectionReasonCategory(String name, String code);
-
-  Set<RejectionReasonCategory> searchActiveRejectionReasonCategory(boolean active);
 }

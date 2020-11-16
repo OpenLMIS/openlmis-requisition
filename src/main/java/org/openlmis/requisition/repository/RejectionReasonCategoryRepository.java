@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.openlmis.requisition.domain.RejectionReasonCategory;
@@ -28,8 +29,8 @@ public interface RejectionReasonCategoryRepository extends
         PagingAndSortingRepository<RejectionReasonCategory, UUID>,
         RejectionReasonCategoryRepositoryCustom,
         BaseAuditableRepository<RejectionReasonCategory, UUID> {
-  RejectionReasonCategory findFirstByName(String name);
 
+  Set<RejectionReasonCategory> findByActive(boolean active);
 
   @Query(value = "SELECT\n"
           + "    r.*\n"

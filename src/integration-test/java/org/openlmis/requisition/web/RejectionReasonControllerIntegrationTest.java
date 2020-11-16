@@ -32,9 +32,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RejectionReasonDto;
-import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
@@ -127,6 +125,23 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+
+  @Test
+  public void getShouldReturnNotFoundForNonExistingRejectionReason() {
+    given(rejectionReasonRepository.findById(rejectionReasonId)).willReturn(Optional.empty());
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .pathParam("id", rejectionReasonId)
+            .when()
+            .get(ID_URL)
+            .then()
+            .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   @Test
   public void shouldPostRejectionReason() {
 
@@ -151,7 +166,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldReturnBadRequestWhenPostEmptyFields(){
+  public void shouldReturnBadRequestWhenPostEmptyFields() {
     // given
     when(rejectionReasonRepository.save(any(RejectionReason.class)))
             .thenThrow(new DataIntegrityViolationException("test",
@@ -195,7 +210,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldReturnBadRequestWhenPutEmptyFields(){
+  public void shouldReturnBadRequestWhenPutEmptyFields() {
     // given
     when(rejectionReasonRepository.save(any(RejectionReason.class)))
             .thenThrow(new DataIntegrityViolationException("test",

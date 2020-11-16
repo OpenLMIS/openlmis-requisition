@@ -20,19 +20,22 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 public class RejectionReasonCategoryRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RejectionReasonCategory> {
 
   @Autowired
   private RejectionReasonCategoryRepository repository;
+
+  private Pageable pageable;
 
   private RejectionReasonCategory rejectionReasonCategory;
 
@@ -64,8 +67,8 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
   @Before
   public void setUp() {
     rejectionReasonCategory = generateInstance();
+    pageable = PageRequest.of(0, 10);
   }
-
 
   @Test
   public void shouldFindRejectionReasonCategoryByName() {
@@ -74,7 +77,7 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     Set<RejectionReasonCategory> rejectionReasonCategories =
             repository.searchRejectionReasonCategory(REJECTION_REASON_CATEGORY_NAME,
-            null);
+                    null);
     assertEquals(1, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
             .contains(rejectionReasonCategory)));
@@ -87,12 +90,11 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     Set<RejectionReasonCategory> rejectionReasonCategories = repository
             .searchRejectionReasonCategory(null,
-            REJECTION_REASON_CATEGORY_CODE);
+                    REJECTION_REASON_CATEGORY_CODE);
     assertEquals(1, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
             .contains(rejectionReasonCategory)));
   }
-
 
   @Test
   public void shouldFindRejectionReasonCategoryByNameAndCode() {
@@ -101,7 +103,7 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     Set<RejectionReasonCategory> rejectionReasonCategories =
             repository.searchRejectionReasonCategory(REJECTION_REASON_CATEGORY_NAME,
-            REJECTION_REASON_CATEGORY_CODE);
+                    REJECTION_REASON_CATEGORY_CODE);
     assertEquals(1, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
             .contains(rejectionReasonCategory)));
@@ -113,7 +115,7 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
     rejectionReasonCategory = repository.save(rejectionReasonCategory);
 
     Set<RejectionReasonCategory> rejectionReasonCategories = repository
-            .searchActiveRejectionReasonCategory(true);
+            .findByActive(true);
     assertEquals(1, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
             .contains(rejectionReasonCategory)));
@@ -126,9 +128,20 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
     Set<RejectionReasonCategory> rejectionReasonCategories = repository
             .searchRejectionReasonCategory(null,
-            null);
+                    null);
     assertEquals(1, rejectionReasonCategories.size());
     assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
             .contains(rejectionReasonCategory)));
+  }
+
+  @Test
+  public void shouldReturnAllRejectionReasonCategory() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
+
+    Page rejectionReasons = repository.findAllWithoutSnapshots(pageable);
+
+    assertEquals(1, rejectionReasons.getContent().size());
+    assertEquals(1, rejectionReasons.getContent().size());
   }
 }

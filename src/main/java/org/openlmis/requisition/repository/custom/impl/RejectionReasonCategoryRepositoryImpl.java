@@ -56,26 +56,6 @@ public class RejectionReasonCategoryRepositoryImpl implements
     return new HashSet<>(results);
   }
 
-
-  /**
-   * Method returns all rejection reason category with matched parameters.
-   * If all parameters are null, returns all rejection reason categories.
-   * @param active active .
-   * @return Set of rejection reason category
-   */
-  public Set<RejectionReasonCategory> searchActiveRejectionReasonCategory(boolean active) {
-
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<RejectionReasonCategory> query =
-            builder.createQuery(RejectionReasonCategory.class);
-    Root<RejectionReasonCategory> root = query.from(RejectionReasonCategory.class);
-    Predicate predicate = builder.conjunction();
-    predicate = addEqualsFilter(predicate, builder, root, "active", active);
-    query.where(predicate);
-    List<RejectionReasonCategory> results = entityManager.createQuery(query).getResultList();
-    return new HashSet<>(results);
-  }
-
   private Predicate addEqualsFilter(Predicate predicate, CriteriaBuilder builder, Root root,
                                     String filterKey, Object filterValue) {
     if (filterValue != null) {

@@ -20,14 +20,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 public class RejectionReasonRepositoryIntegrationTest
         extends BaseCrudRepositoryIntegrationTest<RejectionReason> {
@@ -37,6 +38,8 @@ public class RejectionReasonRepositoryIntegrationTest
 
   @Autowired
   private RejectionReasonCategoryRepository rejectionReasonCategoryRepository;
+
+  private Pageable pageable;
 
   private RejectionReasonCategory rejectionReasonCategory;
 
@@ -52,9 +55,9 @@ public class RejectionReasonRepositoryIntegrationTest
     return this.repository;
   }
 
-
   @Override
   RejectionReason generateInstance() {
+    pageable = PageRequest.of(0, 10);
     RejectionReasonCategory rejectionReasonCategory = new RejectionReasonCategoryDataBuilder()
             .withName("name")
             .withCode("code")
@@ -70,7 +73,7 @@ public class RejectionReasonRepositoryIntegrationTest
             .buildAsNew();
   }
 
-  private RejectionReason generateRejectionReason(RejectionReasonCategory rejectionReasonCategory){
+  private RejectionReason generateRejectionReason(RejectionReasonCategory rejectionReasonCategory) {
     return new RejectionReasonDataBuilder()
             .withCategory(rejectionReasonCategory)
             .withName(REJECTION_REASON_NAME)
@@ -86,12 +89,11 @@ public class RejectionReasonRepositoryIntegrationTest
             .buildAsNew();
   }
 
-
   @Test
   public void shouldFindRejectionReasonByName() {
-     rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = generateRejectionReasonCategory();
     rejectionReasonCategory = rejectionReasonCategoryRepository.save(rejectionReasonCategory);
-     rejectionReason = generateRejectionReason(rejectionReasonCategory);
+    rejectionReason = generateRejectionReason(rejectionReasonCategory);
     repository.save(rejectionReason);
 
     Set<RejectionReason> rejectionReasons = repository.searchRejectionReason(
@@ -103,10 +105,10 @@ public class RejectionReasonRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFindRejectionReasonCategoryByCode() {
+  public void shouldFindRejectionReasonByCode() {
     rejectionReasonCategory = generateRejectionReasonCategory();
     rejectionReasonCategory = rejectionReasonCategoryRepository.save(rejectionReasonCategory);
-     rejectionReason = generateRejectionReason(rejectionReasonCategory);
+    rejectionReason = generateRejectionReason(rejectionReasonCategory);
     repository.save(rejectionReason);
 
     Set<RejectionReason> rejectionReasons = repository.searchRejectionReason(
@@ -152,7 +154,7 @@ public class RejectionReasonRepositoryIntegrationTest
     rejectionReason = generateRejectionReason(rejectionReasonCategory);
     repository.save(rejectionReason);
 
-    Set<RejectionReason> rejectionReasons = repository.searchActiveRejectionReason(true);
+    Set<RejectionReason> rejectionReasons = repository.findByActive(true);
     assertEquals(1, rejectionReasons.size());
     assertTrue(rejectionReasons.stream().allMatch(result -> rejectionReasons
             .contains(rejectionReason)));
@@ -171,6 +173,19 @@ public class RejectionReasonRepositoryIntegrationTest
     assertEquals(1, rejectionReasons.size());
     assertTrue(rejectionReasons.stream().allMatch(result -> rejectionReasons
             .contains(rejectionReason)));
+  }
+
+  @Test
+  public void shouldReturnAllRejectionReason() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = rejectionReasonCategoryRepository.save(rejectionReasonCategory);
+    rejectionReason = generateRejectionReason(rejectionReasonCategory);
+    repository.save(rejectionReason);
+
+    Page rejectionReasons = repository.findAllWithoutSnapshots(pageable);
+
+    assertEquals(1, rejectionReasons.getContent().size());
+    assertEquals(1, rejectionReasons.getContent().size());
   }
 
 }

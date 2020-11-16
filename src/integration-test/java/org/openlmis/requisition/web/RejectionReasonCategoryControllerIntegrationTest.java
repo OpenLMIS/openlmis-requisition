@@ -30,7 +30,6 @@ import java.util.UUID;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Test;
-import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
 import org.openlmis.requisition.service.PageDto;
@@ -115,9 +114,24 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
+  public void getShouldReturnNotFoundForNonExistingRejectionReasonCategory() {
+    given(rejectionReasonRepository.findById(rejectionReasonCategoryId))
+            .willReturn(Optional.empty());
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .pathParam("id", rejectionReasonCategoryId)
+            .when()
+            .get(ID_URL)
+            .then()
+            .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldPostRejectionReasonCategory() {
-    given(rejectionReasonCategoryRepository.findFirstByName(REJECTION_REASON_CATEGORY_NAME_ONE))
-            .willReturn(null);
     given(rejectionReasonCategoryRepository.save(any()))
             .willReturn(rejectionReasonCategory1);
 
@@ -138,7 +152,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void shouldReturnBadRequestWhenPostEmptyFields(){
+  public void shouldReturnBadRequestWhenPostEmptyFields() {
     // given
     when(rejectionReasonCategoryRepository.save(any(RejectionReasonCategory.class)))
             .thenThrow(new DataIntegrityViolationException("test",
@@ -184,7 +198,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void shouldReturnBadRequestWhenPutEmptyFields(){
+  public void shouldReturnBadRequestWhenPutEmptyFields() {
     // given
     when(rejectionReasonCategoryRepository.save(any(RejectionReasonCategory.class)))
             .thenThrow(new DataIntegrityViolationException("test",

@@ -24,6 +24,4 @@ public interface RejectionReasonRepositoryCustom {
 
   Set<RejectionReason> searchRejectionReason(String name, String code,
                                              RejectionReasonCategory rejectionReasonCategoryId);
-
-  Set<RejectionReason> searchActiveRejectionReason(boolean active);
 }

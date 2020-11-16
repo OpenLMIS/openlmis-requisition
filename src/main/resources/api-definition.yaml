@@ -1336,7 +1336,7 @@ resourceTypes:
             body:
               application/json:
                 schema: rejectionReason
-          "400":
+          "404":
             headers:
               Keep-Alive:
             body:
@@ -1442,6 +1442,12 @@ resourceTypes:
             body:
               application/json:
                 schema: rejectionReasonCategory
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedResponse
     /search:
       get:
         is: [ secured ]

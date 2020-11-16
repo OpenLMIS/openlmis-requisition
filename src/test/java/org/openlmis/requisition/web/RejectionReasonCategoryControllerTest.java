@@ -17,7 +17,6 @@ package org.openlmis.requisition.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -33,7 +32,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
-import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.springframework.data.domain.Page;
@@ -88,11 +86,6 @@ public class RejectionReasonCategoryControllerTest {
     rejectionReasonCategories = Sets.newHashSet(rejectionReasonCategory1, rejectionReasonCategory2);
   }
 
-  private void preparePostOrPut() {
-    when(repository.findFirstByName(rejectionReasonCategoryName1))
-            .thenReturn(rejectionReasonCategory1);
-  }
-
   @Test
   public void shouldGetAllRejectionReasonCategories() {
     //given
@@ -127,7 +120,6 @@ public class RejectionReasonCategoryControllerTest {
   @Test
   public void shouldNotCreateExistingRejectionReasonCategoryOnPost() {
     //given
-    preparePostOrPut();
     when(repository.save(any())).thenReturn(rejectionReasonCategory1);
 
     //when

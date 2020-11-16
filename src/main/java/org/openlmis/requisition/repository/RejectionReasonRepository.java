@@ -15,8 +15,7 @@
 
 package org.openlmis.requisition.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.openlmis.requisition.domain.RejectionReason;
@@ -30,6 +29,8 @@ public interface RejectionReasonRepository extends
         PagingAndSortingRepository<RejectionReason, UUID>,
         RejectionReasonRepositoryCustom,
         BaseAuditableRepository<RejectionReason, UUID> {
+
+  Set<RejectionReason> findByActive(boolean active);
 
   @Query(value = "SELECT\n"
           + "    r.*\n"
