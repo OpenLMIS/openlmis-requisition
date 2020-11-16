@@ -27,6 +27,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.repository.custom.RejectionReasonRepositoryCustom;
 
 public class RejectionReasonRepositoryImpl implements
@@ -36,14 +37,16 @@ public class RejectionReasonRepositoryImpl implements
   private EntityManager entityManager;
 
   /**
-   * Method returns all rights with matched parameters.
-   * If all parameters are null, returns all rights.
+   * Method returns all rejection reason with matched parameters.
+   * If all parameters are null, returns all rejection reason.
    *
-   * @param name name of right.
-   * @param code type of right.
+   * @param name name of rejection reason.
+   * @param code code of rejection reason.
+   * @param rejectionReasonCategory uuid of rejection reason category.
    * @return Set of rejection reason
    */
-  public Set<RejectionReason> searchRejectionReason(String name, String code) {
+  public Set<RejectionReason> searchRejectionReason(String name, String code,
+                                                    RejectionReasonCategory rejectionReasonCategory) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<RejectionReason> query = builder.createQuery(RejectionReason.class);
@@ -51,17 +54,36 @@ public class RejectionReasonRepositoryImpl implements
     Predicate predicate = builder.conjunction();
     predicate = addEqualsFilter(predicate, builder, root, "name", name);
     predicate = addEqualsFilter(predicate, builder, root, "code", code);
+    predicate = addEqualsFilter(predicate, builder, root, "rejectionReasonCategory",
+            rejectionReasonCategory);
     query.where(predicate);
     List<RejectionReason> results = entityManager.createQuery(query).getResultList();
     return new HashSet<>(results);
   }
 
+  /**
+   * Method returns all rejection reason with matched parameters.
+   * If all parameters are null, returns all rejection reason.
+   *
+   * @param active active of rejection reason.
+   */
+  public Set<RejectionReason> searchActiveRejectionReason(boolean active) {
+
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<RejectionReason> query = builder.createQuery(RejectionReason.class);
+    Root<RejectionReason> root = query.from(RejectionReason.class);
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualsFilter(predicate, builder, root, "active", active);
+    query.where(predicate);
+    List<RejectionReason> results = entityManager.createQuery(query).getResultList();
+    return new HashSet<>(results);
+  }
+
+
   private Predicate addEqualsFilter(Predicate predicate, CriteriaBuilder builder, Root root,
                                     String filterKey, Object filterValue) {
     if (filterValue != null) {
-      return builder.and(
-              predicate,
-              builder.equal(
+      return builder.and(predicate, builder.equal(
                       root.get(filterKey), filterValue));
     } else {
       return predicate;

@@ -28,12 +28,15 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Test;
+import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonCategoryDto;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -91,7 +94,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void getShouldGetRejectionReasonCategory() {
+  public void shouldGetRejectionReasonCategory() {
 
     given(rejectionReasonCategoryRepository.findById(rejectionReasonCategoryId))
             .willReturn(Optional.of(rejectionReasonCategory1));
@@ -112,22 +115,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void shouldReturnBadRequestWhenSearchThrowsException() {
-    // when
-    restAssured.given()
-            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .when()
-            .get(SEARCH_URL)
-            .then()
-            .statusCode(400);
-
-    // then
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void postShouldCreateNewRejectionReasonCategory() {
+  public void shouldPostRejectionReasonCategory() {
     given(rejectionReasonCategoryRepository.findFirstByName(REJECTION_REASON_CATEGORY_NAME_ONE))
             .willReturn(null);
     given(rejectionReasonCategoryRepository.save(any()))
@@ -141,7 +129,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
             .when()
             .post(RESOURCE_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract().as(RejectionReasonCategoryDto.class);
 
     assertEquals(REJECTION_REASON_CATEGORY_NAME_ONE, response.getName());
@@ -150,7 +138,28 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void putShouldUpdateRejectionReasonCategory() {
+  public void shouldReturnBadRequestWhenPostEmptyFields(){
+    // given
+    when(rejectionReasonCategoryRepository.save(any(RejectionReasonCategory.class)))
+            .thenThrow(new DataIntegrityViolationException("test",
+                    new ConstraintViolationException("", null, "missing mandatory field")));
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(rejectionReasonCategoryDto)
+            .when()
+            .post(RESOURCE_URL)
+            .then()
+            .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldPutRejectionReasonCategory() {
 
     when(rejectionReasonCategoryRepository.findById(rejectionReasonCategoryId))
             .thenReturn(Optional.of(rejectionReasonCategory1));
@@ -175,7 +184,29 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
   }
 
   @Test
-  public void searchShouldFindRejectionReasonByNameAndCode() {
+  public void shouldReturnBadRequestWhenPutEmptyFields(){
+    // given
+    when(rejectionReasonCategoryRepository.save(any(RejectionReasonCategory.class)))
+            .thenThrow(new DataIntegrityViolationException("test",
+                    new ConstraintViolationException("", null, "missing mandatory field")));
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", rejectionReasonCategoryId)
+            .body(rejectionReasonCategoryDto)
+            .when()
+            .put(ID_URL)
+            .then()
+            .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldSearchRejectionReasonCategory() {
 
     given(rejectionReasonCategoryRepository.searchRejectionReasonCategory(
             REJECTION_REASON_CATEGORY_NAME_ONE,
@@ -196,6 +227,21 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
     RejectionReasonCategoryDto rejectionReasonCategory = response[0];
     assertEquals(REJECTION_REASON_CATEGORY_NAME_ONE, rejectionReasonCategory.getName());
     assertEquals(REJECTION_REASON_CATEGORY_CODE_ONE, rejectionReasonCategory.getCode());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenSearchWithAllParameterNull() {
+    // when
+    restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(SEARCH_URL)
+            .then()
+            .statusCode(400);
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

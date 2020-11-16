@@ -39,6 +39,7 @@ public class RejectionReason extends BaseEntity {
 
   @Column(nullable = false, unique = true, columnDefinition = TEXT)
   @Getter
+  @Setter
   private String name;
 
   @Column(nullable = false, unique = true, columnDefinition = TEXT)

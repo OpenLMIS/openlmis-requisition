@@ -188,7 +188,11 @@ schemas:
             },
             "required": ["messageKey"]
         }
-
+  - localizedResponse: |
+      {
+              "messageKey": { "type": "string", "title": "message key" },
+              "message": { "type": "string", "title": "message" }
+      }
 
   - rejectionReasonCategoryPage: !include schemas/rejectionReasonCategoryPage.json
   - rejectionReasonPage: !include schemas/rejectionReasonPage.json
@@ -1278,7 +1282,7 @@ resourceTypes:
         application/json:
           schema: rejectionReason
       responses:
-        "200":
+        "201":
           headers:
             Keep-Alive:
           body:
@@ -1287,7 +1291,7 @@ resourceTypes:
         "400":
           body:
             application/json:
-              schema: localizedMessage
+              schema: localizedResponse
     get:
       is: [ secured, paginated ]
       description: Get a page rejection reason.
@@ -1307,7 +1311,7 @@ resourceTypes:
           repeat: false
       put:
         is: [ secured ]
-        description: Update existing rejection reason.
+        description: Create/update rejection reason.
         body:
           application/json:
             schema: rejectionReason
@@ -1321,7 +1325,7 @@ resourceTypes:
           "400":
             body:
               application/json:
-                schema: localizedErrorResponse
+                schema: localizedResponse
       get:
         is: [ secured ]
         description: Get chosen rejection reason.
@@ -1337,11 +1341,11 @@ resourceTypes:
               Keep-Alive:
             body:
               application/json:
-                schema: localizedErrorResponse
+                schema: localizedResponse
     /search:
       get:
         is: [ secured ]
-        description: Search for rejection reason.
+        description: Search for rejection reason. Atleast one parameter should be passed or else will throw 400 error
         queryParameters:
           name:
             displayName: Name of the rejection reason to find
@@ -1351,6 +1355,16 @@ resourceTypes:
           code:
             displayName: Code of the rejection reason to find
             type: string
+            required: false
+            repeat: false
+          rejectionReasonCategoryId:
+            displayName: UUID of rejection reason category
+            type: string
+            required: false
+            repeat: false
+          active:
+            displayName: Status of rejection reason
+            type: boolean
             required: false
             repeat: false
         responses:
@@ -1363,7 +1377,7 @@ resourceTypes:
           "400":
             body:
               application/json:
-                schema: localizedErrorResponse
+                schema: localizedResponse
 
   /rejectionReasonCategories:
     displayName: Rejection Reason Category
@@ -1374,7 +1388,7 @@ resourceTypes:
         application/json:
           schema: rejectionReasonCategory
       responses:
-        "200":
+        "201":
           headers:
             Keep-Alive:
           body:
@@ -1383,10 +1397,10 @@ resourceTypes:
         "400":
           body:
             application/json:
-              schema: localizedErrorResponse
+              schema: localizedResponse
     get:
       is: [ secured, paginated ]
-      description: Get a page of rejection reason category.
+      description: Get a page rejection reason category.
       responses:
         "200":
           headers:
@@ -1403,7 +1417,7 @@ resourceTypes:
           repeat: false
       put:
         is: [ secured ]
-        description: Update existing rejection reason.
+        description: Create/update rejection reason catgeory.
         body:
           application/json:
             schema: rejectionReasonCategory
@@ -1417,7 +1431,7 @@ resourceTypes:
           "400":
             body:
               application/json:
-                schema: localizedErrorResponse
+                schema: localizedResponse
       get:
         is: [ secured ]
         description: Get chosen rejection reason category.
@@ -1428,16 +1442,10 @@ resourceTypes:
             body:
               application/json:
                 schema: rejectionReasonCategory
-          "400":
-            headers:
-              Keep-Alive:
-            body:
-              application/json:
-                schema: localizedErrorResponse
     /search:
       get:
         is: [ secured ]
-        description: Search for rejection reason category.
+        description: Search for rejection reason category. Atleast one parameter should be passed or else will throw 400 error
         queryParameters:
           name:
             displayName: Name of the rejection reason category to find
@@ -1447,6 +1455,11 @@ resourceTypes:
           code:
             displayName: Code of the rejection reason category to find
             type: string
+            required: false
+            repeat: false
+          active:
+            displayName: Status of rejection reason category
+            type: boolean
             required: false
             repeat: false
         responses:

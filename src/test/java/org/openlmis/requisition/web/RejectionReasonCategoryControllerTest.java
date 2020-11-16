@@ -17,6 +17,7 @@ package org.openlmis.requisition.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -121,15 +122,6 @@ public class RejectionReasonCategoryControllerTest {
 
     //then
     assertEquals(rejectionReasonCategoryDto, rejectionReasonCategoryDto);
-  }
-
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldNotGetNonExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReasonCategory1.getId())).thenReturn(Optional.empty());
-
-    //when
-    controller.getRejectionReasonCategory(rejectionReasonCategory1.getId());
   }
 
   @Test

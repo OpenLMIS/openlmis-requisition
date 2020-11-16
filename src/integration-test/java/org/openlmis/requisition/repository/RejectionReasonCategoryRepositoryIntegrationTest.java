@@ -16,14 +16,12 @@
 package org.openlmis.requisition.repository;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
@@ -38,98 +36,99 @@ public class RejectionReasonCategoryRepositoryIntegrationTest
 
   private RejectionReasonCategory rejectionReasonCategory;
 
+  private static final String REJECTION_REASON_CATEGORY_NAME = "Category Name";
+  private static final String REJECTION_REASON_CATEGORY_CODE = "RRC1";
+
   @Override
   RejectionReasonCategoryRepository getRepository() {
     return this.repository;
   }
 
-
+  @Override
   RejectionReasonCategory generateInstance() {
     return new RejectionReasonCategoryDataBuilder()
-            .withCode("RRC2")
+            .withActive(true)
+            .withCode("code")
             .withName("name")
             .buildAsNew();
   }
 
+  private RejectionReasonCategory generateRejectionReasonCategory() {
+    return new RejectionReasonCategoryDataBuilder()
+            .withName(REJECTION_REASON_CATEGORY_NAME)
+            .withCode(REJECTION_REASON_CATEGORY_CODE)
+            .withActive(true)
+            .buildAsNew();
+  }
+
+  @Before
   public void setUp() {
     rejectionReasonCategory = generateInstance();
-    repository.save(rejectionReasonCategory);
   }
 
-  @After
-  public void cleanUp() {
-    repository.deleteAll();
+
+  @Test
+  public void shouldFindRejectionReasonCategoryByName() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
+
+    Set<RejectionReasonCategory> rejectionReasonCategories =
+            repository.searchRejectionReasonCategory(REJECTION_REASON_CATEGORY_NAME,
+            null);
+    assertEquals(1, rejectionReasonCategories.size());
+    assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
+            .contains(rejectionReasonCategory)));
   }
 
   @Test
-  public void shouldGetFirstByNameIfExists() {
-    setUp();
-    //given
-    String nameToFind = rejectionReasonCategory.getName();
+  public void shouldFindRejectionReasonCategoryByCode() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
 
-    //when
-    RejectionReasonCategory foundRejectionReasonCategory = repository.findFirstByName(nameToFind);
+    Set<RejectionReasonCategory> rejectionReasonCategories = repository
+            .searchRejectionReasonCategory(null,
+            REJECTION_REASON_CATEGORY_CODE);
+    assertEquals(1, rejectionReasonCategories.size());
+    assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
+            .contains(rejectionReasonCategory)));
+  }
 
-    //then
-    assertEquals(rejectionReasonCategory, foundRejectionReasonCategory);
+
+  @Test
+  public void shouldFindRejectionReasonCategoryByNameAndCode() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
+
+    Set<RejectionReasonCategory> rejectionReasonCategories =
+            repository.searchRejectionReasonCategory(REJECTION_REASON_CATEGORY_NAME,
+            REJECTION_REASON_CATEGORY_CODE);
+    assertEquals(1, rejectionReasonCategories.size());
+    assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
+            .contains(rejectionReasonCategory)));
   }
 
   @Test
-  public void shouldFindRejectionReasonCategory() {
-    setUp();
-    //given
-    String nameToFind = rejectionReasonCategory.getName();
-    String code = rejectionReasonCategory.getCode();
+  public void shouldFindActiveRejectionReasonCategory() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
 
-    //when
-    List<Set<RejectionReasonCategory>> rejectionReasonCategories = Arrays.asList(
-            repository.searchRejectionReasonCategory(nameToFind, code),
-            repository.searchRejectionReasonCategory(null, code),
-            repository.searchRejectionReasonCategory(nameToFind, null)
-    );
-
-    //then
-    assertEquals(3, rejectionReasonCategories.size());
-    assertTrue(rejectionReasonCategories.stream()
-            .allMatch(result -> result.contains(rejectionReasonCategory)));
+    Set<RejectionReasonCategory> rejectionReasonCategories = repository
+            .searchActiveRejectionReasonCategory(true);
+    assertEquals(1, rejectionReasonCategories.size());
+    assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
+            .contains(rejectionReasonCategory)));
   }
 
   @Test
-  public void shouldNotFindRejectionReasonCategoryIfIncorrectParametersAreProvided() {
+  public void shouldReturnAllRejectionReasonCategoryIFallParameterAreNull() {
+    rejectionReasonCategory = generateRejectionReasonCategory();
+    rejectionReasonCategory = repository.save(rejectionReasonCategory);
 
-    setUp();
-    //given
-    String actualName = rejectionReasonCategory.getName();
-    String anotherName = "some other name";
-    String actualCode = rejectionReasonCategory.getCode();
-    String anotherCode = "fake code";
-
-    //when
-    List<Set<RejectionReasonCategory>> rejectionReasonResults = Arrays.asList(
-            repository.searchRejectionReasonCategory(actualName, anotherCode),
-            repository.searchRejectionReasonCategory(anotherName, anotherCode),
-            repository.searchRejectionReasonCategory(anotherName, actualCode),
-            repository.searchRejectionReasonCategory(anotherName, null),
-            repository.searchRejectionReasonCategory(null, anotherCode)
-    );
-
-    //then
-    assertEquals(5, rejectionReasonResults.size());
-    assertTrue(rejectionReasonResults.stream()
-            .noneMatch(result -> result.contains(rejectionReasonCategory)));
+    Set<RejectionReasonCategory> rejectionReasonCategories = repository
+            .searchRejectionReasonCategory(null,
+            null);
+    assertEquals(1, rejectionReasonCategories.size());
+    assertTrue(rejectionReasonCategories.stream().allMatch(result -> rejectionReasonCategories
+            .contains(rejectionReasonCategory)));
   }
-
-  @Test
-  public void shouldNotGetFirstByNameIfDoesNotExist() {
-    setUp();
-    //given
-    String nameToFind = "does not exist";
-
-    //when
-    RejectionReasonCategory foundRejectionReasonCategory = repository.findFirstByName(nameToFind);
-
-    //then
-    assertNull(foundRejectionReasonCategory);
-  }
-
 }

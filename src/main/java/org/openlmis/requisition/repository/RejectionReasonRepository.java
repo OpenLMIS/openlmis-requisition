@@ -31,16 +31,6 @@ public interface RejectionReasonRepository extends
         RejectionReasonRepositoryCustom,
         BaseAuditableRepository<RejectionReason, UUID> {
 
-  RejectionReason findFirstByName(String name);
-
-  @Query(value = "SELECT rr.*"
-          + " FROM requisition.rejection_reasons rr"
-          + " WHERE rr.rejectionreasoncategoryid  = :rejectionReasonCategoryId",
-          nativeQuery = true
-  )
-  List<RejectionReason> findRejectionReasonsByCategory(
-          @Param("rejectionReasonCategoryId") UUID rejectionReasonCategoryId);
-
   @Query(value = "SELECT\n"
           + "    r.*\n"
           + "FROM\n"

@@ -16,9 +16,14 @@
 package org.openlmis.requisition.repository.custom;
 
 import java.util.Set;
+
 import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RejectionReasonCategory;
 
 public interface RejectionReasonRepositoryCustom {
 
-  Set<RejectionReason> searchRejectionReason(String name, String code);
+  Set<RejectionReason> searchRejectionReason(String name, String code,
+                                             RejectionReasonCategory rejectionReasonCategoryId);
+
+  Set<RejectionReason> searchActiveRejectionReason(boolean active);
 }

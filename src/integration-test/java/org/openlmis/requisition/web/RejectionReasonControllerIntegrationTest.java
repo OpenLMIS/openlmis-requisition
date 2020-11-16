@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -27,14 +28,18 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.RejectionReasonDto;
+import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -52,7 +57,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   private static final String REJECTION_REASON_CATEGORY_NAME = "cat1";
   private static final String REJECTION_REASON_CATEGORY_CODE = "code1";
 
-  private RejectionReason rejectionReason1;
+  private RejectionReason rejectionReason;
   private RejectionReasonCategory rejectionReasonCategory;
   private RejectionReasonDto rejectionReasonDto;
   private UUID rejectionReasonId;
@@ -68,7 +73,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
             .withName(REJECTION_REASON_CATEGORY_NAME)
             .withActive(true)
             .buildAsNew();
-    rejectionReason1 = new RejectionReasonDataBuilder()
+    rejectionReason = new RejectionReasonDataBuilder()
             .withName(REJECTION_REASON_NAME_ONE)
             .withCategory(rejectionReasonCategory)
             .withCode(REJECTION_REASON_CODE_ONE)
@@ -76,14 +81,14 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
             .buildAsNew();
 
     rejectionReasonDto = new RejectionReasonDto();
-    rejectionReason1.export(rejectionReasonDto);
+    rejectionReason.export(rejectionReasonDto);
     rejectionReasonId = UUID.randomUUID();
     pageable = PageRequest.of(0, 10);
   }
 
   @Test
   public void shouldReturnPageOfRejectionReason() {
-    doReturn(Pagination.getPage(singletonList(rejectionReason1), pageable))
+    doReturn(Pagination.getPage(singletonList(rejectionReason), pageable))
             .when(rejectionReasonRepository).findAll();
 
     PageDto resultPage = restAssured.given()
@@ -102,10 +107,10 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
 
 
   @Test
-  public void getShouldGetRejectionReason() {
+  public void shouldGetRejectionReason() {
 
     given(rejectionReasonRepository.findById(rejectionReasonId))
-            .willReturn(Optional.of(rejectionReason1));
+            .willReturn(Optional.of(rejectionReason));
 
     RejectionReasonDto response = restAssured
         .given()
@@ -123,11 +128,11 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void postShouldCreateNewRejectionReason() {
+  public void shouldPostRejectionReason() {
 
-    given(rejectionReasonRepository.findFirstByName(REJECTION_REASON_NAME_ONE))
+    given(rejectionReasonRepository.findById(rejectionReasonId))
             .willReturn(null);
-    given(rejectionReasonRepository.save(rejectionReason1)).willReturn(rejectionReason1);
+    given(rejectionReasonRepository.save(rejectionReason)).willReturn(rejectionReason);
 
     RejectionReasonDto response = restAssured
         .given()
@@ -137,7 +142,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
         .when()
         .post(RESOURCE_URL)
         .then()
-        .statusCode(200)
+        .statusCode(201)
         .extract().as(RejectionReasonDto.class);
 
     assertEquals(REJECTION_REASON_NAME_ONE, response.getName());
@@ -146,11 +151,31 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void putShouldUpdateRejectionReason() {
+  public void shouldReturnBadRequestWhenPostEmptyFields(){
+    // given
+    when(rejectionReasonRepository.save(any(RejectionReason.class)))
+            .thenThrow(new DataIntegrityViolationException("test",
+                    new ConstraintViolationException("", null, "missing mandatory field")));
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(rejectionReasonDto)
+            .when()
+            .post(RESOURCE_URL)
+            .then()
+            .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldPutRejectionReason() {
 
     when(rejectionReasonRepository.findById(rejectionReasonId))
-            .thenReturn(Optional.of(rejectionReason1));
-    given(rejectionReasonRepository.save(rejectionReason1)).willReturn(rejectionReason1);
+            .thenReturn(Optional.of(rejectionReason));
+    given(rejectionReasonRepository.save(rejectionReason)).willReturn(rejectionReason);
 
     RejectionReasonDto response = restAssured
         .given()
@@ -169,13 +194,34 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldReturnBadRequestWhenPutEmptyFields(){
+    // given
+    when(rejectionReasonRepository.save(any(RejectionReason.class)))
+            .thenThrow(new DataIntegrityViolationException("test",
+                    new ConstraintViolationException("", null, "missing mandatory field")));
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", rejectionReasonId)
+            .body(rejectionReasonDto)
+            .when()
+            .put(ID_URL)
+            .then()
+            .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
 
   @Test
-  public void searchShouldFindRejectionReasonByNameAndCode() {
+  public void shouldSearchRejectionReason() {
 
     given(rejectionReasonRepository.searchRejectionReason(REJECTION_REASON_NAME_ONE,
-            REJECTION_REASON_CODE_ONE)).willReturn(
-            Collections.singleton(rejectionReason1));
+            REJECTION_REASON_CODE_ONE, null)).willReturn(
+            Collections.singleton(rejectionReason));
 
     RejectionReasonDto[] response = restAssured
         .given()
@@ -195,7 +241,7 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldReturnBadRequestWhenSearchThrowsException() {
+  public void shouldReturnBadRequestWhenSearchWithAllParameterNull() {
 
     // when
     restAssured.given()

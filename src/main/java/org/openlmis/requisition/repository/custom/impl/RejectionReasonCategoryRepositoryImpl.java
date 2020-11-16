@@ -35,12 +35,12 @@ public class RejectionReasonCategoryRepositoryImpl implements
   private EntityManager entityManager;
 
   /**
-   * Method returns all rights with matched parameters.
-   * If all parameters are null, returns all rights.
+   * Method returns all rejection reason category with matched parameters.
+   * If all parameters are null, returns all rejection reason category.
    *
-   * @param name name of right.
-   * @param code type of right.
-   * @return Set of rejection reason
+   * @param name name of rejection reason category.
+   * @param code type of rejection reason category.
+   * @return Set of rejection reason category
    */
   public Set<RejectionReasonCategory> searchRejectionReasonCategory(String name, String code) {
 
@@ -51,6 +51,26 @@ public class RejectionReasonCategoryRepositoryImpl implements
     Predicate predicate = builder.conjunction();
     predicate = addEqualsFilter(predicate, builder, root, "name", name);
     predicate = addEqualsFilter(predicate, builder, root, "code", code);
+    query.where(predicate);
+    List<RejectionReasonCategory> results = entityManager.createQuery(query).getResultList();
+    return new HashSet<>(results);
+  }
+
+
+  /**
+   * Method returns all rejection reason category with matched parameters.
+   * If all parameters are null, returns all rejection reason categories.
+   * @param active active .
+   * @return Set of rejection reason category
+   */
+  public Set<RejectionReasonCategory> searchActiveRejectionReasonCategory(boolean active) {
+
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<RejectionReasonCategory> query =
+            builder.createQuery(RejectionReasonCategory.class);
+    Root<RejectionReasonCategory> root = query.from(RejectionReasonCategory.class);
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualsFilter(predicate, builder, root, "active", active);
     query.where(predicate);
     List<RejectionReasonCategory> results = entityManager.createQuery(query).getResultList();
     return new HashSet<>(results);

@@ -103,12 +103,6 @@ public class RejectionReasonControllerTest {
     rejectionReason2.export(rejectionReasonDto2);
   }
 
-  private void preparePostOrPut() {
-    when(repository.findFirstByName(rejectionReasonName1))
-            .thenReturn(rejectionReason1);
-    when(repository.findFirstByName(rejectionReasonName2))
-            .thenReturn(rejectionReason2);
-  }
 
   @Test
   public void shouldGetAllRejectionReason() {
@@ -139,21 +133,10 @@ public class RejectionReasonControllerTest {
     assertEquals(rejectionReasonDto1, rejectionReasonDto1);
   }
 
-  @Test(expected = ContentNotFoundMessageException.class)
-  public void shouldNotGetNonExistingRejectionReason() {
-    //given
-    when(repository.findById(rejectionReason1.getId())).thenReturn(Optional.empty());
-
-    //when
-    controller.getRejectionReason(rejectionReason1.getId());
-  }
 
   @Test
   public void shouldCreateNewRejectionReasonOnPost() {
-    //given
-    preparePostOrPut();
 
-    when(repository.findFirstByName(rejectionReasonName1)).thenReturn(rejectionReason1);
     when(repository.save(any())).thenReturn(rejectionReason1);
 
     //when
@@ -166,7 +149,6 @@ public class RejectionReasonControllerTest {
   @Test
   public void shouldNotCreateExistingRejectionReasonOnPost() {
     //given
-    preparePostOrPut();
     when(repository.save(any())).thenReturn(rejectionReason1);
 
     //when
