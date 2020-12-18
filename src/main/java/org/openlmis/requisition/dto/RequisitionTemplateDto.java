@@ -68,6 +68,10 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
   @Setter
   private Set<ObjectReferenceDto> facilityTypes;
 
+  @Getter
+  @Setter
+  private boolean rejectionReasonWindowVisible;
+
   @Override
   @JsonIgnore
   public UUID getProgramId() {

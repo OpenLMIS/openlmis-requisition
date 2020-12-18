@@ -142,7 +142,6 @@ public class RequisitionTemplateController extends BaseController {
     RequisitionTemplate toUpdate = requisitionTemplateRepository.findById(requisitionTemplateId)
         .orElse(null);
     RequisitionTemplate toSave;
-
     if (toUpdate == null) {
       LOGGER.info("Creating new requisition template");
       toSave = template;

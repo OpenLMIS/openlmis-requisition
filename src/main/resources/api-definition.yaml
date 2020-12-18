@@ -157,6 +157,45 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/statusMessage.json" }
       }
 
+
+  - rejectionReason: !include schemas/rejectionReasonDto.json
+
+  - rejectionReasonCategory: !include schemas/rejectionReasonCategoryDto.json
+
+  - rejectionReasonArray: |
+     {
+     "type": "array",
+     "items": { "type": "object", "$ref": "schemas/rejectionReasonDto.json" }
+     }
+
+
+  - rejectionReasonCategoryArray: |
+      {
+      "type": "array",
+      "items": { "type": "object", "$ref": "schemas/rejectionReasonCategoryDto.json" }
+      }
+
+
+  - localizedErrorResponse: |
+        {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema",
+            "title": "LocalizedErrorResponse",
+            "description": "Localized Error response",
+            "properties": {
+                "messageKey": { "type": "string", "title": "message key" },
+                "message": { "type": "string", "title": "message" }
+            },
+            "required": ["messageKey"]
+        }
+  - localizedResponse: |
+      {
+              "messageKey": { "type": "string", "title": "message key" },
+              "message": { "type": "string", "title": "message" }
+      }
+
+  - rejectionReasonCategoryPage: !include schemas/rejectionReasonCategoryPage.json
+  - rejectionReasonPage: !include schemas/rejectionReasonPage.json
 traits:
     - secured:
           queryParameters:
@@ -1234,3 +1273,209 @@ resourceTypes:
                             body:
                                 application/json:
                                     schema: localizedMessage
+  /rejectionReasons:
+    displayName: Rejection Reason
+    post:
+      is: [ secured ]
+      description: Save a rejection reason.
+      body:
+        application/json:
+          schema: rejectionReason
+      responses:
+        "201":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReason
+        "400":
+          body:
+            application/json:
+              schema: localizedResponse
+    get:
+      is: [ secured, paginated ]
+      description: Get a page rejection reason.
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonPage
+    /{id}:
+      uriParameters:
+        id:
+          displayName: Rejection Reason ID
+          type: string
+          required: true
+          repeat: false
+      put:
+        is: [ secured ]
+        description: Create/update rejection reason.
+        body:
+          application/json:
+            schema: rejectionReason
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReason
+          "400":
+            body:
+              application/json:
+                schema: localizedResponse
+      get:
+        is: [ secured ]
+        description: Get chosen rejection reason.
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReason
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedResponse
+    /search:
+      get:
+        is: [ secured ]
+        description: Search for rejection reason. Atleast one parameter should be passed or else will throw 400 error
+        queryParameters:
+          name:
+            displayName: Name of the rejection reason to find
+            type: string
+            required: false
+            repeat: false
+          code:
+            displayName: Code of the rejection reason to find
+            type: string
+            required: false
+            repeat: false
+          rejectionReasonCategoryId:
+            displayName: UUID of rejection reason category
+            type: string
+            required: false
+            repeat: false
+          active:
+            displayName: Status of rejection reason
+            type: boolean
+            required: false
+            repeat: false
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonArray
+          "400":
+            body:
+              application/json:
+                schema: localizedResponse
+
+  /rejectionReasonCategories:
+    displayName: Rejection Reason Category
+    post:
+      is: [ secured ]
+      description: Save a rejection reason category.
+      body:
+        application/json:
+          schema: rejectionReasonCategory
+      responses:
+        "201":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonCategory
+        "400":
+          body:
+            application/json:
+              schema: localizedResponse
+    get:
+      is: [ secured, paginated ]
+      description: Get a page rejection reason category.
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: rejectionReasonCategoryPage
+    /{id}:
+      uriParameters:
+        id:
+          displayName: Rejection Reason Category ID
+          type: string
+          required: true
+          repeat: false
+      put:
+        is: [ secured ]
+        description: Create/update rejection reason catgeory.
+        body:
+          application/json:
+            schema: rejectionReasonCategory
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonCategory
+          "400":
+            body:
+              application/json:
+                schema: localizedResponse
+      get:
+        is: [ secured ]
+        description: Get chosen rejection reason category.
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonCategory
+          "404":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedResponse
+    /search:
+      get:
+        is: [ secured ]
+        description: Search for rejection reason category. Atleast one parameter should be passed or else will throw 400 error
+        queryParameters:
+          name:
+            displayName: Name of the rejection reason category to find
+            type: string
+            required: false
+            repeat: false
+          code:
+            displayName: Code of the rejection reason category to find
+            type: string
+            required: false
+            repeat: false
+          active:
+            displayName: Status of rejection reason category
+            type: boolean
+            required: false
+            repeat: false
+        responses:
+          "200":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: rejectionReasonCategoryArray
+          "400":
+            body:
+              application/json:
+                schema: localizedErrorResponse

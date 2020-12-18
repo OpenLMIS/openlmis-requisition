@@ -85,6 +85,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private Integer numberOfPeriodsToAverage;
 
   @Getter
+  private boolean rejectionReasonWindowVisible;
+
+  @Getter
   private boolean populateStockOnHandFromStockCards;
   
   @Getter
@@ -120,7 +123,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private Set<UUID> facilityTypeIds = Sets.newHashSet();
 
   RequisitionTemplate(UUID id) {
-    this(id, null, false, null, null, null);
+    this(id, null, false, null, null, null, false);
   }
 
   /**
@@ -129,7 +132,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columns Columns to appear in requisition template.
    */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
-    this(null, null, false, null, columns, null);
+    this(null, null, false, null, columns, null, false);
   }
 
   /**
@@ -139,12 +142,14 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
                              boolean populateStockOnHandFromStockCards,
                              String name,
                              Map<String, RequisitionTemplateColumn> columnsMap,
-                             Set<RequisitionTemplateAssignment> templateAssignments) {
+                             Set<RequisitionTemplateAssignment> templateAssignments,
+                             boolean rejectionReasonWindowVisible) {
     setId(id);
 
     this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
     this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
     this.name = name;
+    this.rejectionReasonWindowVisible = rejectionReasonWindowVisible;
 
     addColumns(columnsMap);
     addAssignments(templateAssignments);
@@ -164,6 +169,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.name = source.name;
     this.archived = source.archived;
     this.programId = source.programId;
+    this.rejectionReasonWindowVisible = source.rejectionReasonWindowVisible;
 
     this.columnsMap = new HashMap<>();
     source.columnsMap.forEach((key, value) -> this.columnsMap.put(key, value.copy()));
@@ -438,7 +444,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplate template = new RequisitionTemplate(
         importer.getId(), importer.getNumberOfPeriodsToAverage(),
         importer.isPopulateStockOnHandFromStockCards(), importer.getName(),
-        columns, new HashSet<>()
+        columns, new HashSet<>(), importer.isRejectionReasonWindowVisible()
     );
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
@@ -468,6 +474,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setName(name);
     exporter.setProgramId(programId);
     exporter.setFacilityTypeIds(facilityTypeIds);
+    exporter.setRejectionReasonWindowVisible(rejectionReasonWindowVisible);
   }
 
   @PostLoad
@@ -582,6 +589,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     UUID getProgramId();
 
     Set<UUID> getFacilityTypeIds();
+
+    boolean isRejectionReasonWindowVisible();
   }
 
   public interface Exporter {
@@ -600,5 +609,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setProgramId(UUID programId);
 
     void setFacilityTypeIds(Set<UUID> facilityTypeIds);
+
+    void setRejectionReasonWindowVisible(boolean rejectionReasonWindowVisible);
   }
 }

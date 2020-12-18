@@ -351,7 +351,7 @@ public class RequisitionServiceIntegrationTest {
     RequisitionTemplate template = new RequisitionTemplate(UUID.randomUUID(),
         6, false, UUID.randomUUID().toString(),
         Collections.singletonMap(column.getName(), column),
-        new HashSet<>());
+        new HashSet<>(), false);
     template = requisitionTemplateRepository.save(template);
     return template;
   }

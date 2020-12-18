@@ -32,6 +32,7 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
     implements RequisitionTemplate.Exporter {
 
   private boolean populateStockOnHandFromStockCards;
+  private boolean rejectionReasonWindowVisible;
   private String name;
 
   private Map<String, BasicRequisitionTemplateColumnDto> columnsMap;

@@ -67,6 +67,8 @@ import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
+import org.openlmis.requisition.repository.RejectionReasonCategoryRepository;
+import org.openlmis.requisition.repository.RejectionReasonRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
@@ -253,6 +255,12 @@ public abstract class BaseWebIntegrationTest {
 
   @LocalServerPort
   private int serverPort;
+
+  @MockBean
+  protected RejectionReasonRepository rejectionReasonRepository;
+
+  @MockBean
+  protected RejectionReasonCategoryRepository rejectionReasonCategoryRepository;
 
   /**
    * Method called to initialize basic resources after the object is created.

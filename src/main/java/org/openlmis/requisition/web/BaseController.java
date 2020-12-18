@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
@@ -29,6 +30,7 @@ import org.javers.repository.jql.QueryBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -175,6 +177,10 @@ public abstract class BaseController {
     changes.sort((o1, o2) -> -1 * o1.getCommitMetadata().get().getCommitDate()
             .compareTo(o2.getCommitMetadata().get().getCommitDate()));
     return changes;
+  }
+
+  protected <T> Page<T> toPage(Set<T> originalList, Pageable pageable) {
+    return Pagination.getPage(originalList, pageable);
   }
 
 }
