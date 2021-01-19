@@ -39,6 +39,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
@@ -371,7 +372,8 @@ public class RequisitionController extends BaseRequisitionController {
   public BasicRequisitionDto rejectRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletResponse response,
+      @RequestBody List<RejectionDto> rejections) {
 
     Profiler profiler = getProfiler("REJECT", requisitionId);
 
@@ -385,7 +387,7 @@ public class RequisitionController extends BaseRequisitionController {
     );
 
     profiler.start("REJECT");
-    Requisition rejectedRequisition = requisitionService.reject(requisition, orderables);
+    Requisition rejectedRequisition = requisitionService.reject(requisition, orderables, rejections);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 

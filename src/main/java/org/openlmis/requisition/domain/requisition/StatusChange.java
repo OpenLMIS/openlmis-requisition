@@ -16,22 +16,18 @@
 package org.openlmis.requisition.domain.requisition;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.openlmis.requisition.domain.BaseTimestampedEntity;
+import org.openlmis.requisition.domain.Rejection;
 
 @Entity
 @Table(name = "status_changes")
@@ -65,6 +61,10 @@ public class StatusChange extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
+  @OneToMany(mappedBy = "statusChange")
+  @Getter
+  private List<Rejection> rejections = new ArrayList<>();
+
   private StatusChange(Requisition requisition, UUID authorId) {
     this.requisition = Objects.requireNonNull(requisition);
     this.authorId = authorId;
@@ -86,6 +86,7 @@ public class StatusChange extends BaseTimestampedEntity {
     exporter.setStatus(status);
     exporter.setStatusMessage(statusMessage);
     exporter.setAuthorId(authorId);
+    exporter.setRejections(rejections);
   }
 
   public interface Exporter {
@@ -97,5 +98,7 @@ public class StatusChange extends BaseTimestampedEntity {
     void setStatusMessage(StatusMessage statusMessage);
 
     void setAuthorId(UUID authorId);
+
+    void setRejections(List<Rejection> rejections);
   }
 }
