@@ -65,13 +65,13 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
-import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -109,25 +109,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-
-import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.*;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
-import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
-import static org.openlmis.requisition.i18n.MessageKeys.*;
-import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -203,7 +184,8 @@ public class RequisitionService {
   public Requisition initiate(ProgramDto program, FacilityDto facility,
                               ProcessingPeriodDto period, boolean emergency,
                               List<StockAdjustmentReason> stockAdjustmentReasons,
-                              RequisitionTemplate requisitionTemplate, ApproveProductsAggregator approvedProducts) {
+                              RequisitionTemplate requisitionTemplate,
+                              ApproveProductsAggregator approvedProducts) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
 
@@ -254,7 +236,8 @@ public class RequisitionService {
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     List<Requisition> previousRequisitions =
-            getRecentRegularRequisitions(requisition, Math.max(numberOfPreviousPeriodsToAverage, 1));
+            getRecentRegularRequisitions(requisition,
+                    Math.max(numberOfPreviousPeriodsToAverage, 1));
 
     List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
@@ -355,8 +338,9 @@ public class RequisitionService {
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
 
-    saveRejectionReason(savedRequisition, rejections);
-
+    if (requisition.getTemplate().isRejectionReasonWindowVisible() && rejections.isEmpty()) {
+      saveRejectionReason(savedRequisition, rejections);
+    }
     return savedRequisition;
   }
 
@@ -443,7 +427,8 @@ public class RequisitionService {
 
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
-              .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageable);
+              .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs,
+                      pageable);
     }
 
     profiler.stop().log();
@@ -613,7 +598,8 @@ public class RequisitionService {
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto> searchApprovedRequisitions(UUID facilityId,
-                                                                            UUID programId, Pageable pageable) {
+                                                                            UUID programId,
+                                                                            Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
@@ -649,7 +635,8 @@ public class RequisitionService {
 
       programIdSupervisoryNodeIdPairs = supplyLines.stream()
               .map(supplyLine ->
-                      Pair.of(supplyLine.getProgram().getId(), supplyLine.getSupervisoryNode().getId()))
+                      Pair.of(supplyLine.getProgram().getId(),
+                              supplyLine.getSupervisoryNode().getId()))
               .collect(toSet());
     } else if (null != programId) {
       programIdSupervisoryNodeIdPairs.add(Pair.of(programId, null));

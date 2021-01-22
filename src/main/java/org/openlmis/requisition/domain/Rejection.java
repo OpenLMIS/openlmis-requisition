@@ -17,7 +17,7 @@ package org.openlmis.requisition.domain;
 
 import java.time.ZonedDateTime;
 
-import java.util.Objects;
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -42,14 +42,16 @@ public class Rejection extends BaseTimestampedEntity {
 
   @ManyToOne(cascade = {CascadeType.ALL})
   @JoinColumn(name = "statusChangeId", nullable = false)
+  @Setter
+  @Getter
   private StatusChange statusChange;
 
-  private Rejection( RejectionReason rejectionReason, StatusChange statusChange) {
-    this.statusChange = Objects.requireNonNull(statusChange);
+  private Rejection(RejectionReason rejectionReason, StatusChange statusChange) {
+    this.statusChange = statusChange;
     this.rejectionReason = rejectionReason;
   }
 
-  public static Rejection newRejection( RejectionReason rejectionReason,
+  public static Rejection newRejection(RejectionReason rejectionReason,
                                         StatusChange statusChange) {
     return new Rejection(rejectionReason, statusChange);
   }
@@ -62,12 +64,14 @@ public class Rejection extends BaseTimestampedEntity {
   public void export(Rejection.Exporter exporter) {
     exporter.setCreatedDate(getCreatedDate());
     exporter.setRejectionReason(rejectionReason);
-    exporter.setModifiedDate(getModifiedDate());
+    exporter.setId(id);
   }
 
   public interface Exporter {
     void setCreatedDate(ZonedDateTime createdDate);
-    void setModifiedDate(ZonedDateTime modifiedDate);
+
     void setRejectionReason(RejectionReason rejectionReason);
+
+    void setId(UUID id);
   }
 }

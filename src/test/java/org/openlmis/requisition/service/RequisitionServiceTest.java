@@ -110,6 +110,7 @@ import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReasonCategory;
 import org.openlmis.requisition.dto.ReasonType;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -262,6 +263,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private PermissionStrings.Handler permissionStringsHandler;
+
+  @Mock
+  private RejectionDto rejectionDto;
 
   @Spy
   private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
@@ -418,8 +422,8 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
-
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
+            generateRejections());
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
@@ -431,8 +435,8 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
-
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
+            generateRejections());
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
@@ -446,7 +450,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
         .thenReturn(true);
 
-    requisitionService.reject(requisition, emptyMap());
+    requisitionService.reject(requisition, emptyMap(), emptyList());
   }
 
   @Test
@@ -457,7 +461,7 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
     requisition.setOriginalRequisitionId(UUID.randomUUID());
 
-    requisitionService.reject(requisition, emptyMap());
+    requisitionService.reject(requisition, emptyMap(), generateRejections());
   }
 
   @Test
@@ -469,8 +473,8 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
-
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
+            generateRejections());
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
   }
@@ -483,8 +487,8 @@ public class RequisitionServiceTest {
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
         any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
-    Requisition returnedRequisition = requisitionService.reject(requisition, orderables);
-
+    Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
+            generateRejections());
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     assertNull(returnedRequisition.getSupervisoryNodeId());
   }
@@ -493,14 +497,14 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {
     requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition, emptyMap());
+    requisitionService.reject(requisition, emptyMap(), generateRejections());
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws ValidationMessageException {
     requisition.setStatus(APPROVED);
-    requisitionService.reject(requisition, emptyMap());
+    requisitionService.reject(requisition, emptyMap(), generateRejections());
   }
 
   @Test
@@ -1717,4 +1721,7 @@ public class RequisitionServiceTest {
     ReflectionTestUtils.setField(stockCardSummaryDto.getOrderable(), "id", PRODUCT_ID);
   }
 
+  private List<RejectionDto> generateRejections() {
+    return singletonList(rejectionDto);
+  }
 }

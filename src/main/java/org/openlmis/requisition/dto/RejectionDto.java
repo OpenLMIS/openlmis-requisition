@@ -17,34 +17,16 @@ package org.openlmis.requisition.dto;
 
 import java.time.ZonedDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
-import org.openlmis.requisition.domain.requisition.StatusChange;
 
-@AllArgsConstructor
-@ToString
-public class RejectionDto  implements Rejection.Exporter {
 
-  @Getter
-  @Setter
-  private RejectionReason rejectionReason;
-
-  @Getter
-  @Setter
+@Getter
+@Setter
+public class RejectionDto extends BaseDto implements Rejection.Exporter {
   private ZonedDateTime createdDate;
-
-  @Getter
-  @Setter
-  private ZonedDateTime modifiedDate;
-
-  @Getter
-  @Setter
-  private StatusChange statusChange;
-
-
+  private RejectionReason rejectionReason;
 }

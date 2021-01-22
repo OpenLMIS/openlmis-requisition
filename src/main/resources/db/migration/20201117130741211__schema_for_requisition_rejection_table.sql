@@ -3,7 +3,7 @@ CREATE TABLE rejections (
     createddate timestamp with time zone,
     modifieddate timestamp with time zone,
     rejectionreasonid uuid NOT NULL,
-    statuschangeid uuid,
+    statuschangeid uuid NOT NULL,
     CONSTRAINT rejections_pkey PRIMARY KEY (id)
 );
 

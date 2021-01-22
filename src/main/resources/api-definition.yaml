@@ -196,6 +196,11 @@ schemas:
 
   - rejectionReasonCategoryPage: !include schemas/rejectionReasonCategoryPage.json
   - rejectionReasonPage: !include schemas/rejectionReasonPage.json
+  - rejectionDtoArray: |
+      {
+      "type": "array",
+      "items": { "type": "object", "$ref": "schemas/rejectionDto.json" }
+      }
 traits:
     - secured:
           queryParameters:
@@ -549,6 +554,9 @@ resourceTypes:
           put:
               is: [ secured, idempotent ]
               description: Reject requisition which is waiting for approval.
+              body:
+                application/json:
+                  schema: rejectionDtoArray
               responses:
                   "200":
                       headers:
