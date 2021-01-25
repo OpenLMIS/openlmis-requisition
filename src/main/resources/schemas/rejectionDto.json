@@ -8,7 +8,7 @@
       "type": "string",
       "title": "createdDate"
     },
-    "rejectionReason": {
+    "rejectionReasonDto": {
       "type": "object",
       "title": "Rejection Reason Category",
       "items": {
@@ -20,6 +20,6 @@
   },
   "required": [
     "createdDate",
-    "rejectionReason"
+    "rejectionReasonDto"
   ]
 }

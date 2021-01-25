@@ -849,7 +849,7 @@ public class RequisitionService {
               RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),
               rejection.getRejectionReasonDto().getCode(),
               rejection.getRejectionReasonDto().getRejectionReasonCategory(),
-              rejection.getRejectionReasonDto().getActive() );
+              rejection.getRejectionReasonDto().getActive());
       rejectionReason.setId(rejection.getRejectionReasonDto().getId());
 
       Rejection saveRejection = Rejection.newRejection(rejectionReason,
