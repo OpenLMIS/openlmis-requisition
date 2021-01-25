@@ -19,14 +19,21 @@ import java.time.ZonedDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
-
 
 @Getter
 @Setter
 public class RejectionDto extends BaseDto implements Rejection.Exporter {
   private ZonedDateTime createdDate;
-  private RejectionReason rejectionReason;
+  private RejectionReasonDto rejectionReasonDto;
+
+
+  @Override
+  public void setRejectionReason(RejectionReason rejectionReason) {
+    if (rejectionReason != null) {
+      rejectionReasonDto = new RejectionReasonDto();
+      rejectionReason.export(rejectionReasonDto);
+    }
+  }
 }

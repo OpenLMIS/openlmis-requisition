@@ -48,6 +48,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
+import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -338,7 +339,7 @@ public class RequisitionService {
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
 
-    if (requisition.getTemplate().isRejectionReasonWindowVisible() && rejections.isEmpty()) {
+    if (requisition.getTemplate().isRejectionReasonWindowVisible() && !rejections.isEmpty()) {
       saveRejectionReason(savedRequisition, rejections);
     }
     return savedRequisition;
@@ -844,7 +845,14 @@ public class RequisitionService {
 
   private void saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {
     for (RejectionDto rejection : rejections) {
-      Rejection saveRejection = Rejection.newRejection(rejection.getRejectionReason(),
+      RejectionReason rejectionReason =
+              RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),
+              rejection.getRejectionReasonDto().getCode(),
+              rejection.getRejectionReasonDto().getRejectionReasonCategory(),
+              rejection.getRejectionReasonDto().getActive() );
+      rejectionReason.setId(rejection.getRejectionReasonDto().getId());
+
+      Rejection saveRejection = Rejection.newRejection(rejectionReason,
               requisition.getLatestStatusChange());
       rejectionRepository.save(saveRejection);
     }
