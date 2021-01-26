@@ -27,6 +27,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MISSING_REJECTION_REASON;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
@@ -340,10 +341,10 @@ public class RequisitionService {
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
 
-    if (rejections != null && requisition.getTemplate().isRejectionReasonWindowVisible()
-            && !rejections.isEmpty()) {
+    if (requisition.getTemplate().isRejectionReasonWindowVisible()) {
       saveRejectionReason(savedRequisition, rejections);
     }
+
     return savedRequisition;
   }
 
@@ -846,6 +847,12 @@ public class RequisitionService {
   }
 
   private void saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {
+
+    if (rejections == null || rejections.isEmpty()) {
+      throw new ValidationMessageException(new Message(ERROR_MISSING_REJECTION_REASON,
+              requisition.getId()));
+    }
+
     for (RejectionDto rejection : rejections) {
       RejectionReason rejectionReason =
               RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),

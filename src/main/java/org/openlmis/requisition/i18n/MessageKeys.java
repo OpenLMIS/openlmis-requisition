@@ -324,6 +324,9 @@ public abstract class MessageKeys {
   public static final String ERROR_MISSING_MANDATORY_ITEMS =
           "validation.missing.mandatory.items";
 
+  public static final String ERROR_MISSING_REJECTION_REASON = ERROR_PREFIX
+          + ".reject.missingRejectionReason";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }
