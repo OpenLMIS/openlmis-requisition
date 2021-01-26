@@ -373,7 +373,7 @@ public class RequisitionController extends BaseRequisitionController {
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
       HttpServletResponse response,
-      @RequestBody List<RejectionDto> rejections) {
+      @RequestBody (required = false) List<RejectionDto> rejections) {
 
     Profiler profiler = getProfiler("REJECT", requisitionId);
 

@@ -36,6 +36,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import com.google.common.collect.Sets;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
@@ -109,7 +111,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 
 @Service
 // TODO: split this up in OLMIS-1102
@@ -339,7 +340,8 @@ public class RequisitionService {
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
 
-    if (requisition.getTemplate().isRejectionReasonWindowVisible() && !rejections.isEmpty()) {
+    if (rejections != null && requisition.getTemplate().isRejectionReasonWindowVisible()
+            && !rejections.isEmpty()) {
       saveRejectionReason(savedRequisition, rejections);
     }
     return savedRequisition;
@@ -847,9 +849,9 @@ public class RequisitionService {
     for (RejectionDto rejection : rejections) {
       RejectionReason rejectionReason =
               RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),
-              rejection.getRejectionReasonDto().getCode(),
-              rejection.getRejectionReasonDto().getRejectionReasonCategory(),
-              rejection.getRejectionReasonDto().getActive());
+                      rejection.getRejectionReasonDto().getCode(),
+                      rejection.getRejectionReasonDto().getRejectionReasonCategory(),
+                      rejection.getRejectionReasonDto().getActive());
       rejectionReason.setId(rejection.getRejectionReasonDto().getId());
 
       Rejection saveRejection = Rejection.newRejection(rejectionReason,
