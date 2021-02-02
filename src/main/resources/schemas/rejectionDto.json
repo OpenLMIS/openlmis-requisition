@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "rejectionDto",
+  "description": "A single rejection",
+  "properties": {
+    "createdDate": {
+      "type": "string",
+      "title": "createdDate"
+    },
+    "rejectionReasonDto": {
+      "type": "object",
+      "title": "Rejection Reason Category",
+      "items": {
+        "type": "object",
+        "$ref": "rejectionReasonDto.json"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "createdDate",
+    "rejectionReasonDto"
+  ]
+}

@@ -76,6 +76,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -87,6 +88,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
@@ -108,6 +110,7 @@ import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
+import org.openlmis.requisition.testutils.RejectionDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
@@ -170,6 +173,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
   @Autowired
   private RequisitionController requisitionController;
+
+  private List<RejectionDto> rejectionsDto;
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID key = UUID.randomUUID();
@@ -896,7 +901,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   public void shouldRejectRequisition() {
     // given
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    given(requisitionService.reject(requisition, emptyMap(), emptyList()))
+            .willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -905,20 +911,49 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
         .statusCode(200);
 
     // then
-    verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap());
+    verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap(), emptyList());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // PUT /api/requisitions/{id}/reject
+
+  @Test
+  public void shouldRejectRequisitionWithReason() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    given(requisitionService.reject(requisition, emptyMap(), generateRejections()))
+            .willReturn(requisition);
+    doReturn(ValidationResult.success())
+            .when(permissionService).canApproveRequisition(requisition);
+
+    // when
+    restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .pathParam("id", requisition.getId())
+            .content(generateRejections())
+            .when()
+            .put(REJECT_URL)
+            .then()
+            .statusCode(200);
+
+    // then
+    verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap(), generateRejections());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldRejectRequisitionWithIdempotencyKey() {
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    given(requisitionService.reject(requisition, emptyMap(), emptyList()))
+            .willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -927,6 +962,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .header(IDEMPOTENCY_KEY_HEADER, key)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
@@ -942,7 +978,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldNotRejectRequisitionWithUsedIdempotencyKey() {
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    given(requisitionService.reject(requisition, emptyMap(), emptyList()))
+            .willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -953,6 +990,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .header(IDEMPOTENCY_KEY_HEADER, key)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
@@ -965,7 +1003,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   @Test
   public void shouldNotRejectRequisitionWithIdempotencyKeyInWrongFormat() {
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition, emptyMap())).willReturn(requisition);
+    given(requisitionService.reject(requisition, emptyMap(), emptyList()))
+            .willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -974,6 +1013,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .header(IDEMPOTENCY_KEY_HEADER, wrongFormatKey)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
@@ -998,6 +1038,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
@@ -1005,7 +1046,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .body(MESSAGE, equalTo(getMessage(PERMISSION_ERROR_MESSAGE, missingPermission)));
 
     // then
-    verify(requisitionService, never()).reject(requisition, emptyMap());
+    verify(requisitionService, never()).reject(requisition, emptyMap(), emptyList());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1022,13 +1063,15 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     String errorKey = MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
 
     ValidationMessageException exception = mockValidationException(errorKey, requisitionId);
-    doThrow(exception).when(requisitionService).reject(requisition, emptyMap());
+    doThrow(exception).when(requisitionService).reject(requisition, emptyMap(),
+            emptyList());
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
+            .content(emptyList())
         .when()
         .put(REJECT_URL)
         .then()
@@ -2167,4 +2210,12 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     return messageService.localize(new Message(messageKey, messageParams)).asMessage();
   }
 
+  private List<RejectionDto> generateRejections() {
+    rejectionsDto = new ArrayList<>();
+    RejectionDto rejectionDto = new RejectionDto();
+    Rejection rejection = new RejectionDataBuilder().buildAsNew();
+    rejection.export(rejectionDto);
+    rejectionsDto.add(rejectionDto);
+    return rejectionsDto;
+  }
 }

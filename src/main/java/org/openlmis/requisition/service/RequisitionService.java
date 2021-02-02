@@ -27,6 +27,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPR
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MISSING_REJECTION_REASON;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_HAVE_SUPPLYING_FACILITY;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_APPROVED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL;
@@ -36,6 +37,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import com.google.common.collect.Sets;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,8 +47,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.openlmis.requisition.domain.Rejection;
+import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -64,6 +69,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
@@ -75,6 +81,7 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.repository.RejectionRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
@@ -164,26 +171,30 @@ public class RequisitionService {
   @Autowired
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
+  @Autowired
+  private RejectionRepository rejectionRepository;
+
   /**
    * Initiated given requisition if possible.
    *
-   * @param program Program.
-   * @param facility Facility.
-   * @param period Period for requisition.
-   * @param emergency Emergency status.
+   * @param program                Program.
+   * @param facility               Facility.
+   * @param period                 Period for requisition.
+   * @param emergency              Emergency status.
    * @param stockAdjustmentReasons list of stockAdjustmentReasons
    * @return Initiated requisition.
    */
   public Requisition initiate(ProgramDto program, FacilityDto facility,
-      ProcessingPeriodDto period, boolean emergency,
-      List<StockAdjustmentReason> stockAdjustmentReasons,
-      RequisitionTemplate requisitionTemplate, ApproveProductsAggregator approvedProducts) {
+                              ProcessingPeriodDto period, boolean emergency,
+                              List<StockAdjustmentReason> stockAdjustmentReasons,
+                              RequisitionTemplate requisitionTemplate,
+                              ApproveProductsAggregator approvedProducts) {
     Profiler profiler = new Profiler("REQUISITION_INITIATE_SERVICE");
     profiler.setLogger(LOGGER);
 
     profiler.start("BUILD_REQUISITION");
     Requisition requisition = RequisitionBuilder.newRequisition(
-        facility.getId(), program.getId(), emergency);
+            facility.getId(), program.getId(), emergency);
     requisition.setStatus(RequisitionStatus.INITIATED);
 
     requisition.setProcessingPeriodId(period.getId());
@@ -200,58 +211,59 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_ON_HANDS");
     Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
-        .getInstance(requisitionTemplate, RequisitionLineItem.STOCK_ON_HAND)
-        .forProgram(program.getId())
-        .forFacility(facility.getId())
-        .forProducts(approvedProducts)
-        .asOfDate(period.getEndDate())
-        .build()
-        .get();
+            .getInstance(requisitionTemplate, RequisitionLineItem.STOCK_ON_HAND)
+            .forProgram(program.getId())
+            .forFacility(facility.getId())
+            .forProducts(approvedProducts)
+            .asOfDate(period.getEndDate())
+            .build()
+            .get();
 
     profiler.start("FIND_BEGINNING_BALANCES");
     Map<UUID, Integer> orderableBeginning = stockOnHandRetrieverBuilderFactory
-        .getInstance(requisitionTemplate, RequisitionLineItem.BEGINNING_BALANCE)
-        .forProgram(program.getId())
-        .forFacility(facility.getId())
-        .forProducts(approvedProducts)
-        .asOfDate(period.getStartDate().minusDays(1))
-        .build()
-        .get();
+            .getInstance(requisitionTemplate, RequisitionLineItem.BEGINNING_BALANCE)
+            .forProgram(program.getId())
+            .forFacility(facility.getId())
+            .forProducts(approvedProducts)
+            .asOfDate(period.getStartDate().minusDays(1))
+            .build()
+            .get();
 
     final StockData stockData = new StockData(orderableSoh, orderableBeginning);
 
     profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
     final Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
-        .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
-        .stream()
-        .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
+            .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
+            .stream()
+            .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     List<Requisition> previousRequisitions =
-        getRecentRegularRequisitions(requisition, Math.max(numberOfPreviousPeriodsToAverage, 1));
+            getRecentRegularRequisitions(requisition,
+                    Math.max(numberOfPreviousPeriodsToAverage, 1));
 
     List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
     List<ProcessingPeriodDto> previousPeriods = null;
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       stockCardRangeSummaryDtos =
-          stockCardRangeSummaryStockManagementService
-              .search(program.getId(), facility.getId(),
-                  approvedProducts.getOrderableIdentities(), null,
-                  period.getStartDate(), period.getEndDate());
+              stockCardRangeSummaryStockManagementService
+                      .search(program.getId(), facility.getId(),
+                              approvedProducts.getOrderableIdentities(), null,
+                              period.getStartDate(), period.getEndDate());
 
       profiler.start("GET_PREVIOUS_PERIODS");
       previousPeriods = periodService
-          .findPreviousPeriods(period, numberOfPreviousPeriodsToAverage);
+              .findPreviousPeriods(period, numberOfPreviousPeriodsToAverage);
 
       profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
       if (previousPeriods.size() > 1) {
         stockCardRangeSummariesToAverage =
-            stockCardRangeSummaryStockManagementService
-                .search(program.getId(), facility.getId(),
-                    approvedProducts.getOrderableIdentities(), null,
-                    previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
-                    period.getEndDate());
+                stockCardRangeSummaryStockManagementService
+                        .search(program.getId(), facility.getId(),
+                                approvedProducts.getOrderableIdentities(), null,
+                                previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
+                                period.getEndDate());
       } else {
         stockCardRangeSummariesToAverage = stockCardRangeSummaryDtos;
       }
@@ -270,14 +282,14 @@ public class RequisitionService {
 
     profiler.start("INITIATE");
     requisition.initiate(requisitionTemplate, approvedProducts.getFullSupplyProducts(),
-        previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
-        authenticationHelper.getCurrentUser().getId(), stockData, stockCardRangeSummaryDtos,
-        stockCardRangeSummariesToAverage, previousPeriods);
+            previousRequisitions, numberOfPreviousPeriodsToAverage, pod, idealStockAmounts,
+            authenticationHelper.getCurrentUser().getId(), stockData, stockCardRangeSummaryDtos,
+            stockCardRangeSummariesToAverage, previousPeriods);
 
     profiler.start("SET_AVAILABLE_PRODUCTS");
     Set<ApprovedProductReference> availableProductIdentities = emergency
-        ? approvedProducts.getApprovedProductReferences()
-        : approvedProducts.getNonFullSupplyApprovedProductReferences();
+            ? approvedProducts.getApprovedProductReferences()
+            : approvedProducts.getNonFullSupplyApprovedProductReferences();
 
     requisition.setAvailableProducts(availableProductIdentities);
 
@@ -303,7 +315,7 @@ public class RequisitionService {
       throw new ValidationMessageException(ERROR_DELETE_FAILED_NEWER_EXISTS);
     } else {
       statusMessageRepository
-          .deleteAll(statusMessageRepository.findByRequisitionId(requisition.getId()));
+              .deleteAll(statusMessageRepository.findByRequisitionId(requisition.getId()));
       requisitionRepository.delete(requisition);
       LOGGER.debug("Requisition deleted");
     }
@@ -315,7 +327,8 @@ public class RequisitionService {
    * @param requisition Requisition to be rejected.
    */
   public Requisition reject(Requisition requisition,
-      Map<VersionIdentityDto, OrderableDto> orderables) {
+                            Map<VersionIdentityDto, OrderableDto> orderables,
+                            List<RejectionDto> rejections) {
     checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
@@ -326,19 +339,25 @@ public class RequisitionService {
     requisition.reject(orderables, userId);
     requisition.setSupervisoryNodeId(null);
     saveStatusMessage(requisition, currentUser);
-    return requisitionRepository.save(requisition);
+    Requisition savedRequisition = requisitionRepository.save(requisition);
+
+    if (requisition.getTemplate().isRejectionReasonWindowVisible()) {
+      saveRejectionReason(savedRequisition, rejections);
+    }
+
+    return savedRequisition;
   }
 
   private void checkIfRejectable(Requisition requisition) {
     if (!requisition.isApprovable()) {
       throw new ValidationMessageException(new Message(
-          ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
+              ERROR_REQUISITION_MUST_BE_WAITING_FOR_APPROVAL, requisition.getId()));
     }
 
     if (requisition.hasOriginalRequisitionId()
-        || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
+            || requisitionRepository.existsByOriginalRequisitionId(requisition.getId())) {
       throw new ValidationMessageException(new Message(
-          ERROR_REQUISITION_WAS_SPLIT, requisition.getId()));
+              ERROR_REQUISITION_WAS_SPLIT, requisition.getId()));
     }
   }
 
@@ -357,22 +376,22 @@ public class RequisitionService {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
       permissionStrings = handler.get()
-          .stream()
-          .map(PermissionStringDto::toString)
-          .collect(toList());
+              .stream()
+              .map(PermissionStringDto::toString)
+              .collect(toList());
 
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
       programNodePairs = user
-          .getRoleAssignments()
-          .stream()
-          .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
-          .filter(item -> Objects.nonNull(item.getProgramId()))
-          .filter(item -> Objects.isNull(params.getProgram())
-              || Objects.equals(params.getProgram(), item.getProgramId()))
-          .filter(item -> Objects.isNull(params.getSupervisoryNode())
-              || Objects.equals(params.getSupervisoryNode(), item.getSupervisoryNodeId()))
-          .map(item -> Pair.of(item.getProgramId(), item.getSupervisoryNodeId()))
-          .collect(toSet());
+              .getRoleAssignments()
+              .stream()
+              .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+              .filter(item -> Objects.nonNull(item.getProgramId()))
+              .filter(item -> Objects.isNull(params.getProgram())
+                      || Objects.equals(params.getProgram(), item.getProgramId()))
+              .filter(item -> Objects.isNull(params.getSupervisoryNode())
+                      || Objects.equals(params.getSupervisoryNode(), item.getSupervisoryNodeId()))
+              .map(item -> Pair.of(item.getProgramId(), item.getSupervisoryNodeId()))
+              .collect(toSet());
 
       if (permissionStrings.isEmpty() && programNodePairs.isEmpty()) {
         profiler.stop().log();
@@ -382,7 +401,7 @@ public class RequisitionService {
 
     profiler.start("REPOSITORY_SEARCH");
     Page<Requisition> results = requisitionRepository
-        .searchRequisitions(params, permissionStrings, programNodePairs, pageable);
+            .searchRequisitions(params, permissionStrings, programNodePairs, pageable);
 
     profiler.stop().log();
     return results;
@@ -392,27 +411,28 @@ public class RequisitionService {
    * Get requisitions to approve for the specified user.
    */
   public Page<Requisition> getRequisitionsForApproval(UserDto user, UUID programId,
-      Pageable pageable) {
+                                                      Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     profiler.setLogger(LOGGER);
 
     Page<Requisition> requisitionsForApproval = Pagination.getPage(
-        Collections.emptyList(), pageable);
+            Collections.emptyList(), pageable);
 
     if (!CollectionUtils.isEmpty(user.getRoleAssignments())) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
       Set<Pair<UUID, UUID>> programNodePairs = user
-          .getRoleAssignments()
-          .stream()
-          .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
-          .filter(item -> Objects.nonNull(item.getProgramId()))
-          .filter(item -> null == programId || programId.equals(item.getProgramId()))
-          .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
-          .collect(toSet());
+              .getRoleAssignments()
+              .stream()
+              .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+              .filter(item -> Objects.nonNull(item.getProgramId()))
+              .filter(item -> null == programId || programId.equals(item.getProgramId()))
+              .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
+              .collect(toSet());
 
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
-          .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageable);
+              .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs,
+                      pageable);
     }
 
     profiler.stop().log();
@@ -425,7 +445,7 @@ public class RequisitionService {
    * exists and that it has got correct status to be eligible for approval.
    *
    * @param requisition the requisition to verify
-   * @param userId the UUID of the user approving the requisition
+   * @param userId      the UUID of the user approving the requisition
    * @return ValidationResult instance containing the outcome of this validation
    */
   public ValidationResult validateCanApproveRequisition(Requisition requisition, UUID userId) {
@@ -437,14 +457,14 @@ public class RequisitionService {
 
     if (!requisition.isApprovable()) {
       return ValidationResult.failedValidation(MessageKeys
-          .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
+              .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
     }
 
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
-        requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
+            requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
       return ValidationResult.noPermission(
-          MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
+              MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
     }
 
     return ValidationResult.success();
@@ -498,8 +518,8 @@ public class RequisitionService {
    * @return list of released requisitions
    */
   private List<Requisition> releaseRequisitionsAsOrder(
-      List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user,
-      Boolean isLocallyFulfilled) {
+          List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user,
+          Boolean isLocallyFulfilled) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_AS_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -510,30 +530,30 @@ public class RequisitionService {
     profiler.start("GET_USER_FULFILLMENT_FACILITIES");
     Set<UUID> userFacilities = isLocallyFulfilled
             ? null : fulfillmentFacilitiesReferenceDataService
-        .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
-        .collect(toSet());
+            .getFulfillmentFacilities(user.getId(), right.getId()).stream().map(FacilityDto::getId)
+            .collect(toSet());
 
     profiler.start("RELEASE");
     for (ReleasableRequisitionDto convertToOrderDto : convertToOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findById(requisitionId)
-          .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
-              requisitionId));
+              .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
+                      requisitionId));
       isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
       Set<UUID> validFacilities = requisitionForConvertBuilder
-          .getAvailableSupplyingDepots(requisitionId).stream()
-          .filter(f -> isLocallyFulfilled
-                  || userFacilities.contains(f.getId())).map(FacilityDto::getId)
-          .collect(toSet());
+              .getAvailableSupplyingDepots(requisitionId).stream()
+              .filter(f -> isLocallyFulfilled
+                      || userFacilities.contains(f.getId())).map(FacilityDto::getId)
+              .collect(toSet());
 
       if (validFacilities.contains(facilityId)) {
         loadedRequisition.setSupplyingFacilityId(facilityId);
       } else {
         throw new ValidationMessageException(new Message(ERROR_MUST_HAVE_SUPPLYING_FACILITY,
-            loadedRequisition.getId()));
+                loadedRequisition.getId()));
       }
 
       releasedRequisitions.add(loadedRequisition);
@@ -547,11 +567,11 @@ public class RequisitionService {
    * Releases the list of given requisitions without creating order.
    *
    * @param releaseWithoutOrderDtos list of Requisitions with their supplyingDepots to be released
-   *                           without order.
+   *                                without order.
    * @return list of released requisitions
    */
   private List<Requisition> releaseRequisitionsWithoutOrder(
-      List<ReleasableRequisitionDto> releaseWithoutOrderDtos) {
+          List<ReleasableRequisitionDto> releaseWithoutOrderDtos) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_WITHOUT_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -561,8 +581,8 @@ public class RequisitionService {
     for (ReleasableRequisitionDto convertToOrderDto : releaseWithoutOrderDtos) {
       UUID requisitionId = convertToOrderDto.getRequisitionId();
       Requisition loadedRequisition = requisitionRepository.findById(requisitionId)
-          .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
-              requisitionId));
+              .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
+                      requisitionId));
       validateIfEligibleForReleasingWithoutOrder(loadedRequisition).throwExceptionIfHasErrors();
       loadedRequisition.releaseWithoutOrder(authenticationHelper.getCurrentUser().getId());
       releasedRequisitions.add(loadedRequisition);
@@ -582,7 +602,8 @@ public class RequisitionService {
    * @return List of requisitions.
    */
   public Page<RequisitionWithSupplyingDepotsDto> searchApprovedRequisitions(UUID facilityId,
-      UUID programId, Pageable pageable) {
+                                                                            UUID programId,
+                                                                            Pageable pageable) {
 
     Profiler profiler = new Profiler("SEARCH_APPROVED_REQUISITIONS_SERVICE");
     profiler.setLogger(LOGGER);
@@ -601,9 +622,9 @@ public class RequisitionService {
 
       profiler.start("FILTER_PERMISSION_STRINGS");
       fulfillmentFacilitiesIds = permissionStrings.stream()
-          .filter(permission -> ORDERS_EDIT.equals(permission.getRightName()))
-          .map(PermissionStringDto::getFacilityId)
-          .collect(toSet());
+              .filter(permission -> ORDERS_EDIT.equals(permission.getRightName()))
+              .map(PermissionStringDto::getFacilityId)
+              .collect(toSet());
 
       if (isEmpty(fulfillmentFacilitiesIds)) {
         return Pagination.getPage(emptyList(), pageable, 0);
@@ -617,25 +638,26 @@ public class RequisitionService {
       }
 
       programIdSupervisoryNodeIdPairs = supplyLines.stream()
-          .map(supplyLine ->
-              Pair.of(supplyLine.getProgram().getId(), supplyLine.getSupervisoryNode().getId()))
-          .collect(toSet());
+              .map(supplyLine ->
+                      Pair.of(supplyLine.getProgram().getId(),
+                              supplyLine.getSupervisoryNode().getId()))
+              .collect(toSet());
     } else if (null != programId) {
       programIdSupervisoryNodeIdPairs.add(Pair.of(programId, null));
     }
 
     profiler.start("SEARCH_APPROVED_REQUISITIONS");
     Page<Requisition> result = requisitionRepository.searchApprovedRequisitions(
-        facilityId, programIdSupervisoryNodeIdPairs, pageable);
+            facilityId, programIdSupervisoryNodeIdPairs, pageable);
 
     profiler.start("BUILD_DTOS");
     List<RequisitionWithSupplyingDepotsDto> responseList =
-        requisitionForConvertBuilder
-            .buildRequisitions(result.getContent(), fulfillmentFacilitiesIds, supplyLines);
+            requisitionForConvertBuilder
+                    .buildRequisitions(result.getContent(), fulfillmentFacilitiesIds, supplyLines);
 
     profiler.start("PAGINATE");
     Page<RequisitionWithSupplyingDepotsDto> page = Pagination.getPage(
-        responseList, pageable, result.getTotalElements());
+            responseList, pageable, result.getTotalElements());
 
     profiler.stop().log();
     return page;
@@ -703,7 +725,6 @@ public class RequisitionService {
     return releasedRequisitions;
   }
 
-
   /**
    * Saves status message of a requisition if its draft is not empty.
    */
@@ -712,15 +733,15 @@ public class RequisitionService {
       // find the status change we are about to add. If it's already persisted,
       // get the latest one by date created
       StatusChange statusChange = requisition.getStatusChanges().stream()
-          .filter(sc -> sc.getId() == null)
-          .findFirst()
-          .orElse(requisition.getLatestStatusChange());
+              .filter(sc -> sc.getId() == null)
+              .findFirst()
+              .orElse(requisition.getLatestStatusChange());
       StatusMessage newStatusMessage = StatusMessage.newStatusMessage(requisition,
-          statusChange,
-          currentUser.getId(),
-          currentUser.getFirstName(),
-          currentUser.getLastName(),
-          requisition.getDraftStatusMessage());
+              statusChange,
+              currentUser.getId(),
+              currentUser.getFirstName(),
+              currentUser.getLastName(),
+              requisition.getDraftStatusMessage());
       statusMessageRepository.save(newStatusMessage);
       requisition.setDraftStatusMessage("");
     }
@@ -730,15 +751,15 @@ public class RequisitionService {
    * Approves requisition.
    *
    * @param parentNodeId supervisoryNode that has a supply line for the requisition's program.
-   * @param currentUser user who approves this requisition.
-   * @param orderables orderable products that will be used by line items to update packs to ship.
-   * @param requisition requisition to be approved
-   * @param supplyLines supplyLineDtos of the supervisoryNode that has a supply line for the
-   *                    requisition's program.
+   * @param currentUser  user who approves this requisition.
+   * @param orderables   orderable products that will be used by line items to update packs to ship.
+   * @param requisition  requisition to be approved
+   * @param supplyLines  supplyLineDtos of the supervisoryNode that has a supply line for the
+   *                     requisition's program.
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser,
-      Map<VersionIdentityDto, OrderableDto> orderables,
-      Requisition requisition, List<SupplyLineDto> supplyLines) {
+                        Map<VersionIdentityDto, OrderableDto> orderables,
+                        Requisition requisition, List<SupplyLineDto> supplyLines) {
     requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
 
     saveStatusMessage(requisition, currentUser);
@@ -747,7 +768,7 @@ public class RequisitionService {
 
   private boolean isRequisitionNewest(Requisition requisition) {
     Requisition recentRequisition = findRecentRegularRequisition(
-        requisition.getProgramId(), requisition.getFacilityId()
+            requisition.getProgramId(), requisition.getFacilityId()
     );
     return null == recentRequisition || requisition.getId().equals(recentRequisition.getId());
   }
@@ -762,13 +783,13 @@ public class RequisitionService {
   private Requisition findRecentRegularRequisition(UUID programId, UUID facilityId) {
     Requisition result = null;
     Collection<ProcessingPeriodDto> periods =
-        periodService.searchByProgramAndFacility(programId, facilityId);
+            periodService.searchByProgramAndFacility(programId, facilityId);
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {
         // There is always maximum one regular requisition for given period, facility and program
         List<Requisition> requisitions = requisitionRepository.searchRequisitions(
-            dto.getId(), facilityId, programId, false);
+                dto.getId(), facilityId, programId, false);
 
         if (!requisitions.isEmpty()) {
           result = requisitions.get(0);
@@ -784,10 +805,10 @@ public class RequisitionService {
   private ValidationResult isEligibleForConvertToOrder(Requisition requisition) {
     if (APPROVED != requisition.getStatus()) {
       return ValidationResult.failedValidation(
-          ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());
+              ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());
     } else if (!approvedQtyColumnEnabled(requisition)) {
       return ValidationResult.failedValidation(
-          ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY, requisition.getId());
+              ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY, requisition.getId());
     }
     return ValidationResult.success();
   }
@@ -795,7 +816,7 @@ public class RequisitionService {
   private ValidationResult validateIfEligibleForReleasingWithoutOrder(Requisition requisition) {
     if (APPROVED != requisition.getStatus()) {
       return ValidationResult.failedValidation(
-          ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());
+              ERROR_REQUISITION_MUST_BE_APPROVED, requisition.getId());
     }
     return ValidationResult.success();
   }
@@ -806,7 +827,7 @@ public class RequisitionService {
 
   private List<Requisition> getRecentRegularRequisitions(Requisition requisition, int amount) {
     List<ProcessingPeriodDto> previousPeriods =
-        periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
+            periodService.findPreviousPeriods(requisition.getProcessingPeriodId(), amount);
 
     List<Requisition> recentRequisitions = new ArrayList<>();
     for (ProcessingPeriodDto period : previousPeriods) {
@@ -822,6 +843,27 @@ public class RequisitionService {
   private List<Requisition> getRegularRequisitionsByPeriod(Requisition requisition,
                                                            ProcessingPeriodDto period) {
     return requisitionRepository.searchRequisitions(
-        period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
+            period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
+  }
+
+  private void saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {
+
+    if (rejections == null || rejections.isEmpty()) {
+      throw new ValidationMessageException(new Message(ERROR_MISSING_REJECTION_REASON,
+              requisition.getId()));
+    }
+
+    for (RejectionDto rejection : rejections) {
+      RejectionReason rejectionReason =
+              RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),
+                      rejection.getRejectionReasonDto().getCode(),
+                      rejection.getRejectionReasonDto().getRejectionReasonCategory(),
+                      rejection.getRejectionReasonDto().getActive());
+      rejectionReason.setId(rejection.getRejectionReasonDto().getId());
+
+      Rejection saveRejection = Rejection.newRejection(rejectionReason,
+              requisition.getLatestStatusChange());
+      rejectionRepository.save(saveRejection);
+    }
   }
 }

@@ -89,6 +89,7 @@ import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RejectionDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
@@ -273,6 +274,9 @@ public class RequisitionControllerTest {
 
   @InjectMocks
   private RequisitionController requisitionController;
+
+  @Mock
+  private RejectionDto rejectionDto;
 
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
@@ -1063,12 +1067,15 @@ public class RequisitionControllerTest {
   public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
+            generateRejections()))
         .thenReturn(initiatedRequsition);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response,
+            generateRejections());
 
-    verify(requisitionService, times(1)).reject(authorizedRequsition, Collections.emptyMap());
+    verify(requisitionService, times(1)).reject(authorizedRequsition,
+            Collections.emptyMap(), generateRejections());
   }
 
   @Test
@@ -1077,21 +1084,25 @@ public class RequisitionControllerTest {
         .when(permissionService).canApproveRequisition(authorizedRequsition);
 
     assertThatThrownBy(() ->
-        requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response))
+        requisitionController.rejectRequisition(authorizedRequsition.getId(), request,
+                response, generateRejections()))
         .isInstanceOf(PermissionMessageException.class);
 
-    verify(requisitionService, times(0)).reject(authorizedRequsition, Collections.emptyMap());
+    verify(requisitionService, times(0)).reject(authorizedRequsition,
+            Collections.emptyMap(), generateRejections());
   }
 
   @Test
   public void shouldRejectRequisitionWithIdempotencyKey() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
+            generateRejections()))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+    requisitionController.rejectRequisition(authorizedRequsition.getId(),
+            request, response, generateRejections());
 
     verify(response, times(1)).addHeader(
         HttpHeaders.LOCATION, baseUrl + API_URL + RESOURCE_URL + '/' + uuid1.toString());
@@ -1106,11 +1117,13 @@ public class RequisitionControllerTest {
 
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
+            generateRejections()))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request,
+            response, generateRejections());
   }
 
   @Test
@@ -1120,22 +1133,26 @@ public class RequisitionControllerTest {
 
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
+            generateRejections()))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request,
+            response, generateRejections());
   }
 
   @Test
   public void shouldCallRequisitionStatusNotifierWhenReject() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap()))
+    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
+            generateRejections()))
         .thenReturn(initiatedRequsition);
 
-    requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response);
+    requisitionController.rejectRequisition(authorizedRequsition.getId(), request,
+            response, generateRejections());
 
     verify(requisitionStatusNotifier)
         .notifyStatusChanged(initiatedRequsition, LocaleContextHolder.getLocale());
@@ -1440,4 +1457,7 @@ public class RequisitionControllerTest {
     return supplyLineDto;
   }
 
+  private List<RejectionDto> generateRejections() {
+    return singletonList(rejectionDto);
+  }
 }

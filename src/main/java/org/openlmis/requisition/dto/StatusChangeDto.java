@@ -16,12 +16,16 @@
 package org.openlmis.requisition.dto;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
@@ -47,11 +51,27 @@ public class StatusChangeDto implements StatusChange.Exporter {
   @Setter
   private ZonedDateTime createdDate;
 
+  @Getter
+  @Setter
+  private List<RejectionDto> rejectionDtos;
+
   @Override
   public void setStatusMessage(StatusMessage statusMessage) {
     if (statusMessage != null) {
       statusMessageDto = new StatusMessageDto();
       statusMessage.export(statusMessageDto);
+    }
+  }
+
+  @Override
+  public void setRejections(List<Rejection> rejections) {
+    rejectionDtos = new ArrayList<>();
+    if (rejections != null) {
+      for (Rejection rejection : rejections) {
+        RejectionDto rejectionDto = new RejectionDto();
+        rejection.export(rejectionDto);
+        rejectionDtos.add(rejectionDto);
+      }
     }
   }
 }
