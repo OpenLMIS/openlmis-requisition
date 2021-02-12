@@ -76,7 +76,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -110,7 +109,6 @@ import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
-import org.openlmis.requisition.testutils.RejectionDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
@@ -173,8 +171,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
   @Autowired
   private RequisitionController requisitionController;
-
-  private List<RejectionDto> rejectionsDto;
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
   private UUID key = UUID.randomUUID();
@@ -922,32 +918,6 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // PUT /api/requisitions/{id}/reject
-
-  @Test
-  public void shouldRejectRequisitionWithReason() {
-    // given
-    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
-    given(requisitionService.reject(requisition, emptyMap(), generateRejections()))
-            .willReturn(requisition);
-    doReturn(ValidationResult.success())
-            .when(permissionService).canApproveRequisition(requisition);
-
-    // when
-    restAssured.given()
-            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .pathParam("id", requisition.getId())
-            .content(generateRejections())
-            .when()
-            .put(REJECT_URL)
-            .then()
-            .statusCode(200);
-
-    // then
-    verify(requisitionService, atLeastOnce()).reject(requisition, emptyMap(), generateRejections());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
 
   @Test
   public void shouldRejectRequisitionWithIdempotencyKey() {
@@ -2208,14 +2178,5 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
   private String getMessage(String messageKey, Object... messageParams) {
     return messageService.localize(new Message(messageKey, messageParams)).asMessage();
-  }
-
-  private List<RejectionDto> generateRejections() {
-    rejectionsDto = new ArrayList<>();
-    RejectionDto rejectionDto = new RejectionDto();
-    Rejection rejection = new RejectionDataBuilder().buildAsNew();
-    rejection.export(rejectionDto);
-    rejectionsDto.add(rejectionDto);
-    return rejectionsDto;
   }
 }

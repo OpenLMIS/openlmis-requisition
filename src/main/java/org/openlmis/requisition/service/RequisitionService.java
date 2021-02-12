@@ -855,11 +855,11 @@ public class RequisitionService {
 
     for (RejectionDto rejection : rejections) {
       RejectionReason rejectionReason =
-              RejectionReason.newRejectionReason(rejection.getRejectionReasonDto().getName(),
-                      rejection.getRejectionReasonDto().getCode(),
-                      rejection.getRejectionReasonDto().getRejectionReasonCategory(),
-                      rejection.getRejectionReasonDto().getActive());
-      rejectionReason.setId(rejection.getRejectionReasonDto().getId());
+              RejectionReason.newRejectionReason(rejection.getRejectionReason().getName(),
+                      rejection.getRejectionReason().getCode(),
+                      rejection.getRejectionReason().getRejectionReasonCategory(),
+                      rejection.getRejectionReason().getActive());
+      rejectionReason.setId(rejection.getRejectionReason().getId());
 
       Rejection saveRejection = Rejection.newRejection(rejectionReason,
               requisition.getLatestStatusChange());
