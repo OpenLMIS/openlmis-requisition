@@ -53,7 +53,7 @@ public class RejectionDataBuilder {
    * Builds instance of {@link Rejection} without id.
    */
   public Rejection buildAsNew() {
-    return this.withoutId().build();
+    return this.build();
   }
 
   public RejectionDataBuilder withoutId() {
