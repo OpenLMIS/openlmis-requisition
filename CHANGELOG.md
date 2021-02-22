@@ -1,3 +1,10 @@
+8.3.1 / 2021-02-22
+==================
+
+TZ Upgrade
+* [TZUP-156](https://openlmis.atlassian.net/browse/TZUP-156): Backend to store reason for R&R been rejected.
+
+
 8.3.1 / 2020-11-16
 ==================
 
