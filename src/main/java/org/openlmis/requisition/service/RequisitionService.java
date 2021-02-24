@@ -342,7 +342,7 @@ public class RequisitionService {
     Requisition savedRequisition = requisitionRepository.save(requisition);
 
     if (requisition.getTemplate().isRejectionReasonWindowVisible()) {
-      saveRejectionReason(savedRequisition, rejections);
+      savedRequisition =  saveRejectionReason(savedRequisition, rejections);
     }
 
     return savedRequisition;
@@ -846,13 +846,14 @@ public class RequisitionService {
             period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
   }
 
-  private void saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {
+  private Requisition saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {
 
     if (rejections == null || rejections.isEmpty()) {
       throw new ValidationMessageException(new Message(ERROR_MISSING_REJECTION_REASON,
               requisition.getId()));
     }
 
+    List<Rejection> savedRejection = new ArrayList<>();
     for (RejectionDto rejection : rejections) {
       RejectionReason rejectionReason =
               RejectionReason.newRejectionReason(rejection.getRejectionReason().getName(),
@@ -864,6 +865,10 @@ public class RequisitionService {
       Rejection saveRejection = Rejection.newRejection(rejectionReason,
               requisition.getLatestStatusChange());
       rejectionRepository.save(saveRejection);
+      savedRejection.add(saveRejection);
+
     }
+    requisition.getLatestStatusChange().setRejections(savedRejection);
+    return requisition;
   }
 }

@@ -285,6 +285,8 @@ public abstract class MessageKeys {
       = "requisition.email.statusUpdate.subject";
   public static final String REQUISITION_EMAIL_STATUS_UPDATE_CONTENT
       = "requisition.email.statusUpdate.content";
+  public static final String REQUISITION_EMAIL_STATUS_UPDATE_REJECTION_WITH_REASON_CONTENT
+          = "requisition.email.statusUpdate.rejection.with.reason.content";
   public static final String REQUISITION_SMS_STATUS_UPDATE_CONTENT
       = "requisition.sms.statusUpdate.content";
   public static final String REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT

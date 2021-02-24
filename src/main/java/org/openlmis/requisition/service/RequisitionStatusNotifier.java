@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_CONTENT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_REJECTION_WITH_REASON_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_STATUS_UPDATE_CONTENT;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
@@ -70,7 +72,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
   @Value("${requisitionUri}")
   private String requisitionUri;
-  
+
   @Value("${publicUrl}")
   private String publicUrl;
 
@@ -84,7 +86,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges == null) {
       LOGGER.error("Could not find status changes for requisition {} to "
-          + "notify for requisition status change.", requisition.getId());
+              + "notify for requisition status change.", requisition.getId());
       return;
     }
 
@@ -105,31 +107,46 @@ public class RequisitionStatusNotifier extends BaseNotifier {
     valuesMap.put("initiator", initiator.getUsername());
     valuesMap.put("requisitionType", getMessage(getEmergencyKey(requisition), locale));
     valuesMap.put("submittedDate", submitAuditEntry.get().getCreatedDate()
-        .format(dateTimeFormatter));
+            .format(dateTimeFormatter));
     valuesMap.put("programName", getProgram(requisition).getName());
     valuesMap.put("periodName", getPeriod(requisition).getName());
     valuesMap.put("facilityName", getFacility(requisition).getName());
     valuesMap.put("requisitionStatus", requisition.getStatus().toString());
     valuesMap.put("author", getAuthor(currentAuditEntry.get()).getUsername());
     valuesMap.put("changeDate", currentAuditEntry.get().getCreatedDate().format(
-        dateTimeFormatter));
+            dateTimeFormatter));
     valuesMap.put("requisitionUrl", getRequisitionUrl(requisition));
 
+    String emailContent = "";
+    if (requisition.getStatus() == RequisitionStatus.REJECTED
+            && !(requisition.getLatestStatusChange().getRejections() == null
+                    || requisition.getLatestStatusChange().getRejections().isEmpty())) {
+      String rejectionText = "";
+      for (Rejection rejection : requisition.getLatestStatusChange().getRejections()) {
+        rejectionText += rejection.getRejectionReason().getName() + ",";
+      }
+      valuesMap.put("rejectionReasons", rejectionText);
+      emailContent = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_REJECTION_WITH_REASON_CONTENT,
+              locale);
+    } else {
+      emailContent = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, locale);
+    }
+
     String subject = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_SUBJECT, locale);
-    String emailContent = getMessage(REQUISITION_EMAIL_STATUS_UPDATE_CONTENT, locale);
     String smsContent = getMessage(REQUISITION_SMS_STATUS_UPDATE_CONTENT, locale);
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
 
     notificationService.notify(initiator, subject, sub.replace(emailContent),
-        sub.replace(smsContent), NOTIFICATION_TAG);
+            sub.replace(smsContent), NOTIFICATION_TAG);
   }
+
 
   private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
     UUID initiatorId = getInitiatorId(statusChanges);
     if (initiatorId == null) {
       LOGGER.warn("Could not find initiator for requisition %s to notify "
-          + "for requisition status change.", requisitionId);
+              + "for requisition status change.", requisitionId);
       return null;
     }
     return userReferenceDataService.findOne(initiatorId);
@@ -151,11 +168,11 @@ public class RequisitionStatusNotifier extends BaseNotifier {
   private Optional<StatusChange> getSubmitAuditEntry(Requisition requisition,
                                                      List<StatusChange> statusChanges) {
     Optional<StatusChange> submitAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
-        .findFirst();
+            .filter(statusChange -> statusChange.getStatus() == RequisitionStatus.SUBMITTED)
+            .findFirst();
     if (!submitAuditEntry.isPresent()) {
       LOGGER.warn("Could not find submitter for requisition " + requisition.getId() + " to notify "
-          + "for requisition status change.");
+              + "for requisition status change.");
       return Optional.empty();
     }
     return submitAuditEntry;
@@ -164,12 +181,12 @@ public class RequisitionStatusNotifier extends BaseNotifier {
   private Optional<StatusChange> getCurrentAuditEntry(Requisition requisition,
                                                       List<StatusChange> statusChanges) {
     Optional<StatusChange> currentAuditEntry = statusChanges.stream()
-        .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
-        .max(Comparator.comparing(StatusChange::getCreatedDate));
+            .filter(statusChange -> statusChange.getStatus() == requisition.getStatus())
+            .max(Comparator.comparing(StatusChange::getCreatedDate));
 
     if (!currentAuditEntry.isPresent() || currentAuditEntry.get().getAuthorId() == null) {
       LOGGER.warn("Could not find author of current status change for requisition "
-          + requisition.getId() + " to notify for requisition status change.");
+              + requisition.getId() + " to notify for requisition status change.");
       return Optional.empty();
     }
     return currentAuditEntry;
@@ -181,7 +198,7 @@ public class RequisitionStatusNotifier extends BaseNotifier {
 
   private ProcessingPeriodDto getPeriod(Requisition requisition) {
     return periodReferenceDataService.findOne(
-        requisition.getProcessingPeriodId());
+            requisition.getProcessingPeriodId());
   }
 
   private FacilityDto getFacility(Requisition requisition) {
