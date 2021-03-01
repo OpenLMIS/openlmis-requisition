@@ -1487,3 +1487,17 @@ resourceTypes:
             body:
               application/json:
                 schema: localizedErrorResponse
+
+  /quantificationExtract:
+    displayName: Quantification Extract
+    get:
+      is: [ secured, ]
+      description: Get a page rejection reason.
+      responses:
+        "200":
+          headers:
+            Keep-Alive:
+          body:
+            application/json:
+              schema: requisitionLineItemDto
+            text/csv:
