@@ -27,12 +27,11 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -61,13 +60,13 @@ public class QuantificationExtractController extends BaseController {
   };
 
   @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private RequisitionService requisitionService;
+
+  @Autowired
+  private RequisitionDtoBuilder requisitionDtoBuilder;
 
   /**
    * Downloads csv file with all catalog items.
@@ -103,18 +102,16 @@ public class QuantificationExtractController extends BaseController {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);
       for (Requisition requisition: requisitionDtoPage) {
-        List<RequisitionLineItem> requisitionLineItemDtos = requisition.getRequisitionLineItems();
-        for (RequisitionLineItem item : requisitionLineItemDtos) {
-          FacilityDto facilityDto = facilityReferenceDataService.findOne(
-              item.getRequisition().getFacilityId());
-
+        List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
+        RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
+        for (RequisitionLineItem item : requisitionLineItems) {
           OrderableDto orderableDto = orderableReferenceDataService.findOne(
               item.getOrderable().getId()
           );
 
           List<String> data = Arrays.asList(
-              facilityDto.getName(),
-              facilityDto.getCode(),
+              requisitionDto.getFacility().getName(),
+              requisitionDto.getFacility().getCode(),
               orderableDto.getFullProductName(),
               orderableDto.getProductCode(),
               orderableDto.getDispensable().getDispensingUnit(),
@@ -124,9 +121,10 @@ public class QuantificationExtractController extends BaseController {
           csvPrinter.printRecord(data);
         }
       }
+      csvPrinter.flush();
+      return new ByteArrayInputStream(out.toByteArray());
     } catch (IOException e) {
       throw new ValidationMessageException("fail to import data to CSV file: " + e.getMessage(), e);
     }
-    return null;
   }
 }
