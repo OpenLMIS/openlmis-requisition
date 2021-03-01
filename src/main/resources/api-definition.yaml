@@ -1493,6 +1493,37 @@ resourceTypes:
     get:
       is: [ secured, ]
       description: Get a page rejection reason.
+      queryParameters:
+        facility:
+          displayName: facility
+          type: string
+          required: false
+          repeat: false
+        program:
+          displayName: program
+          type: string
+          required: false
+          repeat: false
+        initiatedDateFrom:
+          displayName: initiatedDateFrom
+          type: string
+          required: false
+          repeat: false
+        initiatedDateTo:
+          displayName: initiatedDateTo
+          type: string
+          required: false
+          repeat: false
+        processingPeriod:
+          displayName: processingPeriod
+          type: string
+          required: false
+          repeat: false
+        requisitionStatus:
+          displayName: supervisoryNode
+          type: string
+          required: false
+          repeat: true
       responses:
         "200":
           headers:
