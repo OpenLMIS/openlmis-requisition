@@ -25,26 +25,29 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
-import org.openlmis.requisition.repository.QuantificationExtractRepository;
+import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
-import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -52,15 +55,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Transactional
 public class QuantificationExtractController extends BaseController {
 
-  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(RequisitionLineItem.class);
-
   private static final String[] HEADERS = {
       "Facility Name", "Facility Code", "Product Name", "Product Code", "Unit",
       "Adjusted Consumption"
   };
-
-  @Autowired
-  private QuantificationExtractRepository quantificationExtractRepository;
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -68,19 +66,23 @@ public class QuantificationExtractController extends BaseController {
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Autowired
+  private RequisitionService requisitionService;
+
   /**
    * Downloads csv file with all catalog items.
    */
   @GetMapping(value = "/quantificationExtract")
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<Resource> download() {
-    Profiler profiler = new Profiler("DOWNLOAD_CATALOG_ITEMS_AS_FILE");
-    profiler.setLogger(XLOGGER);
+  public ResponseEntity<Resource> download(@RequestParam MultiValueMap<String, String> queryParams,
+                                           Pageable pageable) {
 
-    Iterable<RequisitionLineItem> items = quantificationExtractRepository.findAll();
+    RequisitionSearchParams params = new QueryRequisitionSearchParams(queryParams);
 
-    ByteArrayInputStream in = extractToCsv(items);
+    Page<Requisition> requisitionPage = requisitionService.searchRequisitions(params, pageable);
+
+    ByteArrayInputStream in = extractToCsv(requisitionPage);
 
     InputStreamResource file = new InputStreamResource(in);
 
@@ -95,36 +97,36 @@ public class QuantificationExtractController extends BaseController {
   /**
    * Extract the quantification data to CSV. Return a ByteArrayInputStream
    */
-  public ByteArrayInputStream extractToCsv(Iterable<RequisitionLineItem> items) {
+  public ByteArrayInputStream extractToCsv(Page<Requisition> requisitionDtoPage) {
     final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL).withHeader(HEADERS);
-
     try {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);
-      for (RequisitionLineItem item : items) {
-        FacilityDto facilityDto = facilityReferenceDataService.findOne(
-            item.getRequisition().getFacilityId());
+      for (Requisition requisition: requisitionDtoPage) {
+        List<RequisitionLineItem> requisitionLineItemDtos = requisition.getRequisitionLineItems();
+        for (RequisitionLineItem item : requisitionLineItemDtos) {
+          FacilityDto facilityDto = facilityReferenceDataService.findOne(
+              item.getRequisition().getFacilityId());
 
-        OrderableDto orderableDto = orderableReferenceDataService.findOne(
-            item.getOrderable().getId()
-        );
+          OrderableDto orderableDto = orderableReferenceDataService.findOne(
+              item.getOrderable().getId()
+          );
 
-        List<String> data = Arrays.asList(
-            facilityDto.getName(),
-            facilityDto.getCode(),
-            orderableDto.getFullProductName(),
-            orderableDto.getProductCode(),
-            orderableDto.getDispensable().getDispensingUnit(),
-            String.valueOf(item.getAdjustedConsumption())
-        );
+          List<String> data = Arrays.asList(
+              facilityDto.getName(),
+              facilityDto.getCode(),
+              orderableDto.getFullProductName(),
+              orderableDto.getProductCode(),
+              orderableDto.getDispensable().getDispensingUnit(),
+              String.valueOf(item.getAdjustedConsumption())
+          );
 
-        csvPrinter.printRecord(data);
+          csvPrinter.printRecord(data);
+        }
       }
-
-      csvPrinter.flush();
-      return new ByteArrayInputStream(out.toByteArray());
     } catch (IOException e) {
-      throw new ValidationMessageException("fail to import data to CSV file: " + e.getMessage());
+      throw new ValidationMessageException("fail to import data to CSV file: " + e.getMessage(), e);
     }
+    return null;
   }
 }
