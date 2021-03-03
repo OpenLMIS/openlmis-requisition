@@ -27,12 +27,13 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -67,6 +68,9 @@ public class QuantificationExtractController extends BaseController {
 
   @Autowired
   private RequisitionDtoBuilder requisitionDtoBuilder;
+
+  @Autowired
+  private RequisitionExportHelper exportHelper;
 
   /**
    * Downloads csv file with all catalog items.
@@ -104,18 +108,15 @@ public class QuantificationExtractController extends BaseController {
       for (Requisition requisition: requisitionDtoPage) {
         List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
         RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-        for (RequisitionLineItem item : requisitionLineItems) {
-          OrderableDto orderableDto = orderableReferenceDataService.findOne(
-              item.getOrderable().getId()
-          );
-
+        List<RequisitionLineItemDto> itemDtos = exportHelper.exportToDtos(requisitionLineItems);
+        for (RequisitionLineItemDto itemDto : itemDtos) {
           List<String> data = Arrays.asList(
               requisitionDto.getFacility().getName(),
               requisitionDto.getFacility().getCode(),
-              orderableDto.getFullProductName(),
-              orderableDto.getProductCode(),
-              orderableDto.getDispensable().getDispensingUnit(),
-              String.valueOf(item.getAdjustedConsumption())
+              itemDto.getOrderable().getFullProductName(),
+              itemDto.getOrderable().getProductCode(),
+              itemDto.getOrderable().getDispensable().getDispensingUnit(),
+              String.valueOf(itemDto.getAdjustedConsumption())
           );
 
           csvPrinter.printRecord(data);
