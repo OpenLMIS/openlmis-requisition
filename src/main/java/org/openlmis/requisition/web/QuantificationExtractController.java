@@ -16,24 +16,11 @@
 package org.openlmis.requisition.web;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
 import org.openlmis.requisition.domain.requisition.Requisition;
-import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
-import org.openlmis.requisition.dto.RequisitionDto;
-import org.openlmis.requisition.dto.RequisitionLineItemDto;
-import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
+import org.openlmis.requisition.service.QuantificationExtractService;
 import org.openlmis.requisition.service.RequisitionService;
-import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.requisition.utils.RequisitionExportHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -55,25 +42,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Transactional
 public class QuantificationExtractController extends BaseController {
 
-  private static final String[] HEADERS = {
-      "Facility Name", "Facility Code", "Product Name", "Product Code", "Unit",
-      "Adjusted Consumption"
-  };
-
-  @Autowired
-  private OrderableReferenceDataService orderableReferenceDataService;
-
   @Autowired
   private RequisitionService requisitionService;
 
   @Autowired
-  private RequisitionDtoBuilder requisitionDtoBuilder;
-
-  @Autowired
-  private RequisitionExportHelper exportHelper;
+  private QuantificationExtractService quantificationExtractService;
 
   /**
-   * Downloads csv file with all catalog items.
+   * Downloads csv file with quantification data.
    */
   @GetMapping(value = "/quantificationExtract")
   @ResponseBody
@@ -85,7 +61,7 @@ public class QuantificationExtractController extends BaseController {
 
     Page<Requisition> requisitionPage = requisitionService.searchRequisitions(params, pageable);
 
-    ByteArrayInputStream in = extractToCsv(requisitionPage);
+    ByteArrayInputStream in = quantificationExtractService.extractToCsv(requisitionPage);
 
     InputStreamResource file = new InputStreamResource(in);
 
@@ -95,37 +71,5 @@ public class QuantificationExtractController extends BaseController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
         .contentType(MediaType.parseMediaType("application/csv"))
         .body(file);
-  }
-
-  /**
-   * Extract the quantification data to CSV. Return a ByteArrayInputStream
-   */
-  public ByteArrayInputStream extractToCsv(Page<Requisition> requisitionDtoPage) {
-    final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL).withHeader(HEADERS);
-    try {
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);
-      for (Requisition requisition: requisitionDtoPage) {
-        List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
-        RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-        List<RequisitionLineItemDto> itemDtos = exportHelper.exportToDtos(requisitionLineItems);
-        for (RequisitionLineItemDto itemDto : itemDtos) {
-          List<String> data = Arrays.asList(
-              requisitionDto.getFacility().getName(),
-              requisitionDto.getFacility().getCode(),
-              itemDto.getOrderable().getFullProductName(),
-              itemDto.getOrderable().getProductCode(),
-              itemDto.getOrderable().getDispensable().getDispensingUnit(),
-              String.valueOf(itemDto.getAdjustedConsumption())
-          );
-
-          csvPrinter.printRecord(data);
-        }
-      }
-      csvPrinter.flush();
-      return new ByteArrayInputStream(out.toByteArray());
-    } catch (IOException e) {
-      throw new ValidationMessageException("fail to import data to CSV file: " + e.getMessage(), e);
-    }
   }
 }
