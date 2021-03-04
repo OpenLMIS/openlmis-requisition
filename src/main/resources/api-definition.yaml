@@ -1492,7 +1492,7 @@ resourceTypes:
     displayName: Quantification Extract
     get:
       is: [ secured, ]
-      description: Get a page rejection reason.
+      description: Get quantification data as a csv download
       queryParameters:
         facility:
           displayName: facility
