@@ -27,6 +27,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -62,13 +64,15 @@ public class QuantificationExtractService {
         List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
         RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
         List<RequisitionLineItemDto> itemDtos = exportHelper.exportToDtos(requisitionLineItems);
+        FacilityDto facilityDto = requisitionDto.getFacility();
         for (RequisitionLineItemDto itemDto : itemDtos) {
+          OrderableDto orderableDto = itemDto.getOrderable();
           List<String> data = Arrays.asList(
-              requisitionDto.getFacility().getName(),
-              requisitionDto.getFacility().getCode(),
-              itemDto.getOrderable().getFullProductName(),
-              itemDto.getOrderable().getProductCode(),
-              itemDto.getOrderable().getDispensable().getDispensingUnit(),
+              facilityDto.getName(),
+              facilityDto.getCode(),
+              orderableDto.getFullProductName(),
+              orderableDto.getProductCode(),
+              orderableDto.getDispensable().getDispensingUnit(),
               String.valueOf(itemDto.getAdjustedConsumption())
           );
 
