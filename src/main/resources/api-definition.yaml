@@ -1529,6 +1529,16 @@ resourceTypes:
           headers:
             Keep-Alive:
           body:
+            application/csv:
+        "400":
+          body:
             application/json:
-              schema: requisitionLineItemDto
-            text/csv:
+              schema: localizedErrorResponse
+        "403":
+          body:
+            application/json:
+              schema: localizedErrorResponse
+        "404":
+          body:
+            application/json:
+              schema: localizedErrorResponse

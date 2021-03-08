@@ -60,10 +60,10 @@ public class QuantificationExtractService {
     try {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);
-      for (Requisition requisition: requisitionDtoPage) {
-        List<RequisitionLineItem> requisitionLineItems = requisition.getRequisitionLineItems();
+      for (Requisition requisition : requisitionDtoPage) {
+        List<RequisitionLineItemDto> itemDtos = exportHelper.exportToDtos(
+            requisition.getRequisitionLineItems());
         RequisitionDto requisitionDto = requisitionDtoBuilder.build(requisition);
-        List<RequisitionLineItemDto> itemDtos = exportHelper.exportToDtos(requisitionLineItems);
         FacilityDto facilityDto = requisitionDto.getFacility();
         for (RequisitionLineItemDto itemDto : itemDtos) {
           OrderableDto orderableDto = itemDto.getOrderable();
