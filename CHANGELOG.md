@@ -1,3 +1,9 @@
+8.3.2 / WIP
+==================
+
+Improvements:
+* [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Set Hibernate batch insert properties
+
 8.3.1 / 2021-02-22
 ==================
 
