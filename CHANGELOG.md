@@ -2,6 +2,7 @@
 ==================
 
 Improvements:
+* [TZUP-122](https://openlmis.atlassian.net/browse/TZUP-122): changes to enable unskipping skipped requisition line tiems during approval
 * [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Set Hibernate batch insert properties
 
 8.3.1 / 2021-02-22
