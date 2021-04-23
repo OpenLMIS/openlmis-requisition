@@ -18,11 +18,13 @@ package org.openlmis.requisition.web;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -46,6 +48,7 @@ import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.slf4j.profiler.Profiler;
@@ -82,6 +85,9 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   /**
    * Allows creating new requisitions.
@@ -612,6 +618,20 @@ public class RequisitionController extends BaseRequisitionController {
     requisitionService.convertToOrder(list, getCurrentUser(profiler));
 
     stopProfiler(profiler);
+  }
+
+  /**
+   * Return unskiprequisition environment variable value.
+   * @return map with unskipRequisition value
+   */
+  @GetMapping(RESOURCE_URL + "/unSkipRequisition")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Map<String,Boolean> unskipRequisition() {
+    Map<String,Boolean> response = new HashMap<>();
+    String unskipRequisition = configurationSettingService.getUnskippingRequisition();
+    response.put("unskipRequisition",Boolean.valueOf(unskipRequisition));
+    return response;
   }
 
   private SupervisoryNodeDto getSupervisoryNodeDto(Profiler profiler, Requisition requisition) {

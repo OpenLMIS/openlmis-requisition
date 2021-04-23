@@ -31,6 +31,8 @@ public class ConfigurationSettingService {
   private static final String BEGINNING_BALANCE_EXCESS = RESONS_SUFFIX + "beginningBalanceExcess";
   private static final String BEGINNING_BALANCE_INSUFFICIENCY =
       RESONS_SUFFIX + "beginningBalanceInsufficiency";
+  private static final String UNSKIP_REQUISITION_ITEM_WHEN_APPROVING =
+          "unskip.requisition.item.when.approving";
 
   @Autowired
   private Environment env;
@@ -49,5 +51,9 @@ public class ConfigurationSettingService {
 
   public UUID getReasonIdForBeginningBalanceInsufficiency() {
     return UUID.fromString(env.getProperty(BEGINNING_BALANCE_INSUFFICIENCY));
+  }
+
+  public String getUnskippingRequisition() {
+    return env.getProperty(UNSKIP_REQUISITION_ITEM_WHEN_APPROVING);
   }
 }

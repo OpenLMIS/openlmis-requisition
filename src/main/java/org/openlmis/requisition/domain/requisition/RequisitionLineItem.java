@@ -331,6 +331,9 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
+    if (importer.getSkipped() != null) {
+      requisitionLineItem.setSkipped(importer.getSkipped());
+    }
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -351,6 +354,11 @@ public class RequisitionLineItem extends BaseEntity {
     if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();
+      if (requisitionLineItem.getSkipped() != null) {
+        this.skipped = requisitionLineItem.getSkipped();
+      } else {
+        this.skipped = false;
+      }
     } else {
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();

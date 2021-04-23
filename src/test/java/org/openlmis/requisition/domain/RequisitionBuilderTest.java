@@ -178,25 +178,25 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldNotSetSkippedIfRequisitionStatusIsAuthorized() {
+  public void shouldSetSkippedIfRequisitionStatusIsAuthorized() {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(),
         processingPeriodDto, RequisitionStatus.AUTHORIZED, getOrderables(), getProductReferences());
 
-    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+    assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
-  public void shouldNotSetSkippedIfRequisitionStatusIsApproved() {
+  public void shouldSetSkippedIfRequisitionStatusIsApproved() {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
         RequisitionStatus.APPROVED, getOrderables(), getProductReferences());
 
-    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
+    assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
