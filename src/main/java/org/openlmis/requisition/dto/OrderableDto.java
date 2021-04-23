@@ -55,7 +55,8 @@ public final class OrderableDto extends BasicOrderableDto {
   public ProgramOrderableDto getProgramOrderable(UUID programId) {
     return findProgramOrderable(programId)
         .orElseThrow(() ->
-            new ValidationMessageException(CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE));
+            new ValidationMessageException(CAN_NOT_FIND_PROGRAM_DETAILS_FROM_ORDERABLE,
+                programId, getId()));
   }
 
   /**

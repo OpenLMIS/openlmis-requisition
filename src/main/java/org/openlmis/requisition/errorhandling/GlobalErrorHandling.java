@@ -162,6 +162,7 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public Message.LocalizedMessage handleMessageException(ValidationMessageException ex) {
+    logger.debug("A validation error occurred", ex);
     return getLocalizedMessage(ex);
   }
 
