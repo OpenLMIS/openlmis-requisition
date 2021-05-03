@@ -356,6 +356,14 @@ public class RequisitionLineItem extends BaseEntity {
       this.remarks = requisitionLineItem.getRemarks();
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
+        if (requisitionLineItem.getSkipped() == false) {
+          RequisitionUnSkippedDetails details = (RequisitionUnSkippedDetails)
+                  requisition.getExtraData().get("unSkippedRequisitionLineItems");
+          details.addUnSkippedLineItem(requisitionLineItem.getApprovedQuantity().toString(),
+                  requisitionLineItem.getApprovedQuantity().toString(),
+                  requisitionLineItem.getApprovedQuantity(),
+                  requisitionLineItem.getApprovedQuantity().toString());
+        }
       } else {
         this.skipped = false;
       }
