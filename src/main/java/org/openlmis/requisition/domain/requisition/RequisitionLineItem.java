@@ -331,9 +331,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
-    if (importer.getSkipped() != null) {
-      requisitionLineItem.setSkipped(importer.getSkipped());
-    }
+    requisitionLineItem.setSkipped(importer.getSkipped());
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -356,18 +354,13 @@ public class RequisitionLineItem extends BaseEntity {
       this.remarks = requisitionLineItem.getRemarks();
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
-        if (requisitionLineItem.getSkipped() == false) {
-          RequisitionUnSkippedDetails details = (RequisitionUnSkippedDetails)
-                  requisition.getExtraData().get("unSkippedRequisitionLineItems");
-          details.addUnSkippedLineItem(requisitionLineItem.getApprovedQuantity().toString(),
-                  requisitionLineItem.getApprovedQuantity().toString(),
-                  requisitionLineItem.getApprovedQuantity(),
-                  requisitionLineItem.getApprovedQuantity().toString());
-        }
       } else {
         this.skipped = false;
       }
     } else {
+      if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
+        requisition.getExtraData().remove("unSkippedRequisitionLineItems");
+      }
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
@@ -922,5 +915,6 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getCalculatedOrderQuantityIsa();
 
     Integer getAdditionalQuantityRequired();
+
   }
 }

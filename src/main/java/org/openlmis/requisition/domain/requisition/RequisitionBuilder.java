@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -69,11 +70,22 @@ public final class RequisitionBuilder {
     Requisition requisition = new Requisition();
     requisition.setProgramId(programId);
     requisition.setRequisitionLineItems(new ArrayList<>());
+    RequisitionUnSkippedDetails unSkippedItems = new RequisitionUnSkippedDetails();
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
         RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
         OrderableDto orderable = orderables.get(new VersionIdentityDto(item.getOrderable()));
+
+        //add unskippedlineitems to be added to extraData map
+        if (requisitionLineItem.getSkipped() != null && requisitionLineItem.getSkipped() == false) {
+          int quantity = requisitionLineItem.getApprovedQuantity()
+                  == null ? 0 : requisitionLineItem.getApprovedQuantity();
+          unSkippedItems.addUnSkippedLineItem(orderable.getProductCode(),
+                  orderable.getProductCode(),
+                  quantity,
+                  requisitionLineItem.getRemarks());
+        }
 
         if (null == orderable) {
           throw new ValidationMessageException(
@@ -106,8 +118,9 @@ public final class RequisitionBuilder {
       requisition.setDatePhysicalStockCountCompleted(
           new DatePhysicalStockCountCompleted(importer.getDatePhysicalStockCountCompleted()));
     }
-
-    requisition.setExtraData(importer.getExtraData());
+    Map<String,Object> extraData = importer.getExtraData();
+    extraData.put("unSkippedRequisitionLineItems", unSkippedItems.getUnSkippedLineItemList());
+    requisition.setExtraData(extraData);
 
     return requisition;
   }

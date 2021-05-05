@@ -390,8 +390,6 @@ public class Requisition extends BaseTimestampedEntity {
 
     profiler.start("SET_EXTRA_DATA");
     extraData = new ExtraDataEntity(requisition.getExtraData());
-    RequisitionUnSkippedDetails details = new RequisitionUnSkippedDetails();
-    extraData.put("unSkippedRequisitionLineItems",details);
 
     profiler.start("UPDATE_LINE_ITEMS");
     updateReqLines(requisition.getRequisitionLineItems());
