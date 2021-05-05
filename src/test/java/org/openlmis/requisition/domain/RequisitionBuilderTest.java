@@ -189,14 +189,14 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldSetSkippedIfRequisitionStatusIsApproved() {
+  public void shouldNotSetSkippedIfRequisitionStatusIsApproved() {
     prepareForTestSkipped();
 
     Requisition requisition = RequisitionBuilder.newRequisition(
         requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
         RequisitionStatus.APPROVED, getOrderables(), getProductReferences());
 
-    assertEquals(true, requisition.getRequisitionLineItems().get(0).getSkipped());
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test
