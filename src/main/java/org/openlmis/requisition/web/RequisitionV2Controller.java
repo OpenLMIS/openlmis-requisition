@@ -42,7 +42,9 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemV2Dto;
 import org.openlmis.requisition.dto.RequisitionV2Dto;
 import org.openlmis.requisition.dto.VersionObjectReferenceDto;
+import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.profiler.Profiler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -61,6 +63,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(RESOURCE_URL)
 public class RequisitionV2Controller extends BaseRequisitionController {
+
+  @Autowired
+  private RequisitionService requisitionService;
 
   public static final String RESOURCE_URL = API_URL + "/v2/requisitions";
 
@@ -127,9 +132,13 @@ public class RequisitionV2Controller extends BaseRequisitionController {
         result.getOrderables(), result.getApprovedProducts(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()));
 
+    requisitionService.addApproverDetailsToUnSkippedLineItems(requisitionToUpdate);
+
     profiler.start("SAVE");
     requisitionRepository.save(requisitionToUpdate);
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
+
+    requisitionService.sendUnSkippedRequisitionItemsNotification();
 
     ETagResource<RequisitionV2Dto> etaggedResource = new ETagResource<>(
         buildDto(requisitionToUpdate, profiler),

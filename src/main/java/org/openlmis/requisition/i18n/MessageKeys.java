@@ -327,6 +327,12 @@ public abstract class MessageKeys {
   public static final String ERROR_MISSING_REJECTION_REASON = ERROR_PREFIX
           + ".reject.missingRejectionReason";
 
+  public static final String REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT
+          = "requisition.email.unskipped.line.items.subject";
+
+  public static final String REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY
+          = "requisition.email.unskipped.line.items.body";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }

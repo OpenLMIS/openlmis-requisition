@@ -24,6 +24,7 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
+
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
@@ -34,6 +35,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_B
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SPLIT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import com.google.common.collect.Sets;
@@ -58,6 +61,7 @@ import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionUnSkippedDetails;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -81,11 +85,13 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RejectionRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
+import org.openlmis.requisition.service.notification.NotificationService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
@@ -173,6 +179,12 @@ public class RequisitionService {
 
   @Autowired
   private RejectionRepository rejectionRepository;
+
+  @Autowired
+  private NotificationService notificationService;
+
+  @Autowired
+  private MessageService messageService;
 
   /**
    * Initiated given requisition if possible.
@@ -867,7 +879,35 @@ public class RequisitionService {
     }
   }
 
-  public UserDto getUser() {
-    return authenticationHelper.getCurrentUser();
+  /**
+   * Adds approver details to unskipped requisition line items.
+   * @param requisition object
+   * @return requisition object
+   */
+  public Requisition addApproverDetailsToUnSkippedLineItems(Requisition requisition) {
+    if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
+      RequisitionUnSkippedDetails requisitionDetails =
+              (RequisitionUnSkippedDetails)requisition.getExtraData()
+                      .get("unSkippedRequisitionLineItems");
+      UserDto user = authenticationHelper.getCurrentUser();
+      requisitionDetails.setFirstname(user.getFirstName());
+      requisitionDetails.setLastname(user.getLastName());
+      requisitionDetails.setUsername(user.getUsername());
+      requisition.getExtraData().put("unSkippedRequisitionLineItems",requisitionDetails);
+    }
+    return requisition;
   }
+
+  /**
+   * method to send email notification to storemanager user.
+   */
+  public void sendUnSkippedRequisitionItemsNotification() {
+    //UserDto user = userReferenceDataService.findOne(order.getCreatedById());
+    UserDto user = authenticationHelper.getCurrentUser();
+    String subject = messageService
+            .localize(new Message(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT)).toString();
+
+    notificationService.notify(user,subject,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY,"","");
+  }
+
 }
