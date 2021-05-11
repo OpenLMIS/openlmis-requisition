@@ -119,7 +119,7 @@ public final class RequisitionBuilder {
           new DatePhysicalStockCountCompleted(importer.getDatePhysicalStockCountCompleted()));
     }
     Map<String,Object> extraData = importer.getExtraData();
-    extraData.put("unSkippedRequisitionLineItems", unSkippedItems.getUnSkippedLineItemList());
+    extraData.put("unSkippedRequisitionLineItems", unSkippedItems);
     requisition.setExtraData(extraData);
 
     return requisition;

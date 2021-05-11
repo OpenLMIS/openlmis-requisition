@@ -866,4 +866,8 @@ public class RequisitionService {
       rejectionRepository.save(saveRejection);
     }
   }
+
+  public UserDto getUser() {
+    return authenticationHelper.getCurrentUser();
+  }
 }

@@ -24,17 +24,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.requisition.service.RequisitionService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
 public class RequisitionUnSkippedDetails {
-  private List<RequisitionUnSkippedLineItem> unSkippedLineItemList
-          = new ArrayList<>();
+
+  @Autowired
+  private RequisitionService requisitionService;
+
+  private List<RequisitionUnSkippedLineItem> unSkippedLineItemList;
+
+  private String username;
+  private String firstname;
+  private String lastname;
+
+  /**
+   * default constructor.
+   */
+  public RequisitionUnSkippedDetails() {
+    unSkippedLineItemList = new ArrayList<>();
+  }
 
   /**
    * adds items to unskippedlineitemsList.
