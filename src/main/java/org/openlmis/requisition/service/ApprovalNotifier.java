@@ -17,6 +17,8 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_ACTION_REQUIRED_CONTENT;
 
 import java.text.MessageFormat;
@@ -43,6 +45,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +75,9 @@ public class ApprovalNotifier extends BaseNotifier {
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   @Value("${requisitionUri}")
   private String requisitionUri;
@@ -145,5 +151,25 @@ public class ApprovalNotifier extends BaseNotifier {
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     return supervisingUsersReferenceDataService
         .findAll(requisition.getSupervisoryNodeId(), right.getId(), requisition.getProgramId());
+  }
+
+  /**
+   * add approver details and sent email to facility in charge.
+   * @param requisition to propagate approvers
+   * @param locale system locale
+   */
+  public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,
+                                                           Locale locale) {
+    Collection<UserDto> approvers = getApprovers(requisition);
+
+    String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
+    String emailContent = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY, locale);
+
+    for (UserDto approver : approvers) {
+      UserDto user = userReferenceDataService.findOne(approver.getId());
+      notificationService.notify(user, subject,
+              emailContent, "", "");
+    }
+
   }
 }

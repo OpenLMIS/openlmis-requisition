@@ -35,8 +35,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_MUST_B
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_WAS_SPLIT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT;
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import com.google.common.collect.Sets;
@@ -46,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -85,13 +84,11 @@ import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
-import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.repository.RejectionRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
-import org.openlmis.requisition.service.notification.NotificationService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
@@ -181,10 +178,7 @@ public class RequisitionService {
   private RejectionRepository rejectionRepository;
 
   @Autowired
-  private NotificationService notificationService;
-
-  @Autowired
-  private MessageService messageService;
+  private ApprovalNotifier approvalNotifier;
 
   /**
    * Initiated given requisition if possible.
@@ -884,7 +878,7 @@ public class RequisitionService {
    * @param requisition object
    * @return requisition object
    */
-  public Requisition addApproverDetailsToUnSkippedLineItems(Requisition requisition) {
+  public Requisition processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
     if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
       RequisitionUnSkippedDetails requisitionDetails =
               (RequisitionUnSkippedDetails)requisition.getExtraData()
@@ -894,20 +888,18 @@ public class RequisitionService {
       requisitionDetails.setLastname(user.getLastName());
       requisitionDetails.setUsername(user.getUsername());
       requisition.getExtraData().put("unSkippedRequisitionLineItems",requisitionDetails);
+      sendUnSkippedRequisitionItemsNotification(requisition,locale);
     }
     return requisition;
   }
 
   /**
-   * method to send email notification to storemanager user.
+   *send notification to all approvers with link to unskipped requisition items.
+   * @param requisition to propagate approver details
+   * @param locale system locale
    */
-  public void sendUnSkippedRequisitionItemsNotification() {
-    //UserDto user = userReferenceDataService.findOne(order.getCreatedById());
-    UserDto user = authenticationHelper.getCurrentUser();
-    String subject = messageService
-            .localize(new Message(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT)).toString();
-
-    notificationService.notify(user,subject,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY,"","");
+  public void sendUnSkippedRequisitionItemsNotification(Requisition requisition, Locale locale) {
+    approvalNotifier.notifyApproversUnskippedRequisitionLineItems(requisition,locale);
   }
 
 }

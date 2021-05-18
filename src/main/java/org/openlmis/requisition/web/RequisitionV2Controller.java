@@ -25,6 +25,7 @@ import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -132,13 +133,11 @@ public class RequisitionV2Controller extends BaseRequisitionController {
         result.getOrderables(), result.getApprovedProducts(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()));
 
-    requisitionService.addApproverDetailsToUnSkippedLineItems(requisitionToUpdate);
+    requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate, Locale.ENGLISH);
 
     profiler.start("SAVE");
     requisitionRepository.save(requisitionToUpdate);
     logger.debug("Requisition with id {} saved", requisitionToUpdate.getId());
-
-    requisitionService.sendUnSkippedRequisitionItemsNotification();
 
     ETagResource<RequisitionV2Dto> etaggedResource = new ETagResource<>(
         buildDto(requisitionToUpdate, profiler),
