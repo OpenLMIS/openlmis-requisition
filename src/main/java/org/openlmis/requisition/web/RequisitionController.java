@@ -627,7 +627,7 @@ public class RequisitionController extends BaseRequisitionController {
   @GetMapping(RESOURCE_URL + "/unSkipRequisition")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Map<String,Boolean> unskipRequisition(HttpServletRequest request) {
+  public Map<String,Boolean> unskipRequisition() {
     Map<String,Boolean> response = new HashMap<>();
     String unskipRequisition = configurationSettingService.getUnskippingRequisition();
     response.put("unskipRequisition",Boolean.valueOf(unskipRequisition));
