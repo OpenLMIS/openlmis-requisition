@@ -688,6 +688,15 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Check if the requisition is approved.
+   *
+   */
+  public boolean isApproved() {
+    return status.isApproved();
+  }
+
+
+  /**
    * Approves given requisition.
    *
    * @param nodeId      supervisoryNode that has a supply line for the requisition's program.

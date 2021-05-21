@@ -74,7 +74,8 @@ public final class RequisitionBuilder {
 
     if (importer.getRequisitionLineItems() != null) {
       for (RequisitionLineItem.Importer requisitionLineItem : importer.getRequisitionLineItems()) {
-        RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem);
+        RequisitionLineItem item = RequisitionLineItem.newRequisitionLineItem(requisitionLineItem,
+                requisitionStatus);
         OrderableDto orderable = orderables.get(new VersionIdentityDto(item.getOrderable()));
 
         //add unskippedlineitems to be added to extraData map

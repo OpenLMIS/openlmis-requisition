@@ -465,7 +465,8 @@ public class RequisitionLineItemTest {
     RequisitionLineItemDto requisitionLineItemDto = new RequisitionLineItemDataBuilder()
         .buildAsDto();
     RequisitionLineItem requisitionLineItem =
-        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto,
+                RequisitionStatus.INITIATED);
     assertEquals(false, requisitionLineItem.getSkipped());
   }
 
@@ -475,7 +476,8 @@ public class RequisitionLineItemTest {
         .buildAsDto();
     requisitionLineItemDto.setPreviousAdjustedConsumptions(singletonList(1));
     RequisitionLineItem requisitionLineItem =
-        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto,
+                RequisitionStatus.INITIATED);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }
 
@@ -485,7 +487,8 @@ public class RequisitionLineItemTest {
         .buildAsDto();
     requisitionLineItemDto.setStockAdjustments(singletonList(new StockAdjustmentDto()));
     RequisitionLineItem requisitionLineItem =
-        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto);
+        RequisitionLineItem.newRequisitionLineItem(requisitionLineItemDto,
+                RequisitionStatus.INITIATED);
     assertEquals(0, requisitionLineItem.getPreviousAdjustedConsumptions().size());
   }
 

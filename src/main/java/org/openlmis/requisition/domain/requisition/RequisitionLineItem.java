@@ -296,7 +296,8 @@ public class RequisitionLineItem extends BaseEntity {
    * @param importer instance of {@link Importer}
    * @return new instance of RequisitionLineItem.
    */
-  static RequisitionLineItem newRequisitionLineItem(Importer importer) {
+  static RequisitionLineItem newRequisitionLineItem(Importer importer,
+                                                    RequisitionStatus requisitionStatus) {
 
     RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
     requisitionLineItem.setId(importer.getId());
@@ -331,7 +332,10 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
-    requisitionLineItem.setSkipped(importer.getSkipped());
+
+    if (importer.getSkipped() != null && !requisitionStatus.isApproved()) {
+      requisitionLineItem.setSkipped(importer.getSkipped());
+    }
 
     List<StockAdjustment> stockAdjustments = new ArrayList<>();
     for (StockAdjustment.Importer stockAdjustmentImporter : importer.getStockAdjustments()) {
@@ -374,12 +378,13 @@ public class RequisitionLineItem extends BaseEntity {
       this.calculatedOrderQuantity = requisitionLineItem.getCalculatedOrderQuantity();
       this.calculatedOrderQuantityIsa = requisitionLineItem.getCalculatedOrderQuantityIsa();
       this.additionalQuantityRequired = requisitionLineItem.getAdditionalQuantityRequired();
-      if (requisitionLineItem.getSkipped() != null) {
-        this.skipped = requisitionLineItem.getSkipped();
-      } else {
-        this.skipped = false;
+      if (!requisition.isApproved()) {
+        if (requisitionLineItem.getSkipped() != null) {
+          this.skipped = requisitionLineItem.getSkipped();
+        } else {
+          this.skipped = false;
+        }
       }
-
       if (null == this.stockAdjustments) {
         this.stockAdjustments = new ArrayList<>();
       } else {
