@@ -15,49 +15,18 @@
 
 package org.openlmis.requisition.domain.requisition;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
-public class RequisitionUnSkippedDetails {
-
-  private List<RequisitionUnSkippedLineItem> unSkippedLineItemList;
-
-  private String username;
-  private String firstname;
-  private String lastname;
-
-  /**
-   * default constructor.
-   */
-  public RequisitionUnSkippedDetails() {
-    unSkippedLineItemList = new ArrayList<>();
-  }
-
-  /**
-   * adds items to unskippedlineitemsList.
-   * @param name product name
-   * @param code product code
-   * @param quant approved quantity
-   * @param remarks approver remarks
-   */
-  public void addUnSkippedLineItem(String name, String code,
-                                   int quant, String remarks) {
-    RequisitionUnSkippedLineItem lineItem =
-              new RequisitionUnSkippedLineItem(code,name,quant,remarks);
-    unSkippedLineItemList.add(lineItem);
-  }
-
-
+public class RequisitionUnSkippedLineItem {
+  private String productCode;
+  private String productName;
+  private int approvedQuantity;
+  private String remarks;
 }
-

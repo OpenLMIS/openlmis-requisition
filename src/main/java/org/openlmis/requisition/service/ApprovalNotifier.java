@@ -154,12 +154,13 @@ public class ApprovalNotifier extends BaseNotifier {
    * @param requisition to propagate approvers
    * @param locale system locale
    */
-  public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,
+  public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,String emailBody,
                                                            Locale locale) {
     Collection<UserDto> approvers = getApprovers(requisition);
 
     String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
     String emailContent = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY, locale);
+    emailContent = emailContent + " " + emailBody;
 
     for (UserDto approver : approvers) {
       notificationService.notify(approver, subject,

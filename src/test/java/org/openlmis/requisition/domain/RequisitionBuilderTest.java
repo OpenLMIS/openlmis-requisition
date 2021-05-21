@@ -152,14 +152,14 @@ public class RequisitionBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfSkippedIsNotSetInDto() {
+  public void shouldReturnFalseIfSkippedIsNotSetInDto() {
     prepareLineItem(new RequisitionLineItemDto());
 
     Requisition requisition = RequisitionBuilder.newRequisition(
             requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
+            RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
 
-    assertEquals(null, requisition.getRequisitionLineItems().get(0).getSkipped());
+    assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }
 
   @Test(expected = ValidationMessageException.class)

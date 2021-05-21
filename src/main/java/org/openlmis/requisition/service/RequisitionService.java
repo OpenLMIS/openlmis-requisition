@@ -61,6 +61,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionUnSkippedDetails;
+import org.openlmis.requisition.domain.requisition.RequisitionUnSkippedLineItem;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -888,7 +889,21 @@ public class RequisitionService {
       requisitionDetails.setLastname(user.getLastName());
       requisitionDetails.setUsername(user.getUsername());
       requisition.getExtraData().put("unSkippedRequisitionLineItems",requisitionDetails);
-      sendUnSkippedRequisitionItemsNotification(requisition,locale);
+
+      StringBuilder emailContent = new StringBuilder();
+      emailContent.append("By: ").append(user.getFirstName()).append("  ")
+              .append(user.getLastName()).append(System.lineSeparator());
+      int counter = 0;
+      for (RequisitionUnSkippedLineItem lineItem: requisitionDetails.getUnSkippedLineItemList()) {
+        counter++;
+        emailContent.append(counter).append(". ");
+        emailContent.append(lineItem.getProductCode()).append(",  ");
+        emailContent.append(lineItem.getProductName()).append(",  ");
+        emailContent.append(lineItem.getApprovedQuantity()).append("(approved quantity),  ");
+        emailContent.append(lineItem.getRemarks());
+        emailContent.append(System.lineSeparator());
+      }
+      sendUnSkippedRequisitionItemsNotification(requisition,emailContent.toString(),locale);
     }
     return requisition;
   }
@@ -898,8 +913,9 @@ public class RequisitionService {
    * @param requisition to propagate approver details
    * @param locale system locale
    */
-  public void sendUnSkippedRequisitionItemsNotification(Requisition requisition, Locale locale) {
-    approvalNotifier.notifyApproversUnskippedRequisitionLineItems(requisition,locale);
+  public void sendUnSkippedRequisitionItemsNotification(Requisition requisition,
+                                                        String emailBody, Locale locale) {
+    approvalNotifier.notifyApproversUnskippedRequisitionLineItems(requisition,emailBody,locale);
   }
 
 }
