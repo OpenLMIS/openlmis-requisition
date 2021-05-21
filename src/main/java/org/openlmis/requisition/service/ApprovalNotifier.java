@@ -45,7 +45,6 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
-import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,9 +74,6 @@ public class ApprovalNotifier extends BaseNotifier {
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
 
   @Value("${requisitionUri}")
   private String requisitionUri;
@@ -166,9 +162,8 @@ public class ApprovalNotifier extends BaseNotifier {
     String emailContent = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY, locale);
 
     for (UserDto approver : approvers) {
-      UserDto user = userReferenceDataService.findOne(approver.getId());
-      notificationService.notify(user, subject,
-              emailContent, "", "");
+      notificationService.notify(approver, subject,
+              emailContent, "unskipped", "");
     }
 
   }
