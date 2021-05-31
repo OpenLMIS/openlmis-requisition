@@ -15,24 +15,35 @@
 
 package org.openlmis.requisition.service;
 
+import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
-import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_TITLE;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_SMS_ACTION_REQUIRED_CONTENT;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
+import org.openlmis.requisition.domain.requisition.RequisitionUnSkippedDetails;
+import org.openlmis.requisition.domain.requisition.RequisitionUnSkippedLineItem;
 import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -154,18 +165,91 @@ public class ApprovalNotifier extends BaseNotifier {
    * @param requisition to propagate approvers
    * @param locale system locale
    */
-  public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,String emailBody,
-                                                           Locale locale) {
-    Collection<UserDto> approvers = getApprovers(requisition);
+  public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,
+                                                           UserDto user, Locale locale) {
+    if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
+      StringBuilder emailContent = new StringBuilder();
+      emailContent.append(getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_TITLE, locale));
+      RequisitionUnSkippedDetails requisitionDetails =
+              (RequisitionUnSkippedDetails) requisition.getExtraData()
+                      .get("unSkippedRequisitionLineItems");
+      addApproverDetails(requisitionDetails,user);
+      requisition.getExtraData().put("unSkippedRequisitionLineItems", requisitionDetails);
+      Map<String,String> userMessageParams = buildMessageParamsForUser(user);
 
-    String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
-    String emailContent = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_BODY, locale);
-    emailContent = emailContent + " " + emailBody;
-
-    for (UserDto approver : approvers) {
-      notificationService.notify(approver, subject,
-              emailContent, "unskipped", "");
+      String userContent = getContent(user,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER,
+              userMessageParams, locale);
+      emailContent.append(userContent).append(System.lineSeparator());
+      for (RequisitionUnSkippedLineItem lineItem : requisitionDetails.getUnSkippedLineItemList()) {
+        Map<String,String> lineMessageParams = buildMessageParamsForRequisitionLine(lineItem);
+        String lineContent = getContent(lineItem,
+                REQUISITION_EMAIL_UNSKIPPED_LINE, lineMessageParams, locale);
+        emailContent.append(lineContent).append(System.lineSeparator());
+      }
+      String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
+      String emailBody = emailContent.toString();
+      Collection<UserDto> approvers = getApprovers(requisition);
+      for (UserDto approver : approvers) {
+        notificationService.notify(approver, subject,
+                emailBody, REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS, "");
+      }
     }
+  }
 
+  private void addApproverDetails(RequisitionUnSkippedDetails
+                                                 requisitionDetails, UserDto user) {
+    requisitionDetails.setFirstname(user.getFirstName());
+    requisitionDetails.setLastname(user.getLastName());
+    requisitionDetails.setUsername(user.getUsername());
+  }
+
+  private Map<String,String> buildMessageParamsForUser(UserDto user) {
+    Map<String, String> userMap = new HashMap<>();
+    userMap.put("firstName",user.getFirstName());
+    userMap.put("lastName",user.getLastName());
+    userMap.put("userName",user.getUsername());
+    return userMap;
+  }
+
+  private Map<String,String> buildMessageParamsForRequisitionLine(
+          RequisitionUnSkippedLineItem lineItem) {
+    Map<String,String> lineMessageParams = new HashMap<>();
+    lineMessageParams.put("productCode",lineItem.getProductCode());
+    lineMessageParams.put("productName",lineItem.getProductName());
+    lineMessageParams.put("approvedQuantity",
+            String.valueOf(lineItem.getApprovedQuantity()));
+    lineMessageParams.put("remarks",lineItem.getRemarks());
+    return lineMessageParams;
+
+  }
+
+  private String getContent(Object object, String messageKey,
+                            Map<String, String> messageParams, Locale locale) {
+    String content = getMessage(messageKey,locale);
+
+    try {
+      List<PropertyDescriptor> descriptors = Arrays
+              .stream(getPropertyDescriptors(object.getClass()))
+              .filter(d -> null != d.getReadMethod())
+              .collect(Collectors.toList());
+
+      for (PropertyDescriptor descriptor : descriptors) {
+        String target = "{" + descriptor.getName() + "}";
+        String replacement = String.valueOf(descriptor.getReadMethod().invoke(object));
+
+        content = content.replace(target, replacement);
+      }
+
+      for (Map.Entry<String, String> entry : messageParams.entrySet()) {
+        String target = "{" + entry.getKey() + "}";
+        String replacement = entry.getValue();
+
+        content = content.replace(target, replacement);
+      }
+
+    } catch (IllegalAccessException | InvocationTargetException exp) {
+      throw new IllegalStateException("Can't get access to getter method", exp);
+    }
+    return content;
   }
 }

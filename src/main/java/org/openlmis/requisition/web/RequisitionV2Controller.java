@@ -25,7 +25,6 @@ import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -47,6 +46,7 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,7 +133,8 @@ public class RequisitionV2Controller extends BaseRequisitionController {
         result.getOrderables(), result.getApprovedProducts(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()));
 
-    requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate, Locale.ENGLISH);
+    requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate,
+            LocaleContextHolder.getLocale());
 
     profiler.start("SAVE");
     requisitionRepository.save(requisitionToUpdate);
