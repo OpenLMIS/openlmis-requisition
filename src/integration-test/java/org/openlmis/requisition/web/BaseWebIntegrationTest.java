@@ -92,6 +92,7 @@ import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesR
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
+import org.openlmis.requisition.settings.service.ConfigurationSettingService;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
@@ -261,6 +262,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected RejectionReasonCategoryRepository rejectionReasonCategoryRepository;
+
+  @MockBean
+  protected ConfigurationSettingService configurationSettingService;
 
   /**
    * Method called to initialize basic resources after the object is created.
