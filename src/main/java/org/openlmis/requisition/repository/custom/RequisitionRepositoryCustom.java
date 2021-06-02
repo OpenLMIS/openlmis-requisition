@@ -16,6 +16,7 @@
 package org.openlmis.requisition.repository.custom;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,6 +33,8 @@ public interface RequisitionRepositoryCustom {
 
   List<Requisition> searchRequisitions(UUID processingPeriod,
       UUID facility, UUID program, Boolean emergency);
+
+  Optional<Requisition> findRegularRequisition(UUID processingPeriod, UUID facility, UUID program);
 
   List<RequisitionPeriod> searchRequisitionIdAndStatusPairs(UUID facility, UUID program,
       Boolean emergency);

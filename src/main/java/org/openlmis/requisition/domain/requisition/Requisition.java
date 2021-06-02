@@ -68,6 +68,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
@@ -115,6 +117,11 @@ import org.springframework.util.CollectionUtils;
 @Table(name = "requisitions")
 @NoArgsConstructor
 @AllArgsConstructor
+@NamedEntityGraph(
+    name = "graph.Requisition",
+    attributeNodes = {
+        @NamedAttributeNode("requisitionLineItems")
+    })
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Requisition extends BaseTimestampedEntity {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(Requisition.class);
@@ -541,27 +548,32 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
 
-    profiler.start("GET_PREV_BEGINNING_BALANCE");
+    profiler.start("MAP_ORDERABLES");
     List<RequisitionLineItem> nonSkippedFullSupplyItems = null;
     Map<VersionIdentityDto, OrderableDto> orderables = fullSupplyProducts
         .stream()
         .map(ApprovedProductDto::getOrderable)
         .collect(toMap(OrderableDto::getIdentity, identity()));
 
+    profiler.start("GET_PREV_BEGINNING_BALANCE");
     // Firstly, if we display the column ...
     // ... and if the previous requisition exists ...
     if (!previousRequisitions.isEmpty()
         && null != previousRequisitions.get(0)
         && template.isColumnDisplayed(RequisitionLineItem.BEGINNING_BALANCE)) {
       // .. for each line from the current requisition ...
+
+      profiler.start("GET_NON_SKIPPED_FULL_SUPPLY_ITEMS");
       nonSkippedFullSupplyItems = getNonSkippedFullSupplyRequisitionLineItems(orderables);
 
+      profiler.start("MAP_PREVIOUS_REQUISITION_ITEMS");
       Map<UUID, RequisitionLineItem> productIdToPreviousLine = previousRequisitions
           .get(0)
           .getRequisitionLineItems()
           .stream()
           .collect(toMap(rli -> rli.getOrderable().getId(), identity(), (item1, item2) -> item1));
 
+      profiler.start("CALCULATE_BEGINNING_BALANCE");
       nonSkippedFullSupplyItems.forEach(currentLine -> {
         // ... we try to find line in the previous requisition for the same product ...
         RequisitionLineItem previousLine = productIdToPreviousLine.getOrDefault(
@@ -1156,7 +1168,7 @@ public class Requisition extends BaseTimestampedEntity {
     void setStatus(RequisitionStatus status);
 
     void setEmergency(Boolean emergency);
-    
+
     void setReportOnly(Boolean reportOnly);
 
     void setSupplyingFacility(UUID supplyingFacility);

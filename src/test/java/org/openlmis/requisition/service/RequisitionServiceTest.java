@@ -768,8 +768,8 @@ public class RequisitionServiceTest {
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems().get(0);
     assertEquals(Integer.valueOf(ADJUSTED_CONSUMPTION),
         requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
-    verify(requisitionRepository).searchRequisitions(
-        PERIOD_ID, facility.getId(), program.getId(), false);
+    verify(requisitionRepository).findRegularRequisition(
+        PERIOD_ID, facility.getId(), program.getId());
   }
 
   @Test
@@ -786,8 +786,8 @@ public class RequisitionServiceTest {
 
     UUID previousRequisitionId = initiatedRequisition.getPreviousRequisitions().get(0).getId();
     assertEquals(previousRequisition.getId(), previousRequisitionId);
-    verify(requisitionRepository).searchRequisitions(
-        PERIOD_ID, facility.getId(), program.getId(), false);
+    verify(requisitionRepository).findRegularRequisition(
+        PERIOD_ID, facility.getId(), program.getId());
   }
 
   @Test
@@ -1572,8 +1572,8 @@ public class RequisitionServiceTest {
         .build();
 
     when(requisitionRepository
-        .searchRequisitions(any(), eq(facility.getId()), eq(program.getId()), eq(false)))
-        .thenReturn(singletonList(previousRequisition));
+        .findRegularRequisition(any(), eq(facility.getId()), eq(program.getId())))
+        .thenReturn(Optional.of(previousRequisition));
   }
 
   private ApproveProductsAggregator mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
