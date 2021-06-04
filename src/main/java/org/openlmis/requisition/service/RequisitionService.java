@@ -24,6 +24,7 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
+
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CANNOT_UPDATE_WITH_STATUS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_NEWER_EXISTS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
@@ -43,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -173,6 +175,9 @@ public class RequisitionService {
 
   @Autowired
   private RejectionRepository rejectionRepository;
+
+  @Autowired
+  private ApprovalNotifier approvalNotifier;
 
   /**
    * Initiated given requisition if possible.
@@ -865,5 +870,15 @@ public class RequisitionService {
               requisition.getLatestStatusChange());
       rejectionRepository.save(saveRejection);
     }
+  }
+
+  /**
+   * Adds approver details to unskipped requisition line items.
+   * @param requisition object
+   */
+  public void processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
+    UserDto user = authenticationHelper.getCurrentUser();
+    approvalNotifier
+            .notifyApproversUnskippedRequisitionLineItems(requisition,user,locale);
   }
 }

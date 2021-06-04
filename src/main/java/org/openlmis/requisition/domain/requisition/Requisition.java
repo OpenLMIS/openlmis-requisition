@@ -388,6 +388,9 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
     this.draftStatusMessage = requisition.draftStatusMessage;
 
+    profiler.start("SET_EXTRA_DATA");
+    extraData = new ExtraDataEntity(requisition.getExtraData());
+
     profiler.start("UPDATE_LINE_ITEMS");
     updateReqLines(requisition.getRequisitionLineItems());
 
@@ -403,9 +406,6 @@ public class Requisition extends BaseTimestampedEntity {
       profiler.start("SET_DATE_PHYSICAL_STOCK_COUNT_COMPLETED");
       setDatePhysicalStockCountCompleted(requisition.getDatePhysicalStockCountCompleted());
     }
-
-    profiler.start("SET_EXTRA_DATA");
-    extraData = new ExtraDataEntity(requisition.getExtraData());
 
     // do this manually here, since JPA won't catch updates to collections (line items)
     profiler.start("SET_MODIFIED_DATE");
@@ -1213,5 +1213,7 @@ public class Requisition extends BaseTimestampedEntity {
     Set<VersionIdentityDto> getAvailableNonFullSupplyProductsIdentities();
 
     LocalDate getDatePhysicalStockCountCompleted();
+
+    Map<String,Object> getExtraData();
   }
 }

@@ -157,7 +157,7 @@ public class RequisitionBuilderTest {
 
     Requisition requisition = RequisitionBuilder.newRequisition(
             requisitionDto, requisitionTemplate, program.getId(), processingPeriodDto,
-        RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
+            RequisitionStatus.INITIATED, getOrderables(), getProductReferences());
 
     assertEquals(false, requisition.getRequisitionLineItems().get(0).getSkipped());
   }

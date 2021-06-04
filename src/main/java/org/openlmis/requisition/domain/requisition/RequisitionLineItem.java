@@ -332,6 +332,7 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
+
     if (importer.getSkipped() != null && !requisitionStatus.isApproved()) {
       requisitionLineItem.setSkipped(importer.getSkipped());
     }
@@ -361,6 +362,9 @@ public class RequisitionLineItem extends BaseEntity {
         this.skipped = false;
       }
     } else {
+      if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
+        requisition.getExtraData().remove("unSkippedRequisitionLineItems");
+      }
       this.stockOnHand = requisitionLineItem.getStockOnHand();
       this.beginningBalance = requisitionLineItem.getBeginningBalance();
       this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
@@ -916,5 +920,6 @@ public class RequisitionLineItem extends BaseEntity {
     Integer getCalculatedOrderQuantityIsa();
 
     Integer getAdditionalQuantityRequired();
+
   }
 }
