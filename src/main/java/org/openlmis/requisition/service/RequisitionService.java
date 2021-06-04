@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -836,19 +837,17 @@ public class RequisitionService {
 
     List<Requisition> recentRequisitions = new ArrayList<>();
     for (ProcessingPeriodDto period : previousPeriods) {
-      List<Requisition> requisitionsByPeriod = getRegularRequisitionsByPeriod(requisition, period);
-      if (!requisitionsByPeriod.isEmpty()) {
-        Requisition requisitionByPeriod = requisitionsByPeriod.get(0);
-        recentRequisitions.add(requisitionByPeriod);
-      }
+      Optional<Requisition> requisitionByPeriod =
+          getRegularRequisitionByPeriod(requisition, period);
+      requisitionByPeriod.ifPresent(recentRequisitions::add);
     }
     return recentRequisitions;
   }
 
-  private List<Requisition> getRegularRequisitionsByPeriod(Requisition requisition,
+  private Optional<Requisition> getRegularRequisitionByPeriod(Requisition requisition,
                                                            ProcessingPeriodDto period) {
-    return requisitionRepository.searchRequisitions(
-            period.getId(), requisition.getFacilityId(), requisition.getProgramId(), false);
+    return requisitionRepository.findRegularRequisition(
+            period.getId(), requisition.getFacilityId(), requisition.getProgramId());
   }
 
   private void saveRejectionReason(Requisition requisition, List<RejectionDto> rejections) {

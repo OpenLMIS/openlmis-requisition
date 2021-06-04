@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.jpa.QueryHints;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.LongType;
@@ -166,6 +168,38 @@ public class RequisitionRepositoryImpl
     query.where(predicate);
 
     return entityManager.createQuery(query).getResultList();
+  }
+
+  /**
+   * Method returns Requisition with matched parameters.
+   *
+   * @param processingPeriod ProcessingPeriod of searched Requisition.
+   * @return Requisition with matched parameters.
+   */
+  @Override
+  public Optional<Requisition> findRegularRequisition(UUID processingPeriod,
+      UUID facility, UUID program) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, false);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriod);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, program);
+
+    query.where(predicate);
+
+    List<Requisition> requisitions = entityManager.createQuery(query)
+        .setHint(QueryHints.HINT_READONLY, true)
+        .setHint("javax.persistence.fetchgraph",
+            entityManager.getEntityGraph("graph.Requisition"))
+        .getResultList();
+
+    // There is always maximum one regular requisition for given period, facility and program
+    return requisitions.stream().findFirst();
   }
 
   /**

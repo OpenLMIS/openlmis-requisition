@@ -1,4 +1,11 @@
-8.3.2 / WIP
+8.3.3 / WIP
+==================
+
+Improvements:
+* [OLMIS-7273](https://openlmis.atlassian.net/browse/OLMIS-7273): Improve performance of Requisition initialization
+
+
+8.3.2 / 2021-05-27
 ==================
 
 Improvements:

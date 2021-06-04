@@ -495,7 +495,7 @@ public abstract class BaseRequisitionController extends BaseController {
       Requisition requisition, ProgramDto program,
       Map<VersionIdentityDto, OrderableDto> orderables) {
     return requisitionToUpdate.validateCanBeUpdated(new RequisitionValidationService(
-        requisition, requisitionToUpdate, orderables, 
+        requisition, requisitionToUpdate, orderables,
         dateHelper.getCurrentDateWithSystemZone(),
         datePhysicalStockCountCompletedEnabledPredicate.exec(program)));
   }
