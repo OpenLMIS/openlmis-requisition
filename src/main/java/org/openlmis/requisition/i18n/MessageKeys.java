@@ -342,6 +342,9 @@ public abstract class MessageKeys {
   public static final String REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS =
           "requisition.email.unskipped.line.items.sms";
 
+  public static final String REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_HEADER =
+          "requisition.email.unskipped.line.items.header";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }

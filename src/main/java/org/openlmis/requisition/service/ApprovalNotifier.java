@@ -19,6 +19,7 @@ import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_CONTENT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_ACTION_REQUIRED_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE;
+import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_HEADER;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT;
 import static org.openlmis.requisition.i18n.MessageKeys.REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_TITLE;
@@ -169,23 +170,40 @@ public class ApprovalNotifier extends BaseNotifier {
                                                            UserDto user, Locale locale) {
     if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
       StringBuilder emailContent = new StringBuilder();
-      emailContent.append(getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_TITLE, locale));
+
+      String url = publicUrl + MessageFormat.format(requisitionUri, requisition.getId());
+      ProcessingPeriodDto period =
+              periodReferenceDataService.findOne(requisition.getProcessingPeriodId());
+      ProgramDto program = programReferenceDataService.findOne(requisition.getProgramId());
+      FacilityDto facility = facilityReferenceDataService.findOne(requisition.getFacilityId());
+      Map<String,String> valuesMap = getUnskippedRequisitionValuesMap(period,program,facility,url);
+      StrSubstitutor sub = new StrSubstitutor(valuesMap);
+      String title = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_TITLE, locale);
+      emailContent.append(sub.replace(title));
+
       RequisitionUnSkippedDetails requisitionDetails =
               (RequisitionUnSkippedDetails) requisition.getExtraData()
                       .get("unSkippedRequisitionLineItems");
-      addApproverDetails(requisitionDetails,user);
-      requisition.getExtraData().put("unSkippedRequisitionLineItems", requisitionDetails);
-      Map<String,String> userMessageParams = buildMessageParamsForUser(user);
-
-      String userContent = getContent(user,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER,
-              userMessageParams, locale);
-      emailContent.append(userContent).append(System.lineSeparator());
+      String header = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_HEADER,locale);
+      emailContent.append(header);
+      int count = 1;
       for (RequisitionUnSkippedLineItem lineItem : requisitionDetails.getUnSkippedLineItemList()) {
         Map<String,String> lineMessageParams = buildMessageParamsForRequisitionLine(lineItem);
         String lineContent = getContent(lineItem,
                 REQUISITION_EMAIL_UNSKIPPED_LINE, lineMessageParams, locale);
+        lineContent = lineContent.replace("{0}",String.valueOf(count));
         emailContent.append(lineContent).append(System.lineSeparator());
+        count++;
       }
+
+      addApproverDetails(requisitionDetails,user);
+      requisition.getExtraData().put("unSkippedRequisitionLineItems", requisitionDetails);
+      Map<String,String> userMessageParams = buildMessageParamsForUser(user);
+      String userContent = getContent(user,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER,
+              userMessageParams, locale);
+      emailContent.append(userContent).append(System.lineSeparator());
+
+
       String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
       String emailBody = emailContent.toString();
       Collection<UserDto> approvers = getApprovers(requisition);
@@ -221,6 +239,16 @@ public class ApprovalNotifier extends BaseNotifier {
     lineMessageParams.put("remarks",lineItem.getRemarks());
     return lineMessageParams;
 
+  }
+
+  private Map<String, String> getUnskippedRequisitionValuesMap(ProcessingPeriodDto period,
+                                           ProgramDto program, FacilityDto facility,String url) {
+    Map<String, String> valuesMap = new HashMap<>();
+    valuesMap.put("periodName", period.getName());
+    valuesMap.put("programName", program.getName());
+    valuesMap.put("facilityName", facility.getName());
+    valuesMap.put("requisitionUrl", url);
+    return valuesMap;
   }
 
   private String getContent(Object object, String messageKey,
