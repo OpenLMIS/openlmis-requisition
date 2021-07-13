@@ -3,6 +3,7 @@
 
 Improvements:
 * [OLMIS-7273](https://openlmis.atlassian.net/browse/OLMIS-7273): Improve performance of Requisition initialization
+* [TZUP-205](https://openlmis.atlassian.net/browse/TZUP-205): send unskipped requisition line items to initiator
 
 
 8.3.2 / 2021-05-27
