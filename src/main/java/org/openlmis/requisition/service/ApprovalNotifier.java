@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -57,6 +58,7 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisingUsersReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +88,9 @@ public class ApprovalNotifier extends BaseNotifier {
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
 
   @Value("${requisitionUri}")
   private String requisitionUri;
@@ -186,16 +191,8 @@ public class ApprovalNotifier extends BaseNotifier {
                       .get("unSkippedRequisitionLineItems");
       String header = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_HEADER,locale);
       emailContent.append(header);
-      int count = 1;
-      for (RequisitionUnSkippedLineItem lineItem : requisitionDetails.getUnSkippedLineItemList()) {
-        Map<String,String> lineMessageParams = buildMessageParamsForRequisitionLine(lineItem);
-        String lineContent = getContent(lineItem,
-                REQUISITION_EMAIL_UNSKIPPED_LINE, lineMessageParams, locale);
-        lineContent = lineContent.replace("{0}",String.valueOf(count));
-        emailContent.append(lineContent).append(System.lineSeparator());
-        count++;
-      }
-
+      addUnskippedRequisitionLineItems(emailContent,
+              requisitionDetails.getUnSkippedLineItemList(),locale);
       addApproverDetails(requisitionDetails,user);
       requisition.getExtraData().put("unSkippedRequisitionLineItems", requisitionDetails);
       Map<String,String> userMessageParams = buildMessageParamsForUser(user);
@@ -203,15 +200,46 @@ public class ApprovalNotifier extends BaseNotifier {
               userMessageParams, locale);
       emailContent.append(userContent).append(System.lineSeparator());
 
-
       String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
       String emailBody = emailContent.toString();
-      Collection<UserDto> approvers = getApprovers(requisition);
-      for (UserDto approver : approvers) {
-        notificationService.notify(approver, subject,
-                emailBody, REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS, "");
+      List<StatusChange> statusChanges = requisition.getStatusChanges();
+      UserDto initiator = getInitiator(statusChanges, requisition.getId());
+      notificationService.notify(initiator, subject,
+              emailBody, REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS, "");
+    }
+  }
+
+  private void addUnskippedRequisitionLineItems(StringBuilder emailContent,
+                                                List<RequisitionUnSkippedLineItem> lineItems,
+                                                Locale locale) {
+    int count = 1;
+    for (RequisitionUnSkippedLineItem lineItem : lineItems) {
+      Map<String,String> lineMessageParams = buildMessageParamsForRequisitionLine(lineItem);
+      String lineContent = getContent(lineItem,
+              REQUISITION_EMAIL_UNSKIPPED_LINE, lineMessageParams, locale);
+      lineContent = lineContent.replace("{0}",String.valueOf(count));
+      emailContent.append(lineContent).append(System.lineSeparator());
+      count++;
+    }
+  }
+
+  private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
+    UUID initiatorId = getInitiatorId(statusChanges);
+    if (initiatorId == null) {
+      LOGGER.warn("Could not find initiator for requisition %s to notify "
+              + "for requisition status change.", requisitionId);
+      return null;
+    }
+    return userReferenceDataService.findOne(initiatorId);
+  }
+
+  private UUID getInitiatorId(List<StatusChange> statusChanges) {
+    for (StatusChange statusChange : statusChanges) {
+      if (statusChange.getStatus() == RequisitionStatus.INITIATED) {
+        return statusChange.getAuthorId();
       }
     }
+    return null;
   }
 
   private void addApproverDetails(RequisitionUnSkippedDetails
