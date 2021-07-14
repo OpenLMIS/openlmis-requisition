@@ -200,6 +200,16 @@ public class ApprovalNotifierTest {
   }
 
   @Test
+  public void shouldNotCallNotificationServiceIfRequisitionInitiatorIsNull() {
+    UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).buildAsDto();
+    approvalNotifier.notifyApproversUnskippedRequisitionLineItems(requisition,
+            approver,locale,null);
+
+    verify(notificationService, times(0))
+            .notify(any(UserDto.class), any(), any(), any(), eq(ApprovalNotifier.NOTIFICATION_TAG));
+  }
+
+  @Test
   public void shouldNotCallNotificationServiceIfStatusChangeForSubmitIsMissing() {
     UserDto approver = new UserDtoDataBuilder().withUsername(APPROVER_1).buildAsDto();
 

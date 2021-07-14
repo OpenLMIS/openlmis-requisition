@@ -876,8 +876,10 @@ public class RequisitionService {
    * @param requisition object
    */
   public void processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
-    UserDto user = authenticationHelper.getCurrentUser();
+    UserDto approver = authenticationHelper.getCurrentUser();
+    List<StatusChange> statusChanges = requisition.getStatusChanges();
+    UserDto initiator = approvalNotifier.getInitiator(statusChanges, requisition.getId());
     approvalNotifier
-            .notifyApproversUnskippedRequisitionLineItems(requisition,user,locale);
+            .notifyApproversUnskippedRequisitionLineItems(requisition,approver,locale,initiator);
   }
 }

@@ -172,7 +172,8 @@ public class ApprovalNotifier extends BaseNotifier {
    * @param locale system locale
    */
   public void notifyApproversUnskippedRequisitionLineItems(Requisition requisition,
-                                                           UserDto user, Locale locale) {
+                                                           UserDto approver, Locale locale,
+                                                           UserDto initiator) {
     if (requisition.getExtraData().containsKey("unSkippedRequisitionLineItems")) {
       StringBuilder emailContent = new StringBuilder();
 
@@ -193,17 +194,20 @@ public class ApprovalNotifier extends BaseNotifier {
       emailContent.append(header);
       addUnskippedRequisitionLineItems(emailContent,
               requisitionDetails.getUnSkippedLineItemList(),locale);
-      addApproverDetails(requisitionDetails,user);
+      addApproverDetails(requisitionDetails,approver);
       requisition.getExtraData().put("unSkippedRequisitionLineItems", requisitionDetails);
-      Map<String,String> userMessageParams = buildMessageParamsForUser(user);
-      String userContent = getContent(user,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER,
+      Map<String,String> userMessageParams = buildMessageParamsForUser(approver);
+      String userContent = getContent(approver,REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_USER,
               userMessageParams, locale);
       emailContent.append(userContent).append(System.lineSeparator());
 
       String subject = getMessage(REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SUBJECT, locale);
       String emailBody = emailContent.toString();
-      List<StatusChange> statusChanges = requisition.getStatusChanges();
-      UserDto initiator = getInitiator(statusChanges, requisition.getId());
+
+      if (initiator == null) {
+        LOGGER.warn("Initiator is null for requisition %s",requisition.getId());
+        return;
+      }
       notificationService.notify(initiator, subject,
               emailBody, REQUISITION_EMAIL_UNSKIPPED_LINE_ITEMS_SMS, "");
     }
@@ -223,7 +227,13 @@ public class ApprovalNotifier extends BaseNotifier {
     }
   }
 
-  private UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
+  /**
+   * returns requisition initiator.
+   * @param statusChanges of the requisition
+   * @param requisitionId of the requisition
+   * @return userdto
+   */
+  public UserDto getInitiator(List<StatusChange> statusChanges, UUID requisitionId) {
     UUID initiatorId = getInitiatorId(statusChanges);
     if (initiatorId == null) {
       LOGGER.warn("Could not find initiator for requisition %s to notify "
@@ -233,7 +243,12 @@ public class ApprovalNotifier extends BaseNotifier {
     return userReferenceDataService.findOne(initiatorId);
   }
 
-  private UUID getInitiatorId(List<StatusChange> statusChanges) {
+  /**
+   * returns the uuid of the initiator.
+   * @param statusChanges of the requisition
+   * @return uuid
+   */
+  public UUID getInitiatorId(List<StatusChange> statusChanges) {
     for (StatusChange statusChange : statusChanges) {
       if (statusChange.getStatus() == RequisitionStatus.INITIATED) {
         return statusChange.getAuthorId();
