@@ -65,6 +65,7 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -423,12 +424,18 @@ public class RequisitionService {
 
     Page<Requisition> requisitionsForApproval = Pagination.getPage(
             Collections.emptyList(), pageable);
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
+    List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
+        .getRoleAssignments(user.getId())
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .collect(toList());
 
-    if (!CollectionUtils.isEmpty(user.getRoleAssignments())) {
+    if (!CollectionUtils.isEmpty(roleAssignments)) {
       profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair<UUID, UUID>> programNodePairs = user
-              .getRoleAssignments()
+      Set<Pair<UUID, UUID>> programNodePairs = roleAssignments
               .stream()
+              .filter(item -> Objects.nonNull(item.getRole().getId()))
               .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
               .filter(item -> Objects.nonNull(item.getProgramId()))
               .filter(item -> null == programId || programId.equals(item.getProgramId()))

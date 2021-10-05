@@ -86,7 +86,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.OngoingStubbing;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
@@ -102,6 +102,7 @@ import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BasicRequisitionDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
 import org.openlmis.requisition.dto.OrderLineItemDto;
@@ -513,9 +514,19 @@ public class RequisitionServiceTest {
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
     assertEquals(2, requisitions.size());
 
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
 
     // when
     Page<Requisition> requisitionsForApproval =
@@ -529,16 +540,29 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldGetRequisitionsForApprovalWithProgramFilter() {
+    // given
     List<Requisition> requisitions = mockSearchRequisitionsForApproval();
     assertEquals(2, requisitions.size());
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
 
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
+
+    // when
     Page<Requisition> requisitionsForApproval = requisitionService
                 .getRequisitionsForApproval(user, program.getId(), pageRequest);
 
+    // then
     assertEquals(2, requisitionsForApproval.getTotalElements());
     assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
     assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(1)));
@@ -548,10 +572,6 @@ public class RequisitionServiceTest {
   public void shouldNotGetRequisitionsForApprovalWithoutApproveRight() {
     Set<RightDto> rights = new HashSet<>();
     role.setRights(rights);
-
-    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-        any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
@@ -565,10 +585,6 @@ public class RequisitionServiceTest {
     rights.add(approveRequisitionRight);
     role.setRights(rights);
 
-    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-        any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(emptyList(), pageRequest));
-
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
 
@@ -580,10 +596,6 @@ public class RequisitionServiceTest {
     Set<RightDto> rights = new HashSet<>();
     rights.add(approveRequisitionRight);
     role.setRights(rights);
-
-    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-        any(Set.class), any(Pageable.class)))
-        .thenReturn(getPage(emptyList(), pageRequest));
 
     Page<Requisition> requisitionsForApproval =
         requisitionService.getRequisitionsForApproval(user, null, pageRequest);
