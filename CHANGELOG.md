@@ -1,4 +1,4 @@
-8.3.3 / WIP
+8.3.3 / 2021-10-29
 ==================
 
 Improvements:
@@ -12,7 +12,8 @@ Bug fixes:
 ==================
 
 Improvements:
-*[TZUP-123] (https://openlmis.atlassian.net/browse/TZUP-123): persisting & email notification of unskipped requisition line items
+* [TZUP-123](https://openlmis.atlassian.net/browse/TZUP-123): persisting & email notification 
+  of unskipped requisition line items
 * [TZUP-122](https://openlmis.atlassian.net/browse/TZUP-122): changes to enable unskipping skipped requisition line tiems during approval
 * [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Set Hibernate batch insert properties
 
