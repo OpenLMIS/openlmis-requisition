@@ -4,6 +4,9 @@
 Breaking changes:
 * [OLMIS-7472](https://openlmis.atlassian.net/browse/OLMIS-7472): Upgrade postgres to v12
 
+Improvements:
+* [OLMIS-7521](https://openlmis.atlassian.net/browse/OLMIS-7521): Publish requisition service to central repository
+
  
 8.3.3 / 2021-10-29
 ==================
