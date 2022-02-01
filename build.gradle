@@ -241,7 +241,6 @@ test {
     }
 }
 
-//enable the lines below if you need to debug spring running in docker
 bootRun {
     jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]
 }
@@ -249,11 +248,6 @@ bootRun {
 signing {
     sign configurations.archives
 }
-
-// task javadocJar(type: Jar) {
-//     classifier = 'javadoc'
-//     from javadoc
-// }
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
@@ -266,7 +260,6 @@ task execJar(type: Jar) {
 }
 
 artifacts {
-//    archives javadocJar, sourcesJar, execJar
     archives sourcesJar, execJar
 }
 
