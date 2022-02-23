@@ -94,7 +94,7 @@ public class ApprovalNotifier extends BaseNotifier {
 
   @Value("${requisitionUri}")
   private String requisitionUri;
-  
+
   @Value("${publicUrl}")
   private String publicUrl;
 
@@ -279,9 +279,13 @@ public class ApprovalNotifier extends BaseNotifier {
     lineMessageParams.put("productName",lineItem.getProductName());
     lineMessageParams.put("approvedQuantity",
             String.valueOf(lineItem.getApprovedQuantity()));
-    lineMessageParams.put("remarks",lineItem.getRemarks());
-    return lineMessageParams;
+    if (lineItem.getRemarks() != null) {
+      lineMessageParams.put("remarks", lineItem.getRemarks());
+    } else {
+      lineMessageParams.put("remarks", "");
+    }
 
+    return lineMessageParams;
   }
 
   private Map<String, String> getUnskippedRequisitionValuesMap(ProcessingPeriodDto period,

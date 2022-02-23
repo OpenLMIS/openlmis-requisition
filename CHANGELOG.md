@@ -7,7 +7,9 @@ Breaking changes:
 Improvements:
 * [OLMIS-7521](https://openlmis.atlassian.net/browse/OLMIS-7521): Publish requisition service to central repository
 
- 
+Bug fixes:
+* [OLMIS-7499](https://openlmis.atlassian.net/browse/OLMIS-7499): Requisitions cannot be approved if the requisition template has no 'Remarks' column set.
+
 8.3.3 / 2021-10-29
 ==================
 
