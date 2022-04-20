@@ -6,8 +6,7 @@ Breaking changes:
 
 Improvements:
 * [OLMIS-7521](https://openlmis.atlassian.net/browse/OLMIS-7521): Publish requisition service to central repository
-* [OLMIS-7568](https://openlmis.atlassian.net/browse/OLMIS-7568): Use openlmis/dev:8
-* [OLMIS-7568](https://openlmis.atlassian.net/browse/OLMIS-7568): Use openlmis/service-base:6
+* [OLMIS-7568](https://openlmis.atlassian.net/browse/OLMIS-7568): Use openlmis/dev:8 and openlmis/service-base:6.1
 
 Bug fixes:
 * [OLMIS-7499](https://openlmis.atlassian.net/browse/OLMIS-7499): Requisitions cannot be approved if the requisition template has no 'Remarks' column set.
