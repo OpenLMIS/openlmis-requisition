@@ -160,7 +160,8 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
                 REQUESTED_QUANTITY));
       }
     }
-    if (!calcOrderQuantityDisplayed && !quantityDisplayed) {
+    if (!calcOrderQuantityDisplayed && !quantityDisplayed
+        && !template.getRequisitionReportOnly()) {
       rejectValue(errors, COLUMNS_MAP,
           new Message(ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED,
               REQUESTED_QUANTITY));
@@ -246,7 +247,8 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       AvailableRequisitionColumn.Importer definition = column.getColumnDefinition();
       Set<SourceType> sources = definition.getSources();
 
-      if (sources.size() > 1 && template.isColumnUserInput(definition.getName())) {
+      if (sources.size() > 1 && template.isColumnUserInput(definition.getName())
+          && !template.getRequisitionReportOnly()) {
         rejectIfNotDisplayed(
             errors, template, definition.getName(), COLUMNS_MAP,
             new Message(ERROR_MUST_BE_DISPLAYED, definition.getName())

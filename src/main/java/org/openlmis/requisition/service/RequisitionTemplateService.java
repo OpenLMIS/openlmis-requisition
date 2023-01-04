@@ -38,7 +38,7 @@ public class RequisitionTemplateService {
    */
   public RequisitionTemplate findTemplate(UUID programId, UUID facilityTypeId, boolean reportOnly) {
     RequisitionTemplate template = requisitionTemplateRepository
-        .findTemplate(programId, facilityTypeId);
+        .findTemplate(programId, facilityTypeId, reportOnly);
 
     if (null == template) {
       throw new ContentNotFoundMessageException(new Message(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));

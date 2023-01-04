@@ -79,4 +79,10 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
   public void setFacilityTypeIds(Set<UUID> facilityTypeIds) {
     // nothing to do
   }
+
+  @Override
+  public void setRequisitionReportOnly(Boolean requisitionReportOnly) {
+    // nothing to do
+  }
+
 }

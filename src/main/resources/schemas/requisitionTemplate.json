@@ -49,6 +49,14 @@
         "type": "object",
         "$ref": "referenceObjectDto.json"
       }
+    },
+    "requisitionReportOnly": {
+      "type": "boolean",
+      "title": "requisitionReportOnly"
+    },
+    "requisitionReportingOnly": {
+      "type": "boolean",
+      "title": "requisitionReportingOnly"
     }
   }
 }
