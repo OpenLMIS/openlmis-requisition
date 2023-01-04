@@ -401,13 +401,10 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   @Test
   public void shouldAllowDuplicationForRequisitionReportOnlyTemplateNames() {
-
     RequisitionTemplate template = generateInstance();
     template.requisitionReportingOnly();
     repository.saveAndFlush(template);
-
   }
-
 
   @Test(expected = DataIntegrityViolationException.class)
   public void shouldNotAllowToHaveTwoTemplatesWithSameProgramFacilityTypeAndReportOnly() {
