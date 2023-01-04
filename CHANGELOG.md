@@ -1,3 +1,9 @@
+8.3.5-SNAPSHOT / WIP
+==================
+
+New functionality added in a backwards-compatible manner:
+* [TZUP-274](https://openlmis.atlassian.net/browse/TZUP-274): Added backend code for requisition report only flag in requisition template.
+
 8.3.4 / 2022-04-21
 ==================
 
