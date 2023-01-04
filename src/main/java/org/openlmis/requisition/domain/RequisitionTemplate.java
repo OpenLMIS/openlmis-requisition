@@ -604,7 +604,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.templateAssignments.clear();
 
     requisitionReportingOnly  = true;
-
   }
 
   public interface Importer {
@@ -629,7 +628,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     boolean isRejectionReasonWindowVisible();
 
     Boolean getRequisitionReportOnly();
-
   }
 
   public interface Exporter {
@@ -652,6 +650,5 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setRejectionReasonWindowVisible(boolean rejectionReasonWindowVisible);
 
     void setRequisitionReportOnly(Boolean requisitionReportOnly);
-
   }
 }

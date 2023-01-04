@@ -277,7 +277,6 @@ public class RequisitionTemplateTest {
     assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds2.length));
     assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds2));
     assertThat(template.getRequisitionReportOnly(), is(requisitionReportOnly));
-
   }
 
   @Test

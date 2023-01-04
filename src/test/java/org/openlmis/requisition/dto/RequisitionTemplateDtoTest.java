@@ -84,6 +84,5 @@ public class RequisitionTemplateDtoTest {
     dto.setRequisitionReportOnly(requisitionReportOnly);
 
     assertThat(dto.getRequisitionReportOnly(), is(requisitionReportOnly));
-
   }
 }
