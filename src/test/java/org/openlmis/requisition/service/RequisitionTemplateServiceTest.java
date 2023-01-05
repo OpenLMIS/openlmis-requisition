@@ -26,6 +26,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLA
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 
 import java.util.UUID;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -53,6 +54,7 @@ public class RequisitionTemplateServiceTest {
 
   private UUID programId = UUID.randomUUID();
   private UUID facilityTypeId = UUID.randomUUID();
+
   private RequisitionTemplate template = new RequisitionTemplateDataBuilder()
       .withAllColumns()
       .withAdditionalQuantityRequiredColumnDisplayed()
@@ -60,7 +62,8 @@ public class RequisitionTemplateServiceTest {
 
   @Test
   public void findTemplateShouldReturnTemplate() {
-    when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
+    when(requisitionTemplateRepository.findTemplate(programId,
+        facilityTypeId, false))
         .thenReturn(template);
 
     RequisitionTemplate found = requisitionTemplateService.findTemplate(
@@ -73,7 +76,8 @@ public class RequisitionTemplateServiceTest {
   @Test
   public void findTemplateShouldReturnModifiedTemplateWhenReportOnlyIsTrue() {
     //given
-    when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
+    when(requisitionTemplateRepository.findTemplate(programId,
+        facilityTypeId, true))
         .thenReturn(template);
 
     //when
@@ -98,7 +102,8 @@ public class RequisitionTemplateServiceTest {
     exception.expect(ContentNotFoundMessageException.class);
     exception.expectMessage(containsString(ERROR_REQUISITION_TEMPLATE_NOT_FOUND));
 
-    when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
+    when(requisitionTemplateRepository.findTemplate(programId,
+        facilityTypeId, false))
         .thenReturn(null);
 
     requisitionTemplateService.findTemplate(programId, facilityTypeId, false);
@@ -109,7 +114,8 @@ public class RequisitionTemplateServiceTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(containsString(ERROR_REQUISITION_TEMPLATE_NOT_DEFINED));
 
-    when(requisitionTemplateRepository.findTemplate(programId, facilityTypeId))
+    when(requisitionTemplateRepository.findTemplate(programId,
+        facilityTypeId, false))
         .thenReturn(new RequisitionTemplateDataBuilder().build());
 
     requisitionTemplateService.findTemplate(programId, facilityTypeId, false);

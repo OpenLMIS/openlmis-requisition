@@ -33,8 +33,10 @@ public interface RequisitionTemplateRepository extends
       + "   INNER JOIN FETCH t.templateAssignments AS a"
       + " WHERE a.programId = :programId"
       + "   AND a.facilityTypeId = :facilityTypeId"
-      + "   AND t.archived IS FALSE")
+      + "   AND t.archived IS FALSE "
+      + " AND requisitionReportOnly = :requisitionReportOnly")
   RequisitionTemplate findTemplate(@Param("programId") UUID program,
-                                   @Param("facilityTypeId") UUID facilityType);
+                                   @Param("facilityTypeId") UUID facilityType,
+                                   @Param("requisitionReportOnly") Boolean requisitionReportOnly);
 
 }

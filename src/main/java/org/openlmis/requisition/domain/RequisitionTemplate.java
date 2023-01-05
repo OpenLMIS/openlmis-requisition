@@ -62,7 +62,8 @@ import org.openlmis.requisition.utils.Message;
 @Entity
 @Table(name = "requisition_templates")
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = false, exclude = {"programId", "facilityTypeIds"})
+@EqualsAndHashCode(callSuper = false, exclude = {"programId", "facilityTypeIds",
+    "requisitionReportOnly"})
 public class RequisitionTemplate extends BaseTimestampedEntity {
   public static final String SOURCE = "Source ";
   public static final String OPTION = "Option ";
@@ -97,6 +98,10 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Getter
   private boolean archived = false;
 
+  @Column(nullable = false)
+  @Getter
+  private boolean requisitionReportingOnly = false;
+
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
@@ -125,6 +130,11 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   RequisitionTemplate(UUID id) {
     this(id, null, false, null, null, null, false);
   }
+
+  @Transient
+  @Getter
+  @Column(nullable = false)
+  private Boolean requisitionReportOnly;
 
   /**
    * Allows creating requisition template with predefined columns.
@@ -177,6 +187,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.templateAssignments.addAll(source.templateAssignments);
     this.facilityTypeIds = new HashSet<>();
     this.facilityTypeIds.addAll(source.facilityTypeIds);
+    this.requisitionReportOnly = source.requisitionReportOnly;
   }
 
   /**
@@ -190,13 +201,16 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   }
 
   /**
-   * Add new assignment. Currently template can be assign to single program and several facility
-   * types.
+   * Add new assignment. Currently, template can be assigned to single program, several facility
+   * types and requisition report only.
    */
-  public void addAssignment(UUID programId, UUID facilityTypeId) {
+  public void addAssignment(UUID programId, UUID facilityTypeId,
+                            Boolean requisitionReportOnly) {
     setProgramId(programId);
     addFacilityTypeId(facilityTypeId);
-    templateAssignments.add(new RequisitionTemplateAssignment(programId, facilityTypeId, this));
+    setRequisitionReportOnly(requisitionReportOnly);
+    templateAssignments.add(new RequisitionTemplateAssignment(programId, facilityTypeId,
+        this, requisitionReportOnly));
   }
 
   public boolean isColumnFromPreviousRequisition(String name) {
@@ -450,10 +464,11 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     template.setModifiedDate(importer.getModifiedDate());
 
     if (importer.getFacilityTypeIds().isEmpty()) {
-      template.addAssignment(importer.getProgramId(), null);
+      template.addAssignment(importer.getProgramId(), null, false);
     } else {
       for (UUID facilityTypeId : importer.getFacilityTypeIds()) {
-        template.addAssignment(importer.getProgramId(), facilityTypeId);
+        template.addAssignment(importer.getProgramId(), facilityTypeId,
+            importer.getRequisitionReportOnly());
       }
     }
 
@@ -475,16 +490,19 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setProgramId(programId);
     exporter.setFacilityTypeIds(facilityTypeIds);
     exporter.setRejectionReasonWindowVisible(rejectionReasonWindowVisible);
+    exporter.setRequisitionReportOnly(requisitionReportOnly);
   }
 
   @PostLoad
   private void postLoad() {
     programId = null;
     facilityTypeIds = new HashSet<>();
+    requisitionReportOnly = false;
 
     for (RequisitionTemplateAssignment assignment : templateAssignments) {
       setProgramId(assignment.getProgramId());
       addFacilityTypeId(assignment.getFacilityTypeId());
+      setRequisitionReportOnly(assignment.getRequisitionReportOnly());
     }
   }
 
@@ -502,13 +520,18 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     Optional.ofNullable(facilityTypeId).ifPresent(id -> facilityTypeIds.add(id));
   }
 
+  private synchronized void setRequisitionReportOnly(Boolean requisitionReportOnly) {
+    this.requisitionReportOnly = requisitionReportOnly;
+  }
+
   private void addAssignments(Set<RequisitionTemplateAssignment> templateAssignments) {
     Set<RequisitionTemplateAssignment> safe = Optional
         .ofNullable(templateAssignments)
         .orElse(Collections.emptySet())
         .stream()
         .map(elem ->
-            new RequisitionTemplateAssignment(elem.getProgramId(), elem.getFacilityTypeId(), this))
+            new RequisitionTemplateAssignment(elem.getProgramId(), elem.getFacilityTypeId(), this,
+                elem.getRequisitionReportOnly()))
         .collect(Collectors.toSet());
 
     this.templateAssignments.addAll(safe);
@@ -571,6 +594,18 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     }
   }
 
+  /**
+   * Allow requisitionReportOnly template.
+   * */
+  public void requisitionReportingOnly() {
+    // we don't need assignments for archived templates. If there is any requisition in
+    // the system that uses the given template we retrieve it by ID field not by
+    // assignment
+    this.templateAssignments.clear();
+
+    requisitionReportingOnly  = true;
+  }
+
   public interface Importer {
     UUID getId();
 
@@ -591,6 +626,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     Set<UUID> getFacilityTypeIds();
 
     boolean isRejectionReasonWindowVisible();
+
+    Boolean getRequisitionReportOnly();
   }
 
   public interface Exporter {
@@ -611,5 +648,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setFacilityTypeIds(Set<UUID> facilityTypeIds);
 
     void setRejectionReasonWindowVisible(boolean rejectionReasonWindowVisible);
+
+    void setRequisitionReportOnly(Boolean requisitionReportOnly);
   }
 }

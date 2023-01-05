@@ -34,8 +34,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
@@ -59,7 +60,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   private String name;
   private boolean populateStockOnHandFromStockCards;
   private Map<String, RequisitionTemplateColumn> columnsMap;
-  private Set<Pair<UUID, UUID>> templateAssignments;
+  private Set<Triple<UUID, UUID, Boolean>> templateAssignments;
   private Boolean rejectionReasonWindowVisible;
 
   /**
@@ -80,8 +81,13 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
     templateAssignments = new HashSet<>();
   }
 
-  public RequisitionTemplateDataBuilder withAssignment(UUID programId, UUID facilityTypeId) {
-    templateAssignments.add(new ImmutablePair<>(programId, facilityTypeId));
+  /**
+   * Sets all requisition assigned columns.
+   */
+  public RequisitionTemplateDataBuilder withAssignment(UUID programId, UUID facilityTypeId,
+                                                       Boolean requisitionReportOnly) {
+    templateAssignments.add(new ImmutableTriple<>(programId, facilityTypeId,
+        requisitionReportOnly));
     return this;
   }
 
@@ -96,8 +102,9 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
 
-    for (Pair<UUID, UUID> assignment : templateAssignments) {
-      template.addAssignment(assignment.getLeft(), assignment.getRight());
+    for (Triple<UUID, UUID, Boolean> assignment : templateAssignments) {
+      template.addAssignment(assignment.getLeft(), assignment.getMiddle(),
+          assignment.getRight());
     }
 
     return template;

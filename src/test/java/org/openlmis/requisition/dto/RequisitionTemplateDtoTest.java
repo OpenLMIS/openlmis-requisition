@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import static org.apache.commons.lang3.RandomUtils.nextBoolean;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -72,5 +73,16 @@ public class RequisitionTemplateDtoTest {
         .buildAsDto();
 
     assertThat(dto.getFacilityTypeIds(), hasSize(0));
+  }
+
+  @Test
+  public void shouldReturnRequisitionReportOnly() {
+    Boolean requisitionReportOnly = nextBoolean();
+
+    RequisitionTemplateDto dto = new RequisitionTemplateDataBuilder()
+        .buildAsDto();
+    dto.setRequisitionReportOnly(requisitionReportOnly);
+
+    assertThat(dto.getRequisitionReportOnly(), is(requisitionReportOnly));
   }
 }

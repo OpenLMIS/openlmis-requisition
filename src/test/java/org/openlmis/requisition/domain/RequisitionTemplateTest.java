@@ -36,10 +36,12 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_MAP_TAGS_D
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMNS_TAG_NOT_SET;
 
 import com.google.common.collect.Lists;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -139,9 +141,12 @@ public class RequisitionTemplateTest {
             new RequisitionTemplateColumnDataBuilder().build(),
             new RequisitionTemplateColumnDataBuilder().withName("another-column").build())
         .withPrefabValues(RequisitionTemplateAssignment.class,
-            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null),
-            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null))
-        .withIgnoredFields("id", "createdDate", "modifiedDate", "programId", "facilityTypeIds")
+            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null,
+                new Random().nextBoolean()),
+            new RequisitionTemplateAssignment(UUID.randomUUID(), UUID.randomUUID(), null,
+                new Random().nextBoolean()))
+        .withIgnoredFields("id", "createdDate", "modifiedDate", "programId", "facilityTypeIds",
+            "requisitionReportOnly")
         .verify();
   }
 
@@ -192,6 +197,7 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldAddAssignment() {
+    Boolean requisitionReportOnly = new Random().nextBoolean();
     UUID programId = UUID.randomUUID();
     Set<UUID> facilityTypeId = IntStream
         .range(0, 4)
@@ -199,7 +205,7 @@ public class RequisitionTemplateTest {
         .collect(Collectors.toSet());
 
     RequisitionTemplate template = new RequisitionTemplate();
-    facilityTypeId.forEach(id -> template.addAssignment(programId, id));
+    facilityTypeId.forEach(id -> template.addAssignment(programId, id, requisitionReportOnly));
 
     assertThat(template.getProgramId(), is(programId));
     assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeId.size()));
@@ -212,14 +218,15 @@ public class RequisitionTemplateTest {
     expected.expectMessage(containsString(ERROR_CANNOT_ASSIGN_TEMPLATE_TO_SEVERAL_PROGRAMS));
 
     RequisitionTemplate template = new RequisitionTemplate();
-    template.addAssignment(UUID.randomUUID(), null);
-    template.addAssignment(UUID.randomUUID(), null);
+    template.addAssignment(UUID.randomUUID(), null, false);
+    template.addAssignment(UUID.randomUUID(), null, false);
   }
 
   @Test
   public void shouldFacilityTypeIdsShouldNotContainNullValue() {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
-        .withAssignment(UUID.randomUUID(), null)
+        .withAssignment(UUID.randomUUID(), null,
+            new Random().nextBoolean())
         .build();
 
     assertThat(template.getFacilityTypeIds(), hasSize(0));
@@ -227,6 +234,7 @@ public class RequisitionTemplateTest {
 
   @Test
   public void shouldContainCorrectAssignmentsAfterUpdate() {
+    Boolean requisitionReportOnly = new Random().nextBoolean();
     UUID programId = UUID.randomUUID();
     UUID[] facilityTypeIds = IntStream
         .range(0, 10)
@@ -248,22 +256,27 @@ public class RequisitionTemplateTest {
     RequisitionTemplateDataBuilder templateBuilder1 = new RequisitionTemplateDataBuilder();
     Arrays
         .stream(facilityTypeIds1)
-        .forEach(facilityTypeId -> templateBuilder1.withAssignment(programId, facilityTypeId));
+        .forEach(facilityTypeId -> templateBuilder1.withAssignment(programId, facilityTypeId,
+            requisitionReportOnly
+            ));
 
     RequisitionTemplate template = templateBuilder1.build();
     assertThat(template.getProgramId(), is(programId));
     assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds1.length));
     assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds1));
+    assertThat(template.getRequisitionReportOnly(), is(requisitionReportOnly));
 
     RequisitionTemplateDataBuilder templateBuilder2 = new RequisitionTemplateDataBuilder();
     Arrays
         .stream(facilityTypeIds2)
-        .forEach(facilityTypeId -> templateBuilder2.withAssignment(programId, facilityTypeId));
+        .forEach(facilityTypeId -> templateBuilder2.withAssignment(programId, facilityTypeId,
+            requisitionReportOnly));
 
     template.updateFrom(templateBuilder2.build());
     assertThat(template.getProgramId(), is(programId));
     assertThat(template.getFacilityTypeIds(), hasSize(facilityTypeIds2.length));
     assertThat(template.getFacilityTypeIds(), containsInAnyOrder(facilityTypeIds2));
+    assertThat(template.getRequisitionReportOnly(), is(requisitionReportOnly));
   }
 
   @Test

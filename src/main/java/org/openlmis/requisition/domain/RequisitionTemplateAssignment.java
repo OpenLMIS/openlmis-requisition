@@ -55,6 +55,10 @@ public class RequisitionTemplateAssignment extends BaseEntity {
     return null == template ? null : template.getId();
   }
 
+  @Column(nullable = false)
+  @Getter
+  private Boolean requisitionReportOnly;
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -66,7 +70,8 @@ public class RequisitionTemplateAssignment extends BaseEntity {
 
       return Objects.equals(this.getProgramId(), that.getProgramId())
           && Objects.equals(this.getFacilityTypeId(), that.getFacilityTypeId())
-          && Objects.equals(this.getTemplateId(), that.getTemplateId());
+          && Objects.equals(this.getTemplateId(), that.getTemplateId())
+          && Objects.equals(this.getRequisitionReportOnly(), that.getRequisitionReportOnly());
     }
 
     return false;
@@ -74,6 +79,7 @@ public class RequisitionTemplateAssignment extends BaseEntity {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getProgramId(), getFacilityTypeId(), getTemplateId());
+    return Objects.hash(getProgramId(), getFacilityTypeId(), getTemplateId(),
+        getRequisitionReportOnly());
   }
 }

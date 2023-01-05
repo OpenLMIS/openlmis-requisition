@@ -66,7 +66,9 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.javers.common.collections.Sets;
 import org.junit.Test;
@@ -117,6 +119,7 @@ public class RequisitionTemplateDtoValidatorTest {
   @Test
   public void shouldRejectIfRequestedQuantityAndExplanationIsDisplayedValuesAreDifferent() {
     RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    requisitionTemplate.setRequisitionReportOnly(false);
     requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setIsDisplayed(false);
     requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY).setSource(USER_INPUT);
     requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setSource(USER_INPUT);
@@ -131,6 +134,7 @@ public class RequisitionTemplateDtoValidatorTest {
   @Test
   public void shouldRejectWhenRequestedQuantityAndCalcOrderQuantityAreNotDisplayed() {
     RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    requisitionTemplate.setRequisitionReportOnly(false);
     requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY).setIsDisplayed(false);
     requisitionTemplate.getColumnsMap().get(REQUESTED_QUANTITY_EXPLANATION).setIsDisplayed(false);
     requisitionTemplate.getColumnsMap().get(CALCULATED_ORDER_QUANTITY).setIsDisplayed(false);
@@ -408,6 +412,7 @@ public class RequisitionTemplateDtoValidatorTest {
         .build();
 
     RequisitionTemplateDto dto = buildDto(template);
+    dto.setRequisitionReportOnly(false);
     dto.getColumnsMap().get(STOCK_ON_HAND).setIsDisplayed(false);
     dto.getColumnsMap().get(STOCK_ON_HAND).setSource(USER_INPUT);
 
@@ -603,7 +608,7 @@ public class RequisitionTemplateDtoValidatorTest {
             Sets.asSet(USER_INPUT))
         .withColumn(ADDITIONAL_QUANTITY_REQUIRED, "Z", USER_INPUT,
             Sets.asSet(USER_INPUT), false)
-        .withAssignment(UUID.randomUUID(), UUID.randomUUID());
+        .withAssignment(UUID.randomUUID(), UUID.randomUUID(), new Random().nextBoolean());
   }
 
   private RequisitionTemplateDto generateTemplate() {

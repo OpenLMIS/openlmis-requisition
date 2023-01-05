@@ -72,6 +72,10 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
   @Setter
   private boolean rejectionReasonWindowVisible;
 
+  @Getter
+  @Setter
+  private Boolean requisitionReportOnly;
+
   @Override
   @JsonIgnore
   public UUID getProgramId() {

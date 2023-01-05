@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -271,7 +272,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void testSearchRequisitionTemplatesByAllParameters() {
     for (int reqTemplateCount = 0; reqTemplateCount < 5; reqTemplateCount++) {
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.addAssignment(UUID.randomUUID(), UUID.randomUUID());
+      requisitionTemplate.addAssignment(UUID.randomUUID(), UUID.randomUUID(),
+          new Random().nextBoolean());
       requisitionTemplates.add(repository.save(requisitionTemplate));
     }
 
@@ -283,8 +285,11 @@ public class RequisitionTemplateRepositoryIntegrationTest
         .getFacilityTypeIds()
         .iterator()
         .next();
+    Boolean requisitionReportOnly = requisitionTemplates
+        .get(0).getRequisitionReportOnly();
 
-    RequisitionTemplate template = repository.findTemplate(programId, facilityTypeId);
+    RequisitionTemplate template = repository.findTemplate(programId, facilityTypeId,
+        requisitionReportOnly);
 
     assertNotNull(template);
     assertThat(template.getProgramId(), is(programId));
@@ -333,13 +338,14 @@ public class RequisitionTemplateRepositoryIntegrationTest
   public void shouldNotAllowToHaveTwoTemplatesWithSameProgramAndFacilityType() {
     UUID programId = UUID.randomUUID();
     UUID facilityTypeId = UUID.randomUUID();
+    Boolean requisitionReportOnly = new Random().nextBoolean();
 
     RequisitionTemplate template = generateInstance();
-    template.addAssignment(programId, facilityTypeId);
+    template.addAssignment(programId, facilityTypeId, requisitionReportOnly);
     repository.saveAndFlush(template);
 
     template = generateInstance();
-    template.addAssignment(programId, facilityTypeId);
+    template.addAssignment(programId, facilityTypeId, requisitionReportOnly);
     repository.saveAndFlush(template);
   }
 
@@ -350,7 +356,8 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
     for (int i = 0; i < size; ++i) {
       RequisitionTemplate requisitionTemplate = generateInstance();
-      requisitionTemplate.addAssignment(UUID.randomUUID(), null);
+      requisitionTemplate.addAssignment(UUID.randomUUID(), null,
+          false);
 
       if (i % 2 == 0) {
         requisitionTemplate.archive();
@@ -390,5 +397,39 @@ public class RequisitionTemplateRepositoryIntegrationTest
 
   private AvailableRequisitionColumnOption getOption(String uuid) {
     return availableRequisitionColumnOptionRepository.findById(UUID.fromString(uuid)).orElse(null);
+  }
+
+  @Test
+  public void shouldAllowDuplicationForRequisitionReportOnlyTemplateNames() {
+    RequisitionTemplate template = generateInstance();
+    template.requisitionReportingOnly();
+    repository.saveAndFlush(template);
+  }
+
+  @Test(expected = DataIntegrityViolationException.class)
+  public void shouldNotAllowToHaveTwoTemplatesWithSameProgramFacilityTypeAndReportOnly() {
+    UUID programId = UUID.randomUUID();
+    UUID facilityTypeId = UUID.randomUUID();
+
+    RequisitionTemplate template = generateInstance();
+    template.addAssignment(programId, facilityTypeId, true);
+    repository.saveAndFlush(template);
+
+    template = generateInstance();
+    template.addAssignment(programId, facilityTypeId, true);
+    repository.saveAndFlush(template);
+  }
+
+  @Test
+  public void shouldAllowDuplicationForReportingOnlyTemplateNames() {
+    RequisitionTemplate template = generateInstance();
+    template.requisitionReportingOnly();
+    repository.saveAndFlush(template);
+
+    RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
+        .build();
+    newTemplate.updateFrom(template);
+
+    repository.saveAndFlush(newTemplate);
   }
 }

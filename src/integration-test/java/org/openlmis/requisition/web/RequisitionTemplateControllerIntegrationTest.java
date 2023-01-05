@@ -33,10 +33,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
@@ -67,7 +69,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   @Before
   public void setUp() {
     template = new RequisitionTemplateDataBuilder()
-        .withAssignment(UUID.randomUUID(), UUID.randomUUID())
+        .withAssignment(UUID.randomUUID(), UUID.randomUUID(),
+            new Random().nextBoolean())
         .withRequiredColumns()
         .build();
     templateDto = dtoBuilder.newInstance(template);
@@ -88,7 +91,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldGetActiveRequisitionTemplates() {
     // given
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
-        .withAssignment(UUID.randomUUID(), null)
+        .withAssignment(UUID.randomUUID(), null,
+            new Random().nextBoolean())
         .build();
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
@@ -115,43 +119,45 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
   public void shouldNotAllowPaginationWithZeroSize() {
     // given
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
-            .withAssignment(UUID.randomUUID(), null)
-            .build();
+        .withAssignment(UUID.randomUUID(), null,
+            new Random().nextBoolean())
+        .build();
     Pageable page = PageRequest.of(0, 0);
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
 
     // when
     restAssured.given()
-            .queryParam("page", page.getPageNumber())
-            .queryParam("size", page.getPageSize())
-            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .when()
-            .get(RESOURCE_URL)
-            .then()
-            .statusCode(400);
+        .queryParam("page", page.getPageNumber())
+        .queryParam("size", page.getPageSize())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowPaginationWithoutSize() {
     // given
     RequisitionTemplate another = new RequisitionTemplateDataBuilder()
-            .withAssignment(UUID.randomUUID(), null)
-            .build();
+        .withAssignment(UUID.randomUUID(), null,
+            new Random().nextBoolean())
+        .build();
     Pageable page = PageRequest.of(0, 0);
     List<RequisitionTemplate> templates = Arrays.asList(template, another);
     given(requisitionTemplateRepository.getActiveTemplates()).willReturn(templates);
 
     // when
     restAssured.given()
-            .queryParam("page", page.getPageNumber())
-            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .when()
-            .get(RESOURCE_URL)
-            .then()
-            .statusCode(400);
+        .queryParam("page", page.getPageNumber())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400);
   }
 
   // POST /api/requisitionTemplates
@@ -258,7 +264,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
         .withName("new_test_name")
         .withNumberOfPeriodsToAverage(100)
-        .withAssignment(template.getProgramId(), null)
+        .withAssignment(template.getProgramId(), null,
+            new Random().nextBoolean())
         .build();
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
@@ -293,7 +300,8 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .willReturn(Collections.singletonList(mock(Requisition.class)));
 
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
-        .withAssignment(template.getProgramId(), UUID.randomUUID())
+        .withAssignment(template.getProgramId(), UUID.randomUUID(),
+            new Random().nextBoolean())
         .build();
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
