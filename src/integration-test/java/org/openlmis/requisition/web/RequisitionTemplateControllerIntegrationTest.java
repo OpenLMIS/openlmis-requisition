@@ -301,11 +301,11 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
 
     RequisitionTemplate newTemplate = new RequisitionTemplateDataBuilder()
         .withAssignment(template.getProgramId(), UUID.randomUUID(),
-            new Random().nextBoolean())
+            false)
         .build();
 
     RequisitionTemplateDto newTemplateDto = dtoBuilder.newInstance(newTemplate);
-
+    newTemplateDto.setRequisitionReportOnly(false);
     // when
     RequisitionTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

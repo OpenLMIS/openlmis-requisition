@@ -368,6 +368,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.numberOfPeriodsToAverage = requisitionTemplate.numberOfPeriodsToAverage;
     this.populateStockOnHandFromStockCards = requisitionTemplate.populateStockOnHandFromStockCards;
     this.name = requisitionTemplate.name;
+    this.rejectionReasonWindowVisible = requisitionTemplate.rejectionReasonWindowVisible;
 
     addColumns(requisitionTemplate.columnsMap);
     addAssignments(requisitionTemplate.templateAssignments);

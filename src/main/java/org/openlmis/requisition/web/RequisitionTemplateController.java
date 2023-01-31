@@ -146,7 +146,8 @@ public class RequisitionTemplateController extends BaseController {
       LOGGER.info("Creating new requisition template");
       toSave = template;
       toSave.setId(null);
-    } else if (!requisitionRepository.findByTemplateId(toUpdate.getId()).isEmpty()) {
+    } else if (!requisitionRepository.findByTemplateId(toUpdate.getId()).isEmpty()
+        && !template.getRequisitionReportOnly()) {
       LOGGER.info("Archiving requisition template {}", toUpdate.getId());
       toUpdate.archive();
       requisitionTemplateRepository.saveAndFlush(toUpdate);
@@ -161,9 +162,7 @@ public class RequisitionTemplateController extends BaseController {
     }
 
     toSave = requisitionTemplateRepository.save(toSave);
-
     LOGGER.debug("Saved requisitionTemplate with id: " + toSave.getId());
-
     return dtoBuilder.newInstance(toSave);
   }
 
