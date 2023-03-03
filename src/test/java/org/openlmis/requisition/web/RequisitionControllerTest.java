@@ -285,6 +285,7 @@ public class RequisitionControllerTest {
   private UUID uuid3 = UUID.fromString("00000000-0000-0000-0000-000000000003");
   private UUID uuid4 = UUID.fromString("00000000-0000-0000-0000-000000000004");
   private UUID uuid5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
+  private UUID uuid6 = UUID.fromString("00000000-0000-0000-0000-000000000006");
   private ProcessingPeriodDto processingPeriod = mock(ProcessingPeriodDto.class);
   private FacilityDto facility = mock(FacilityDto.class);
   private BasicRequisitionDto basicRequisitionDto = new BasicRequisitionDto();
@@ -377,7 +378,7 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
 
     Collection<RequisitionPeriodDto> periods =
-        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true);
+        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true, false);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, true);
     verifyZeroInteractions(periodService, requisitionRepository);
@@ -398,7 +399,7 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false);
+    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false, false);
   }
 
   @Test
@@ -406,7 +407,7 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false);
+    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false, false);
   }
 
   @Test
@@ -1311,6 +1312,41 @@ public class RequisitionControllerTest {
         assertTrue(vme.getMessage().contains("requisition.error.columnNotInTemplate"));
       }
     }
+  }
+
+  @Test
+  public void shouldReturnOnlyPeriodsWithStartDateAfterOrEqualsToProgramSupportStartDate() {
+    when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
+            .thenReturn(ValidationResult.success());
+    doNothing().when(facilitySupportsProgramHelper).checkIfFacilitySupportsProgram(
+            facilityUuid, programUuid);
+    List<RequisitionPeriodDto> periodDtos = generateProcessingPeriods();
+    LocalDate pastDate = LocalDate.now().minusYears(1);
+    List<RequisitionPeriodDto> periodsWithDates = periodDtos
+            .stream()
+            .peek(p -> p.setStartDate(pastDate))
+            .collect(Collectors.toList());
+
+    LocalDate futureDate = LocalDate.now().plusYears(1);
+    RequisitionPeriodDto futurePeriod = new RequisitionPeriodDtoDataBuilder()
+            .withId(uuid6)
+            .buildAsDto();
+    futurePeriod.setStartDate(futureDate);
+
+    periodsWithDates.add(futurePeriod);
+    when(periodService.getPeriods(programUuid, facilityUuid, false)).thenReturn(periodsWithDates);
+
+    SupportedProgramDto supportedProgram = new SupportedProgramDtoDataBuilder()
+            .withSupportStartDate(LocalDate.now())
+            .buildAsDto();
+    when(facilitySupportsProgramHelper.getSupportedProgram(facilityUuid, programUuid))
+            .thenReturn(supportedProgram);
+
+    Collection<RequisitionPeriodDto> result =
+            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true);
+
+    verify(periodService).getPeriods(programUuid, facilityUuid, false);
+    assertEquals(1, result.size());
   }
 
   private void mockDependenciesForSubmit() {
