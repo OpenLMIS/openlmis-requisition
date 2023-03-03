@@ -631,8 +631,6 @@ public class RequisitionController extends BaseRequisitionController {
     stopProfiler(profiler);
   }
 
-
-
   private SupervisoryNodeDto getSupervisoryNodeDto(Profiler profiler, Requisition requisition) {
     profiler.start("GET_SUPERVISORY_NODE");
     return supervisoryNodeService
