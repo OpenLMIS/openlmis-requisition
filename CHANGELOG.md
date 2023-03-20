@@ -4,6 +4,9 @@
 New functionality added in a backwards-compatible manner:
 * [TZUP-274](https://openlmis.atlassian.net/browse/TZUP-274): Added backend code for requisition report only flag in requisition template.
 
+Bug fixes:
+* [OLMIS-7625](https://openlmis.atlassian.net/browse/OLMIS-7625): Fixed setting Start Date for a specific program in a specific facility.
+
 8.3.4 / 2022-04-21
 ==================
 

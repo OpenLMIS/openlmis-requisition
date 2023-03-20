@@ -15,12 +15,14 @@
 
 package org.openlmis.requisition.web;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,6 +41,7 @@ import org.openlmis.requisition.dto.RequisitionPeriodDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
@@ -131,6 +134,8 @@ public class RequisitionController extends BaseRequisitionController {
    * @param programId UUID of the Program.
    * @param facilityId UUID of the Facility.
    * @param emergency true for periods to initiate an emergency requisition; false otherwise.
+   * @param unfinished true to skip periods that started before the start of the program for
+   *                   the facility; false otherwise.
    * @return processing periods.
    */
   @GetMapping(RESOURCE_URL + "/periodsForInitiate")
@@ -139,7 +144,8 @@ public class RequisitionController extends BaseRequisitionController {
   public Collection<RequisitionPeriodDto> getProcessingPeriodIds(
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
-      @RequestParam(value = "emergency") boolean emergency) {
+      @RequestParam(value = "emergency") boolean emergency,
+      @RequestParam(value = "unfinished", required = false) boolean unfinished) {
     Profiler profiler = getProfiler("GET_PERIODS_FOR_INITIATE_REQUISITION", programId,
         facilityId, emergency);
 
@@ -160,6 +166,17 @@ public class RequisitionController extends BaseRequisitionController {
     Collection<RequisitionPeriodDto> periods = periodService.getPeriods(
         programId, facilityId, emergency
     );
+
+    if (unfinished) {
+      SupportedProgramDto program = facilitySupportsProgramHelper.getSupportedProgram(facilityId,
+              programId);
+      LocalDate programStartDate = program.getSupportStartDate();
+      if (programStartDate != null) {
+        periods = periods.stream()
+                .filter(p -> !p.getStartDate().isBefore(programStartDate))
+                .collect(Collectors.toList());
+      }
+    }
 
     stopProfiler(profiler, periods);
 

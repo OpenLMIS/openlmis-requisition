@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -151,6 +152,23 @@ public class FacilitySupportsProgramHelperTest {
     facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
 
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facilityId, programId);
+  }
+
+  @Test
+  public void shouldReturnProgramWhenItIsSupported() {
+    SupportedProgramDto supportedProgramDto = new SupportedProgramDtoDataBuilder()
+            .withId(programId)
+            .withSupportActive(true)
+            .withProgramActive(true)
+            .withSupportStartDate(SUPPORT_START_DATE)
+            .buildAsDto();
+
+    facilityDto.setSupportedPrograms(Collections.singletonList(supportedProgramDto));
+
+    SupportedProgramDto result = facilitySupportsProgramHelper
+            .getSupportedProgram(facilityId, programId);
+
+    assertEquals(supportedProgramDto, result);
   }
 
 }
