@@ -171,10 +171,11 @@ public class RequisitionController extends BaseRequisitionController {
       SupportedProgramDto program = facilitySupportsProgramHelper.getSupportedProgram(facilityId,
               programId);
       LocalDate programStartDate = program.getSupportStartDate();
-      periods = periods.stream()
-              .filter(p -> p.getStartDate().isEqual(programStartDate)
-                      || p.getStartDate().isAfter(programStartDate))
-              .collect(Collectors.toList());
+      if (programStartDate != null) {
+        periods = periods.stream()
+                .filter(p -> !p.getStartDate().isBefore(programStartDate))
+                .collect(Collectors.toList());
+      }
     }
 
     stopProfiler(profiler, periods);
