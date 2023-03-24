@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class FacilitySupportsProgramHelper {
+public class FacilitySupportsProgramHelper {
 
   @Autowired
   FacilityReferenceDataService facilityReferenceDataService;
@@ -80,7 +80,7 @@ class FacilitySupportsProgramHelper {
    * Find a supported program entry from the given facilityId for the given program. If entry does
    * not exist the {@code null} value will be returned.
    */
-  SupportedProgramDto getSupportedProgram(UUID facilityId, UUID programId) {
+  public SupportedProgramDto getSupportedProgram(UUID facilityId, UUID programId) {
     FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
     return getSupportedProgram(facility, programId);
   }
