@@ -32,10 +32,12 @@ import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.web.FacilitySupportsProgramHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -54,6 +56,9 @@ public class PeriodService {
 
   @Autowired
   private RequisitionRepository requisitionRepository;
+
+  @Autowired
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   public Collection<ProcessingPeriodDto> search(UUID scheduleId, LocalDate endDate) {
     return periodReferenceDataService.search(scheduleId, endDate);
@@ -78,18 +83,22 @@ public class PeriodService {
   public List<ProcessingPeriodDto> getCurrentPeriods(UUID programId, UUID facilityId) {
     Collection<ProcessingPeriodDto> periods = searchByProgramAndFacility(programId, facilityId);
 
-    return periods
-        .stream()
-        .filter(period -> {
-          // check if period is in current date. For example if currently we have
-          // 10th November 2016 then only periods that have start date before (or equal to) current
-          // date and end date after (or equal to) current date should be processed.
-          LocalDate currentDate = LocalDate.now();
+    LocalDate programStartDate = getProgramStartDate(programId, facilityId);
 
-          return !currentDate.isBefore(period.getStartDate())
-              && !currentDate.isAfter(period.getEndDate());
-        })
-        .collect(Collectors.toList());
+    return periods
+            .stream()
+            .filter(period -> {
+              // check if period is in current date. For example if currently we have
+              // 10th November 2016 then only periods that have start date before (or equal to)
+              // current date and end date after (or equal to) current date should be processed.
+              LocalDate currentDate = LocalDate.now();
+
+              return !currentDate.isBefore(period.getStartDate())
+                      && !currentDate.isAfter(period.getEndDate())
+                      && (programStartDate == null
+                      || !period.getStartDate().isBefore(programStartDate));
+            })
+            .collect(Collectors.toList());
   }
 
   /**
@@ -177,7 +186,7 @@ public class PeriodService {
    * Find recent periods for the given period.
    *
    * @param periodId UUID of period
-   * @param amount of previous periods
+   * @param amount   of previous periods
    * @return list previous period or {@code null} if not found.
    */
   List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
@@ -266,6 +275,12 @@ public class PeriodService {
     if (periods != null) {
       RequisitionStatus previousStatus = null;
 
+      LocalDate programStartDate = getProgramStartDate(programId, facilityId);
+      if (programStartDate != null) {
+        periods = periods.stream()
+                .filter(p -> !p.getStartDate().isBefore(programStartDate))
+                .collect(Collectors.toList());
+      }
       for (ProcessingPeriodDto dto : periods) {
         // There is always maximum one regular requisition for given period, facility and program
         List<Requisition> requisitions = requisitionRepository.searchRequisitions(
@@ -285,6 +300,12 @@ public class PeriodService {
     }
 
     return result;
+  }
+
+  private LocalDate getProgramStartDate(UUID programId, UUID facilityId) {
+    SupportedProgramDto program = facilitySupportsProgramHelper.getSupportedProgram(facilityId,
+            programId);
+    return program.getSupportStartDate();
   }
 
   private void setRequisitionPeriodStatusAndId(RequisitionPeriodDto requisitionPeriodDto,

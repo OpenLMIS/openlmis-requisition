@@ -19,13 +19,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -145,7 +144,9 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
       @RequestParam(value = "emergency") boolean emergency,
-      @RequestParam(value = "unfinished", required = false) boolean unfinished) {
+      @RequestParam(value = "unfinished", required = false) boolean unfinished,
+      HttpServletRequest request,
+      HttpServletResponse response) {
     Profiler profiler = getProfiler("GET_PERIODS_FOR_INITIATE_REQUISITION", programId,
         facilityId, emergency);
 
@@ -172,9 +173,15 @@ public class RequisitionController extends BaseRequisitionController {
               programId);
       LocalDate programStartDate = program.getSupportStartDate();
       if (programStartDate != null) {
-        periods = periods.stream()
-                .filter(p -> !p.getStartDate().isBefore(programStartDate))
-                .collect(Collectors.toList());
+        Collection<RequisitionPeriodDto> unfinishedPeriods = new LinkedList<>();
+        periods.forEach(p -> {
+          if (!p.getStartDate().isBefore(programStartDate)) {
+            unfinishedPeriods.add(p);
+          } else {
+            skipInitiatedAndSubmittedRequisition(request, response, p);
+          }
+        });
+        periods = unfinishedPeriods;
       }
     }
 
@@ -357,28 +364,7 @@ public class RequisitionController extends BaseRequisitionController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
-
-    Requisition requisition = findRequisition(requisitionId, profiler);
-
-    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
-
-    validateIdempotencyKey(request, profiler);
-
-    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
-    UserDto user = getCurrentUser(profiler);
-
-    requisition.skip(program.getPeriodsSkippable(), user.getId());
-    Requisition skippedRequisition = requisitionRepository.save(requisition);
-
-    callStatusChangeProcessor(profiler, skippedRequisition);
-
-    BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
-
-    addLocationHeader(request, response, dto.getId(), profiler);
-
-    stopProfiler(profiler, dto);
-    return dto;
+    return skipRequisitionById(requisitionId, request, response);
   }
 
   /**
@@ -647,6 +633,40 @@ public class RequisitionController extends BaseRequisitionController {
     profiler.start("GET_SUPPLY_LINE");
     return supplyLineReferenceDataService.search(
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
+  }
+
+  private BasicRequisitionDto skipRequisitionById(UUID requisitionId, HttpServletRequest request,
+                                                  HttpServletResponse response) {
+    Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
+
+    Requisition requisition = findRequisition(requisitionId, profiler);
+
+    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
+
+    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
+    UserDto user = getCurrentUser(profiler);
+
+    requisition.skip(program.getPeriodsSkippable(), user.getId());
+    Requisition skippedRequisition = requisitionRepository.save(requisition);
+
+    callStatusChangeProcessor(profiler, skippedRequisition);
+
+    BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
+
+    addLocationHeader(request, response, dto.getId(), profiler);
+
+    stopProfiler(profiler, dto);
+    return dto;
+  }
+
+  private void skipInitiatedAndSubmittedRequisition(HttpServletRequest request,
+      HttpServletResponse response, RequisitionPeriodDto p) {
+    if (p.getRequisitionStatus() == RequisitionStatus.INITIATED
+            || p.getRequisitionStatus() == RequisitionStatus.SUBMITTED) {
+      skipRequisitionById(p.getRequisitionId(), request, response);
+    }
   }
 
 }

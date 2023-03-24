@@ -378,7 +378,8 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
 
     Collection<RequisitionPeriodDto> periods =
-        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true, false);
+        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true, false,
+                request, response);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, true);
     verifyZeroInteractions(periodService, requisitionRepository);
@@ -399,7 +400,8 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false, false);
+    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false, false,
+            request, response);
   }
 
   @Test
@@ -407,7 +409,8 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false, false);
+    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false, false,
+            request, response);
   }
 
   @Test
@@ -1326,6 +1329,7 @@ public class RequisitionControllerTest {
             .stream()
             .peek(p -> p.setStartDate(pastDate))
             .collect(Collectors.toList());
+    setStatusesToSkipped(periodsWithDates);
 
     LocalDate futureDate = LocalDate.now().plusYears(1);
     RequisitionPeriodDto futurePeriod = new RequisitionPeriodDtoDataBuilder()
@@ -1343,10 +1347,15 @@ public class RequisitionControllerTest {
             .thenReturn(supportedProgram);
 
     Collection<RequisitionPeriodDto> result =
-            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true);
+            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true,
+                    request, response);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, false);
     assertEquals(1, result.size());
+  }
+
+  private void setStatusesToSkipped(List<RequisitionPeriodDto> periods) {
+    periods.forEach(p -> p.setRequisitionStatus(RequisitionStatus.SKIPPED));
   }
 
   private void mockDependenciesForSubmit() {

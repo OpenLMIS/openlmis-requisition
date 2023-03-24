@@ -30,6 +30,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,11 +64,13 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProcessingScheduleDto;
 import org.openlmis.requisition.dto.RequisitionPeriodDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
+import org.openlmis.requisition.web.FacilitySupportsProgramHelper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 
@@ -80,6 +83,9 @@ public class PeriodServiceTest {
 
   @Mock
   private RequisitionRepository requisitionRepository;
+
+  @Mock
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   @InjectMocks
   private PeriodService periodService;
@@ -97,9 +103,12 @@ public class PeriodServiceTest {
 
   private ProcessingScheduleDto schedule;
 
+  private SupportedProgramDto program;
+
   @Before
   public void setUp() throws Exception {
     schedule = new ProcessingScheduleDtoDataBuilder().buildAsDto();
+    program = mock(SupportedProgramDto.class);
 
     currentPeriod = createPeriod(0);
     period1 = createPeriod(1);
@@ -113,12 +122,28 @@ public class PeriodServiceTest {
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
 
     assertThat(currentPeriods, hasSize(1));
     assertThat(currentPeriods.iterator().next().getId(), is(equalTo(currentPeriod.getId())));
+  }
+
+  @Test
+  public void shouldNotReturnCurrentPeriodIfSupportedProgramStartDateIsAfter() throws Exception {
+    doReturn(singletonList(currentPeriod))
+            .when(periodReferenceDataService)
+            .searchByProgramAndFacility(programId, facilityId);
+    when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
+            .thenReturn(program);
+    when(program.getSupportStartDate()).thenReturn(currentPeriod.getStartDate().plusMonths(2));
+
+    List<ProcessingPeriodDto> currentPeriods =
+            periodService.getCurrentPeriods(programId, facilityId);
+
+    assertThat(currentPeriods, hasSize(0));
   }
 
   @Test
@@ -131,6 +156,7 @@ public class PeriodServiceTest {
     doReturn(Arrays.asList(currentPeriod, period6))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -149,6 +175,7 @@ public class PeriodServiceTest {
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -158,6 +185,7 @@ public class PeriodServiceTest {
 
   @Test
   public void shouldNotReturnCurrentPeriodIfItDoesNotExist() throws Exception {
+    mockSupportedProgramStartDateNotSet();
     doReturn(singletonList(period1))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
@@ -173,6 +201,7 @@ public class PeriodServiceTest {
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     List<ProcessingPeriodDto> currentPeriods =
         periodService.getCurrentPeriods(programId, facilityId);
@@ -253,6 +282,7 @@ public class PeriodServiceTest {
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     RequisitionPeriod requisitionPeriodInitiated =
         createRequisitionPeriod(UUID.randomUUID(), INITIATED, currentPeriod.getId());
@@ -287,6 +317,7 @@ public class PeriodServiceTest {
     doReturn(singletonList(currentPeriod))
         .when(periodReferenceDataService)
         .searchByProgramAndFacility(programId, facilityId);
+    mockSupportedProgramStartDateNotSet();
 
     RequisitionPeriod requisitionPeriodApproved =
         createRequisitionPeriod(UUID.randomUUID(), APPROVED, currentPeriod.getId());
@@ -371,6 +402,7 @@ public class PeriodServiceTest {
     currentPeriod.setProcessingSchedule(processingScheduleDto);
     currentPeriod.setId(UUID.randomUUID());
 
+    mockSupportedProgramStartDateNotSet();
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(currentPeriod));
 
@@ -379,6 +411,7 @@ public class PeriodServiceTest {
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenInitiatingReqPeriodDoesNotBelongToTheSameScheduleAsProgram() {
+    mockSupportedProgramStartDateNotSet();
 
     periodService.findPeriod(programId, facilityId, null, false);
   }
@@ -387,6 +420,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasInitiatedStatus() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(INITIATED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
@@ -397,6 +431,7 @@ public class PeriodServiceTest {
   public void shouldThrowExceptionWhenPreviousReqHasSubmittedStatus() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(SUBMITTED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
@@ -407,6 +442,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasAuthorizedStatus() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(AUTHORIZED), currentPeriod.getId(), facilityId,
         programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
@@ -419,6 +455,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenPreviousReqHasApprovedStatus() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
@@ -427,9 +464,24 @@ public class PeriodServiceTest {
   }
 
   @Test
+  public void shouldReturnCurrentPeriodIfItMatchesStartDateOfSupportedProgram() {
+    setMockForFindPeriod();
+
+    when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
+            .thenReturn(program);
+    when(program.getSupportStartDate()).thenReturn(currentPeriod.getStartDate());
+    mockNoRequisitionFound(currentPeriod.getId(), facilityId, programId);
+    mockNoRequisitionFound(period1.getId(), facilityId, programId);
+
+    ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
+    assertEquals(currentPeriod, period);
+  }
+
+  @Test
   public void shouldSucceedWhenPreviousReqHasSkippedStatus() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(SKIPPED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
 
@@ -441,6 +493,7 @@ public class PeriodServiceTest {
   public void shouldSucceedWhenRequisitionForNextPeriodIsPresent() {
     setMockForFindPeriod();
 
+    mockSupportedProgramStartDateNotSet();
     mockRequisitionFound(buildRequisition(AUTHORIZED), currentPeriod.getId(), facilityId,
         programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
@@ -459,6 +512,7 @@ public class PeriodServiceTest {
     // but not for the second
     mockRequisitionFound(buildRequisition(APPROVED), currentPeriod.getId(), facilityId, programId);
     mockNoRequisitionFound(period1.getId(), facilityId, programId);
+    mockSupportedProgramStartDateNotSet();
 
     //when
     ProcessingPeriodDto period = periodService.findPeriod(programId, facilityId, null, false);
@@ -475,6 +529,7 @@ public class PeriodServiceTest {
     // we mock the requisition search to return a requisition for the first period
     // in facility with ID facilityId
     mockRequisitionFound(buildRequisition(INITIATED), currentPeriod.getId(), facilityId, programId);
+    mockSupportedProgramStartDateNotSet();
 
     //when
     ProcessingPeriodDto period = periodService.findPeriod(programId, facility2Id, null, false);
@@ -514,6 +569,12 @@ public class PeriodServiceTest {
     doReturn(Collections.emptyList())
         .when(requisitionRepository)
         .searchRequisitions(periodId, facilityId, programId, false);
+  }
+
+  private void mockSupportedProgramStartDateNotSet() {
+    when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
+            .thenReturn(program);
+    when(program.getSupportStartDate()).thenReturn(null);
   }
 
   private void setMockForFindPeriod() {
