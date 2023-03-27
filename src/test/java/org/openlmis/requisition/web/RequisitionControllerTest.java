@@ -378,8 +378,7 @@ public class RequisitionControllerTest {
         .thenReturn(ValidationResult.success());
 
     Collection<RequisitionPeriodDto> periods =
-        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true, false,
-                request, response);
+        requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, true, false);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, true);
     verifyZeroInteractions(periodService, requisitionRepository);
@@ -400,8 +399,7 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false, false,
-            request, response);
+    requisitionController.getProcessingPeriodIds(UUID.randomUUID(), null, false, false);
   }
 
   @Test
@@ -409,8 +407,7 @@ public class RequisitionControllerTest {
     exception.expect(ValidationMessageException.class);
     exception.expectMessage(ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS);
 
-    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false, false,
-            request, response);
+    requisitionController.getProcessingPeriodIds(null, UUID.randomUUID(), false, false);
   }
 
   @Test
@@ -1347,8 +1344,7 @@ public class RequisitionControllerTest {
             .thenReturn(supportedProgram);
 
     Collection<RequisitionPeriodDto> result =
-            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true,
-                    request, response);
+            requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true);
 
     verify(periodService).getPeriods(programUuid, facilityUuid, false);
     assertEquals(1, result.size());
