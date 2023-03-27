@@ -38,7 +38,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_
 import static org.openlmis.requisition.service.PermissionService.ORDERS_EDIT;
 
 import com.google.common.collect.Sets;
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,6 +78,7 @@ import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionWithSupplyingDepotsDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
@@ -103,6 +104,7 @@ import org.openlmis.requisition.service.stockmanagement.StockOnHandRetrieverBuil
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.web.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.slf4j.Logger;
@@ -180,6 +182,9 @@ public class RequisitionService {
 
   @Autowired
   private ApprovalNotifier approvalNotifier;
+
+  @Autowired
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
 
   /**
    * Initiated given requisition if possible.
@@ -797,6 +802,15 @@ public class RequisitionService {
     Requisition result = null;
     Collection<ProcessingPeriodDto> periods =
             periodService.searchByProgramAndFacility(programId, facilityId);
+
+    SupportedProgramDto program = facilitySupportsProgramHelper.getSupportedProgram(facilityId,
+            programId);
+    LocalDate programStartDate = program.getSupportStartDate();
+    if (programStartDate != null) {
+      periods = periods.stream()
+              .filter(p -> !p.getStartDate().isBefore(programStartDate))
+              .collect(toList());
+    }
 
     if (periods != null) {
       for (ProcessingPeriodDto dto : periods) {

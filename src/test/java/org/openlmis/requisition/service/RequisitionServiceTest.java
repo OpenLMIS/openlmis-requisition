@@ -119,6 +119,7 @@ import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
@@ -163,6 +164,7 @@ import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Pagination;
+import org.openlmis.requisition.web.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
 import org.springframework.data.domain.Page;
@@ -268,6 +270,9 @@ public class RequisitionServiceTest {
   @Mock
   private RejectionDto rejectionDto;
 
+  @Mock
+  private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
   @Spy
   private RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
       .withAllColumns().build();
@@ -290,6 +295,8 @@ public class RequisitionServiceTest {
       .withSupervisoryNode(supervisoryNode)
       .withProgram(program)
       .buildAsDto();
+
+  private final SupportedProgramDto supportedProgram = mock(SupportedProgramDto.class);
 
   private static final int SETTING = 5;
   private static final int ADJUSTED_CONSUMPTION = 7;
@@ -314,16 +321,29 @@ public class RequisitionServiceTest {
 
   @Test
   public void shouldDeleteRequisitionIfItIsInitiated() {
+    mockSupportedProgramStartDateNotSet();
+    validateRequisitionDeleteWithStatus(INITIATED);
+  }
+
+  @Test
+  public void shouldDeleteRequisitionIfSupportedProgramHasStarted() {
+    when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
+            .thenReturn(supportedProgram);
+    when(supportedProgram.getSupportStartDate()).thenReturn(processingPeriod.getStartDate()
+            .minusMonths(2));
+
     validateRequisitionDeleteWithStatus(INITIATED);
   }
 
   @Test
   public void shouldDeleteRequisitionWhenStatusIsSubmitted() {
+    mockSupportedProgramStartDateNotSet();
     validateRequisitionDeleteWithStatus(SUBMITTED);
   }
 
   @Test
   public void shouldDeleteRequisitionWhenStatusIsSkipped() {
+    mockSupportedProgramStartDateNotSet();
     validateRequisitionDeleteWithStatus(SKIPPED);
   }
 
@@ -331,6 +351,7 @@ public class RequisitionServiceTest {
   public void shouldDeleteRequisitionIfRecentRequisitionIsLastInPeriod() {
     requisition.setStatus(INITIATED);
     stubRecentRequisition();
+    mockSupportedProgramStartDateNotSet();
 
     requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
@@ -350,6 +371,7 @@ public class RequisitionServiceTest {
     when(requisitionRepository
         .searchRequisitions(secondPeriod.getId(), facility.getId(), program.getId(), false))
         .thenReturn(emptyList());
+    mockSupportedProgramStartDateNotSet();
 
     requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
@@ -363,6 +385,7 @@ public class RequisitionServiceTest {
     when(statusMessageRepository.findByRequisitionId(requisition.getId()))
         .thenReturn(statusMessages);
     stubRecentRequisition();
+    mockSupportedProgramStartDateNotSet();
 
     requisitionService.delete(requisition);
     verify(requisitionRepository).delete(requisition);
@@ -400,6 +423,7 @@ public class RequisitionServiceTest {
   public void shouldNotDeleteRequisitionIfItIsNotNewest() {
     requisition.setStatus(INITIATED);
 
+    mockSupportedProgramStartDateNotSet();
     prepareRequisitionIsNotNewest();
 
     requisitionService.delete(requisition);
@@ -1736,4 +1760,11 @@ public class RequisitionServiceTest {
   private List<RejectionDto> generateRejections() {
     return singletonList(rejectionDto);
   }
+
+  private void mockSupportedProgramStartDateNotSet() {
+    when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
+            .thenReturn(supportedProgram);
+    when(supportedProgram.getSupportStartDate()).thenReturn(null);
+  }
+
 }
