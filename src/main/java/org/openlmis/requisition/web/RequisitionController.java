@@ -144,9 +144,7 @@ public class RequisitionController extends BaseRequisitionController {
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
       @RequestParam(value = "emergency") boolean emergency,
-      @RequestParam(value = "unfinished", required = false) boolean unfinished,
-      HttpServletRequest request,
-      HttpServletResponse response) {
+      @RequestParam(value = "unfinished", required = false) boolean unfinished) {
     Profiler profiler = getProfiler("GET_PERIODS_FOR_INITIATE_REQUISITION", programId,
         facilityId, emergency);
 
@@ -178,7 +176,7 @@ public class RequisitionController extends BaseRequisitionController {
           if (!p.getStartDate().isBefore(programStartDate)) {
             unfinishedPeriods.add(p);
           } else {
-            skipInitiatedAndSubmittedRequisition(request, response, p);
+            deleteRequisitionIfProceeding(p);
           }
         });
         periods = unfinishedPeriods;
@@ -250,14 +248,7 @@ public class RequisitionController extends BaseRequisitionController {
   @DeleteMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
-    Requisition requisition = findRequisition(requisitionId, profiler);
-    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
-
-    profiler.start("DELETE");
-    requisitionService.delete(requisition);
-
-    stopProfiler(profiler);
+    deleteRequisitionById(requisitionId);
   }
 
   /**
@@ -364,7 +355,28 @@ public class RequisitionController extends BaseRequisitionController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    return skipRequisitionById(requisitionId, request, response);
+    Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
+
+    Requisition requisition = findRequisition(requisitionId, profiler);
+
+    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
+
+    validateIdempotencyKey(request, profiler);
+
+    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
+    UserDto user = getCurrentUser(profiler);
+
+    requisition.skip(program.getPeriodsSkippable(), user.getId());
+    Requisition skippedRequisition = requisitionRepository.save(requisition);
+
+    callStatusChangeProcessor(profiler, skippedRequisition);
+
+    BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
+
+    addLocationHeader(request, response, dto.getId(), profiler);
+
+    stopProfiler(profiler, dto);
+    return dto;
   }
 
   /**
@@ -635,38 +647,23 @@ public class RequisitionController extends BaseRequisitionController {
         requisition.getProgramId(), requisition.getSupervisoryNodeId());
   }
 
-  private BasicRequisitionDto skipRequisitionById(UUID requisitionId, HttpServletRequest request,
-                                                  HttpServletResponse response) {
-    Profiler profiler = getProfiler("SKIP_REQUISITION", requisitionId);
-
-    Requisition requisition = findRequisition(requisitionId, profiler);
-
-    checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
-
-    validateIdempotencyKey(request, profiler);
-
-    ProgramDto program = findProgram(requisition.getProgramId(), profiler);
-    UserDto user = getCurrentUser(profiler);
-
-    requisition.skip(program.getPeriodsSkippable(), user.getId());
-    Requisition skippedRequisition = requisitionRepository.save(requisition);
-
-    callStatusChangeProcessor(profiler, skippedRequisition);
-
-    BasicRequisitionDto dto = buildBasicDto(profiler, skippedRequisition);
-
-    addLocationHeader(request, response, dto.getId(), profiler);
-
-    stopProfiler(profiler, dto);
-    return dto;
+  private void deleteRequisitionIfProceeding(RequisitionPeriodDto req) {
+    if (req.getRequisitionStatus() == RequisitionStatus.INITIATED
+            || req.getRequisitionStatus() == RequisitionStatus.SUBMITTED
+            || req.getRequisitionStatus() == RequisitionStatus.REJECTED) {
+      deleteRequisitionById(req.getRequisitionId());
+    }
   }
 
-  private void skipInitiatedAndSubmittedRequisition(HttpServletRequest request,
-      HttpServletResponse response, RequisitionPeriodDto p) {
-    if (p.getRequisitionStatus() == RequisitionStatus.INITIATED
-            || p.getRequisitionStatus() == RequisitionStatus.SUBMITTED) {
-      skipRequisitionById(p.getRequisitionId(), request, response);
-    }
+  private void deleteRequisitionById(UUID requisitionId) {
+    Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
+
+    profiler.start("DELETE");
+    requisitionService.delete(requisition);
+
+    stopProfiler(profiler);
   }
 
 }
