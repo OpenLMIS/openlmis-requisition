@@ -445,7 +445,7 @@ public class RequisitionServiceTest {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+        any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
             generateRejections());
@@ -458,7 +458,7 @@ public class RequisitionServiceTest {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+        any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
             generateRejections());
@@ -496,7 +496,7 @@ public class RequisitionServiceTest {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+        any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
             generateRejections());
@@ -510,7 +510,7 @@ public class RequisitionServiceTest {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+        any(UUID.class), any(UUID.class), any(UUID.class),any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
             generateRejections());
@@ -632,7 +632,7 @@ public class RequisitionServiceTest {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());
     when(userRoleAssignmentsReferenceDataService.hasSupervisionRight(any(RightDto.class),
-        any(UUID.class), any(UUID.class), any(UUID.class)))
+        any(UUID.class), any(UUID.class), any(UUID.class),any(UUID.class)))
         .thenReturn(true);
 
     ValidationResult result = requisitionService.validateCanApproveRequisition(
