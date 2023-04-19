@@ -30,25 +30,25 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
+import org.openlmis.requisition.dto.FacilityDto;
+import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.testutils.DetailedRoleAssignmentDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.ObjectReferenceDtoDataBuilder;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
 public class UserRoleAssignmentsReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<DetailedRoleAssignmentDto> {
 
   @Mock
   private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
 
-  @InjectMocks
   private UserRoleAssignmentsReferenceDataService service;
 
   @Override
@@ -66,18 +66,28 @@ public class UserRoleAssignmentsReferenceDataServiceTest
   public void setUp() {
     super.setUp();
     service = (UserRoleAssignmentsReferenceDataService) prepareService();
+    ReflectionTestUtils.setField(service, "requisitionGroupReferenceDataService",
+        requisitionGroupReferenceDataService);
+    requisitionGroup.setMemberFacilities(Sets.newHashSet(facility));
+    requisitionGroupObjectReference.setId(requisitionGroup.getId());
+    supervisoryNode.setRequisitionGroup(requisitionGroupObjectReference);
+    mockRequisitionGroupService();
   }
 
   private RightDto approveRequisitionRight = DtoGenerator.of(RightDto.class, 2).get(0);
   private RightDto convertToOrderRight = DtoGenerator.of(RightDto.class, 2).get(1);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
 
+  private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
+  private ObjectReferenceDto requisitionGroupObjectReference = new ObjectReferenceDtoDataBuilder()
+      .buildAsDto();
   private RequisitionGroupDto requisitionGroup = DtoGenerator.of(RequisitionGroupDto.class);
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
 
   private UUID supervisoryNodeId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID userId = UUID.randomUUID();
-  private UUID facilityId = UUID.randomUUID();
+  private UUID facilityId = facility.getId();
 
   @Test
   public void shouldGetRoleAssignmentsForUser() {
@@ -101,10 +111,8 @@ public class UserRoleAssignmentsReferenceDataServiceTest
 
   @Test
   public void shouldReturnTrueIfUserCanApproveRequisition() {
-    mockSupervisionRoleAssignment(programId, supervisoryNodeId,
+    mockSupervisionRoleAssignment(programId, supervisoryNode.getId(),
             approveRequisitionRight);
-
-    mockRequisitionGroupService();
 
     assertTrue(service.hasSupervisionRight(approveRequisitionRight, userId,
         programId, facilityId, supervisoryNodeId));
@@ -115,8 +123,6 @@ public class UserRoleAssignmentsReferenceDataServiceTest
     mockSupervisionRoleAssignment(programId, supervisoryNodeId,
             convertToOrderRight);
 
-    mockRequisitionGroupService();
-
     assertFalse(service.hasSupervisionRight(approveRequisitionRight, userId,
         programId, facilityId, supervisoryNodeId));
   }
@@ -126,8 +132,6 @@ public class UserRoleAssignmentsReferenceDataServiceTest
     mockSupervisionRoleAssignment(programId, UUID.randomUUID(),
             approveRequisitionRight);
 
-    mockRequisitionGroupService();
-
     assertFalse(service.hasSupervisionRight(approveRequisitionRight, userId,
         programId, facilityId, supervisoryNodeId));
   }
@@ -136,8 +140,6 @@ public class UserRoleAssignmentsReferenceDataServiceTest
   public void shouldReturnFalseIfUserHasDifferentProgramAssignedToApproveRight() {
     mockSupervisionRoleAssignment(UUID.randomUUID(), supervisoryNodeId,
         approveRequisitionRight);
-
-    mockRequisitionGroupService();
 
     assertFalse(service.hasSupervisionRight(approveRequisitionRight, userId,
         programId, facilityId, supervisoryNodeId));
@@ -164,7 +166,7 @@ public class UserRoleAssignmentsReferenceDataServiceTest
   }
 
   private void mockRequisitionGroupService() {
-    List<RequisitionGroupDto> items = Arrays.asList(requisitionGroup);
-    when(requisitionGroupReferenceDataService.findAll()).thenReturn(items);
+    List<RequisitionGroupDto> requisitionGroups = Arrays.asList(requisitionGroup);
+    when(requisitionGroupReferenceDataService.findAll()).thenReturn(requisitionGroups);
   }
 }

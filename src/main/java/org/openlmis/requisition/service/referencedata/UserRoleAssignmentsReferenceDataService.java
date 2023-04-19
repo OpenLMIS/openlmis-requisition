@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
-import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,12 +66,11 @@ public class UserRoleAssignmentsReferenceDataService extends
       return false;
     }
 
-    List<RequisitionGroupDto> requisitionGroups = requisitionGroupReferenceDataService
-            .findAll();
-
-    List<UUID> facilitySupervisoryNodesIds = requisitionGroups.stream()
+    List<UUID> facilitySupervisoryNodesIds = requisitionGroupReferenceDataService
+            .findAll()
+            .stream()
             .filter(r -> r.hasFacility(facilityId))
-            .map(r -> r.getId())
+            .map(r -> r.getSupervisoryNode().getId())
             .collect(Collectors.toList());
 
     return getRoleAssignments(userId).stream()
