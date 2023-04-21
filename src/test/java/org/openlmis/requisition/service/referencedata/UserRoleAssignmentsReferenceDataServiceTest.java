@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
@@ -166,7 +166,7 @@ public class UserRoleAssignmentsReferenceDataServiceTest
   }
 
   private void mockRequisitionGroupService() {
-    List<RequisitionGroupDto> requisitionGroups = Arrays.asList(requisitionGroup);
+    List<RequisitionGroupDto> requisitionGroups = Collections.singletonList(requisitionGroup);
     when(requisitionGroupReferenceDataService.findAll()).thenReturn(requisitionGroups);
   }
 }
