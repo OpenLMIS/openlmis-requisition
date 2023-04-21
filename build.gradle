@@ -72,6 +72,8 @@ dependencies {
     compile 'org.webjars.npm:api-console:3.0.17'
     compile 'redis.clients:jedis'
 
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+
     testCompile "be.joengenduvel.java.verifiers:to-string:1.0.2"
     testCompile "com.github.tomakehurst:wiremock:1.58"
     testCompile "com.jayway.restassured:rest-assured:2.7.0"
@@ -85,6 +87,8 @@ dependencies {
     testCompile "org.powermock:powermock-module-junit4:2.0.4"
     testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile "org.springframework:spring-test"
+
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
 
 idea {
@@ -239,6 +243,10 @@ test {
         events 'started', 'passed'
         exceptionFormat = 'full'
     }
+    dependsOn checkstyleMain
+    dependsOn checkstyleTest
+    dependsOn pmdMain
+    dependsOn pmdTest
 }
 
 bootRun {
