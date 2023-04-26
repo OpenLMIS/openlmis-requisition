@@ -17,8 +17,10 @@ package org.openlmis.requisition.testutils;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.RequisitionGroupDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
 public class RequisitionGroupDtoDataBuilder implements DtoDataBuilder<RequisitionGroupDto> {
@@ -26,6 +28,7 @@ public class RequisitionGroupDtoDataBuilder implements DtoDataBuilder<Requisitio
   private String code;
   private String name;
   private String description;
+  private SupervisoryNodeDto supervisoryNode;
   private Set<FacilityDto> memberFacilities;
 
   /**
@@ -35,12 +38,13 @@ public class RequisitionGroupDtoDataBuilder implements DtoDataBuilder<Requisitio
     code = "code";
     name = "name";
     description = "description";
+    supervisoryNode = new SupervisoryNodeDto();
     memberFacilities = new HashSet<>();
   }
 
 
   @Override
   public RequisitionGroupDto buildAsDto() {
-    return new RequisitionGroupDto(code, name, description, memberFacilities);
+    return new RequisitionGroupDto(code, name, description, supervisoryNode, memberFacilities);
   }
 }

@@ -185,7 +185,7 @@ public class RequisitionService {
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-
+  
   /**
    * Initiated given requisition if possible.
    *
@@ -480,7 +480,8 @@ public class RequisitionService {
 
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
-            requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
+            requisition.getProgramId(), requisition.getFacilityId(), 
+            requisition.getSupervisoryNodeId())) {
       return ValidationResult.noPermission(
               MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
     }

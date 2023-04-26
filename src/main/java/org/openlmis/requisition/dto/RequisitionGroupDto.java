@@ -36,6 +36,7 @@ public final class RequisitionGroupDto extends BaseDto {
   private String code;
   private String name;
   private String description;
+  private SupervisoryNodeDto supervisoryNode;
   private Set<FacilityDto> memberFacilities;
 
   /**
