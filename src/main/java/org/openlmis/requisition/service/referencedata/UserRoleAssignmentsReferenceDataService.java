@@ -83,10 +83,23 @@ public class UserRoleAssignmentsReferenceDataService extends
                                                            UUID programId,
                                                            List<UUID> facilitySupervisoryNodesIds,
                                                            UUID supervisoryNodeId) {
-    return (role.getSupervisoryNodeId() != null
-        && role.getProgramId() != null
-        && (programId == null || programId.equals(role.getProgramId())))
-        && (supervisoryNodeId == null
-            || facilitySupervisoryNodesIds.contains(role.getSupervisoryNodeId()));
+    return roleHasSupervisoryNodeIdAndProgramId(role)
+        && roleHasProgramId(role, programId)
+        && roleHasSupervisoryNodeId(role, supervisoryNodeId, facilitySupervisoryNodesIds);
+  }
+
+  private boolean roleHasSupervisoryNodeIdAndProgramId(DetailedRoleAssignmentDto role) {
+    return role.getSupervisoryNodeId() != null
+            && role.getProgramId() != null;
+  }
+
+  private boolean roleHasProgramId(DetailedRoleAssignmentDto role,  UUID programId) {
+    return programId == null || programId.equals(role.getProgramId());
+  }
+
+  private boolean roleHasSupervisoryNodeId(DetailedRoleAssignmentDto role, UUID supervisoryNodeId,
+                                           List<UUID> facilitySupervisoryNodesIds) {
+    return supervisoryNodeId == null
+            || facilitySupervisoryNodesIds.contains(role.getSupervisoryNodeId());
   }
 }
