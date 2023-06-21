@@ -41,7 +41,7 @@ public class RequisitionTemplateService {
     RequisitionTemplate template = requisitionTemplateRepository
         .findTemplate(programId, facilityTypeId, reportOnly);
 
-    if (template == null) {
+    if (template == null && reportOnly) {
 
       //Check for normal requisition template
       template = requisitionTemplateRepository
