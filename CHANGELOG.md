@@ -1,9 +1,9 @@
-8.3.6-SNAPSHOT / WIP
+8.3.6 / 2023-06-26
 ==================
 
 Bug fixes:
 * [OLMIS-7723](https://openlmis.atlassian.net/browse/OLMIS-7723): Fix error related to 'Approve buttons not visible when trying to approve requisition'
-* [TZUP-363](https://openlmis.atlassian.net/browse/TZUP-363): Fix bug related to 'Report only flag when processing period is checked and requisition report only is unchecked'
+* [OLMIS-7772](https://openlmis.atlassian.net/browse/OLMIS-7772): Fix issues with new Chrome popover functionality
 
 8.3.5 / 2023-04-05
 ==================
