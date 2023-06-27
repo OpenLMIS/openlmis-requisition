@@ -1,3 +1,9 @@
+8.3.7-SNAPSHOT / WIP
+==================
+
+Bug fixes:
+* [TZUP-363](https://openlmis.atlassian.net/browse/TZUP-363): Fix bug related to 'Report only flag when processing period is checked and requisition report only is unchecked'
+
 8.3.6 / 2023-06-26
 ==================
 
