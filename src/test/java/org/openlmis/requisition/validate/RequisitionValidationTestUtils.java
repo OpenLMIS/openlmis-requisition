@@ -23,8 +23,11 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AV
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CONVERTED_QUANTITY_TO_ISSUE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.QUANTITY_TO_ISSUE;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.REQUESTED_QUANTITY_EXPLANATION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
@@ -32,7 +35,9 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ST
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_COLUMN;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_QUANTITY_NEEDED_BY_HF;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_RECEIVED_QUANTITY;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_REQUIREMENT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_STOCKOUT_DAYS;
 
 import com.google.common.collect.Sets;
@@ -118,7 +123,17 @@ public class RequisitionValidationTestUtils {
         AVERAGE_CONSUMPTION,
         generateTemplateColumn(AVERAGE_CONSUMPTION, "P", CALCULATED)
     );
-
+    columns.put(NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH,
+        generateTemplateColumn(NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH, "TC", CALCULATED)
+    );
+    columns.put(TOTAL_REQUIREMENT, generateTemplateColumn(TOTAL_REQUIREMENT, "TE", CALCULATED));
+    columns.put(TOTAL_QUANTITY_NEEDED_BY_HF,
+        generateTemplateColumn(TOTAL_QUANTITY_NEEDED_BY_HF, "TF", CALCULATED)
+    );
+    columns.put(QUANTITY_TO_ISSUE, generateTemplateColumn(QUANTITY_TO_ISSUE, "TG", CALCULATED));
+    columns.put(CONVERTED_QUANTITY_TO_ISSUE,
+        generateTemplateColumn(CONVERTED_QUANTITY_TO_ISSUE, "TH", CALCULATED)
+    );
     RequisitionTemplateColumn column = generateTemplateColumn(ADDITIONAL_QUANTITY_REQUIRED,
         "Z", USER_INPUT);
     column.setIsDisplayed(false);
