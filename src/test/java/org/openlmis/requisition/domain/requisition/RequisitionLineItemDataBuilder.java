@@ -68,7 +68,7 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   //this needs to be always idealStockAmount - stockOnHand
   private Integer calculatedOrderQuantityIsa = 50;
   private Integer additionalQuantityRequired = 0;
-  private Integer numberOfPatientsOnTreatmentNextMonth;
+  private Integer numberOfPatientsOnTreatmentNextMonth = 0;
   private Integer totalRequirement = 0;
   private Integer totalQuantityNeededByHf = 0;
   private Integer quantityToIssue = 0;

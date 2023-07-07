@@ -361,7 +361,6 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
-
     requisitionLineItem.setNumberOfPatientsOnTreatmentNextMonth(importer
             .getNumberOfPatientsOnTreatmentNextMonth());
     requisitionLineItem.setTotalRequirement(importer.getTotalRequirement());
@@ -433,7 +432,6 @@ public class RequisitionLineItem extends BaseEntity {
 
       this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
       this.averageConsumption = requisitionLineItem.getAverageConsumption();
-
       this.numberOfPatientsOnTreatmentNextMonth =
               requisitionLineItem.getNumberOfPatientsOnTreatmentNextMonth();
       this.totalRequirement = requisitionLineItem.getTotalRequirement();
