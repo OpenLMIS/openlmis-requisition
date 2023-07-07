@@ -1,5 +1,7 @@
 8.3.7-SNAPSHOT / WIP
 ==================
+New functionality added in a backwards-compatible manner:
+* [TZUP-432](https://openlmis.atlassian.net/browse/TZUP-432): Added new columns based on the Patient(s) tab to the Requisition Template.
 
 Bug fixes:
 * [TZUP-363](https://openlmis.atlassian.net/browse/TZUP-363): Fix bug related to 'Report only flag when processing period is checked and requisition report only is unchecked'
