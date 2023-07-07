@@ -68,6 +68,11 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   //this needs to be always idealStockAmount - stockOnHand
   private Integer calculatedOrderQuantityIsa = 50;
   private Integer additionalQuantityRequired = 0;
+  private Integer numberOfPatientsOnTreatmentNextMonth = 0;
+  private Integer totalRequirement = 0;
+  private Integer totalQuantityNeededByHf = 0;
+  private Integer quantityToIssue = 0;
+  private Integer convertedQuantityToIssue = 0;
 
   /**
    * Constructs builder for {@link RequisitionLineItem}.
@@ -131,7 +136,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
         totalStockoutDays, packsToShip, skipped, totalCost, numberOfNewPatientsAdded,
         additionalQuantityRequired, adjustedConsumption, previousAdjustedConsumptions,
         averageConsumption, maximumStockQuantity, calculatedOrderQuantity, stockAdjustments,
-        idealStockAmount, calculatedOrderQuantityIsa
+        idealStockAmount, calculatedOrderQuantityIsa, numberOfPatientsOnTreatmentNextMonth,
+        totalRequirement, totalQuantityNeededByHf, quantityToIssue, convertedQuantityToIssue
     );
     lineItem.setId(id);
 
@@ -330,6 +336,34 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     return this;
   }
 
+  public RequisitionLineItemDataBuilder withNumberOfPatientsOnTreatmentNextMonth(
+          Integer numberOfPatientsOnTreatmentNextMonth) {
+    this.numberOfPatientsOnTreatmentNextMonth = numberOfPatientsOnTreatmentNextMonth;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withTotalRequirement(Integer totalRequirement) {
+    this.totalRequirement = totalRequirement;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withTotalQuantityNeededByHf(
+          Integer totalQuantityNeededByHf) {
+    this.totalQuantityNeededByHf = totalQuantityNeededByHf;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withQuantityToIssue(Integer quantityToIssue) {
+    this.quantityToIssue = quantityToIssue;
+    return this;
+  }
+
+  public RequisitionLineItemDataBuilder withConvertedQuantityToIssue(
+          Integer convertedQuantityToIssue) {
+    this.convertedQuantityToIssue = convertedQuantityToIssue;
+    return this;
+  }
+
   /**
    * Sets all fields to null.
    */
@@ -353,6 +387,11 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
     idealStockAmount = null;
     calculatedOrderQuantityIsa = null;
     additionalQuantityRequired = null;
+    numberOfPatientsOnTreatmentNextMonth = null;
+    totalRequirement = null;
+    totalQuantityNeededByHf = null;
+    quantityToIssue = null;
+    convertedQuantityToIssue = null;
     return this;
   }
 }

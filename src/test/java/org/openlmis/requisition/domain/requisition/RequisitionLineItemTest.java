@@ -125,6 +125,11 @@ public class RequisitionLineItemTest {
     assertEquals(item.getStockAdjustments().size(), 0);
     assertEquals(item.getPreviousAdjustedConsumptions().size(), 0);
     assertNull(item.getCalculatedOrderQuantityIsa());
+    assertNull(item.getNumberOfPatientsOnTreatmentNextMonth());
+    assertNull(item.getTotalRequirement());
+    assertNull(item.getTotalQuantityNeededByHf());
+    assertNull(item.getQuantityToIssue());
+    assertNull(item.getConvertedQuantityToIssue());
   }
 
   @Test
@@ -174,6 +179,11 @@ public class RequisitionLineItemTest {
     item.setTotalStockoutDays(6);
     item.setTotal(7);
     item.setNumberOfNewPatientsAdded(1);
+    item.setNumberOfPatientsOnTreatmentNextMonth(9);
+    item.setTotalRequirement(10);
+    item.setTotalQuantityNeededByHf(11);
+    item.setQuantityToIssue(12);
+    item.setConvertedQuantityToIssue(13);
 
     RequisitionLineItem updateItem = new RequisitionLineItem();
     updateItem.setStockOnHand(11);
@@ -184,6 +194,11 @@ public class RequisitionLineItemTest {
     updateItem.setTotalStockoutDays(66);
     updateItem.setTotal(77);
     updateItem.setNumberOfNewPatientsAdded(2);
+    updateItem.setNumberOfPatientsOnTreatmentNextMonth(91);
+    updateItem.setTotalRequirement(101);
+    updateItem.setTotalQuantityNeededByHf(111);
+    updateItem.setQuantityToIssue(121);
+    updateItem.setConvertedQuantityToIssue(131);
 
     item.updateFrom(updateItem);
 
@@ -195,6 +210,11 @@ public class RequisitionLineItemTest {
     assertThat(item.getTotalStockoutDays(), is(66));
     assertThat(item.getTotal(), is(77));
     assertThat(item.getNumberOfNewPatientsAdded(), is(2));
+    assertThat(item.getNumberOfPatientsOnTreatmentNextMonth(), is(91));
+    assertThat(item.getTotalRequirement(), is(101));
+    assertThat(item.getTotalQuantityNeededByHf(), is(111));
+    assertThat(item.getQuantityToIssue(), is(121));
+    assertThat(item.getConvertedQuantityToIssue(), is(131));
   }
 
   @Test
@@ -438,6 +458,14 @@ public class RequisitionLineItemTest {
         is(requisitionLineItem.getNumberOfNewPatientsAdded()));
     assertThat(dto.getCalculatedOrderQuantityIsa(),
         is(requisitionLineItem.getCalculatedOrderQuantityIsa()));
+    assertThat(dto.getNumberOfPatientsOnTreatmentNextMonth(),
+        is(requisitionLineItem.getNumberOfPatientsOnTreatmentNextMonth()));
+    assertThat(dto.getTotalRequirement(), is(requisitionLineItem.getTotalRequirement()));
+    assertThat(dto.getTotalQuantityNeededByHf(),
+        is(requisitionLineItem.getTotalQuantityNeededByHf()));
+    assertThat(dto.getQuantityToIssue(), is(requisitionLineItem.getQuantityToIssue()));
+    assertThat(dto.getConvertedQuantityToIssue(),
+        is(requisitionLineItem.getConvertedQuantityToIssue()));
 
     StockAdjustment.Importer[] items = stockAdjustments
         .stream()
@@ -682,6 +710,11 @@ public class RequisitionLineItemTest {
         .withRemarks("remarks")
         .withRequestedQuantityExplanation("explanation")
         .withNumberOfNewPatientsAdded(10)
+        .withNumberOfPatientsOnTreatmentNextMonth(11)
+        .withTotalRequirement(12)
+        .withTotalQuantityNeededByHf(13)
+        .withQuantityToIssue(14)
+        .withConvertedQuantityToIssue(15)
         .build();
   }
 

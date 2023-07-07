@@ -69,6 +69,11 @@ public abstract class BaseRequisitionLineItemDto extends BaseDto
   private Integer idealStockAmount;
   private Integer calculatedOrderQuantityIsa;
   private Integer additionalQuantityRequired;
+  private Integer numberOfPatientsOnTreatmentNextMonth;
+  private Integer totalRequirement;
+  private Integer totalQuantityNeededByHf;
+  private Integer quantityToIssue;
+  private Integer convertedQuantityToIssue;
 
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments = new ArrayList<>();

@@ -101,6 +101,12 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String CALCULATED_ORDER_QUANTITY = "calculatedOrderQuantity";
   public static final String CALCULATED_ORDER_QUANTITY_ISA = "calculatedOrderQuantityIsa";
   public static final String ADDITIONAL_QUANTITY_REQUIRED = "additionalQuantityRequired";
+  public static final String NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH =
+          "numberOfPatientsOnTreatmentNextMonth";
+  public static final String TOTAL_REQUIREMENT = "totalRequirement";
+  public static final String TOTAL_QUANTITY_NEEDED_BY_HF = "totalQuantityNeededByHf";
+  public static final String QUANTITY_TO_ISSUE = "quantityToIssue";
+  public static final String CONVERTED_QUANTITY_TO_ISSUE = "convertedQuantityToIssue";
 
   @Embedded
   @AttributeOverride(name = "id", column = @Column(name = "orderableId"))
@@ -231,6 +237,26 @@ public class RequisitionLineItem extends BaseEntity {
   @Getter
   private Integer calculatedOrderQuantityIsa;
 
+  @Getter
+  @Setter
+  private Integer numberOfPatientsOnTreatmentNextMonth;
+
+  @Getter
+  @Setter
+  private Integer totalRequirement;
+
+  @Getter
+  @Setter
+  private Integer totalQuantityNeededByHf;
+
+  @Getter
+  @Setter
+  private Integer quantityToIssue;
+
+  @Getter
+  @Setter
+  private Integer convertedQuantityToIssue;
+
   /**
    * Initiates a requisition line item.
    */
@@ -277,7 +303,10 @@ public class RequisitionLineItem extends BaseEntity {
         original.adjustedConsumption, original.previousAdjustedConsumptions,
         original.averageConsumption, original.maximumStockQuantity,
         original.calculatedOrderQuantity, null,
-        original.idealStockAmount, original.calculatedOrderQuantityIsa);
+        original.idealStockAmount, original.calculatedOrderQuantityIsa,
+        original.numberOfPatientsOnTreatmentNextMonth, original.totalRequirement,
+        original.totalQuantityNeededByHf, original.quantityToIssue,
+        original.convertedQuantityToIssue);
     setId(original.getId());
     this.orderable = new VersionEntityReference(original.orderable);
     this.facilityTypeApprovedProduct = new VersionEntityReference(
@@ -332,6 +361,12 @@ public class RequisitionLineItem extends BaseEntity {
     requisitionLineItem.setIdealStockAmount(importer.getIdealStockAmount());
     requisitionLineItem.setCalculatedOrderQuantityIsa(importer.getCalculatedOrderQuantityIsa());
     requisitionLineItem.setAdditionalQuantityRequired(importer.getAdditionalQuantityRequired());
+    requisitionLineItem.setNumberOfPatientsOnTreatmentNextMonth(importer
+            .getNumberOfPatientsOnTreatmentNextMonth());
+    requisitionLineItem.setTotalRequirement(importer.getTotalRequirement());
+    requisitionLineItem.setTotalQuantityNeededByHf(importer.getTotalQuantityNeededByHf());
+    requisitionLineItem.setQuantityToIssue(importer.getQuantityToIssue());
+    requisitionLineItem.setConvertedQuantityToIssue(importer.getConvertedQuantityToIssue());
 
     if (importer.getSkipped() != null && !requisitionStatus.isApproved()) {
       requisitionLineItem.setSkipped(importer.getSkipped());
@@ -397,6 +432,12 @@ public class RequisitionLineItem extends BaseEntity {
 
       this.adjustedConsumption = requisitionLineItem.getAdjustedConsumption();
       this.averageConsumption = requisitionLineItem.getAverageConsumption();
+      this.numberOfPatientsOnTreatmentNextMonth =
+              requisitionLineItem.getNumberOfPatientsOnTreatmentNextMonth();
+      this.totalRequirement = requisitionLineItem.getTotalRequirement();
+      this.totalQuantityNeededByHf = requisitionLineItem.getTotalQuantityNeededByHf();
+      this.quantityToIssue = requisitionLineItem.getQuantityToIssue();
+      this.convertedQuantityToIssue = requisitionLineItem.getConvertedQuantityToIssue();
     }
   }
 
@@ -487,6 +528,11 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setIdealStockAmount(idealStockAmount);
     exporter.setCalculatedOrderQuantityIsa(calculatedOrderQuantityIsa);
     exporter.setAdditionalQuantityRequired(additionalQuantityRequired);
+    exporter.setNumberOfPatientsOnTreatmentNextMonth(numberOfPatientsOnTreatmentNextMonth);
+    exporter.setTotalRequirement(totalRequirement);
+    exporter.setTotalQuantityNeededByHf(totalQuantityNeededByHf);
+    exporter.setQuantityToIssue(quantityToIssue);
+    exporter.setConvertedQuantityToIssue(convertedQuantityToIssue);
   }
 
   private void exportStockAdjustments(Exporter exporter) {
@@ -528,6 +574,11 @@ public class RequisitionLineItem extends BaseEntity {
     setMaximumStockQuantity(null);
     setCalculatedOrderQuantity(null);
     setCalculatedOrderQuantityIsa(null);
+    setNumberOfPatientsOnTreatmentNextMonth(null);
+    setTotalRequirement(null);
+    setTotalQuantityNeededByHf(null);
+    setQuantityToIssue(null);
+    setConvertedQuantityToIssue(null);
     stockAdjustments.clear();
     previousAdjustedConsumptions.clear();
   }
@@ -866,6 +917,16 @@ public class RequisitionLineItem extends BaseEntity {
     void setCalculatedOrderQuantityIsa(Integer calculatedOrderQuantityIsa);
 
     void setAdditionalQuantityRequired(Integer additionalQuantityRequired);
+
+    void setNumberOfPatientsOnTreatmentNextMonth(Integer numberOfPatientsOnTreatmentNextMonth);
+
+    void setTotalRequirement(Integer totalRequirement);
+
+    void setTotalQuantityNeededByHf(Integer totalQuantityNeededByHf);
+
+    void setQuantityToIssue(Integer quantityToIssue);
+
+    void setConvertedQuantityToIssue(Integer convertedQuantityToIssue);
   }
 
   public interface Importer {
@@ -921,5 +982,14 @@ public class RequisitionLineItem extends BaseEntity {
 
     Integer getAdditionalQuantityRequired();
 
+    Integer getNumberOfPatientsOnTreatmentNextMonth();
+
+    Integer getTotalRequirement();
+
+    Integer getTotalQuantityNeededByHf();
+
+    Integer getQuantityToIssue();
+
+    Integer getConvertedQuantityToIssue();
   }
 }
