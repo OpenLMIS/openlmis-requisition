@@ -105,12 +105,14 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     this.errors = errors;
 
     RequisitionTemplateDto template = (RequisitionTemplateDto) target;
-
-    validateRequestedQuantity(template);
+    boolean patientsTabEnabled = Boolean.TRUE.equals(template.getPatientsTabEnabled());
+    if (!patientsTabEnabled) {
+      validateRequestedQuantity(template);
+      validateCalculatedFields(template);
+    }
     validateColumns(template);
-    validateCalculatedFields(template);
 
-    if (!errors.hasErrors()) {
+    if (!errors.hasErrors() && !patientsTabEnabled) {
       validateCalculatedField(template, STOCK_ON_HAND,
           ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY
       );

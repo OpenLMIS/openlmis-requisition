@@ -76,6 +76,10 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
   @Setter
   private Boolean requisitionReportOnly;
 
+  @Getter
+  @Setter
+  private Boolean patientsTabEnabled;
+
   @Override
   @JsonIgnore
   public UUID getProgramId() {
