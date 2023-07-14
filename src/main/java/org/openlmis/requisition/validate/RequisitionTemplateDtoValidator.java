@@ -109,8 +109,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     if (!patientsTabEnabled) {
       validateRequestedQuantity(template);
       validateCalculatedFields(template);
+      validateNumberOfPeriodsToAverage(template);
     }
-    validateColumns(template);
+    validateColumns(template, patientsTabEnabled);
 
     if (!errors.hasErrors() && !patientsTabEnabled) {
       validateCalculatedField(template, STOCK_ON_HAND,
@@ -123,9 +124,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       validateForAverageConsumption(template);
     }
 
-    validateNumberOfPeriodsToAverage(template);
-
-    if (template.isPopulateStockOnHandFromStockCards()) {
+    if (template.isPopulateStockOnHandFromStockCards() && !patientsTabEnabled) {
       validateStockManagementFields(template);
     }
 
@@ -193,7 +192,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     }
   }
 
-  private void validateColumns(RequisitionTemplateDto template) {
+  private void validateColumns(RequisitionTemplateDto template, boolean patientsTabEnabled) {
     for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
       rejectIfNotUtf8(
           errors, column.getLabel(), COLUMNS_MAP,
@@ -201,7 +200,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       );
 
       validateColumnDefinition(column);
-      validateChosenSources(template, column);
+      if (!patientsTabEnabled) {
+        validateChosenSources(template, column);
+      }
 
       Set<AvailableRequisitionColumnOptionDto> options = column
           .getColumnDefinition()
