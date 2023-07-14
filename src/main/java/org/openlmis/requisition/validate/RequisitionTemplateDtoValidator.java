@@ -105,12 +105,15 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     this.errors = errors;
 
     RequisitionTemplateDto template = (RequisitionTemplateDto) target;
+    boolean patientsTabEnabled = Boolean.TRUE.equals(template.getPatientsTabEnabled());
+    if (!patientsTabEnabled) {
+      validateRequestedQuantity(template);
+      validateCalculatedFields(template);
+      validateNumberOfPeriodsToAverage(template);
+    }
+    validateColumns(template, patientsTabEnabled);
 
-    validateRequestedQuantity(template);
-    validateColumns(template);
-    validateCalculatedFields(template);
-
-    if (!errors.hasErrors()) {
+    if (!errors.hasErrors() && !patientsTabEnabled) {
       validateCalculatedField(template, STOCK_ON_HAND,
           ERROR_MUST_BE_DISPLAYED_WHEN_ON_HAND_IS_CALCULATED, TOTAL_CONSUMED_QUANTITY
       );
@@ -121,9 +124,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       validateForAverageConsumption(template);
     }
 
-    validateNumberOfPeriodsToAverage(template);
-
-    if (template.isPopulateStockOnHandFromStockCards()) {
+    if (template.isPopulateStockOnHandFromStockCards() && !patientsTabEnabled) {
       validateStockManagementFields(template);
     }
 
@@ -191,7 +192,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     }
   }
 
-  private void validateColumns(RequisitionTemplateDto template) {
+  private void validateColumns(RequisitionTemplateDto template, boolean patientsTabEnabled) {
     for (RequisitionTemplateColumnDto column : template.getColumnsMap().values()) {
       rejectIfNotUtf8(
           errors, column.getLabel(), COLUMNS_MAP,
@@ -199,7 +200,9 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       );
 
       validateColumnDefinition(column);
-      validateChosenSources(template, column);
+      if (!patientsTabEnabled) {
+        validateChosenSources(template, column);
+      }
 
       Set<AvailableRequisitionColumnOptionDto> options = column
           .getColumnDefinition()
