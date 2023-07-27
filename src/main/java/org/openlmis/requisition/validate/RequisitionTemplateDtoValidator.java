@@ -251,7 +251,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
       Set<SourceType> sources = definition.getSources();
 
       if (sources.size() > 1 && template.isColumnUserInput(definition.getName())
-          && !template.getRequisitionReportOnly()) {
+          && !Boolean.TRUE.equals(template.getRequisitionReportOnly())) {
         rejectIfNotDisplayed(
             errors, template, definition.getName(), COLUMNS_MAP,
             new Message(ERROR_MUST_BE_DISPLAYED, definition.getName())
