@@ -64,8 +64,13 @@ public class StatusChangeValidationService {
     validators.add(new RequestedQuantityValidator(requisition, orderables));
     validators.add(new StockAdjustmentsValidator(requisition, orderables));
     validators.add(new TotalFieldValidator(requisition, requisition.getTemplate(), orderables));
-    validators.add(new TotalReceivedQuantityValidator(requisition,
-        requisition.getTemplate(), orderables));
+
+    boolean skipTotalReceivedQuantityValidation = Boolean.TRUE.equals(requisition.getTemplate()
+        .getPatientsTabEnabled()) && !requisition.getStatus().isAuthorized();
+    if (!skipTotalReceivedQuantityValidation) {
+      validators.add(new TotalReceivedQuantityValidator(requisition,
+          requisition.getTemplate(), orderables));
+    }
   }
 
   /**
