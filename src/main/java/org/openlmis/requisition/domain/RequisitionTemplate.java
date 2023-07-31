@@ -139,7 +139,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Getter
   @Setter
-  private Boolean patientsTabEnabled;
+  @Column(nullable = false)
+  private boolean patientsTabEnabled = false;
 
   /**
    * Allows creating requisition template with predefined columns.
@@ -469,7 +470,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     );
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
-    template.setPatientsTabEnabled(importer.getPatientsTabEnabled());
+    template.setPatientsTabEnabled(importer.isPatientsTabEnabled());
 
     if (importer.getFacilityTypeIds().isEmpty()) {
       template.addAssignment(importer.getProgramId(), null, false);
@@ -638,7 +639,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     Boolean getRequisitionReportOnly();
 
-    Boolean getPatientsTabEnabled();
+    boolean isPatientsTabEnabled();
   }
 
   public interface Exporter {
@@ -662,6 +663,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
     void setRequisitionReportOnly(Boolean requisitionReportOnly);
 
-    void setPatientsTabEnabled(Boolean patientsTabEnabled);
+    void setPatientsTabEnabled(boolean patientsTabEnabled);
   }
 }

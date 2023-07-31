@@ -78,7 +78,7 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
 
   @Getter
   @Setter
-  private Boolean patientsTabEnabled;
+  private boolean patientsTabEnabled;
 
   @Override
   @JsonIgnore

@@ -105,7 +105,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     this.errors = errors;
 
     RequisitionTemplateDto template = (RequisitionTemplateDto) target;
-    boolean patientsTabEnabled = Boolean.TRUE.equals(template.getPatientsTabEnabled());
+    boolean patientsTabEnabled = Boolean.TRUE.equals(template.isPatientsTabEnabled());
     if (!patientsTabEnabled) {
       validateRequestedQuantity(template);
       validateCalculatedFields(template);

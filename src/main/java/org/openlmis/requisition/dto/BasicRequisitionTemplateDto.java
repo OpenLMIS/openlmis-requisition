@@ -33,7 +33,7 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
 
   private boolean populateStockOnHandFromStockCards;
   private boolean rejectionReasonWindowVisible;
-  private Boolean patientsTabEnabled;
+  private boolean patientsTabEnabled;
 
   private String name;
 
