@@ -119,23 +119,6 @@ public class StatusChangeValidationServiceTest {
 
   }
 
-  @Test
-  public void shouldNotUseTotalReceivedQuantityValidatorWhenPatientsTabEnabledIsTrue() {
-    requisition.getTemplate().setPatientsTabEnabled(true);
-    StatusChangeValidationService statusChangeValidationService =
-        new StatusChangeValidationService(requisition, LocalDate.now(), true,
-            orderables, approvedProducts);
-
-    List<RequisitionStatusChangeDomainValidator> validators =
-        (List<RequisitionStatusChangeDomainValidator>)
-            ReflectionTestUtils.getField(statusChangeValidationService, "validators");
-
-    List<Class> actual = validators.stream()
-        .map(RequisitionStatusChangeDomainValidator::getClass)
-        .collect(Collectors.toList());
-    assertThat(actual).doesNotContain(TotalReceivedQuantityValidator.class);
-  }
-
   private void addValidatorForApprovalAndCallValidationService() {
     StatusChangeValidationService statusChangeValidationService =
         new StatusChangeValidationService(requisition, LocalDate.now(), true,
