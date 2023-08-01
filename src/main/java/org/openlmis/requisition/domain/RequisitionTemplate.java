@@ -128,10 +128,6 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Getter
   private Set<UUID> facilityTypeIds = Sets.newHashSet();
 
-  RequisitionTemplate(UUID id) {
-    this(id, null, false, null, null, null, false);
-  }
-
   @Transient
   @Getter
   @Column(nullable = false)
@@ -141,6 +137,10 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Setter
   @Column(nullable = false)
   private boolean patientsTabEnabled = false;
+
+  RequisitionTemplate(UUID id) {
+    this(id, null, false, null, null, null, false);
+  }
 
   /**
    * Allows creating requisition template with predefined columns.
