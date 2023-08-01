@@ -70,6 +70,22 @@ public class TotalReceivedQuantityValidatorTest {
         new Message(ERROR_VALUE_MUST_BE_ENTERED));
   }
 
+  @Test
+  public void shouldNotRejectValueIfRequisitionStatusIsBeforeAuthorizedAndPatientTabIsEnabled() {
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(new RequisitionLineItemDataBuilder()
+            .withTotalRequirement(null)
+            .build(), false)
+        .build();
+    requisition.getTemplate().setPatientsTabEnabled(true);
+    TotalReceivedQuantityValidator validator = getTotalReceivedQuantityValidator(requisition);
+
+    HashMap<String, Message> errors = new HashMap<>();
+    validator.validateCanChangeStatus(errors);
+
+    assertThat(errors).hasSize(0);
+  }
+
   private TotalReceivedQuantityValidator getTotalReceivedQuantityValidator(
       Integer totalReceivedQuantity) {
     Requisition requisition = new RequisitionDataBuilder()

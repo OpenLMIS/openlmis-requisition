@@ -62,6 +62,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   private Map<String, RequisitionTemplateColumn> columnsMap;
   private Set<Triple<UUID, UUID, Boolean>> templateAssignments;
   private Boolean rejectionReasonWindowVisible;
+  private boolean patientsTabEnabled = false;
 
   /**
    * Builder for {@link RequisitionTemplate} class.
@@ -77,6 +78,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
     name = "template-name-" + instanceNumber;
     columnsMap = new HashMap<>();
     rejectionReasonWindowVisible = false;
+    patientsTabEnabled = false;
 
     templateAssignments = new HashSet<>();
   }
@@ -101,6 +103,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
             rejectionReasonWindowVisible);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
+    template.setPatientsTabEnabled(patientsTabEnabled);
 
     for (Triple<UUID, UUID, Boolean> assignment : templateAssignments) {
       template.addAssignment(assignment.getLeft(), assignment.getMiddle(),
@@ -236,6 +239,15 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
       withPopulateStockOnHandFromStockCards();
     }
 
+    return this;
+  }
+
+  public RequisitionTemplateDataBuilder withPatientsTabEnabled(boolean patientsTabSelected) {
+    return patientsTabSelected ? withPatientsTabEnabled() : this;
+  }
+
+  public RequisitionTemplateDataBuilder withPatientsTabEnabled() {
+    patientsTabEnabled = true;
     return this;
   }
 

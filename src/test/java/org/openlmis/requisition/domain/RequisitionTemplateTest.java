@@ -162,6 +162,8 @@ public class RequisitionTemplateTest {
         templateDto.isPopulateStockOnHandFromStockCards());
     assertEquals(requisitionTemplate.getNumberOfPeriodsToAverage(),
         templateDto.getNumberOfPeriodsToAverage());
+    assertEquals(requisitionTemplate.isPatientsTabEnabled(),
+        templateDto.isPatientsTabEnabled());
   }
 
   @Test
@@ -169,6 +171,7 @@ public class RequisitionTemplateTest {
     RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
+        .withPatientsTabEnabled()
         .build();
     template.export(templateDto);
     setColumns(templateDto, template);
@@ -193,6 +196,7 @@ public class RequisitionTemplateTest {
         newTemplate.getFacilityTypeIds(),
         hasItems(templateDto.getFacilityTypeIds().toArray(new UUID[0]))
     );
+    assertEquals(templateDto.isPatientsTabEnabled(), newTemplate.isPatientsTabEnabled());
   }
 
   @Test

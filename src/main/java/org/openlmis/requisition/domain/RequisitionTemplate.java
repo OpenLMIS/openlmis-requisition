@@ -52,6 +52,7 @@ import javax.persistence.Transient;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.DiffIgnore;
@@ -90,7 +91,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   @Getter
   private boolean populateStockOnHandFromStockCards;
-  
+
   @Getter
   private String name;
 
@@ -127,14 +128,19 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Getter
   private Set<UUID> facilityTypeIds = Sets.newHashSet();
 
-  RequisitionTemplate(UUID id) {
-    this(id, null, false, null, null, null, false);
-  }
-
   @Transient
   @Getter
   @Column(nullable = false)
   private Boolean requisitionReportOnly;
+
+  @Getter
+  @Setter
+  @Column(nullable = false)
+  private boolean patientsTabEnabled = false;
+
+  RequisitionTemplate(UUID id) {
+    this(id, null, false, null, null, null, false);
+  }
 
   /**
    * Allows creating requisition template with predefined columns.
@@ -167,7 +173,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
 
   /**
    * Copy constructor.
-   * 
+   *
    * @param source source requisition template to copy from
    */
   public RequisitionTemplate(RequisitionTemplate source) {
@@ -369,6 +375,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.populateStockOnHandFromStockCards = requisitionTemplate.populateStockOnHandFromStockCards;
     this.name = requisitionTemplate.name;
     this.rejectionReasonWindowVisible = requisitionTemplate.rejectionReasonWindowVisible;
+    this.patientsTabEnabled = requisitionTemplate.patientsTabEnabled;
 
     addColumns(requisitionTemplate.columnsMap);
     addAssignments(requisitionTemplate.templateAssignments);
@@ -463,6 +470,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     );
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
+    template.setPatientsTabEnabled(importer.isPatientsTabEnabled());
 
     if (importer.getFacilityTypeIds().isEmpty()) {
       template.addAssignment(importer.getProgramId(), null, false);
@@ -492,6 +500,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setFacilityTypeIds(facilityTypeIds);
     exporter.setRejectionReasonWindowVisible(rejectionReasonWindowVisible);
     exporter.setRequisitionReportOnly(requisitionReportOnly);
+    exporter.setPatientsTabEnabled(patientsTabEnabled);
   }
 
   @PostLoad
@@ -629,6 +638,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     boolean isRejectionReasonWindowVisible();
 
     Boolean getRequisitionReportOnly();
+
+    boolean isPatientsTabEnabled();
   }
 
   public interface Exporter {
@@ -651,5 +662,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setRejectionReasonWindowVisible(boolean rejectionReasonWindowVisible);
 
     void setRequisitionReportOnly(Boolean requisitionReportOnly);
+
+    void setPatientsTabEnabled(boolean patientsTabEnabled);
   }
 }

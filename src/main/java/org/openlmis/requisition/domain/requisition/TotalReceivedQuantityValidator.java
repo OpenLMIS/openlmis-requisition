@@ -37,8 +37,12 @@ class TotalReceivedQuantityValidator
 
   @Override
   protected void validateFullSupplyLineItem(Map<String, Message> errors, RequisitionLineItem item) {
-    rejectIfNullOrNegative(errors, requisitionTemplate,
-        item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
+    boolean skipValidation = !requisitionToValidate.getStatus().isAuthorized()
+        && requisitionTemplate.isPatientsTabEnabled();
+    if (!skipValidation) {
+      rejectIfNullOrNegative(errors, requisitionTemplate,
+          item.getTotalReceivedQuantity(), TOTAL_RECEIVED_QUANTITY);
+    }
   }
 
   @Override

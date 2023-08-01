@@ -65,7 +65,7 @@ public class StatusChangeValidationService {
     validators.add(new StockAdjustmentsValidator(requisition, orderables));
     validators.add(new TotalFieldValidator(requisition, requisition.getTemplate(), orderables));
     validators.add(new TotalReceivedQuantityValidator(requisition,
-        requisition.getTemplate(), orderables));
+          requisition.getTemplate(), orderables));
   }
 
   /**
