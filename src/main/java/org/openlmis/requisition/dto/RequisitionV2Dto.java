@@ -54,6 +54,10 @@ public final class RequisitionV2Dto extends BaseRequisitionDto {
   @Setter
   private Set<VersionObjectReferenceDto> availableProducts;
 
+  @Getter
+  @Setter
+  private String patientsData;
+
   @Override
   List<BaseRequisitionLineItemDto> getLineItems() {
     return Lists.newArrayList(Optional

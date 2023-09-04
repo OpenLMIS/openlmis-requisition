@@ -63,6 +63,8 @@ public final class BasicRequisitionDto extends BaseDto implements Requisition.Ex
 
   private Map<String, Object> extraData;
 
+  private String patientsData;
+
   @Override
   public void addStatusChange(StatusChange.Exporter statusChangeExporter) {
     StatusChangeDto statusChangeDto = (StatusChangeDto) statusChangeExporter;

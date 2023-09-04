@@ -271,6 +271,10 @@ public class Requisition extends BaseTimestampedEntity {
   @Embedded
   private ExtraDataEntity extraData = new ExtraDataEntity();
 
+  @Getter
+  @Setter
+  private String patientsData;
+
   /**
    * Constructor.
    *
@@ -303,7 +307,7 @@ public class Requisition extends BaseTimestampedEntity {
         original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
         original.previousRequisitions, original.availableProducts,
         original.datePhysicalStockCountCompleted, null,
-        null, new ExtraDataEntity());
+        null, new ExtraDataEntity(), original.patientsData);
 
     setId(original.getId());
 
@@ -417,6 +421,9 @@ public class Requisition extends BaseTimestampedEntity {
     // do this manually here, since JPA won't catch updates to collections (line items)
     profiler.start("SET_MODIFIED_DATE");
     setModifiedDate(ZonedDateTime.now());
+
+    profiler.start("SET_PATIENTS_DATA");
+    setPatientsData(requisition.getPatientsData());
 
     profiler.stop().log();
     LOGGER.exit();
@@ -940,6 +947,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupplyingFacility(supplyingFacilityId);
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
+    exporter.setPatientsData(patientsData);
     if (datePhysicalStockCountCompleted != null) {
       exporter.setDatePhysicalStockCountCompleted(
           datePhysicalStockCountCompleted.getLocalDate());
@@ -1195,6 +1203,8 @@ public class Requisition extends BaseTimestampedEntity {
     Optional<Supplier<StatusChange.Exporter>> provideStatusChangeExporter();
 
     void addStatusChange(StatusChange.Exporter providedExporter);
+
+    void setPatientsData(String patientsData);
   }
 
   public interface Importer extends ExtraDataImporter {
@@ -1227,5 +1237,7 @@ public class Requisition extends BaseTimestampedEntity {
     LocalDate getDatePhysicalStockCountCompleted();
 
     Map<String,Object> getExtraData();
+
+    String getPatientsData();
   }
 }

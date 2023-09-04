@@ -69,6 +69,8 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   private ZonedDateTime createdDate = ZonedDateTime.now();
   private ZonedDateTime modifiedDate = ZonedDateTime.now();
 
+  private String patientsData;
+
   /**
    * Creates new instance of {@link Requisition}.
    */
@@ -130,7 +132,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
         processingPeriodId, supplyingFacilityId, status, statusChanges, emergency, reportOnly,
         numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
         datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings,
-        new ExtraDataEntity(extraData)
+        new ExtraDataEntity(extraData), patientsData
     );
     requisition.setId(id);
     requisition.setCreatedDate(createdDate);

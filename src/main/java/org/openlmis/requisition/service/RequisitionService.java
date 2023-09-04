@@ -185,7 +185,7 @@ public class RequisitionService {
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
-  
+
   /**
    * Initiated given requisition if possible.
    *
@@ -480,7 +480,7 @@ public class RequisitionService {
 
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
     if (!userRoleAssignmentsReferenceDataService.hasSupervisionRight(right, userId,
-            requisition.getProgramId(), requisition.getFacilityId(), 
+            requisition.getProgramId(), requisition.getFacilityId(),
             requisition.getSupervisoryNodeId())) {
       return ValidationResult.noPermission(
               MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
@@ -903,5 +903,19 @@ public class RequisitionService {
     UserDto initiator = approvalNotifier.getInitiator(statusChanges, requisition.getId());
     approvalNotifier
             .notifyApproversUnskippedRequisitionLineItems(requisition,approver,locale,initiator);
+  }
+
+  /**
+   * Updates patientsData of requisition.
+   * @param requisitionId - id of requisition
+   * @param patientsData - stringified JSON string to store patients data
+   * @return requisition object.
+   */
+  public Requisition updatePatientsData(UUID requisitionId, String patientsData) {
+    Requisition requisition = requisitionRepository.findById(requisitionId)
+            .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
+                    requisitionId));
+    requisition.setPatientsData(patientsData);
+    return requisition;
   }
 }
