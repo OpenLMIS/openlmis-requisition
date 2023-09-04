@@ -58,6 +58,10 @@ public class RequisitionDto extends BaseRequisitionDto {
   @Setter
   private Set<OrderableDto> availableNonFullSupplyProducts;
 
+  @Getter
+  @Setter
+  private String patientsData;
+
   /**
    * Retrieves a list of available non full supply products or an empty set,
    * if the property is null.

@@ -1292,6 +1292,52 @@ resourceTypes:
                             body:
                                 application/json:
                                     schema: localizedMessage
+                /updatePatientsData:
+                    patch:
+                        is: [ secured ]
+                        description: Update patients data.
+                        body:
+                          application/json:
+                            schema: requisitionV2
+                        responses:
+                            200:
+                                description: The request is valid and the given requisition will be updated and returned.
+                                headers:
+                                  Keep-Alive:
+                                body:
+                                    application/json:
+                                        schema: requisitionV2
+                            400:
+                                description: The request's body is invalid
+                                body:
+                                    application/json:
+                                        schema: localizedMessageMap
+                            401:
+                                description: The request does not contain a token or the token might be invalid.
+                                body:
+                                    application/json:
+                            403:
+                                description: The server understood the request but refuses to authorize it.
+                                headers:
+                                  Keep-Alive:
+                                body:
+                                    application/json:
+                                        schema: localizedMessage
+                            404:
+                                description: The server understood the request but can not find the requisition.
+                                headers:
+                                  Keep-Alive:
+                                body:
+                                    application/json:
+                                        schema: localizedMessage
+                            409:
+                                description: There is a conflict while the request is handled.
+                                headers:
+                                  Keep-Alive:
+                                body:
+                                    application/json:
+                                        schema: localizedMessage
+
   /rejectionReasons:
     displayName: Rejection Reason
     post:

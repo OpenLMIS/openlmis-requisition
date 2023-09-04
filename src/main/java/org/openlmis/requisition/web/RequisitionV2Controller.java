@@ -25,6 +25,7 @@ import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -51,6 +52,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -172,6 +174,23 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     stopProfiler(profiler, dto);
 
     return dto;
+  }
+
+  /**
+   * Endpoint to update requisition's patientsData field.
+   * @param requisitionId - UUID of requisition
+   * @param payload - stringified JSON string of patientsData from requisitionDto
+   * @return Requisition dto.
+   */
+  @PatchMapping("/{id}/updatePatientsData")
+  public RequisitionV2Dto updatePatientsData(@PathVariable("id") UUID requisitionId,
+      @RequestBody Map<String, String> payload) {
+    String patientsData = payload.get("patientsData");
+    Requisition requisition =
+            requisitionService.updatePatientsData(requisitionId, patientsData);
+    Profiler profiler = getProfiler("UPDATE_REQUISITION_V2_PATIENTS_DATA", requisitionId);
+
+    return buildDto(requisition, profiler);
   }
 
   private RequisitionV2Dto buildDto(Requisition requisition, Profiler profiler) {

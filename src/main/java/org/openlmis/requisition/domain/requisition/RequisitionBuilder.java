@@ -122,6 +122,7 @@ public final class RequisitionBuilder {
     Map<String,Object> extraData = importer.getExtraData();
     extraData.put("unSkippedRequisitionLineItems", unSkippedItems);
     requisition.setExtraData(extraData);
+    requisition.setPatientsData(importer.getPatientsData());
 
     return requisition;
   }
