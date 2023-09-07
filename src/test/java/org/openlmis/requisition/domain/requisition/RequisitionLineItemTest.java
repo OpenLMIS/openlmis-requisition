@@ -168,6 +168,26 @@ public class RequisitionLineItemTest {
   }
 
   @Test
+  public void shouldOnlyUpdateApprovedFieldsWhenRequisitionStatusIsInApprovalAndTbBased() {
+    Requisition requisition = mockReq(RequisitionStatus.IN_APPROVAL);
+    RequisitionTemplate requisitionTemplate =
+            new RequisitionTemplateDataBuilder()
+                    .withPatientsTabEnabled(true)
+                    .build();
+    assertOnlyApprovalFieldsEditableForTbBasedReq(
+            mockReqWithTemplate(requisition, requisitionTemplate));
+  }
+
+  @Test
+  public void shouldNotUpdateTotalReceviedQtyWhenRequisitionInApprovalAndPatientsTabNotEnabled() {
+    Requisition requisition = mockReq(RequisitionStatus.IN_APPROVAL);
+    requisition.setTemplate(new RequisitionTemplateDataBuilder()
+            .withPatientsTabEnabled(false)
+            .build());
+    assertTotalReceivedQtyNotEditableForApproval(requisition);
+  }
+
+  @Test
   public void shouldUpdateSubmissionFields() {
     RequisitionLineItem item = new RequisitionLineItem();
     item.setRequisition(initiatedRequisition);
@@ -691,6 +711,38 @@ public class RequisitionLineItemTest {
     assertNull(updatedItem.getStockOnHand());
   }
 
+  private void assertOnlyApprovalFieldsEditableForTbBasedReq(Requisition requisition) {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+            .withOrderable(UUID.randomUUID(), 1L)
+            .withRequisition(requisition)
+            .withStockOnHand(5)
+            .withTotalReceivedQuantity(10)
+            .build();
+
+    RequisitionLineItem updatedItem = new RequisitionLineItem();
+    updatedItem.setRequisition(requisition);
+    updatedItem.updateFrom(requisitionLineItem);
+
+    assertEquals(10, updatedItem.getTotalReceivedQuantity().intValue());
+    assertNull(updatedItem.getStockOnHand());
+  }
+
+  private void assertTotalReceivedQtyNotEditableForApproval(Requisition requisition) {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+            .withOrderable(UUID.randomUUID(), 1L)
+            .withRequisition(requisition)
+            .withStockOnHand(5)
+            .withTotalReceivedQuantity(10)
+            .build();
+
+    RequisitionLineItem updatedItem = new RequisitionLineItem();
+    updatedItem.setRequisition(requisition);
+    updatedItem.updateFrom(requisitionLineItem);
+
+    assertNull(updatedItem.getTotalReceivedQuantity());
+    assertNull(updatedItem.getStockOnHand());
+  }
+
   private RequisitionLineItem createDefaultRequisitionLineItem(
       ApprovedProductDto ftap, List<StockAdjustment> stockAdjustments) {
     return new RequisitionLineItemDataBuilder()
@@ -753,6 +805,11 @@ public class RequisitionLineItemTest {
     when(requisition.getStatus()).thenReturn(status);
     when(requisition.isApprovable()).thenReturn(status.duringApproval());
     when(requisition.getProgramId()).thenReturn(programId);
+    return requisition;
+  }
+
+  private Requisition mockReqWithTemplate(Requisition requisition, RequisitionTemplate template) {
+    when(requisition.getTemplate()).thenReturn(template);
     return requisition;
   }
 }

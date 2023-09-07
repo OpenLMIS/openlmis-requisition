@@ -391,6 +391,10 @@ public class RequisitionLineItem extends BaseEntity {
     if (requisition.isApprovable()) {
       this.approvedQuantity = requisitionLineItem.getApprovedQuantity();
       this.remarks = requisitionLineItem.getRemarks();
+      RequisitionTemplate requisitionTemplate = requisition.getTemplate();
+      if (requisitionTemplate != null && requisitionTemplate.isPatientsTabEnabled()) {
+        this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
+      }
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
       } else {
