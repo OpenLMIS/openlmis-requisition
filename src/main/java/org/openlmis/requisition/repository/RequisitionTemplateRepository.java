@@ -39,4 +39,13 @@ public interface RequisitionTemplateRepository extends
                                    @Param("facilityTypeId") UUID facilityType,
                                    @Param("requisitionReportOnly") Boolean requisitionReportOnly);
 
+  @Query("SELECT DISTINCT t"
+      + " FROM RequisitionTemplate AS t"
+      + "   INNER JOIN FETCH t.templateAssignments AS a"
+      + " WHERE a.programId = :programId"
+      + "   AND a.facilityTypeId = :facilityTypeId"
+      + "   AND t.archived IS FALSE")
+  List<RequisitionTemplate> findTemplatesBy(@Param("programId") UUID program,
+                                   @Param("facilityTypeId") UUID facilityType);
+
 }

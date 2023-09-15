@@ -77,7 +77,7 @@ public class RequisitionTemplateServiceTest {
   public void findTemplateShouldReturnModifiedTemplateWhenReportOnlyIsTrue() {
     //given
     when(requisitionTemplateRepository.findTemplate(programId,
-        facilityTypeId, true))
+        facilityTypeId, false))
         .thenReturn(template);
 
     //when

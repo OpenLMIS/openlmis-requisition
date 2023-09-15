@@ -18,6 +18,7 @@ package org.openlmis.requisition.service;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_DEFINED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_TEMPLATE_NOT_FOUND;
 
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
@@ -38,15 +39,22 @@ public class RequisitionTemplateService {
    */
   public RequisitionTemplate findTemplate(UUID programId, UUID facilityTypeId, boolean reportOnly) {
 
-    RequisitionTemplate template = requisitionTemplateRepository
-        .findTemplate(programId, facilityTypeId, reportOnly);
+    //check for UI customized report only requisition
+    if (reportOnly) {
+      List<RequisitionTemplate> templates
+          = requisitionTemplateRepository.findTemplatesBy(programId, facilityTypeId);
+      if (!templates.isEmpty()) {
 
-    if (template == null) {
-
-      //Check for normal requisition template
-      template = requisitionTemplateRepository
-          .findTemplate(programId, facilityTypeId, false);
+        for (RequisitionTemplate template : templates) {
+          if (template.getRequisitionReportOnly()) {
+            return template;
+          }
+        }
+      }
     }
+
+    RequisitionTemplate template = requisitionTemplateRepository
+        .findTemplate(programId, facilityTypeId, false);
 
     if (template == null) {
       throw new ContentNotFoundMessageException(
