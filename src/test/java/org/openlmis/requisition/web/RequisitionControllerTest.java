@@ -757,7 +757,7 @@ public class RequisitionControllerTest {
         any(FacilityDto.class), any(ProgramDto.class),
         any(ProcessingPeriodDto.class)))
         .thenReturn(requisitionDto);
-    when(requisitionTemplateService.findTemplate(any(UUID.class), any(UUID.class), eq(false)))
+    when(requisitionTemplateService.findTemplate(any(UUID.class), any(UUID.class), eq(true)))
         .thenReturn(mock(RequisitionTemplate.class));
 
     when(periodService.findPeriod(programUuid, facilityUuid, null, true))
@@ -768,7 +768,7 @@ public class RequisitionControllerTest {
     requisitionController.initiate(programUuid, facilityUuid, null, true, request, response);
 
     //then
-    verify(requisitionTemplateService).findTemplate(programUuid, facilityTypeId, false);
+    verify(requisitionTemplateService).findTemplate(programUuid, facilityTypeId, true);
   }
 
   @Test
