@@ -231,7 +231,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
     profiler.start("FIND_REQUISITION_TEMPLATE");
     RequisitionTemplate requisitionTemplate = requisitionTemplateService.findTemplate(
-        program.getId(), facility.getType().getId(), reportOnly && !emergency
+        program.getId(), facility.getType().getId(), reportOnly
     );
 
     profiler.start("FIND_APPROVED_PRODUCTS");
