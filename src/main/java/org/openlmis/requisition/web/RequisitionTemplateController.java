@@ -29,6 +29,7 @@ import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
 import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionTemplateService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionTemplateDtoValidator;
 import org.slf4j.Logger;
@@ -68,6 +69,9 @@ public class RequisitionTemplateController extends BaseController {
 
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private RequisitionTemplateService templateService;
 
   /**
    * Allows creating a new Requisition Template.
@@ -207,6 +211,34 @@ public class RequisitionTemplateController extends BaseController {
     }
 
     requisitionTemplateRepository.delete(template);
+  }
+
+  /**
+   * Get chosen requisitionTemplate.
+   *
+   * @param facilityTypeId UUID of requisitionTemplate which we want to get
+   * @param programId UUID of requisitionTemplate which we want to get
+   * @param reportOnly UUID of requisitionTemplate which we want to get
+   * @return RequisitionTemplate.
+   */
+  @RequestMapping(value = "/requisitionTemplates/{facilityTypeId}/{programId}/{reportOnly}",
+      method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public RequisitionTemplateDto findTemplateL(
+      @PathVariable("facilityTypeId") UUID facilityTypeId,
+      @PathVariable("programId") UUID programId,
+      @PathVariable("reportOnly") Boolean reportOnly
+  ) {
+
+    RequisitionTemplate requisitionTemplate =
+        templateService.findTemplate(programId, facilityTypeId, reportOnly);
+
+    if (requisitionTemplate == null) {
+      return null;
+    }
+
+    return dtoBuilder.newInstance(requisitionTemplate);
   }
 
   private List<String> findColumnNamesWithTagRequired() {

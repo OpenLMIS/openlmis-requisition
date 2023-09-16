@@ -1139,7 +1139,39 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
-
+      /{facilityTypeId}/{programId}/{reportOnly}:
+          uriParameters:
+            facilityTypeId:
+                  displayName: facilityTypeId
+                  type: string
+                  required: true
+                  repeat: false
+            programId:
+                  displayName: programId
+                  type: string
+                  required: true
+                  repeat: false
+            reportOnly:
+                  displayName: reportOnly
+                  type: boolean
+                  required: false
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Get chosen requisitionTemplate.
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                            schema: requisitionTemplate
+                  "404":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                            schema: localizedMessage
   /availableRequisitionColumns:
       displayName: Available Requisition Column
       get:
