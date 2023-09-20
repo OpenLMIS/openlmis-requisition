@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -460,8 +462,9 @@ public class RequisitionController extends BaseRequisitionController {
     doApprove(requisition, approveParams);
 
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
-
-    if (!requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+    RequisitionTemplate requisitionTemplate = requisition.getTemplate();
+    if (!requisitionTemplate.isPopulateStockOnHandFromStockCards()
+        && !requisitionTemplate.isPatientsTabEnabled()) {
       submitStockEvent(requisition, user.getId(), orderables);
     }
 
