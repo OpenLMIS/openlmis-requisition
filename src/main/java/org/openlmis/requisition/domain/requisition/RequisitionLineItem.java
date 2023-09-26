@@ -394,6 +394,8 @@ public class RequisitionLineItem extends BaseEntity {
       RequisitionTemplate requisitionTemplate = requisition.getTemplate();
       if (requisitionTemplate != null && requisitionTemplate.isPatientsTabEnabled()) {
         this.totalReceivedQuantity = requisitionLineItem.getTotalReceivedQuantity();
+        this.numberOfPatientsOnTreatmentNextMonth =
+                requisitionLineItem.getNumberOfPatientsOnTreatmentNextMonth();
       }
       if (requisitionLineItem.getSkipped() != null) {
         this.skipped = requisitionLineItem.getSkipped();
