@@ -199,7 +199,7 @@ checkstyle {
 //NOTE: This plugin requires that this task be named 'sonarqube'. In fact, it is performing SonarCloud analysis.
 sonarqube {
     properties {
-        property "sonar.projectKey", "OpenLMIS_openlmis-referencedata"
+        property "sonar.projectKey", "OpenLMIS_openlmis-requisition"
         property "sonar.organization", "openlmis"
         property "sonar.host.url", "https://sonarcloud.io"
     }
