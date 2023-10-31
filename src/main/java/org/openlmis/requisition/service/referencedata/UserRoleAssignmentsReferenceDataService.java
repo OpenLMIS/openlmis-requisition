@@ -100,6 +100,7 @@ public class UserRoleAssignmentsReferenceDataService extends
   private boolean roleHasSupervisoryNodeId(DetailedRoleAssignmentDto role, UUID supervisoryNodeId,
                                            List<UUID> facilitySupervisoryNodesIds) {
     return supervisoryNodeId == null
-            || facilitySupervisoryNodesIds.contains(role.getSupervisoryNodeId());
+            || facilitySupervisoryNodesIds.contains(role.getSupervisoryNodeId())
+            || supervisoryNodeId.equals(role.getSupervisoryNodeId());
   }
 }
