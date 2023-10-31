@@ -6,7 +6,6 @@
 build/
 out/
 .idea/
-gradle/
 .env
 .tx/
 node_modules/
