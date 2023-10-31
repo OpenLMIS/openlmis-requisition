@@ -51,6 +51,7 @@ dependencies {
     compile "net.sf.jasperreports:jasperreports:6.5.1"
     compile "org.apache.poi:poi:3.15"
     compile "org.postgresql:postgresql:42.2.6"
+    compile "org.projectlombok:lombok"
     compile "org.slf4j:slf4j-ext"
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.springframework.boot:spring-boot-starter-security"
