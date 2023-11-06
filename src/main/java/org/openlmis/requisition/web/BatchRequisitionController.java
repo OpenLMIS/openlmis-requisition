@@ -507,7 +507,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private boolean getColumnNameConditions(RequisitionTemplateColumn column) {
     return !("pricePerPack".equals(column.getName())
             || "orderable.dispensable.displayUnit".equals(column.getName())
-            || "orderable.productCode".equals(column.getName()));
+            || "orderable.productCode".equals(column.getName())
+            || "dosesPerPatient".equals(column.getName()));
   }
 
   private void setNullForField(RequisitionLineItem lineItem, RequisitionTemplateColumn column) {
