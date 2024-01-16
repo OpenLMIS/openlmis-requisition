@@ -503,6 +503,27 @@ public class RequisitionController extends BaseRequisitionController {
   }
 
   /**
+   * Count requisitions to approve for right supervisor.
+   *
+   * @return Number of requisitions to be approved.
+   */
+  @GetMapping(RESOURCE_URL + "/numberOfRequisitionsForApproval")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public long countRequisitionsForApproval(
+      @RequestParam(value = "program", required = false) UUID programId) {
+    Profiler profiler = getProfiler("COUNT_REQUISITIONS_FOR_APPROVAL", programId);
+    UserDto user = getCurrentUser(profiler);
+
+    profiler.start("REQUISITION_SERVICE_COUNT_FOR_APPROVAL");
+    long numberOfRequisitionsForApproval = requisitionService
+        .countRequisitionsForApproval(user, programId);
+
+    stopProfiler(profiler);
+    return numberOfRequisitionsForApproval;
+  }
+
+  /**
    * Get all submitted Requisitions.
    *
    * @return Submitted requisitions.

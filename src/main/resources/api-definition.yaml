@@ -813,6 +813,24 @@ resourceTypes:
                         application/json:
                             schema: basicRequisitionDtoPage
                   "500":
+      /numberOfRequisitionsForApproval:
+          get:
+              is: [ secured, paginated, sorted ]
+              description: Get number of requisitions to approve for right supervisor.
+              queryParameters:
+                  program:
+                      displayName: program
+                      description: This parameter contains program UUID.
+                      type: string
+                      required: false
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                  "500":
       /requisitionsForConvert:
           get:
               is: [ secured, paginated, sorted ]
