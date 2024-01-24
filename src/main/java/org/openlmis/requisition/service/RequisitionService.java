@@ -433,8 +433,8 @@ public class RequisitionService {
     List<DetailedRoleAssignmentDto> roleAssignments = getRoleAssignments(user, right);
 
     if (!CollectionUtils.isEmpty(roleAssignments)) {
-      profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments);
+      Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+          profiler);
 
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
@@ -460,8 +460,9 @@ public class RequisitionService {
       profiler.stop().log();
       return 0L;
     }
-    profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-    Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments);
+
+    Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+        profiler);
 
     profiler.start("REQUISITION_REPOSITORY_COUNT_APPROVABLE_BY_PAIRS");
     Long numberOfRequisitionsForApproval = requisitionRepository
@@ -916,7 +917,8 @@ public class RequisitionService {
   }
 
   private static Set<Pair<UUID, UUID>> getProgramNodePairs(UUID programId,
-      List<DetailedRoleAssignmentDto> roleAssignments) {
+      List<DetailedRoleAssignmentDto> roleAssignments, Profiler profiler) {
+    profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
     return roleAssignments
         .stream()
         .filter(item -> Objects.nonNull(item.getRole().getId()))
