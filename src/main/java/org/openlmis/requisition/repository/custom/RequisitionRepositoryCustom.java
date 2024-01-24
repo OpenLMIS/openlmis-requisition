@@ -44,4 +44,7 @@ public interface RequisitionRepositoryCustom {
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable);
+
+  Long countApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair<UUID, UUID>> programNodePairs);
 }

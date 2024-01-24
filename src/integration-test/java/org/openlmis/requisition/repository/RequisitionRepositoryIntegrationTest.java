@@ -1129,6 +1129,86 @@ public class RequisitionRepositoryIntegrationTest
     assertThat(result, is(false));
   }
 
+  @Test
+  public void countByProgramSupervisoryNodePairsShouldFindIfIdsAndStatusMatch() {
+    // given
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+
+    Requisition matchingRequisition1 = requisitions.get(0);
+    matchingRequisition1.setProgramId(programId);
+    matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
+
+    // simulation that the requisition has been rejected 3 times
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    Requisition matchingRequisition2 = requisitions.get(1);
+    matchingRequisition2.setProgramId(programId);
+    matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition2.setStatus(RequisitionStatus.IN_APPROVAL);
+
+    // simulation that the requisition has been rejected 2 times
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    matchingRequisition2
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition2)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition2);
+
+    repository.save(matchingRequisition2);
+
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    // when
+    long result = repository
+        .countApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+
+    // then
+    assertEquals(2L, result);
+  }
+
   private RequisitionLineItem generateLineItem(Requisition requisition) {
     RequisitionLineItem item = new RequisitionLineItemDataBuilder()
         .withRequisition(requisition)

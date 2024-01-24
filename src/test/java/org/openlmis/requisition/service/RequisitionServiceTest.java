@@ -628,6 +628,84 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldCountRequisitionsForApproval() {
+    // given
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    role.setRights(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
+
+    Long numberOfRequisitionsForApproval = 10L;
+    when(requisitionRepository.countApprovableRequisitionsByProgramSupervisoryNodePairs(
+        newHashSet(new ImmutablePair<>(program.getId(), supervisoryNode.getId()))))
+        .thenReturn(numberOfRequisitionsForApproval);
+
+    // when
+    long result = requisitionService.countRequisitionsForApproval(user, null);
+
+    // then
+    assertEquals(10L, result);
+  }
+
+  @Test
+  public void shouldCountRequisitionsForApprovalWithProgramFilter() {
+    // given
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getProgramId()).thenReturn(program.getId());
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    role.setRights(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
+    Long numberOfRequisitionsForApproval = 10L;
+    when(requisitionRepository.countApprovableRequisitionsByProgramSupervisoryNodePairs(
+        newHashSet(new ImmutablePair<>(program.getId(), supervisoryNode.getId()))))
+        .thenReturn(numberOfRequisitionsForApproval);
+
+    // when
+    long result = requisitionService.countRequisitionsForApproval(user, program.getId());
+
+    // then
+    assertEquals(10L, result);
+  }
+
+  @Test
+  public void shouldNotCountRequisitionsForApprovalWithoutApproveRight() {
+    Set<RightDto> rights = new HashSet<>();
+    role.setRights(rights);
+
+    long result = requisitionService.countRequisitionsForApproval(user, null);
+
+    assertEquals(0, result);
+  }
+
+  @Test
+  public void shouldNotCountRequisitionsForApprovalWithIncorrectSupervisoryNode() {
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    role.setRights(rights);
+
+    long result = requisitionService.countRequisitionsForApproval(user, null);
+
+    assertEquals(0, result);
+  }
+
+  @Test
   public void shouldPassValidationIfUserCanApproveRequisition() {
     when(permissionService.canApproveRequisition(any(Requisition.class)))
         .thenReturn(ValidationResult.success());

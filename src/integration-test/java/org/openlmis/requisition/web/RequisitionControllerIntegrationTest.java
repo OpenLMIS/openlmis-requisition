@@ -145,6 +145,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
   private static final String PERIODS_FOR_INITIATE_URL = RESOURCE_URL + "/periodsForInitiate";
   private static final String APPROVED_REQUISITIONS_SEARCH_URL = RESOURCE_URL
       + "/requisitionsForConvert";
+  private static final String NUMBER_OF_REQ_FOR_APPROVAL_URL = RESOURCE_URL
+      + "/numberOfRequisitionsForApproval";
 
   private static final String FACILITY = "facility";
   private static final String PROGRAM = "program";
@@ -1855,6 +1857,58 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     assertEquals(1, result.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // GET /api/requisitions/numberOfRequisitionsForApproval
+
+  @Test
+  public void shouldGetNumberOfRequisitionsForApprovalForSpecificUser() {
+    // given
+    Long numberOfRequisitionsForApproval = 10L;
+
+    given(requisitionService.countRequisitionsForApproval(
+        eq(user), eq(null)))
+        .willReturn(10L);
+
+    // when
+    Long result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(NUMBER_OF_REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Long.class);
+
+    // then
+    assertEquals(numberOfRequisitionsForApproval, result);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetNumberOfRequisitionsForApprovalForSpecificUserAndProgram() {
+    // given
+    Long numberOfRequisitionsForApproval = 10L;
+    UUID program = UUID.randomUUID();
+
+    given(requisitionService.countRequisitionsForApproval(
+        eq(user), eq(program)))
+        .willReturn(10L);
+
+    // when
+    Long result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(PROGRAM, program)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(NUMBER_OF_REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Long.class);
+
+    // then
+    assertEquals(numberOfRequisitionsForApproval, result);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
