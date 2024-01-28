@@ -62,7 +62,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,11 +71,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @SuppressWarnings("PMD.TooManyMethods")
-@Controller
+@RestController
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
 
@@ -99,7 +98,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/initiate")
   @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
   public RequisitionDto initiate(@RequestParam(value = "program") UUID programId,
       @RequestParam(value = "facility") UUID facilityId,
       @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
@@ -141,7 +139,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/periodsForInitiate")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Collection<RequisitionPeriodDto> getProcessingPeriodIds(
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
@@ -195,7 +192,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/submit")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto submitRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -262,7 +258,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -298,7 +293,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId,
       HttpServletResponse response) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
@@ -324,7 +318,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/search")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<BasicRequisitionDto> searchRequisitions(
       @RequestParam MultiValueMap<String, String> queryParams,
       Pageable pageable) {
@@ -351,7 +344,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}/skip")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto skipRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -386,7 +378,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}/reject")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto rejectRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -427,7 +418,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/approve")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto approveRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -481,7 +471,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/requisitionsForApproval")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<BasicRequisitionDto> requisitionsForApproval(
       @RequestParam(value = "program", required = false) UUID programId,
       @RequestParam(value = "facility", required = false) UUID facilityId,
@@ -506,13 +495,32 @@ public class RequisitionController extends BaseRequisitionController {
   }
 
   /**
+   * Count requisitions to approve for right supervisor.
+   *
+   * @return Number of requisitions to be approved.
+   */
+  @GetMapping(RESOURCE_URL + "/numberOfRequisitionsForApproval")
+  @ResponseStatus(HttpStatus.OK)
+  public long countRequisitionsForApproval(
+      @RequestParam(value = "program", required = false) UUID programId) {
+    Profiler profiler = getProfiler("COUNT_REQUISITIONS_FOR_APPROVAL", programId);
+    UserDto user = getCurrentUser(profiler);
+
+    profiler.start("REQUISITION_SERVICE_COUNT_FOR_APPROVAL");
+    long numberOfRequisitionsForApproval = requisitionService
+        .countRequisitionsForApproval(user, programId);
+
+    stopProfiler(profiler);
+    return numberOfRequisitionsForApproval;
+  }
+
+  /**
    * Get all submitted Requisitions.
    *
    * @return Submitted requisitions.
    */
   @GetMapping(RESOURCE_URL + "/submitted")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
     Profiler profiler = getProfiler("GET_SUBMITTED_REQUISITIONS", pageable);
 
@@ -542,7 +550,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/authorize")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto authorizeRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -598,7 +605,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/requisitionsForConvert")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) UUID programId,
       @RequestParam(required = false) UUID facilityId,

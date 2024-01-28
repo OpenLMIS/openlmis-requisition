@@ -356,6 +356,37 @@ public class RequisitionRepositoryImpl
     return page;
   }
 
+  /**
+   * Count all requisitions that match any of the program/supervisoryNode pairs, that can be
+   * approved (AUTHORIZED, IN_APPROVAL). Pairs must not be null.
+   *
+   * @param programNodePairs program / supervisoryNode pairs
+   * @return number of matching requisitions
+   */
+  @Override
+  public Long countApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair<UUID, UUID>> programNodePairs) {
+    XLOGGER.entry(programNodePairs);
+
+    Profiler profiler = new Profiler("COUNT_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CREATE_BUILDER");
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    profiler.start("PREPARE_COUNT_QUERY");
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, null);
+
+    profiler.start("EXECUTE_COUNT_QUERY");
+    Long count = countEntities(countQuery);
+
+    XLOGGER.exit();
+    profiler.stop().log();
+
+    return count;
+  }
+
   private <T> CriteriaQuery<T> prepareQuery(CriteriaBuilder builder, CriteriaQuery<T> query,
       RequisitionSearchParams params, List<String> userPermissionStrings,
       Set<Pair<UUID, UUID>> programNodePairs, boolean count, Pageable pageable) {

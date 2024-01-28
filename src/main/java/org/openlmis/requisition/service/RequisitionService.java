@@ -428,24 +428,13 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
 
     Page<Requisition> requisitionsForApproval = Pagination.getPage(
-            Collections.emptyList(), pageable);
+        Collections.emptyList(), pageable);
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
-    List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
-        .getRoleAssignments(user.getId())
-        .stream()
-        .filter(r -> r.getRole().getRights().contains(right))
-        .collect(toList());
+    List<DetailedRoleAssignmentDto> roleAssignments = getRoleAssignments(user, right);
 
     if (!CollectionUtils.isEmpty(roleAssignments)) {
-      profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair<UUID, UUID>> programNodePairs = roleAssignments
-              .stream()
-              .filter(item -> Objects.nonNull(item.getRole().getId()))
-              .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
-              .filter(item -> Objects.nonNull(item.getProgramId()))
-              .filter(item -> null == programId || programId.equals(item.getProgramId()))
-              .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
-              .collect(toSet());
+      Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+          profiler);
 
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
@@ -455,6 +444,32 @@ public class RequisitionService {
 
     profiler.stop().log();
     return requisitionsForApproval;
+  }
+
+  /**
+   * Count requisitions to approve for the specified user.
+   */
+  public Long countRequisitionsForApproval(UserDto user, UUID programId) {
+    Profiler profiler = new Profiler("REQUISITION_SERVICE_COUNT_FOR_APPROVAL");
+    profiler.setLogger(LOGGER);
+
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
+    List<DetailedRoleAssignmentDto> roleAssignments = getRoleAssignments(user, right);
+
+    if (CollectionUtils.isEmpty(roleAssignments)) {
+      profiler.stop().log();
+      return 0L;
+    }
+
+    Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+        profiler);
+
+    profiler.start("REQUISITION_REPOSITORY_COUNT_APPROVABLE_BY_PAIRS");
+    Long numberOfRequisitionsForApproval = requisitionRepository
+        .countApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+
+    profiler.stop().log();
+    return numberOfRequisitionsForApproval;
   }
 
   /**
@@ -891,6 +906,27 @@ public class RequisitionService {
               requisition.getLatestStatusChange());
       rejectionRepository.save(saveRejection);
     }
+  }
+
+  private List<DetailedRoleAssignmentDto> getRoleAssignments(UserDto user, RightDto right) {
+    return userRoleAssignmentsReferenceDataService
+        .getRoleAssignments(user.getId())
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .collect(toList());
+  }
+
+  private static Set<Pair<UUID, UUID>> getProgramNodePairs(UUID programId,
+      List<DetailedRoleAssignmentDto> roleAssignments, Profiler profiler) {
+    profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
+    return roleAssignments
+        .stream()
+        .filter(item -> Objects.nonNull(item.getRole().getId()))
+        .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+        .filter(item -> Objects.nonNull(item.getProgramId()))
+        .filter(item -> null == programId || programId.equals(item.getProgramId()))
+        .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
+        .collect(toSet());
   }
 
   /**
