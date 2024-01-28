@@ -376,7 +376,8 @@ public class RequisitionRepositoryImpl
 
     profiler.start("PREPARE_COUNT_QUERY");
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, null);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true,
+        null, null, null);
 
     profiler.start("EXECUTE_COUNT_QUERY");
     Long count = countEntities(countQuery);

@@ -41,12 +41,10 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIP
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -679,12 +677,12 @@ public class RequisitionRepositoryIntegrationTest
             .buildAsNew());
     saveAndFlushWithDelay(matchingRequisition1);
 
-    //Set<Pair<UUID, UUID>> programNodePairs =
-    //singleton(new ImmutablePair<>(programId, supervisoryNodeId));
+    Set<Pair<UUID, UUID>> programNodePairs =
+        singleton(new ImmutablePair<>(programId, supervisoryNodeId));
 
     // when
     Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(new HashSet<>(), facilityId,
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, facilityId,
             null, pageRequest);
 
     // then
