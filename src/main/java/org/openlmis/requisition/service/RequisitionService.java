@@ -423,7 +423,7 @@ public class RequisitionService {
    * Get requisitions to approve for the specified user.
    */
   public Page<Requisition> getRequisitionsForApproval(UserDto user, UUID programId,
-                                                      Pageable pageable) {
+      UUID facilityId, UUID periodId, Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     profiler.setLogger(LOGGER);
 
@@ -450,7 +450,7 @@ public class RequisitionService {
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
               .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs,
-                      pageable);
+                  facilityId, periodId, pageable);
     }
 
     profiler.stop().log();

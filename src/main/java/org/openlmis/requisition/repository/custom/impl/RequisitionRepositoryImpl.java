@@ -287,7 +287,7 @@ public class RequisitionRepositoryImpl
    */
   @Override
   public Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable) {
+      Set<Pair<UUID, UUID>> programNodePairs, UUID facilityId, UUID periodId, Pageable pageable) {
     XLOGGER.entry(programNodePairs, pageable);
 
     Profiler profiler = new Profiler("SEARCH_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
@@ -298,7 +298,8 @@ public class RequisitionRepositoryImpl
 
     profiler.start("PREPARE_COUNT_QUERY");
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, pageable);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, facilityId,
+        periodId, pageable);
 
     profiler.start("EXECUTE_COUNT_QUERY");
     Long count = countEntities(countQuery);
@@ -318,7 +319,8 @@ public class RequisitionRepositoryImpl
 
     profiler.start("PREPARE_MAIN_QUERY");
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false, facilityId, periodId,
+        pageable);
 
     profiler.start("EXECUTE_MAIN_QUERY");
     List<Requisition> requisitions = entityManager.createQuery(query)
@@ -436,7 +438,7 @@ public class RequisitionRepositoryImpl
 
   private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
       CriteriaQuery<T> query, Set<Pair<UUID, UUID>> programNodePairs,
-      boolean isCountQuery, Pageable pageable) {
+      boolean isCountQuery, UUID facilityId, UUID periodId, Pageable pageable) {
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -452,6 +454,8 @@ public class RequisitionRepositoryImpl
         .in(RequisitionStatus.AUTHORIZED, RequisitionStatus.IN_APPROVAL);
 
     Predicate predicate = builder.and(pairPredicate, statusPredicate);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facilityId);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, periodId);
 
     if (!isCountQuery) {
       Subquery<ZonedDateTime> subquery = query.subquery(ZonedDateTime.class);

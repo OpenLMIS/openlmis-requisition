@@ -41,10 +41,12 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SKIP
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.SUBMITTED;
 
 import com.google.common.collect.Sets;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -628,10 +630,65 @@ public class RequisitionRepositoryIntegrationTest
 
     // when
     Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, null, null,
+            pageRequest);
 
     // then
     assertEquals(2, results.getTotalElements());
+  }
+
+  @Test
+  public void searchByProgramSupervisoryNodePairsShouldFindIfIdsAndStatusAndFacilityMatch() {
+    // given
+    UUID programId = UUID.randomUUID();
+    UUID supervisoryNodeId = UUID.randomUUID();
+    UUID facilityId = UUID.randomUUID();
+
+    Requisition matchingRequisition1 = requisitions.get(0);
+    matchingRequisition1.setProgramId(programId);
+    matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
+    matchingRequisition1.setStatus(RequisitionStatus.AUTHORIZED);
+    matchingRequisition1.setFacilityId(facilityId);
+
+    // simulation that the requisition has been rejected 3 times
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    matchingRequisition1
+        .getStatusChanges()
+        .add(new StatusChangeDataBuilder()
+            .forAuthorizedRequisition(matchingRequisition1)
+            .buildAsNew());
+    saveAndFlushWithDelay(matchingRequisition1);
+
+    //Set<Pair<UUID, UUID>> programNodePairs =
+    //singleton(new ImmutablePair<>(programId, supervisoryNodeId));
+
+    // when
+    Page<Requisition> results = repository
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(new HashSet<>(), facilityId,
+            null, pageRequest);
+
+    // then
+    assertEquals(1, results.getTotalElements());
   }
 
   @Test
@@ -686,7 +743,7 @@ public class RequisitionRepositoryIntegrationTest
     // when
     Page<Requisition> results = repository
         .searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-            programNodePairs, sortPageRequest);
+            programNodePairs, null, null, sortPageRequest);
 
     // then
     assertEquals(2, results.getTotalElements());
@@ -785,7 +842,7 @@ public class RequisitionRepositoryIntegrationTest
     // when
     Page<Requisition> results = repository
         .searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-            programNodePairs, sortPageRequest);
+            programNodePairs, null, null, sortPageRequest);
 
     // then
     assertEquals(3, results.getTotalElements());
@@ -840,7 +897,8 @@ public class RequisitionRepositoryIntegrationTest
 
     // when
     Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, null, null,
+            pageRequest);
 
     // then
     assertEquals(0, results.getTotalElements());
@@ -868,7 +926,8 @@ public class RequisitionRepositoryIntegrationTest
 
     // when
     Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, null, null,
+            pageRequest);
 
     // then
     assertEquals(0, results.getTotalElements());
@@ -891,7 +950,8 @@ public class RequisitionRepositoryIntegrationTest
 
     // when
     Page<Requisition> results = repository
-        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, pageRequest);
+        .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs, null, null,
+            pageRequest);
 
     // then
     assertThat(results.getContent(), hasSize(1));
