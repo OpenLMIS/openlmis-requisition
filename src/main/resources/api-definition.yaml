@@ -805,6 +805,18 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
+                  facility:
+                    displayName: facility
+                    description: This parameter contains facility UUID.
+                    type: string
+                    required: false
+                    repeat: false
+                  processingPeriod:
+                    displayName: processingPeriod
+                    description: This parameter contains processing period UUID.
+                    type: string
+                    required: false
+                    repeat: false
               responses:
                   "200":
                       headers:

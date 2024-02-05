@@ -1815,7 +1815,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     List<Requisition> requisitions = Collections.singletonList(requisition);
 
     given(requisitionService.getRequisitionsForApproval(
-        eq(user), eq(null), any(Pageable.class)))
+        eq(user), eq(null), eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
@@ -1841,13 +1841,67 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     UUID program = UUID.randomUUID();
 
     given(requisitionService.getRequisitionsForApproval(
-        eq(user), eq(program), any(Pageable.class)))
+        eq(user), eq(program), eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
 
     // when
     PageDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PROGRAM, program)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageDto.class);
+
+    // then
+    assertEquals(1, result.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApprovalForSpecificUserAndFacility() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    UUID facility = UUID.randomUUID();
+
+    given(requisitionService.getRequisitionsForApproval(
+        eq(user), eq(null), eq(facility), eq(null), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
+
+    // when
+    PageDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(FACILITY, facility)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQ_FOR_APPROVAL_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageDto.class);
+
+    // then
+    assertEquals(1, result.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApprovalForSpecificUserAndProcessingPeriod() {
+    // given
+    Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
+    List<Requisition> requisitions = Collections.singletonList(requisition);
+    UUID period = UUID.randomUUID();
+
+    given(requisitionService.getRequisitionsForApproval(
+        eq(user), eq(null), eq(null), eq(period), any(Pageable.class)))
+        .willReturn(Pagination.getPage(requisitions, FIRST_PAGE));
+
+    // when
+    PageDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(PROCESSING_PERIOD, period)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(REQ_FOR_APPROVAL_URL)
@@ -2058,7 +2112,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Pageable pageable = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, 1);
 
     given(requisitionService.getRequisitionsForApproval(
-        eq(user), eq(null), any(Pageable.class)))
+        eq(user), eq(null), eq(null), eq(null), any(Pageable.class)))
         .willReturn(Pagination.getPage(requisitions, pageable, totalElements));
 
     // when

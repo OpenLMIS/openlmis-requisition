@@ -43,7 +43,7 @@ public interface RequisitionRepositoryCustom {
       Set<Pair<UUID, UUID>> programSupervisoryNodePair, Pageable pageable);
 
   Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable);
+      Set<Pair<UUID, UUID>> programNodePairs, UUID facilityId, UUID periodId, Pageable pageable);
 
   Long countApprovableRequisitionsByProgramSupervisoryNodePairs(
       Set<Pair<UUID, UUID>> programNodePairs);

@@ -535,7 +535,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldGetRequisitionsForApproval() {
     // given
-    List<Requisition> requisitions = mockSearchRequisitionsForApproval();
+    List<Requisition> requisitions = mockSearchRequisitionsForApprovalWithProgramFilter();
     assertEquals(2, requisitions.size());
 
     DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
@@ -554,7 +554,7 @@ public class RequisitionServiceTest {
 
     // when
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, null, null, pageRequest);
 
     // then
     assertEquals(2, requisitionsForApproval.getTotalElements());
@@ -565,7 +565,7 @@ public class RequisitionServiceTest {
   @Test
   public void shouldGetRequisitionsForApprovalWithProgramFilter() {
     // given
-    List<Requisition> requisitions = mockSearchRequisitionsForApproval();
+    List<Requisition> requisitions = mockSearchRequisitionsForApprovalWithProgramFilter();
     assertEquals(2, requisitions.size());
 
     DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
@@ -584,7 +584,65 @@ public class RequisitionServiceTest {
 
     // when
     Page<Requisition> requisitionsForApproval = requisitionService
-                .getRequisitionsForApproval(user, program.getId(), pageRequest);
+                .getRequisitionsForApproval(user, program.getId(), null, null, pageRequest);
+
+    // then
+    assertEquals(2, requisitionsForApproval.getTotalElements());
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(1)));
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApprovalWithFacilityFilter() {
+    // given
+    List<Requisition> requisitions = mockSearchRequisitionsForApprovalWithFacilityFilter();
+    assertEquals(2, requisitions.size());
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    role.setRights(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
+
+    // when
+    Page<Requisition> requisitionsForApproval = requisitionService
+        .getRequisitionsForApproval(user, null, facility.getId(), null, pageRequest);
+
+    // then
+    assertEquals(2, requisitionsForApproval.getTotalElements());
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(0)));
+    assertTrue(requisitionsForApproval.getContent().contains(requisitions.get(1)));
+  }
+
+  @Test
+  public void shouldGetRequisitionsForApprovalWithProcessingPeriodFilter() {
+    // given
+    List<Requisition> requisitions = mockSearchRequisitionsForApprovalWithProcessingPeriodFilter();
+    assertEquals(2, requisitions.size());
+
+    DetailedRoleAssignmentDto detailedRoleAssignmentDto = mock(DetailedRoleAssignmentDto.class);
+    when(detailedRoleAssignmentDto.getSupervisoryNodeId()).thenReturn(supervisoryNode.getId());
+    when(detailedRoleAssignmentDto.getRole()).thenReturn(role);
+
+    Set<RightDto> rights = new HashSet<>();
+    rights.add(approveRequisitionRight);
+    role.setRights(rights);
+
+    Set<DetailedRoleAssignmentDto> roleAssignmentDtos = new HashSet<>();
+    roleAssignmentDtos.add(detailedRoleAssignmentDto);
+    when(userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId()))
+        .thenReturn(roleAssignmentDtos);
+
+    // when
+    Page<Requisition> requisitionsForApproval = requisitionService
+        .getRequisitionsForApproval(user, null, null, processingPeriod.getId(), pageRequest);
 
     // then
     assertEquals(2, requisitionsForApproval.getTotalElements());
@@ -598,7 +656,7 @@ public class RequisitionServiceTest {
     role.setRights(rights);
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, null, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }
@@ -610,7 +668,7 @@ public class RequisitionServiceTest {
     role.setRights(rights);
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, null, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }
@@ -622,7 +680,7 @@ public class RequisitionServiceTest {
     role.setRights(rights);
 
     Page<Requisition> requisitionsForApproval =
-        requisitionService.getRequisitionsForApproval(user, null, pageRequest);
+        requisitionService.getRequisitionsForApproval(user, null, null, null, pageRequest);
 
     assertEquals(0, requisitionsForApproval.getTotalElements());
   }
@@ -1717,17 +1775,41 @@ public class RequisitionServiceTest {
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(numberOfPeriodsToAverage);
   }
 
-  private List<Requisition> mockSearchRequisitionsForApproval() {
+  private List<Requisition> mockSearchRequisitionsForApprovalWithProgramFilter() {
+    List<Requisition> requisitions = mockRequisitionsForApproval();
+
+    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+        newHashSet(new ImmutablePair<>(program.getId(), supervisoryNode.getId())), null, null,
+        pageRequest))
+        .thenReturn(getPage(requisitions, pageRequest));
+    return requisitions;
+  }
+
+  private List<Requisition> mockSearchRequisitionsForApprovalWithFacilityFilter() {
+    List<Requisition> requisitions = mockRequisitionsForApproval();
+
+    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+        any(Set.class), eq(facility.getId()), eq(null), eq(pageRequest)))
+        .thenReturn(getPage(requisitions, pageRequest));
+    return requisitions;
+  }
+
+  private List<Requisition> mockSearchRequisitionsForApprovalWithProcessingPeriodFilter() {
+    List<Requisition> requisitions = mockRequisitionsForApproval();
+
+    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
+        any(Set.class), eq(null), eq(processingPeriod.getId()), eq(pageRequest)))
+        .thenReturn(getPage(requisitions, pageRequest));
+    return requisitions;
+  }
+
+  private List<Requisition> mockRequisitionsForApproval() {
     requisition.setStatus(IN_APPROVAL);
     List<Requisition> requisitions = new ArrayList<>();
     requisitions.add(requisition);
     Requisition requisition2 = generateRequisition();
     requisition2.setStatus(AUTHORIZED);
     requisitions.add(requisition2);
-
-    when(requisitionRepository.searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-        newHashSet(new ImmutablePair<>(program.getId(), supervisoryNode.getId())), pageRequest))
-        .thenReturn(getPage(requisitions, pageRequest));
     return requisitions;
   }
 
