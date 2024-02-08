@@ -78,10 +78,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
+import org.openlmis.requisition.dto.ProcessingScheduleDto;
+import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryDto;
 import org.openlmis.requisition.dto.ProofOfDeliveryLineItemDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
@@ -91,8 +95,11 @@ import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingScheduleDtoDataBuilder;
+import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.StockCardRangeSummaryDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupplyLineDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
@@ -1678,6 +1685,86 @@ public class RequisitionTest {
         requisitionLineItem.getCalculatedOrderQuantityIsa(),
         requisitionLineItem.getApprovedQuantity()
     );
+  }
+
+  @Test
+  public void shouldCalculateCorrectAmcInSubmitForStockmanagementFacility() {
+    List<Requisition> consecutiveRequisitions =
+        createThreeConsecutiveRequisitionsForStockmanagementFacility();
+    Requisition initiatedRequisition = consecutiveRequisitions.get(2);
+
+    initiatedRequisition.submit(Collections.singletonMap(orderable.getIdentity(), orderable),
+        UUID.randomUUID(), true);
+
+    RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems()
+        .get(0);
+
+    assertEquals(200,
+        requisitionLineItem.getAverageConsumption().longValue());
+  }
+
+  // Creates three requisitions for the same facility and program, with consecutive periods
+  // Requisitions have the following statuses: AUTHORIZED, AUTHORIZED, INITIATED
+  private List<Requisition> createThreeConsecutiveRequisitionsForStockmanagementFacility() {
+    final UUID programId = orderable.getPrograms().stream().findFirst().get().getProgramId();
+    final FacilityDto facilityDto = new FacilityDtoDataBuilder().buildAsDto();
+    final ProgramDto programDto = new ProgramDtoDataBuilder()
+        .withId(programId).buildAsDto();
+    final UUID orderableId = orderable.getId();
+
+    final String march = "march";
+    final String april = "april";
+    final String may = "may";
+    final LocalDate marchStartDate = LocalDate.of(2024, 3, 1);
+    final LocalDate marchEndDate = LocalDate.of(2024, 3, 31);
+    final LocalDate aprilStartDate = LocalDate.of(2024, 4, 1);
+    final LocalDate aprilEndDate = LocalDate.of(2024, 4, 30);
+    final LocalDate mayStartDate = LocalDate.of(2024, 5, 1);
+    final LocalDate mayEndDate = LocalDate.of(2024, 5, 31);
+
+    final ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDtoDataBuilder()
+        .buildAsDto();
+    final ProcessingPeriodDto marchProcessingPeriodDto = new ProcessingPeriodDtoDataBuilder()
+        .withName(march).withStartDate(marchStartDate).withEndDate(marchEndDate)
+        .withProcessingSchedule(processingScheduleDto).buildAsDto();
+    final ProcessingPeriodDto aprilProcessingPeriodDto = new ProcessingPeriodDtoDataBuilder()
+        .withName(april).withStartDate(aprilStartDate).withEndDate(aprilEndDate)
+        .withProcessingSchedule(processingScheduleDto).buildAsDto();
+    final ProcessingPeriodDto mayProcessingPeriodDto = new ProcessingPeriodDtoDataBuilder()
+        .withName(may).withStartDate(mayStartDate).withEndDate(mayEndDate)
+        .withProcessingSchedule(processingScheduleDto).buildAsDto();
+
+    RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
+        .withNumberOfPeriodsToAverage(3).withPopulateStockOnHandFromStockCards(true)
+        .withAllColumns().build();
+
+    RequisitionLineItem marchRequisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(0).withOrderable(orderableId, 1L).withAverageConsumption(100)
+        .withAverageConsumption(100).build();
+    RequisitionLineItem aprilRequisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(0).withOrderable(orderableId, 1L).withAverageConsumption(200)
+        .withAverageConsumption(200).withId(marchRequisitionLineItem.getId()).build();
+    RequisitionLineItem mayRequisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withTotalStockoutDays(0).withOrderable(orderableId, 1L).withAverageConsumption(300)
+        .withAverageConsumption(300).withId(marchRequisitionLineItem.getId()).build();
+
+    Requisition marchRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(marchProcessingPeriodDto.getId())
+        .withRequisitionLineItems(Collections.singletonList(marchRequisitionLineItem))
+        .withEmergency(false).withTemplate(requisitionTemplate).buildAuthorizedRequisition();
+    Requisition aprilRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(aprilProcessingPeriodDto.getId())
+        .withRequisitionLineItems(Collections.singletonList(aprilRequisitionLineItem))
+        .withEmergency(false).withPreviousRequisitions(Collections.singletonList(marchRequisition))
+        .withTemplate(requisitionTemplate).buildAuthorizedRequisition();
+    Requisition mayRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(mayProcessingPeriodDto.getId())
+        .withRequisitionLineItems(Collections.singletonList(mayRequisitionLineItem))
+        .withEmergency(false).withPreviousRequisitions(
+            Arrays.asList(marchRequisition, aprilRequisition))
+        .withTemplate(requisitionTemplate).buildInitiatedRegularRequisition();
+
+    return Arrays.asList(marchRequisition, aprilRequisition, mayRequisition);
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
