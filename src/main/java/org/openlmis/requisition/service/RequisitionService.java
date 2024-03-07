@@ -92,6 +92,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
@@ -185,6 +186,9 @@ public class RequisitionService {
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Autowired
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -954,4 +958,65 @@ public class RequisitionService {
     requisition.setPatientsData(patientsData);
     return requisition;
   }
+
+  /**
+   * Retrieves all previous periods from certain requisition.
+   * @param programId - requisition program id
+   * @param facilityId - requisition facility id
+   * @param periodId - requisition period id
+   * @param emergency - is this requisition emergency
+   * @param numberOfPreviousPeriodsToAverage - how many periods to fetch
+   * @return retrieved list of stockCardRangeSummariesToAverage.
+   */
+  public List<ProcessingPeriodDto> findPreviousPeriods(UUID programId, UUID facilityId,
+                                                       UUID periodId, boolean emergency,
+                                                       Integer numberOfPreviousPeriodsToAverage) {
+    ProcessingPeriodDto periodDto = periodService.getPeriod(periodId);
+
+    return periodService
+        .findPreviousPeriods(periodDto, numberOfPreviousPeriodsToAverage);
+  }
+
+  /**
+   * Retrieves stockCardRangeSummariesToAverage from certain requisition.
+   * @param requisition - requisition
+   * @param profiler - java profiler
+   * @return retrieved list of stockCardRangeSummariesToAverage.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummariesToAverage(
+      Requisition requisition, ProcessingPeriodDto periodDto,
+      List<ProcessingPeriodDto> previousPeriods, Profiler profiler) {
+    UUID programId = requisition.getProgramId();
+    UUID facilityId = requisition.getFacilityId();
+
+    profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
+
+    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos;
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
+
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(facilityId, programId);
+
+    stockCardRangeSummaryDtos =
+        stockCardRangeSummaryStockManagementService
+            .search(programId, facilityId,
+                approvedProducts.getOrderableIdentities(), null,
+                periodDto.getStartDate(), periodDto.getEndDate());
+
+    profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
+    if (previousPeriods.size() > 1) {
+      stockCardRangeSummariesToAverage =
+          stockCardRangeSummaryStockManagementService
+              .search(programId, facilityId,
+                  approvedProducts.getOrderableIdentities(), null,
+                  previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
+                  periodDto.getEndDate());
+    } else {
+      stockCardRangeSummariesToAverage = stockCardRangeSummaryDtos;
+    }
+
+    return stockCardRangeSummariesToAverage;
+  }
+
 }

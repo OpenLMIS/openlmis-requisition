@@ -40,9 +40,12 @@ import org.openlmis.requisition.dto.BasicRequisitionTemplateDto;
 import org.openlmis.requisition.dto.MetadataDto;
 import org.openlmis.requisition.dto.ObjectReferenceDto;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.RequisitionLineItemV2Dto;
 import org.openlmis.requisition.dto.RequisitionV2Dto;
 import org.openlmis.requisition.dto.VersionObjectReferenceDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +72,9 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
   @Autowired
   private RequisitionService requisitionService;
+
+  @Autowired
+  private PeriodService periodService;
 
   public static final String RESOURCE_URL = API_URL + "/v2/requisitions";
 
@@ -131,9 +137,32 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     logger.debug("Updating requisition with id: {}", requisitionId);
 
     profiler.start("UPDATE");
-    requisitionToUpdate.updateFrom(result.getRequisition(),
-        result.getOrderables(), result.getApprovedProducts(),
-        datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()));
+
+    if (requisitionToUpdate.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      ProcessingPeriodDto period = periodService.getPeriod(
+          requisitionToUpdate.getProcessingPeriodId());
+
+      List<ProcessingPeriodDto> previousPeriods =
+          requisitionService.findPreviousPeriods(
+              requisitionToUpdate.getProgramId(), requisitionToUpdate.getFacilityId(),
+              requisitionToUpdate.getProcessingPeriodId(), requisitionToUpdate.getEmergency(),
+              requisitionToUpdate.getTemplate().getNumberOfPeriodsToAverage() - 1);
+
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+          requisitionService.getStockCardRangeSummariesToAverage(
+              requisitionToUpdate, period, previousPeriods, profiler);
+
+      previousPeriods.add(period);
+
+      requisitionToUpdate.updateFrom(result.getRequisition(),
+          result.getOrderables(), result.getApprovedProducts(),
+          datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()),
+          previousPeriods, stockCardRangeSummariesToAverage);
+    } else {
+      requisitionToUpdate.updateFrom(result.getRequisition(),
+          result.getOrderables(), result.getApprovedProducts(),
+          datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()), null, null);
+    }
 
     requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate,
             LocaleContextHolder.getLocale());

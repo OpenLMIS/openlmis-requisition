@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -391,7 +392,10 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void updateFrom(Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
       Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
-      boolean isDatePhysicalStockCountCompletedEnabled) {
+      boolean isDatePhysicalStockCountCompletedEnabled,
+                         @Nullable List<ProcessingPeriodDto> previousPeriods,
+                         @Nullable List<StockCardRangeSummaryDto>
+                             stockCardRangeSummariesToAverage) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
@@ -407,7 +411,13 @@ public class Requisition extends BaseTimestampedEntity {
 
     if (!emergency) {
       profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-      calculateAndValidateTemplateFields(this.template, products, approvedProducts);
+      if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+        calculateAndValidateStockTemplateFields(products, stockCardRangeSummariesToAverage,
+            this.template, previousPeriods, previousRequisitions, stockAdjustmentReasons,
+            numberOfMonthsInPeriod, approvedProducts);
+      } else {
+        calculateAndValidateTemplateFields(this.template, products, approvedProducts);
+      }
     }
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
@@ -630,11 +640,22 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits this requisition.
+   * Submits this non-stockmanagement requisition.
    *
    */
   public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
-      boolean skipAuthorize) {
+                     boolean skipAuthorize) {
+    submit(products, submitter, skipAuthorize, null, null);
+  }
+
+  /**
+   * Submits this requisition.
+   * Two additional parameters are used when submitting Stockmanagement Facility Requisition.
+   */
+  public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
+                     boolean skipAuthorize,
+                     @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                     @Nullable List<ProcessingPeriodDto> periods) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -660,7 +681,12 @@ public class Requisition extends BaseTimestampedEntity {
           });
     }
 
-    updateConsumptions(products);
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
+    } else {
+      updateConsumptions(products);
+    }
+
     updateTotalCostAndPacksToShip(products);
 
     status = RequisitionStatus.SUBMITTED;
@@ -1059,6 +1085,26 @@ public class Requisition extends BaseTimestampedEntity {
                 numberOfMonthsInPeriod, approvedProducts));
   }
 
+  private void calculateAndValidateStockTemplateFields(
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+      RequisitionTemplate template,
+      List<ProcessingPeriodDto> periods,
+      List<Requisition> previousRequisitions,
+      Collection<StockAdjustmentReason> stockAdjustmentReasons,
+      Integer numberOfMonthsInPeriod,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
+    getNonSkippedFullSupplyRequisitionLineItems(orderables)
+        .forEach(line -> {
+          StockCardRangeSummaryDto stockCardRangeSummaryToAverage = findStockCardRangeSummary(
+              stockCardRangeSummariesToAverage, line.getOrderable().getId());
+
+          line.calculateAndSetStockFields(stockCardRangeSummaryToAverage, template,
+              periods, previousRequisitions, stockAdjustmentReasons, numberOfMonthsInPeriod,
+              approvedProducts);
+        });
+  }
+
   private void updateConsumptions(Map<VersionIdentityDto, OrderableDto> orderables) {
     if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems(orderables)
@@ -1071,6 +1117,31 @@ public class Requisition extends BaseTimestampedEntity {
     if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
           RequisitionLineItem::calculateAndSetAverageConsumption);
+    }
+  }
+
+  private void updateStockConsumptions(
+      Map<VersionIdentityDto, OrderableDto> orderables,
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+      List<ProcessingPeriodDto> periods) {
+
+    if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
+      getNonSkippedFullSupplyRequisitionLineItems(orderables)
+          .forEach(line -> line.setAdjustedConsumption(
+              LineItemFieldsCalculator.calculateAdjustedConsumption(
+              line, numberOfMonthsInPeriod,
+                  this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
+          ));
+    }
+
+    if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
+      for (RequisitionLineItem line : getNonSkippedFullSupplyRequisitionLineItems(orderables)) {
+        StockCardRangeSummaryDto summaryToAverage = findStockCardRangeSummary(
+            stockCardRangeSummariesToAverage, line.getOrderable().getId());
+
+        line.calculateAndSetStockBasedAverageConsumption(summaryToAverage,
+            template, periods, previousRequisitions);
+      }
     }
   }
 
