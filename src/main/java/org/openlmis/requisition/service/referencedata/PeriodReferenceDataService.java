@@ -111,6 +111,20 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
   }
 
   /**
+   * This method retrieves processing period for given id.
+   *
+   * @param periodId period id.
+   * @return ProcessingPeriodDto.
+   */
+  public ProcessingPeriodDto searchById(UUID periodId) {
+    RequestParameters parameters = RequestParameters
+        .init()
+        .set("id", periodId);
+
+    return findOne(getUrl(), parameters);
+  }
+
+  /**
    * Retrieves periods from the reference data service by program ID and facility ID.
    *
    * @param programId  UUID of the program

@@ -46,6 +46,7 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
@@ -222,8 +223,25 @@ public class RequisitionController extends BaseRequisitionController {
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
 
     profiler.start("SUBMIT");
-    requisition.submit(orderables, getCurrentUser(profiler).getId(),
-        program.getSkipAuthorization());
+    if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      List<ProcessingPeriodDto> previousPeriods =
+          requisitionService.findPreviousPeriods(
+              requisition.getProgramId(), requisition.getFacilityId(),
+              requisition.getProcessingPeriodId(), requisition.getEmergency(),
+              requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
+
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+          requisitionService.getStockCardRangeSummariesToAverage(
+              requisition, period, previousPeriods, profiler);
+
+      previousPeriods.add(period);
+
+      requisition.submit(orderables, getCurrentUser(profiler).getId(),
+          program.getSkipAuthorization(), stockCardRangeSummariesToAverage, previousPeriods);
+    } else {
+      requisition.submit(orderables, getCurrentUser(profiler).getId(),
+          program.getSkipAuthorization());
+    }
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, authenticationHelper.getCurrentUser());
