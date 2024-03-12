@@ -348,7 +348,8 @@ public class RequisitionTest {
     requisition.setStatus(RequisitionStatus.SUBMITTED);
 
     requisition.authorize(orderables, UUID.randomUUID());
-    requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
+    requisition.updateFrom(mockNonStockmanagementRequisition(), orderables, approvedProducts,
+        true, null, null);
 
     assertEquals(requisition.getStatus(), RequisitionStatus.AUTHORIZED);
     verifyStatic(LineItemFieldsCalculator.class);
@@ -517,7 +518,8 @@ public class RequisitionTest {
         Collections.singletonList(requisitionLineItem)));
 
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), orderables, approvedProducts,true);
+    requisition.updateFrom(mockNonStockmanagementRequisition(), orderables, approvedProducts,
+        true, null, null);
     verifyStatic(LineItemFieldsCalculator.class);
     LineItemFieldsCalculator.calculateStockOnHand(any(RequisitionLineItem.class));
   }
@@ -549,7 +551,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(fullSupply, nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, orderables, approvedProducts,true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts,true, null, null);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(2));
   }
@@ -581,7 +583,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(Lists.newArrayList(nonFullSupply));
 
     requisition.setTemplate(mock(RequisitionTemplate.class));
-    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true, null, null);
 
     assertThat(requisition.getRequisitionLineItems(), hasSize(1));
   }
@@ -617,6 +619,7 @@ public class RequisitionTest {
     newRequisition.setRequisitionLineItems(
         Lists.newArrayList(firstRequisitionLineItem, secondRequisitionLineItem)
     );
+    newRequisition.setTemplate(template);
 
     newRequisition
         .getRequisitionLineItems()
@@ -631,7 +634,7 @@ public class RequisitionTest {
     // when
     requisition.setTemplate(template);
     requisition.setId(UUID.randomUUID());
-    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true, null, null);
 
     // then
     requisition
@@ -649,8 +652,14 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnDisplayed("stockOnHand")).thenReturn(false);
     when(requisitionTemplate.isColumnDisplayed(TOTAL_CONSUMED_QUANTITY)).thenReturn(false);
 
+    Requisition newRequisition = new Requisition();
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    newRequisition.setTemplate(requisitionTemplate);
+
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(new Requisition(), orderables, approvedProducts, true);
+
+    requisition.updateFrom(newRequisition, orderables, approvedProducts,
+        true, null, null);
 
     assertThat(requisitionLineItem.getStockOnHand(), is(nullValue()));
     assertThat(requisitionLineItem.getTotalConsumedQuantity(), is(nullValue()));
@@ -1028,7 +1037,8 @@ public class RequisitionTest {
     requisition.submit(orderables, UUID.randomUUID(), false);
 
     //then
-    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption()
+        .longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
   }
 
@@ -1042,7 +1052,8 @@ public class RequisitionTest {
     requisition.authorize(orderables, UUID.randomUUID());
 
     //then
-    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption()
+        .longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
     assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
@@ -1058,14 +1069,16 @@ public class RequisitionTest {
         UUID.randomUUID());
 
     //then
-    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption().longValue());
+    assertEquals(ADJUSTED_CONSUMPTION, requisitionLineItem.getAdjustedConsumption()
+        .longValue());
     assertEquals(AVERAGE_CONSUMPTION, requisitionLineItem.getAverageConsumption().longValue());
     assertEquals(TOTAL_COST, requisitionLineItem.getTotalCost());
   }
 
   @Test
   public void shouldSetPreviousAdjustedConsumptionsWhenOnePreviousRequisition() {
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
+    RequisitionLineItem previousRequisitionLineItem =
+        new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(5);
 
     Requisition previousRequisition = new Requisition();
@@ -1081,7 +1094,8 @@ public class RequisitionTest {
 
   @Test
   public void shouldSetPreviousAdjustedConsumptionsFromManyPreviousRequisitions() {
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
+    RequisitionLineItem previousRequisitionLineItem =
+        new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(5);
 
     Requisition previousRequisition = new Requisition();
@@ -1119,7 +1133,8 @@ public class RequisitionTest {
   @Test
   public void shouldNotAddPreviousAdjustedConsumptionIfItIsNull() {
     //given
-    RequisitionLineItem previousRequisitionLineItem = new RequisitionLineItem(requisitionLineItem);
+    RequisitionLineItem previousRequisitionLineItem =
+        new RequisitionLineItem(requisitionLineItem);
     previousRequisitionLineItem.setAdjustedConsumption(null);
 
     Requisition previousRequisition = new Requisition();
@@ -1150,9 +1165,11 @@ public class RequisitionTest {
 
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
     requisition.setTemplate(requisitionTemplate);
-    requisition.updateFrom(newRequisition, orderables, approvedProducts, true);
+    newRequisition.setTemplate(requisitionTemplate);
+    requisition.updateFrom(newRequisition, orderables, approvedProducts, true, null, null);
 
-    assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions().get(0));
+    assertEquals(Integer.valueOf(1), requisitionLineItem.getPreviousAdjustedConsumptions()
+        .get(0));
   }
 
   @Test
@@ -1693,25 +1710,43 @@ public class RequisitionTest {
         createThreeConsecutiveRequisitionsForStockmanagementFacility();
     Requisition initiatedRequisition = consecutiveRequisitions.get(2);
 
+    List<ProcessingPeriodDto> periods = createThreeConsecutivePeriods();
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+        createStockCardRangeSummariesToAverage(orderable.getId());
+
     initiatedRequisition.submit(Collections.singletonMap(orderable.getIdentity(), orderable),
-        UUID.randomUUID(), true);
+        UUID.randomUUID(), true, stockCardRangeSummariesToAverage, periods);
 
     RequisitionLineItem requisitionLineItem = initiatedRequisition.getRequisitionLineItems()
         .get(0);
 
-    assertEquals(200,
+    assertEquals(100,
         requisitionLineItem.getAverageConsumption().longValue());
   }
 
-  // Creates three requisitions for the same facility and program, with consecutive periods
-  // Requisitions have the following statuses: AUTHORIZED, AUTHORIZED, INITIATED
-  private List<Requisition> createThreeConsecutiveRequisitionsForStockmanagementFacility() {
-    final UUID programId = orderable.getPrograms().stream().findFirst().get().getProgramId();
-    final FacilityDto facilityDto = new FacilityDtoDataBuilder().buildAsDto();
-    final ProgramDto programDto = new ProgramDtoDataBuilder()
-        .withId(programId).buildAsDto();
-    final UUID orderableId = orderable.getId();
+  private List<StockCardRangeSummaryDto> createStockCardRangeSummariesToAverage(
+      UUID orderableId) {
+    StockCardRangeSummaryDto stockCardRangeSummaryDto1 =
+        new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(orderableId).withStockOutDays(0)
+        .withTags(ImmutableMap.of(CONSUMED_TAG, -300))
+        .buildAsDto();
+    StockCardRangeSummaryDto stockCardRangeSummaryDto2 =
+        new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(orderableId).withStockOutDays(0)
+        .withTags(ImmutableMap.of(CONSUMED_TAG, -200))
+        .buildAsDto();
+    StockCardRangeSummaryDto stockCardRangeSummaryDto3 =
+        new StockCardRangeSummaryDtoDataBuilder()
+        .withOrderableId(orderableId).withStockOutDays(0)
+        .withTags(ImmutableMap.of(CONSUMED_TAG, -100))
+        .buildAsDto();
 
+    return Arrays.asList(stockCardRangeSummaryDto1, stockCardRangeSummaryDto2,
+        stockCardRangeSummaryDto3);
+  }
+
+  private List<ProcessingPeriodDto> createThreeConsecutivePeriods() {
     final String march = "march";
     final String april = "april";
     final String may = "may";
@@ -1734,9 +1769,26 @@ public class RequisitionTest {
         .withName(may).withStartDate(mayStartDate).withEndDate(mayEndDate)
         .withProcessingSchedule(processingScheduleDto).buildAsDto();
 
+    return Arrays.asList(marchProcessingPeriodDto, aprilProcessingPeriodDto,
+        mayProcessingPeriodDto);
+  }
+
+  // Creates three requisitions for the same facility and program, with consecutive periods
+  // Requisitions have the following statuses: AUTHORIZED, AUTHORIZED, INITIATED
+  private List<Requisition> createThreeConsecutiveRequisitionsForStockmanagementFacility() {
+    final UUID programId = orderable.getPrograms().stream().findFirst().get().getProgramId();
+    final FacilityDto facilityDto = new FacilityDtoDataBuilder().buildAsDto();
+    final ProgramDto programDto = new ProgramDtoDataBuilder()
+        .withId(programId).buildAsDto();
+    final UUID orderableId = orderable.getId();
+
+    List<ProcessingPeriodDto> periodDtos = createThreeConsecutivePeriods();
+
     RequisitionTemplate requisitionTemplate = new RequisitionTemplateDataBuilder()
         .withNumberOfPeriodsToAverage(3).withPopulateStockOnHandFromStockCards(true)
-        .withAllColumns().build();
+        .withAllColumnsExceptTotalConsumedQuantity()
+        .withStockBasedColumn(RequisitionLineItem.TOTAL_CONSUMED_QUANTITY, "I", CONSUMED_TAG)
+        .build();
 
     RequisitionLineItem marchRequisitionLineItem = new RequisitionLineItemDataBuilder()
         .withTotalStockoutDays(0).withOrderable(orderableId, 1L).withAverageConsumption(100)
@@ -1748,17 +1800,20 @@ public class RequisitionTest {
         .withTotalStockoutDays(0).withOrderable(orderableId, 1L).withAverageConsumption(300)
         .withAverageConsumption(300).withId(marchRequisitionLineItem.getId()).build();
 
-    Requisition marchRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
-        .withProgramId(programDto.getId()).withProcessingPeriodId(marchProcessingPeriodDto.getId())
+    Requisition marchRequisition = new RequisitionDataBuilder().withFacilityId(
+        facilityDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(periodDtos.get(0).getId())
         .withRequisitionLineItems(Collections.singletonList(marchRequisitionLineItem))
         .withEmergency(false).withTemplate(requisitionTemplate).buildAuthorizedRequisition();
-    Requisition aprilRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
-        .withProgramId(programDto.getId()).withProcessingPeriodId(aprilProcessingPeriodDto.getId())
+    Requisition aprilRequisition = new RequisitionDataBuilder().withFacilityId(
+        facilityDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(periodDtos.get(1).getId())
         .withRequisitionLineItems(Collections.singletonList(aprilRequisitionLineItem))
-        .withEmergency(false).withPreviousRequisitions(Collections.singletonList(marchRequisition))
+        .withEmergency(false).withPreviousRequisitions(Collections
+        .singletonList(marchRequisition))
         .withTemplate(requisitionTemplate).buildAuthorizedRequisition();
     Requisition mayRequisition = new RequisitionDataBuilder().withFacilityId(facilityDto.getId())
-        .withProgramId(programDto.getId()).withProcessingPeriodId(mayProcessingPeriodDto.getId())
+        .withProgramId(programDto.getId()).withProcessingPeriodId(periodDtos.get(2).getId())
         .withRequisitionLineItems(Collections.singletonList(mayRequisitionLineItem))
         .withEmergency(false).withPreviousRequisitions(
             Arrays.asList(marchRequisition, aprilRequisition))
@@ -1768,13 +1823,12 @@ public class RequisitionTest {
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
-    RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
-    this.requisition.setTemplate(requisitionTemplate);
-
-    Requisition requisition = new Requisition();
+    Requisition requisition = mockNonStockmanagementRequisition();
     requisition.setDatePhysicalStockCountCompleted(
         new DatePhysicalStockCountCompleted(LocalDate.now()));
-    this.requisition.updateFrom(requisition, orderables, approvedProducts, updateStockDate);
+
+    this.requisition.updateFrom(requisition, orderables, approvedProducts, updateStockDate, null,
+        null);
 
     return requisition;
   }
@@ -1896,7 +1950,8 @@ public class RequisitionTest {
     return item;
   }
 
-  private Requisition getRequisition(RequisitionLineItem notSkipped, RequisitionLineItem skipped) {
+  private Requisition getRequisition(RequisitionLineItem notSkipped,
+                                     RequisitionLineItem skipped) {
     return new RequisitionDataBuilder()
         .withProgramId(requisition.getProgramId())
         .addLineItem(notSkipped, false)
@@ -1935,6 +1990,14 @@ public class RequisitionTest {
     requisition.setTemplate(template);
   }
 
+  private Requisition mockNonStockmanagementRequisition() {
+    Requisition newRequisition = mock(Requisition.class);
+    RequisitionTemplate newRequisitionTemplate = mock(RequisitionTemplate.class);
+    when(newRequisition.getTemplate()).thenReturn(newRequisitionTemplate);
+    when(newRequisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+    return newRequisition;
+  }
+
   private RequisitionTemplate mockStockBasedRequisitionTemplate() {
     RequisitionTemplate requisitionTemplate = mock(RequisitionTemplate.class);
 
@@ -1947,8 +2010,10 @@ public class RequisitionTest {
     when(requisitionTemplate.isColumnStockBased(TOTAL_LOSSES_AND_ADJUSTMENTS)).thenReturn(true);
     when(requisitionTemplate.isColumnStockBased(TOTAL_STOCKOUT_DAYS)).thenReturn(true);
 
-    when(requisitionTemplate.findColumn(TOTAL_CONSUMED_QUANTITY)).thenReturn(totalConsumedQuantity);
-    when(requisitionTemplate.findColumn(TOTAL_RECEIVED_QUANTITY)).thenReturn(totalReceivedQuantity);
+    when(requisitionTemplate.findColumn(TOTAL_CONSUMED_QUANTITY))
+        .thenReturn(totalConsumedQuantity);
+    when(requisitionTemplate.findColumn(TOTAL_RECEIVED_QUANTITY))
+        .thenReturn(totalReceivedQuantity);
     when(requisitionTemplate.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS))
         .thenReturn(totalLossesAndAdjustments);
     when(requisitionTemplate.findColumn(TOTAL_STOCKOUT_DAYS)).thenReturn(totalStockoutDays);

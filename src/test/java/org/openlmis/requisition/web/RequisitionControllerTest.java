@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollection;
@@ -253,13 +254,13 @@ public class RequisitionControllerTest {
 
   @Mock
   private HttpServletRequest request;
-  
+
   @Mock
   private ValidReasonStockmanagementService validReasonStockmanagementService;
-  
+
   @Mock
   private ReasonsValidator reasonsValidator;
-  
+
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
 
@@ -418,7 +419,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -435,7 +436,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), anyList(), anyList());
   }
 
   @Test
@@ -451,7 +452,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -470,7 +471,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), null, null);
   }
 
   @Test
@@ -482,7 +483,7 @@ public class RequisitionControllerTest {
     verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -594,10 +595,10 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true));
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
-        eq(initiatedRequsition));
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
@@ -640,10 +641,10 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true));
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
-        eq(initiatedRequsition));
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
@@ -1240,7 +1241,8 @@ public class RequisitionControllerTest {
         .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap(), anyMap());
 
     assertThatThrownBy(() ->
-        requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response))
+        requisitionController.authorizeRequisition(submittedRequsition.getId(),
+        request, response))
         .isInstanceOf(BindingResultException.class)
         .hasMessage(bindingResultMessage);
 
@@ -1431,14 +1433,14 @@ public class RequisitionControllerTest {
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
     verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), anyList(), anyList());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never()).submit(eq(emptyMap()), any(UUID.class), anyBoolean());
   }
 
   private void verifyNoApproveOrUpdate(Requisition requisition) {
     verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), anyList(), anyList());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
         .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class));
@@ -1446,7 +1448,7 @@ public class RequisitionControllerTest {
 
   private void verifyNoAuthorizeOrUpdate(Requisition requisition) {
     verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), anyList(), anyList());
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
         .authorize(anyMap(), any(UUID.class));
