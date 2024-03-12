@@ -700,16 +700,31 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Authorize this Requisition.
+   * Authorize this non-stockmanagement requisition.
    *
    */
   public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer) {
+    authorize(products, authorizer, null, null);
+  }
+
+  /**
+   * Authorize this Requisition.
+   *
+   */
+  public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer,
+                        @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                        @Nullable List<ProcessingPeriodDto> periods) {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    updateConsumptions(products);
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
+    } else {
+      updateConsumptions(products);
+    }
+
     updateTotalCostAndPacksToShip(products);
     prepareRequisitionForApproval(authorizer);
     setModifiedDate(ZonedDateTime.now());
@@ -742,6 +757,15 @@ public class Requisition extends BaseTimestampedEntity {
 
 
   /**
+   * Approve this non-stockmanagement requisition.
+   *
+   */
+  public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
+                        Collection<SupplyLineDto> supplyLines, UUID approver) {
+    approve(nodeId, products, supplyLines, approver, null, null);
+  }
+
+  /**
    * Approves given requisition.
    *
    * @param nodeId      supervisoryNode that has a supply line for the requisition's program.
@@ -751,7 +775,9 @@ public class Requisition extends BaseTimestampedEntity {
    * @param approver    user who approves this requisition.
    */
   public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
-      Collection<SupplyLineDto> supplyLines, UUID approver) {
+      Collection<SupplyLineDto> supplyLines, UUID approver,
+                      @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                      @Nullable List<ProcessingPeriodDto> periods) {
     if (isTrue(reportOnly)) {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
     } else {
@@ -763,7 +789,12 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
 
-    updateConsumptions(products);
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
+    } else {
+      updateConsumptions(products);
+    }
+
     updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
 
@@ -771,11 +802,27 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Rejects given requisition.
+   * Reject this non-stockmanagement requisition.
+   *
    */
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector) {
+    reject(products, rejector, null, null);
+  }
+
+  /**
+   * Rejects given requisition.
+   */
+  public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector,
+                     @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                     @Nullable List<ProcessingPeriodDto> periods) {
     status = RequisitionStatus.REJECTED;
-    updateConsumptions(products);
+
+    if (template.isPopulateStockOnHandFromStockCards()) {
+      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
+    } else {
+      updateConsumptions(products);
+    }
+
     updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
     supervisoryNodeId = null;
