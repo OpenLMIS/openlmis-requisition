@@ -1181,6 +1181,10 @@ public class RequisitionControllerTest {
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     setUpAuthorizer();
 
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(response, times(1)).addHeader(
@@ -1216,6 +1220,10 @@ public class RequisitionControllerTest {
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() {
     setUpAuthorizer();
 
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(requisitionStatusProcessor)
@@ -1225,6 +1233,10 @@ public class RequisitionControllerTest {
   @Test
   public void shouldCallValidationsWhenAuthorizingRequisition() {
     setUpAuthorizer();
+
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 

@@ -619,7 +619,24 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("AUTHORIZE");
-    requisition.authorize(orderables, user.getId());
+    if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+      List<ProcessingPeriodDto> previousPeriods =
+          requisitionService.findPreviousPeriods(
+              requisition.getProgramId(), requisition.getFacilityId(),
+              requisition.getProcessingPeriodId(), requisition.getEmergency(),
+              requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
+
+      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+          requisitionService.getStockCardRangeSummariesToAverage(
+              requisition, period, previousPeriods, profiler);
+
+      previousPeriods.add(period);
+
+      requisition.authorize(orderables, user.getId(), stockCardRangeSummariesToAverage,
+          previousPeriods);
+    } else {
+      requisition.authorize(orderables, user.getId());
+    }
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, user);
