@@ -684,10 +684,12 @@ public class RequisitionLineItem extends BaseEntity {
   void calculateAndSetStockBasedAverageConsumption(
       StockCardRangeSummaryDto stockCardRangeSummaryToAverage, RequisitionTemplate template,
       List<ProcessingPeriodDto> periods, List<Requisition> previousRequisitions) {
-    setAverageConsumption(calculateStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
-        this.orderable.getId(), template, periods,
-        template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)
-            ? getSumOfAdditionalQuantitiesFromPreviousLineItems(previousRequisitions) : null));
+    if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
+      setAverageConsumption(calculateStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
+          this.orderable.getId(), template, periods,
+          template.isColumnDisplayed(ADDITIONAL_QUANTITY_REQUIRED)
+              ? getSumOfAdditionalQuantitiesFromPreviousLineItems(previousRequisitions) : null));
+    }
   }
 
   /**
