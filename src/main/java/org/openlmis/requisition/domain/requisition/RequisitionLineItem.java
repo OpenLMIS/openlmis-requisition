@@ -627,12 +627,11 @@ public class RequisitionLineItem extends BaseEntity {
                                   RequisitionTemplate template,
                                   List<ProcessingPeriodDto> periods,
                                   List<Requisition> previousRequisitions,
-                                  Collection<StockAdjustmentReason> stockAdjustmentReasons,
                                   Integer numberOfMonthsInPeriod,
                                   Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
-    calculateAndSetTotalLossesAndAdjustments(stockAdjustmentReasons, template);
+    calculateAndSetStockBasedTotalLossesAndAdjustments(template, stockCardRangeSummaryToAverage);
     calculateAndSetStockOnHand(template);
-    calculateAndSetTotalConsumedQuantity(template);
+    calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryToAverage);
     calculateAndSetTotal(template);
     calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
     calculateAndSetStockBasedAverageConsumption(stockCardRangeSummaryToAverage,

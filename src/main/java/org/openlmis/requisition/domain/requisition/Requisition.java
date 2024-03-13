@@ -411,7 +411,7 @@ public class Requisition extends BaseTimestampedEntity {
       profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
       if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
         calculateAndValidateStockTemplateFields(products, stockCardRangeSummariesToAverage,
-            this.template, previousPeriods, previousRequisitions, stockAdjustmentReasons,
+            this.template, previousPeriods, previousRequisitions,
             numberOfMonthsInPeriod, approvedProducts);
       } else {
         calculateAndValidateTemplateFields(this.template, products, approvedProducts);
@@ -1135,7 +1135,6 @@ public class Requisition extends BaseTimestampedEntity {
       RequisitionTemplate template,
       List<ProcessingPeriodDto> periods,
       List<Requisition> previousRequisitions,
-      Collection<StockAdjustmentReason> stockAdjustmentReasons,
       Integer numberOfMonthsInPeriod,
       Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
@@ -1144,7 +1143,7 @@ public class Requisition extends BaseTimestampedEntity {
               stockCardRangeSummariesToAverage, line.getOrderable().getId());
 
           line.calculateAndSetStockFields(stockCardRangeSummaryToAverage, template,
-              periods, previousRequisitions, stockAdjustmentReasons, numberOfMonthsInPeriod,
+              periods, previousRequisitions, numberOfMonthsInPeriod,
               approvedProducts);
         });
   }
