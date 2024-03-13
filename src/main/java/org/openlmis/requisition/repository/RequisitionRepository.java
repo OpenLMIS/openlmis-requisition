@@ -35,7 +35,7 @@ public interface RequisitionRepository extends
     BaseAuditableRepository<Requisition, UUID> {
   List<Requisition> findByTemplateId(@Param("templateId") UUID templateId);
 
-  @EntityGraph(attributePaths = { "requisitionLineItems" }, type = EntityGraphType.LOAD)
+  @EntityGraph(attributePaths = {"requisitionLineItems"}, type = EntityGraphType.LOAD)
   List<Requisition> readDistinctByIdIn(Iterable<UUID> ids);
 
   @Query(value = "SELECT\n"
