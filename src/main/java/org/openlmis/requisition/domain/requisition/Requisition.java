@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -391,11 +390,10 @@ public class Requisition extends BaseTimestampedEntity {
    * @param products               Collection of orderables.
    */
   public void updateFrom(Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
-      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
-      boolean isDatePhysicalStockCountCompletedEnabled,
-                         @Nullable List<ProcessingPeriodDto> previousPeriods,
-                         @Nullable List<StockCardRangeSummaryDto>
-                             stockCardRangeSummariesToAverage) {
+                         Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+                         boolean isDatePhysicalStockCountCompletedEnabled,
+                         List<ProcessingPeriodDto> previousPeriods,
+                         List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
@@ -640,7 +638,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits this non-stockmanagement requisition.
+   * Submits this non stockmanagement based requisition.
    *
    */
   public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
@@ -649,13 +647,12 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits this requisition.
-   * Two additional parameters are used when submitting Stockmanagement Facility Requisition.
+   * Submits this stockmanagement based requisition.
    */
   public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
                      boolean skipAuthorize,
-                     @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                     @Nullable List<ProcessingPeriodDto> periods) {
+                     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                     List<ProcessingPeriodDto> periods) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -700,7 +697,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Authorize this non-stockmanagement requisition.
+   * Authorize this non stockmanagement based requisition.
    *
    */
   public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer) {
@@ -708,12 +705,12 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Authorize this Requisition.
+   * Authorize this stockmanagement based Requisition.
    *
    */
   public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer,
-                        @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                        @Nullable List<ProcessingPeriodDto> periods) {
+                        List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                        List<ProcessingPeriodDto> periods) {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
@@ -757,7 +754,7 @@ public class Requisition extends BaseTimestampedEntity {
 
 
   /**
-   * Approve this non-stockmanagement requisition.
+   * Approve this non stockmanagement based requisition.
    *
    */
   public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
@@ -766,7 +763,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Approves given requisition.
+   * Approves this stockmanagement based requisition.
    *
    * @param nodeId      supervisoryNode that has a supply line for the requisition's program.
    * @param products    orderable products that will be used by line items to update packs to ship.
@@ -775,9 +772,9 @@ public class Requisition extends BaseTimestampedEntity {
    * @param approver    user who approves this requisition.
    */
   public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
-      Collection<SupplyLineDto> supplyLines, UUID approver,
-                      @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                      @Nullable List<ProcessingPeriodDto> periods) {
+                      Collection<SupplyLineDto> supplyLines, UUID approver,
+                      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                      List<ProcessingPeriodDto> periods) {
     if (isTrue(reportOnly)) {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
     } else {
@@ -802,7 +799,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Reject this non-stockmanagement requisition.
+   * Reject this non stockmanagement based requisition.
    *
    */
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector) {
@@ -810,11 +807,11 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Rejects given requisition.
+   * Rejects this stockmanagement based requisition.
    */
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector,
-                     @Nullable List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                     @Nullable List<ProcessingPeriodDto> periods) {
+                     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+                     List<ProcessingPeriodDto> periods) {
     status = RequisitionStatus.REJECTED;
 
     if (template.isPopulateStockOnHandFromStockCards()) {
