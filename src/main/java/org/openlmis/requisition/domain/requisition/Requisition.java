@@ -104,7 +104,9 @@ import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -392,14 +394,13 @@ public class Requisition extends BaseTimestampedEntity {
   public void updateFrom(Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
                          Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
                          boolean isDatePhysicalStockCountCompletedEnabled,
-                         List<ProcessingPeriodDto> previousPeriods,
-                         List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage) {
+                         RequisitionService requisitionService, PeriodService periodService) {
     LOGGER.entry(requisition, products, isDatePhysicalStockCountCompletedEnabled);
     Profiler profiler = new Profiler("REQUISITION_UPDATE_FROM");
     profiler.setLogger(LOGGER);
 
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
-    this.draftStatusMessage = requisition.draftStatusMessage;
+    draftStatusMessage = requisition.draftStatusMessage;
 
     profiler.start("SET_EXTRA_DATA");
     extraData = new ExtraDataEntity(requisition.getExtraData());
@@ -410,11 +411,19 @@ public class Requisition extends BaseTimestampedEntity {
     if (!emergency) {
       profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
       if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
+        List<ProcessingPeriodDto> periods = periodService
+            .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
+                requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
+
+        List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+            requisitionService.getStockCardRangeSummariesToAverage(requisition,
+                periods, profiler);
+
         calculateAndValidateStockTemplateFields(products, stockCardRangeSummariesToAverage,
-            this.template, previousPeriods, previousRequisitions,
+            template, periods, previousRequisitions,
             numberOfMonthsInPeriod, approvedProducts);
       } else {
-        calculateAndValidateTemplateFields(this.template, products, approvedProducts);
+        calculateAndValidateTemplateFields(template, products, approvedProducts);
       }
     }
 
