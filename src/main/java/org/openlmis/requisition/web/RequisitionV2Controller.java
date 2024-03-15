@@ -137,32 +137,10 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     logger.debug("Updating requisition with id: {}", requisitionId);
 
     profiler.start("UPDATE");
-
-    if (requisitionToUpdate.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      ProcessingPeriodDto period = periodService.getPeriod(
-          requisitionToUpdate.getProcessingPeriodId());
-
-      List<ProcessingPeriodDto> previousPeriods =
-          requisitionService.findPreviousPeriods(
-              requisitionToUpdate.getProgramId(), requisitionToUpdate.getFacilityId(),
-              requisitionToUpdate.getProcessingPeriodId(), requisitionToUpdate.getEmergency(),
-              requisitionToUpdate.getTemplate().getNumberOfPeriodsToAverage() - 1);
-
-      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-          requisitionService.getStockCardRangeSummariesToAverage(
-              requisitionToUpdate, period, previousPeriods, profiler);
-
-      previousPeriods.add(period);
-
-      requisitionToUpdate.updateFrom(result.getRequisition(),
-          result.getOrderables(), result.getApprovedProducts(),
-          datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()),
-          previousPeriods, stockCardRangeSummariesToAverage);
-    } else {
-      requisitionToUpdate.updateFrom(result.getRequisition(),
-          result.getOrderables(), result.getApprovedProducts(),
-          datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()), null, null);
-    }
+    requisitionToUpdate.updateFrom(result.getRequisition(),
+        result.getOrderables(), result.getApprovedProducts(),
+        datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()),
+        requisitionService, periodService);
 
     requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate,
             LocaleContextHolder.getLocale());

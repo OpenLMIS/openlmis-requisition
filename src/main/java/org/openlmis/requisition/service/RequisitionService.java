@@ -1063,32 +1063,16 @@ public class RequisitionService {
 
 
   /**
-   * Retrieves all previous periods from certain requisition.
-   * @param programId - requisition program id
-   * @param facilityId - requisition facility id
-   * @param periodId - requisition period id
-   * @param emergency - is this requisition emergency
-   * @param numberOfPreviousPeriodsToAverage - how many periods to fetch
-   * @return retrieved list of stockCardRangeSummariesToAverage.
-   */
-  public List<ProcessingPeriodDto> findPreviousPeriods(UUID programId, UUID facilityId,
-                                                       UUID periodId, boolean emergency,
-                                                       Integer numberOfPreviousPeriodsToAverage) {
-    ProcessingPeriodDto periodDto = periodService.getPeriod(periodId);
-
-    return periodService
-        .findPreviousPeriods(periodDto, numberOfPreviousPeriodsToAverage);
-  }
-
-  /**
    * Retrieves stockCardRangeSummariesToAverage from certain requisition.
    * @param requisition - requisition
    * @param profiler - java profiler
    * @return retrieved list of stockCardRangeSummariesToAverage.
    */
   public List<StockCardRangeSummaryDto> getStockCardRangeSummariesToAverage(
-      Requisition requisition, ProcessingPeriodDto periodDto,
-      List<ProcessingPeriodDto> previousPeriods, Profiler profiler) {
+      Requisition requisition, List<ProcessingPeriodDto> periods, Profiler profiler) {
+    ProcessingPeriodDto periodDto = periods.get(periods.size() - 1);
+    List<ProcessingPeriodDto> previousPeriods = periods.subList(0, periods.size() - 2);
+
     UUID programId = requisition.getProgramId();
     UUID facilityId = requisition.getFacilityId();
 

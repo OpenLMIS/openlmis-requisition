@@ -224,20 +224,16 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("SUBMIT");
     if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      List<ProcessingPeriodDto> previousPeriods =
-          requisitionService.findPreviousPeriods(
-              requisition.getProgramId(), requisition.getFacilityId(),
-              requisition.getProcessingPeriodId(), requisition.getEmergency(),
+      List<ProcessingPeriodDto> periods = periodService
+          .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
               requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
 
       List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
           requisitionService.getStockCardRangeSummariesToAverage(
-              requisition, period, previousPeriods, profiler);
-
-      previousPeriods.add(period);
+              requisition, periods, profiler);
 
       requisition.submit(orderables, getCurrentUser(profiler).getId(),
-          program.getSkipAuthorization(), stockCardRangeSummariesToAverage, previousPeriods);
+          program.getSkipAuthorization(), stockCardRangeSummariesToAverage, periods);
     } else {
       requisition.submit(orderables, getCurrentUser(profiler).getId(),
           program.getSkipAuthorization());
@@ -620,20 +616,16 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("AUTHORIZE");
     if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      List<ProcessingPeriodDto> previousPeriods =
-          requisitionService.findPreviousPeriods(
-              requisition.getProgramId(), requisition.getFacilityId(),
-              requisition.getProcessingPeriodId(), requisition.getEmergency(),
+      List<ProcessingPeriodDto> periods = periodService
+          .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
               requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
 
       List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
           requisitionService.getStockCardRangeSummariesToAverage(
-              requisition, period, previousPeriods, profiler);
-
-      previousPeriods.add(period);
+              requisition, periods, profiler);
 
       requisition.authorize(orderables, user.getId(), stockCardRangeSummariesToAverage,
-          previousPeriods);
+          periods);
     } else {
       requisition.authorize(orderables, user.getId());
     }
