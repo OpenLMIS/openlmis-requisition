@@ -345,7 +345,9 @@ public class RequisitionService {
    */
   public Requisition reject(Requisition requisition,
                             Map<VersionIdentityDto, OrderableDto> orderables,
-                            List<RejectionDto> rejections) {
+                            List<RejectionDto> rejections, ProcessingPeriodDto period,
+                            RequisitionService requisitionService, PeriodService periodService,
+                            Profiler profiler) {
     checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
@@ -353,7 +355,7 @@ public class RequisitionService {
     validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
     LOGGER.debug("Requisition rejected: {}", requisition.getId());
-    requisition.reject(orderables, userId);
+    requisition.reject(orderables, userId, period, requisitionService, periodService, profiler);
     requisition.setSupervisoryNodeId(null);
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
@@ -798,8 +800,10 @@ public class RequisitionService {
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser,
                         Map<VersionIdentityDto, OrderableDto> orderables,
-                        Requisition requisition, List<SupplyLineDto> supplyLines) {
-    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
+                        Requisition requisition, List<SupplyLineDto> supplyLines,
+                        ProcessingPeriodDto period, Profiler profiler) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId(), period, this,
+        periodService, profiler);
 
     saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);
@@ -1069,41 +1073,21 @@ public class RequisitionService {
    * @return retrieved list of stockCardRangeSummariesToAverage.
    */
   public List<StockCardRangeSummaryDto> getStockCardRangeSummariesToAverage(
-      Requisition requisition, List<ProcessingPeriodDto> periods, Profiler profiler) {
-    ProcessingPeriodDto periodDto = periods.get(periods.size() - 1);
-    List<ProcessingPeriodDto> previousPeriods = periods.subList(0, periods.size() - 2);
-
-    UUID programId = requisition.getProgramId();
-    UUID facilityId = requisition.getFacilityId();
-
-    profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
-
-    List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos;
-    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
-
+      Requisition requisition, ProcessingPeriodDto period,
+      List<ProcessingPeriodDto> previousPeriods, Profiler profiler) {
     profiler.start("FIND_APPROVED_PRODUCTS");
     ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
-        .getApprovedProducts(facilityId, programId);
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
 
-    stockCardRangeSummaryDtos =
-        stockCardRangeSummaryStockManagementService
-            .search(programId, facilityId,
-                approvedProducts.getOrderableIdentities(), null,
-                periodDto.getStartDate(), periodDto.getEndDate());
+    LocalDate startDate = previousPeriods.size() <= 1
+        ? period.getStartDate() :
+        previousPeriods.get(previousPeriods.size() - 1).getStartDate();
 
-    profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
-    if (previousPeriods.size() > 1) {
-      stockCardRangeSummariesToAverage =
-          stockCardRangeSummaryStockManagementService
-              .search(programId, facilityId,
-                  approvedProducts.getOrderableIdentities(), null,
-                  previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
-                  periodDto.getEndDate());
-    } else {
-      stockCardRangeSummariesToAverage = stockCardRangeSummaryDtos;
-    }
-
-    return stockCardRangeSummariesToAverage;
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES_TO_AVERAGE");
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            startDate, period.getEndDate());
   }
 
 }

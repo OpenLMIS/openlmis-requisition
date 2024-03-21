@@ -402,30 +402,18 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
     draftStatusMessage = requisition.draftStatusMessage;
 
+    profiler.start("SET_TEMPLATE");
+    template = requisition.getTemplate();
+
     profiler.start("SET_EXTRA_DATA");
     extraData = new ExtraDataEntity(requisition.getExtraData());
 
     profiler.start("UPDATE_LINE_ITEMS");
     updateReqLines(requisition.getRequisitionLineItems());
 
-    if (!emergency) {
-      profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
-      if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-        List<ProcessingPeriodDto> periods = periodService
-            .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
-                requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
-
-        List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-            requisitionService.getStockCardRangeSummariesToAverage(requisition,
-                periods, profiler);
-
-        calculateAndValidateStockTemplateFields(products, stockCardRangeSummariesToAverage,
-            template, periods, previousRequisitions,
-            numberOfMonthsInPeriod, approvedProducts);
-      } else {
-        calculateAndValidateTemplateFields(template, products, approvedProducts);
-      }
-    }
+    profiler.start("CALCULATE_AND_VALIDATE_TEMPLATE_FIELDS");
+    calculateAndValidateTemplateFields(requisition, products, approvedProducts,
+        requisitionService, periodService, profiler);
 
     profiler.start("UPDATE_TOTAL_COST_AND_PACKS_TO_SHIP");
     updateTotalCostAndPacksToShip(products);
@@ -444,6 +432,31 @@ public class Requisition extends BaseTimestampedEntity {
 
     profiler.stop().log();
     LOGGER.exit();
+  }
+
+  private void calculateAndValidateTemplateFields(
+      Requisition requisition, Map<VersionIdentityDto, OrderableDto> products,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
+      RequisitionService requisitionService, PeriodService periodService, Profiler profiler) {
+    if (emergency) {
+      return;
+    }
+
+    if (!template.isPopulateStockOnHandFromStockCards()) {
+      calculateAndValidateNonStockTemplateFields(products, approvedProducts);
+      return;
+    }
+
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+    List<ProcessingPeriodDto> previousPeriods = periodService
+        .findPreviousPeriods(period, template.getNumberOfPeriodsToAverage() - 1);
+
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+        requisitionService.getStockCardRangeSummariesToAverage(requisition,
+            period, previousPeriods, profiler);
+
+    calculateAndValidateStockTemplateFields(products, approvedProducts,
+        stockCardRangeSummariesToAverage, previousPeriods);
   }
 
   /**
@@ -647,21 +660,12 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits this non stockmanagement based requisition.
-   *
-   */
-  public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
-                     boolean skipAuthorize) {
-    submit(products, submitter, skipAuthorize, null, null);
-  }
-
-  /**
    * Submits this stockmanagement based requisition.
    */
   public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
-                     boolean skipAuthorize,
-                     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                     List<ProcessingPeriodDto> periods) {
+                     boolean skipAuthorize, ProcessingPeriodDto period,
+                     RequisitionService requisitionService, PeriodService periodService,
+                     Profiler profiler) {
     if (!status.isSubmittable()) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED, getId()));
@@ -687,12 +691,7 @@ public class Requisition extends BaseTimestampedEntity {
           });
     }
 
-    if (template.isPopulateStockOnHandFromStockCards()) {
-      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
-    } else {
-      updateConsumptions(products);
-    }
-
+    updateConsumptions(products, period, requisitionService, periodService, profiler);
     updateTotalCostAndPacksToShip(products);
 
     status = RequisitionStatus.SUBMITTED;
@@ -706,32 +705,21 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Authorize this non stockmanagement based requisition.
-   *
-   */
-  public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer) {
-    authorize(products, authorizer, null, null);
-  }
-
-  /**
    * Authorize this stockmanagement based Requisition.
    *
    */
   public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer,
-                        List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                        List<ProcessingPeriodDto> periods) {
+                        ProcessingPeriodDto period,
+                        RequisitionService requisitionService, PeriodService periodService,
+                        Profiler profiler) {
     if (!RequisitionStatus.SUBMITTED.equals(status)) {
       throw new ValidationMessageException(
           new Message(ERROR_MUST_BE_SUBMITTED_TO_BE_AUTHORIZED, getId()));
     }
 
-    if (template.isPopulateStockOnHandFromStockCards()) {
-      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
-    } else {
-      updateConsumptions(products);
-    }
-
+    updateConsumptions(products, period, requisitionService, periodService, profiler);
     updateTotalCostAndPacksToShip(products);
+
     prepareRequisitionForApproval(authorizer);
     setModifiedDate(ZonedDateTime.now());
   }
@@ -763,15 +751,6 @@ public class Requisition extends BaseTimestampedEntity {
 
 
   /**
-   * Approve this non stockmanagement based requisition.
-   *
-   */
-  public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
-                        Collection<SupplyLineDto> supplyLines, UUID approver) {
-    approve(nodeId, products, supplyLines, approver, null, null);
-  }
-
-  /**
    * Approves this stockmanagement based requisition.
    *
    * @param nodeId      supervisoryNode that has a supply line for the requisition's program.
@@ -782,8 +761,8 @@ public class Requisition extends BaseTimestampedEntity {
    */
   public void approve(UUID nodeId, Map<VersionIdentityDto, OrderableDto> products,
                       Collection<SupplyLineDto> supplyLines, UUID approver,
-                      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                      List<ProcessingPeriodDto> periods) {
+                      ProcessingPeriodDto period, RequisitionService requisitionService,
+                      PeriodService periodService, Profiler profiler) {
     if (isTrue(reportOnly)) {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
     } else {
@@ -795,40 +774,22 @@ public class Requisition extends BaseTimestampedEntity {
       }
     }
 
-    if (template.isPopulateStockOnHandFromStockCards()) {
-      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
-    } else {
-      updateConsumptions(products);
-    }
-
+    updateConsumptions(products, period, requisitionService, periodService, profiler);
     updateTotalCostAndPacksToShip(products);
+
     setModifiedDate(ZonedDateTime.now());
-
     statusChanges.add(StatusChange.newStatusChange(this, approver));
-  }
-
-  /**
-   * Reject this non stockmanagement based requisition.
-   *
-   */
-  public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector) {
-    reject(products, rejector, null, null);
   }
 
   /**
    * Rejects this stockmanagement based requisition.
    */
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector,
-                     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-                     List<ProcessingPeriodDto> periods) {
+                     ProcessingPeriodDto period, RequisitionService requisitionService,
+                     PeriodService periodService, Profiler profiler) {
     status = RequisitionStatus.REJECTED;
 
-    if (template.isPopulateStockOnHandFromStockCards()) {
-      updateStockConsumptions(products, stockCardRangeSummariesToAverage, periods);
-    } else {
-      updateConsumptions(products);
-    }
-
+    updateConsumptions(products, period, requisitionService, periodService, profiler);
     updateTotalCostAndPacksToShip(products);
     setModifiedDate(ZonedDateTime.now());
     supervisoryNodeId = null;
@@ -1129,7 +1090,7 @@ public class Requisition extends BaseTimestampedEntity {
         .orElseGet(() -> Money.of(CurrencyUnit.of(currencyCode), 0));
   }
 
-  private void calculateAndValidateTemplateFields(RequisitionTemplate template,
+  private void calculateAndValidateNonStockTemplateFields(
       Map<VersionIdentityDto, OrderableDto> orderables,
       Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
@@ -1140,12 +1101,9 @@ public class Requisition extends BaseTimestampedEntity {
 
   private void calculateAndValidateStockTemplateFields(
       Map<VersionIdentityDto, OrderableDto> orderables,
+      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
       List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
-      RequisitionTemplate template,
-      List<ProcessingPeriodDto> periods,
-      List<Requisition> previousRequisitions,
-      Integer numberOfMonthsInPeriod,
-      Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
+      List<ProcessingPeriodDto> periods) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(line -> {
           StockCardRangeSummaryDto stockCardRangeSummaryToAverage = findStockCardRangeSummary(
@@ -1157,7 +1115,26 @@ public class Requisition extends BaseTimestampedEntity {
         });
   }
 
-  private void updateConsumptions(Map<VersionIdentityDto, OrderableDto> orderables) {
+  private void updateConsumptions(Map<VersionIdentityDto, OrderableDto> orderables,
+                                  ProcessingPeriodDto period,
+                                  RequisitionService requisitionService,
+                                  PeriodService periodService, Profiler profiler) {
+    if (!getTemplate().isPopulateStockOnHandFromStockCards()) {
+      updateNonStockConsumptions(orderables);
+      return;
+    }
+
+    List<ProcessingPeriodDto> previousPeriods = periodService
+        .findPreviousPeriods(period, getTemplate().getNumberOfPeriodsToAverage() - 1);
+
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+        requisitionService.getStockCardRangeSummariesToAverage(
+            this, period, previousPeriods, profiler);
+
+    updateStockConsumptions(orderables, stockCardRangeSummariesToAverage, previousPeriods);
+  }
+
+  private void updateNonStockConsumptions(Map<VersionIdentityDto, OrderableDto> orderables) {
     if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
       getNonSkippedFullSupplyRequisitionLineItems(orderables)
           .forEach(line -> line.setAdjustedConsumption(

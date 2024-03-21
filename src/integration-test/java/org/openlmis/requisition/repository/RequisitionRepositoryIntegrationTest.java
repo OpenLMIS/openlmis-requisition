@@ -71,13 +71,18 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.dto.OrderableDto;
+import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
+import org.openlmis.requisition.service.PeriodService;
+import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.DefaultRequisitionSearchParamsDataBuilder;
+import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -94,8 +99,17 @@ public class RequisitionRepositoryIntegrationTest
   private Pageable pageRequest = PageRequest.of(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
+  private Profiler profiler;
+
   @Autowired
   private AvailableRequisitionColumnRepository availableRequisitionColumnRepository;
+
+  @Autowired
+  private RequisitionService requisitionService;
+
+  @Autowired
+  private PeriodService periodService;
+
 
   @Before
   public void setUp() {
@@ -104,6 +118,7 @@ public class RequisitionRepositoryIntegrationTest
     for (int count = 0; count < 5; ++count) {
       requisitions.add(repository.save(generateInstance()));
     }
+    profiler = new Profiler("TEST_PROFILER");
   }
 
   @Test
@@ -766,6 +781,9 @@ public class RequisitionRepositoryIntegrationTest
     final UUID user = UUID.randomUUID();
     final Map<VersionIdentityDto, OrderableDto> products = emptyMap();
 
+    final ProcessingPeriodDto period = new ProcessingPeriodDtoDataBuilder()
+        .buildAsDto();
+
     Requisition matchingRequisition1 = requisitions.get(0);
     matchingRequisition1.setProgramId(programId);
     matchingRequisition1.setSupervisoryNodeId(supervisoryNodeId);
@@ -790,41 +808,53 @@ public class RequisitionRepositoryIntegrationTest
     //    to verify that the latest authorized status change is used for comparison
     // 2) we have to save requisitions after each status change because the createdDate field
     //    is set by hibernate - because of @PrePersist annotation in the BaseTimestampedEntity
-    matchingRequisition1.submit(products, user, false);
+    matchingRequisition1.submit(
+        products, user, false, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition1);
 
-    matchingRequisition2.submit(products, user, false);
+    matchingRequisition2.submit(
+        products, user, false, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition2);
 
-    matchingRequisition3.submit(products, user, false);
+    matchingRequisition3.submit(
+        products, user, false, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition3);
 
-    matchingRequisition1.authorize(products, user);
+    matchingRequisition1.authorize(
+        products, user, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition1);
 
-    matchingRequisition2.authorize(products, user);
+    matchingRequisition2.authorize(
+        products, user, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition2);
 
-    matchingRequisition3.authorize(products, user);
+    matchingRequisition3.authorize(
+        products, user, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition3);
 
-    matchingRequisition2.reject(products, user);
+    matchingRequisition2.reject(
+        products, user, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition2);
 
-    matchingRequisition3.reject(products, user);
+    matchingRequisition3.reject(
+        products, user, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition3);
 
-    matchingRequisition3.submit(products, user, false);
+    matchingRequisition3.submit(
+        products, user, false, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition3);
 
-    matchingRequisition2.submit(products, user, false);
+    matchingRequisition2.submit(
+        products, user, false, period, requisitionService, periodService, profiler);
     saveAndFlushWithDelay(matchingRequisition2);
 
-    matchingRequisition3.authorize(products, user);
+    matchingRequisition3.authorize(
+        products, user, period, requisitionService, periodService, profiler);
     matchingRequisition3.setSupervisoryNodeId(supervisoryNodeId);
     saveAndFlushWithDelay(matchingRequisition3);
 
-    matchingRequisition2.authorize(products, user);
+    matchingRequisition2.authorize(
+        products, user, period, requisitionService, periodService, profiler);
     matchingRequisition2.setSupervisoryNodeId(supervisoryNodeId);
     saveAndFlushWithDelay(matchingRequisition2);
 
