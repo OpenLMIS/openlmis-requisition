@@ -451,12 +451,23 @@ public class Requisition extends BaseTimestampedEntity {
     List<ProcessingPeriodDto> previousPeriods = periodService
         .findPreviousPeriods(period, template.getNumberOfPeriodsToAverage() - 1);
 
-    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-        requisitionService.getStockCardRangeSummariesToAverage(requisition,
-            period, previousPeriods, profiler);
+    List<StockCardRangeSummaryDto> stockCardRangeSummaries =
+        requisitionService.getStockCardRangeSummaries(requisition,
+            period, profiler);
+
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
+    if (previousPeriods.size() > 1) {
+      stockCardRangeSummariesToAverage =
+          requisitionService.getStockCardRangeSummariesToAverage(requisition,
+              period, previousPeriods, profiler);
+    } else {
+      stockCardRangeSummariesToAverage = stockCardRangeSummaries;
+    }
+
+    previousPeriods.add(period);
 
     calculateAndValidateStockTemplateFields(products, approvedProducts,
-        stockCardRangeSummariesToAverage, previousPeriods);
+        stockCardRangeSummariesToAverage, stockCardRangeSummaries, previousPeriods);
   }
 
   /**
@@ -1103,15 +1114,19 @@ public class Requisition extends BaseTimestampedEntity {
       Map<VersionIdentityDto, OrderableDto> orderables,
       Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
       List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
+      List<StockCardRangeSummaryDto> stockCardRangeSummaries,
       List<ProcessingPeriodDto> periods) {
     getNonSkippedFullSupplyRequisitionLineItems(orderables)
         .forEach(line -> {
           StockCardRangeSummaryDto stockCardRangeSummaryToAverage = findStockCardRangeSummary(
               stockCardRangeSummariesToAverage, line.getOrderable().getId());
 
-          line.calculateAndSetStockFields(stockCardRangeSummaryToAverage, template,
-              periods, previousRequisitions, numberOfMonthsInPeriod,
-              approvedProducts);
+          StockCardRangeSummaryDto stockCardRangeSummary = findStockCardRangeSummary(
+              stockCardRangeSummaries, line.getOrderable().getId());
+
+          line.calculateAndSetStockFields(stockCardRangeSummaryToAverage,
+              stockCardRangeSummary, template, periods, previousRequisitions,
+              numberOfMonthsInPeriod, approvedProducts);
         });
   }
 
@@ -1130,6 +1145,8 @@ public class Requisition extends BaseTimestampedEntity {
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
         requisitionService.getStockCardRangeSummariesToAverage(
             this, period, previousPeriods, profiler);
+
+    previousPeriods.add(period);
 
     updateStockConsumptions(orderables, stockCardRangeSummariesToAverage, previousPeriods);
   }
