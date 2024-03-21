@@ -167,6 +167,7 @@ import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.web.FacilitySupportsProgramHelper;
 import org.openlmis.requisition.web.OrderDtoBuilder;
 import org.openlmis.requisition.web.RequisitionForConvertBuilder;
+import org.slf4j.profiler.Profiler;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -448,7 +449,8 @@ public class RequisitionServiceTest {
         any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
-            generateRejections());
+        generateRejections(), mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
@@ -461,7 +463,8 @@ public class RequisitionServiceTest {
         any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
-            generateRejections());
+        generateRejections(), mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
     assertEquals(returnedRequisition.getStatus(), REJECTED);
   }
 
@@ -475,7 +478,9 @@ public class RequisitionServiceTest {
     when(requisitionRepository.existsByOriginalRequisitionId(requisition.getId()))
         .thenReturn(true);
 
-    requisitionService.reject(requisition, emptyMap(), emptyList());
+    requisitionService.reject(requisition, emptyMap(), emptyList(),
+        mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
   }
 
   @Test
@@ -486,7 +491,9 @@ public class RequisitionServiceTest {
     requisition.setStatus(IN_APPROVAL);
     requisition.setOriginalRequisitionId(UUID.randomUUID());
 
-    requisitionService.reject(requisition, emptyMap(), generateRejections());
+    requisitionService.reject(requisition, emptyMap(), generateRejections(),
+        mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
   }
 
   @Test
@@ -499,7 +506,8 @@ public class RequisitionServiceTest {
         any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
-            generateRejections());
+            generateRejections(), mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     verify(statusMessageRepository, times(1)).save(any(StatusMessage.class));
   }
@@ -513,7 +521,8 @@ public class RequisitionServiceTest {
         any(UUID.class), any(UUID.class), any(UUID.class),any(UUID.class)))
         .thenReturn(true);
     Requisition returnedRequisition = requisitionService.reject(requisition, orderables,
-            generateRejections());
+            generateRejections(), mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
     assertEquals(returnedRequisition.getStatus(), REJECTED);
     assertNull(returnedRequisition.getSupervisoryNodeId());
   }
@@ -522,14 +531,18 @@ public class RequisitionServiceTest {
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusSubmitted()
       throws ValidationMessageException {
     requisition.setStatus(SUBMITTED);
-    requisitionService.reject(requisition, emptyMap(), generateRejections());
+    requisitionService.reject(requisition, emptyMap(), generateRejections(),
+        mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
   }
 
   @Test(expected = ValidationMessageException.class)
   public void shouldThrowExceptionWhenRejectingRequisitionWithStatusApproved()
       throws ValidationMessageException {
     requisition.setStatus(APPROVED);
-    requisitionService.reject(requisition, emptyMap(), generateRejections());
+    requisitionService.reject(requisition, emptyMap(), generateRejections(),
+        mock(ProcessingPeriodDto.class), mock(RequisitionService.class),
+        mock(PeriodService.class), mock(Profiler.class));
   }
 
   @Test
@@ -1209,12 +1222,14 @@ public class RequisitionServiceTest {
 
     requisitionService.doApprove(
         parentId, user, ImmutableMap.of(fullSupplyOrderable.getIdentity(), fullSupplyOrderable),
-        requisitionMock, singletonList(supplyLineDto)
+        requisitionMock, singletonList(supplyLineDto), mock(ProcessingPeriodDto.class),
+        mock(Profiler.class)
     );
 
     verify(requisitionMock, times(1)).approve(eq(parentId),
         eq(ImmutableMap.of(fullSupplyOrderable.getIdentity(), fullSupplyOrderable)),
-        eq(singletonList(supplyLineDto)), eq(user.getId()));
+        eq(singletonList(supplyLineDto)), eq(user.getId()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class));
   }
 
   @Test

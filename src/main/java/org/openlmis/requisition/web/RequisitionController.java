@@ -45,7 +45,6 @@ import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.SupportedProgramDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
-import org.openlmis.requisition.dto.stockmanagement.StockCardRangeSummaryDto;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
@@ -222,21 +221,8 @@ public class RequisitionController extends BaseRequisitionController {
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
 
     profiler.start("SUBMIT");
-    if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      List<ProcessingPeriodDto> periods = periodService
-          .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
-              requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
-
-      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-          requisitionService.getStockCardRangeSummariesToAverage(
-              requisition, periods, profiler);
-
-      requisition.submit(orderables, getCurrentUser(profiler).getId(),
-          program.getSkipAuthorization(), stockCardRangeSummariesToAverage, periods);
-    } else {
-      requisition.submit(orderables, getCurrentUser(profiler).getId(),
-          program.getSkipAuthorization());
-    }
+    requisition.submit(orderables, getCurrentUser(profiler).getId(),
+        program.getSkipAuthorization(), period, requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, authenticationHelper.getCurrentUser());
@@ -409,9 +395,11 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+
     profiler.start("REJECT");
     Requisition rejectedRequisition = requisitionService.reject(requisition, orderables,
-            rejections);
+            rejections, period, requisitionService, periodService, profiler);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
@@ -588,20 +576,8 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("AUTHORIZE");
-    if (requisition.getTemplate().isPopulateStockOnHandFromStockCards()) {
-      List<ProcessingPeriodDto> periods = periodService
-          .getPeriodsForCalculations(requisition.getProcessingPeriodId(),
-              requisition.getTemplate().getNumberOfPeriodsToAverage() - 1);
-
-      List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-          requisitionService.getStockCardRangeSummariesToAverage(
-              requisition, periods, profiler);
-
-      requisition.authorize(orderables, user.getId(), stockCardRangeSummariesToAverage,
-          periods);
-    } else {
-      requisition.authorize(orderables, user.getId());
-    }
+    requisition.authorize(orderables, user.getId(), period,
+        requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, user);
