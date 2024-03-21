@@ -987,4 +987,23 @@ public class RequisitionService {
             startDate, period.getEndDate());
   }
 
+  /**
+   * Retrieves StockCardRangeSummaryDto from certain requisition.
+   * @param requisition - requisition
+   * @param period - period
+   * @param profiler - java profiler
+   * @return retrieved list of StockCardRangeSummaryDto.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummaries(Requisition requisition,
+                                                                   ProcessingPeriodDto period,
+                                                                   Profiler profiler) {
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
+
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            period.getStartDate(), period.getEndDate());
+  }
 }

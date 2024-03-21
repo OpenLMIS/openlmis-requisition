@@ -624,14 +624,15 @@ public class RequisitionLineItem extends BaseEntity {
    * Calculate and set all calculated stock fields in this requisition line item.
    */
   void calculateAndSetStockFields(StockCardRangeSummaryDto stockCardRangeSummaryToAverage,
+                                  StockCardRangeSummaryDto stockCardRangeSummaryDto,
                                   RequisitionTemplate template,
                                   List<ProcessingPeriodDto> periods,
                                   List<Requisition> previousRequisitions,
                                   Integer numberOfMonthsInPeriod,
                                   Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
-    calculateAndSetStockBasedTotalLossesAndAdjustments(template, stockCardRangeSummaryToAverage);
+    calculateAndSetStockBasedTotalLossesAndAdjustments(template, stockCardRangeSummaryDto);
     calculateAndSetStockOnHand(template);
-    calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryToAverage);
+    calculateAndSetStockBasedTotalConsumedQuantity(template, stockCardRangeSummaryDto);
     calculateAndSetTotal(template);
     calculateAndSetAdjustedConsumption(template, numberOfMonthsInPeriod);
     calculateAndSetStockBasedAverageConsumption(stockCardRangeSummaryToAverage,
