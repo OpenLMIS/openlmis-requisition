@@ -1104,6 +1104,7 @@ public class RequisitionService {
     ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
         .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
 
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES");
     return stockCardRangeSummaryStockManagementService
         .search(requisition.getProgramId(), requisition.getFacilityId(),
             approvedProducts.getOrderableIdentities(), null,

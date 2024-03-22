@@ -452,17 +452,11 @@ public class Requisition extends BaseTimestampedEntity {
         .findPreviousPeriods(period, template.getNumberOfPeriodsToAverage() - 1);
 
     List<StockCardRangeSummaryDto> stockCardRangeSummaries =
-        requisitionService.getStockCardRangeSummaries(requisition,
-            period, profiler);
+        requisitionService.getStockCardRangeSummaries(requisition, period, profiler);
 
-    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
-    if (previousPeriods.size() > 1) {
-      stockCardRangeSummariesToAverage =
-          requisitionService.getStockCardRangeSummariesToAverage(requisition,
-              period, previousPeriods, profiler);
-    } else {
-      stockCardRangeSummariesToAverage = stockCardRangeSummaries;
-    }
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
+        requisitionService.getStockCardRangeSummariesToAverage(requisition,
+            period, previousPeriods, profiler);
 
     previousPeriods.add(period);
 
