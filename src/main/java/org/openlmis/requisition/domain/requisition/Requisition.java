@@ -454,9 +454,13 @@ public class Requisition extends BaseTimestampedEntity {
     List<StockCardRangeSummaryDto> stockCardRangeSummaries =
         requisitionService.getStockCardRangeSummaries(requisition, period, profiler);
 
-    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage =
-        requisitionService.getStockCardRangeSummariesToAverage(requisition,
-            period, previousPeriods, profiler);
+    List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
+    if (previousPeriods.size() > 1) {
+      stockCardRangeSummariesToAverage = requisitionService.getStockCardRangeSummariesToAverage(requisition,
+          period, previousPeriods, profiler);
+    } else {
+      stockCardRangeSummariesToAverage = stockCardRangeSummaries;
+    }
 
     previousPeriods.add(period);
 
@@ -665,7 +669,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Submits this stockmanagement based requisition.
+   * Submits this requisition.
    */
   public void submit(Map<VersionIdentityDto, OrderableDto> products, UUID submitter,
                      boolean skipAuthorize, ProcessingPeriodDto period,
@@ -710,7 +714,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Authorize this stockmanagement based Requisition.
+   * Authorize this requisition.
    *
    */
   public void authorize(Map<VersionIdentityDto, OrderableDto> products, UUID authorizer,
@@ -756,7 +760,7 @@ public class Requisition extends BaseTimestampedEntity {
 
 
   /**
-   * Approves this stockmanagement based requisition.
+   * Approves this requisition.
    *
    * @param nodeId      supervisoryNode that has a supply line for the requisition's program.
    * @param products    orderable products that will be used by line items to update packs to ship.
@@ -787,7 +791,7 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
-   * Rejects this stockmanagement based requisition.
+   * Rejects this requisition.
    */
   public void reject(Map<VersionIdentityDto, OrderableDto> products, UUID rejector,
                      ProcessingPeriodDto period, RequisitionService requisitionService,

@@ -1091,7 +1091,7 @@ public class RequisitionService {
   }
 
   /**
-   * Retrieves StockCardRangeSummaryDto from certain requisition.
+   * Retrieves stockCardRangeSummaries from certain requisition.
    * @param requisition - requisition
    * @param period - period
    * @param profiler - java profiler
@@ -1110,4 +1110,5 @@ public class RequisitionService {
             approvedProducts.getOrderableIdentities(), null,
             period.getStartDate(), period.getEndDate());
   }
+
 }
