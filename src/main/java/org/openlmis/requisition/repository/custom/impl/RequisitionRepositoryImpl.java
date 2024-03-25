@@ -171,6 +171,74 @@ public class RequisitionRepositoryImpl
   }
 
   /**
+   * Method returns number of all Requisitions with matched parameters.
+   *
+   * @param processingPeriod ProcessingPeriod of searched Requisitions.
+   * @param facility Facility of searched Requisitions.
+   * @param program Program of searched Requisitions.
+   * @param status Status of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return Number of Requisitions with matched parameters.
+   */
+  @Override
+  public Long countRequisitions(UUID processingPeriod, UUID facility,
+      UUID program, Boolean emergency, RequisitionStatus status) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    CriteriaQuery<Long> query = builder.createQuery(Long.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    query = query.select(builder.count(root));
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriod);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, program);
+    predicate = addEqualFilter(predicate, builder, root, STATUS, status);
+
+    query.where(predicate);
+
+    return countEntities(query);
+  }
+
+  /**
+   * Method returns number of all Requisitions with matched parameters.
+   *
+   * @param facility Facility of searched Requisitions.
+   * @param programIds Program IDs of searched Requisitions.
+   * @param processingPeriodIds ProcessingPeriod IDs of searched Requisitions.
+   * @param statuses Statuses of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return Number of Requisitions with matched parameters.
+   */
+  @Override
+  public Long countRequisitions(UUID facility, List<UUID> programIds,
+      List<UUID> processingPeriodIds, Boolean emergency, List<RequisitionStatus> statuses) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    CriteriaQuery<Long> query = builder.createQuery(Long.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    query = query.select(builder.count(root));
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addInFilter(predicate, builder, root, PROGRAM_ID, programIds);
+    predicate = addInFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriodIds);
+    predicate = addInFilter(predicate, builder, root, STATUS, statuses);
+
+    query.where(predicate);
+
+    return countEntities(query);
+  }
+
+  /**
    * Method returns Requisition with matched parameters.
    *
    * @param processingPeriod ProcessingPeriod of searched Requisition.

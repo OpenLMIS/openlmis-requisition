@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -512,6 +513,29 @@ public class RequisitionController extends BaseRequisitionController {
 
     stopProfiler(profiler);
     return numberOfRequisitionsForApproval;
+  }
+
+  /**
+   * Returns data on the number of requisitions of each status for user's home facility.
+   *
+   * @return Requisitions statistics data.
+   */
+  @GetMapping(RESOURCE_URL + "/statusesStatsData")
+  @ResponseStatus(HttpStatus.OK)
+  public RequisitionStatsData getRequisitionsStatusesStatsData() {
+    Profiler profiler = getProfiler("GET_REQUISITIONS_STATUSES_STATS_DATA");
+    UUID homeFacilityId = getCurrentUser(profiler).getHomeFacilityId();
+    if (homeFacilityId == null) {
+      return new RequisitionStatsData();
+    }
+    FacilityDto homeFacility = findFacility(homeFacilityId, profiler);
+
+    profiler.start("REQUISITION_SERVICE_GET_STATUSES_STATS");
+    RequisitionStatsData requisitionStatusesData =
+        requisitionService.getStatusesStatsData(homeFacility);
+
+    stopProfiler(profiler);
+    return requisitionStatusesData;
   }
 
   /**

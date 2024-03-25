@@ -69,6 +69,11 @@ public class PeriodService {
     return periodReferenceDataService.searchByProgramAndFacility(programId, facilityId);
   }
 
+  public Collection<ProcessingPeriodDto> searchByProgramAndFacilityAndDateRange(UUID programId,
+      UUID facilityId, LocalDate startDate, LocalDate endDate) {
+    return periodReferenceDataService.search(programId, facilityId, startDate, endDate);
+  }
+
   public ProcessingPeriodDto getPeriod(UUID periodId) {
     return periodReferenceDataService.findOne(periodId);
   }

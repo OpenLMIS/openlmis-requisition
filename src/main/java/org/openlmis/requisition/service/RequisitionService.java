@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -50,11 +51,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -807,6 +808,72 @@ public class RequisitionService {
     return null == recentRequisition || requisition.getId().equals(recentRequisition.getId());
   }
 
+
+  /**
+   * Returns statistics data regarding requisitions statuses for a specified facility:
+   * number of requisitions to be created for current periods and number of requisitions
+   * with each status available in the system.
+   *
+   * @param facility FacilityDto object.
+   * @return RequisitionStatsData object.
+   */
+  public RequisitionStatsData getStatusesStatsData(FacilityDto facility) {
+    UUID facilityId = facility.getId();
+    List<RequisitionStatus> postSubmittedStatuses = new ArrayList<>();
+    Map<String, Long> statusesStats = new HashMap<>();
+    for (RequisitionStatus status : RequisitionStatus.values()) {
+      statusesStats.put(
+          status.name(),
+          requisitionRepository.countRequisitions(null, facilityId,
+              null, null, status)
+      );
+      if (status.isPostSubmitted()) {
+        postSubmittedStatuses.add(status);
+      }
+    }
+    RequisitionStatsData requisitionStatsData = new RequisitionStatsData();
+    requisitionStatsData.setStatusesStats(statusesStats);
+    requisitionStatsData.setFacilityId(facilityId);
+
+    // The maximum number of combinations of actively supported programs and periods for a given
+    // facility will be the number of requisitions that can be created for that facility.
+    Set<ProcessingPeriodDto> currentFacilityPeriods = new HashSet<>();
+    List<SupportedProgramDto> activelySupportedPrograms = facility.getSupportedPrograms()
+        .stream()
+        .filter(SupportedProgramDto::isSupportActive)
+        .filter(SupportedProgramDto::isProgramActive)
+        .collect(toList());
+    activelySupportedPrograms.forEach(program -> {
+      if (program.isSupportActive()) {
+        List<ProcessingPeriodDto> foundPeriods =
+            new ArrayList<>(periodService.searchByProgramAndFacilityAndDateRange(
+                program.getId(), facilityId,
+                LocalDate.now(), LocalDate.now()));
+        currentFacilityPeriods.addAll(foundPeriods);
+      }
+    });
+
+    long maxRequisitionForFacility = currentFacilityPeriods.size();
+    if (maxRequisitionForFacility == 0) {
+      requisitionStatsData.setRequisitionsToBeCreated(0L);
+    } else {
+      List<UUID> activelySupportedProgramsIds = activelySupportedPrograms.stream()
+          .map(SupportedProgramDto::getId)
+          .collect(toList());
+      List<UUID> currentFacilityPeriodsIds = currentFacilityPeriods.stream()
+          .map(ProcessingPeriodDto::getId)
+          .collect(toList());
+      Long createdRequisitions = requisitionRepository.countRequisitions(
+          facilityId, activelySupportedProgramsIds, currentFacilityPeriodsIds, null,
+          postSubmittedStatuses
+      );
+      long requisitionsToBeCreated = maxRequisitionForFacility - createdRequisitions;
+      requisitionStatsData.setRequisitionsToBeCreated(requisitionsToBeCreated);
+    }
+
+    return requisitionStatsData;
+  }
+
   /**
    * Returns requisition associated with the most recent period for given program and facility.
    *
@@ -931,6 +998,7 @@ public class RequisitionService {
 
   /**
    * Adds approver details to unskipped requisition line items.
+   *
    * @param requisition object
    */
   public void processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
@@ -943,6 +1011,7 @@ public class RequisitionService {
 
   /**
    * Updates patientsData of requisition.
+   *
    * @param requisitionId - id of requisition
    * @param patientsData - stringified JSON string to store patients data
    * @return requisition object.
