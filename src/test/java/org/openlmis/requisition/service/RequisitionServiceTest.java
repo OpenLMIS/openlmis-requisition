@@ -88,6 +88,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.OngoingStubbing;
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
@@ -1604,6 +1605,58 @@ public class RequisitionServiceTest {
 
     // when
     requisitionService.releaseWithoutOrder(requisitions);
+  }
+
+  @Test
+  public void shouldReturnRequisitionStatsData() {
+    // given
+    when(requisitionRepository.countRequisitions(
+        eq(null), eq(facility.getId()), eq(null), eq(null), any(RequisitionStatus.class)))
+        .thenReturn(10L);
+    UUID programId = UUID.randomUUID();
+    mockFacilitySupportedProgramActivate(programId);
+    when(periodService.searchByProgramAndFacilityAndDateRange(eq(programId), eq(facility.getId()),
+        any(LocalDate.class), any(LocalDate.class)))
+        .thenReturn(singletonList(DtoGenerator.of(ProcessingPeriodDto.class)));
+    when(requisitionRepository.countRequisitions(eq(facility.getId()), any(List.class),
+        any(List.class), eq(null), any(List.class)))
+        .thenReturn(0L);
+
+    // when
+    RequisitionStatsData result = requisitionService.getStatusesStatsData(facility);
+
+    // then
+    assertEquals(facility.getId(), result.getFacilityId());
+    assertEquals(Long.valueOf(1L), result.getRequisitionsToBeCreated());
+    assertEquals(RequisitionStatus.values().length, result.getStatusesStats().size());
+  }
+
+  @Test
+  public void shouldReturnRequisitionStatsDataWithZeroReqToBeCreatedIfNoAssignedPeriods() {
+    // given
+    when(requisitionRepository.countRequisitions(
+        eq(null), eq(facility.getId()), eq(null), eq(null), any(RequisitionStatus.class)))
+        .thenReturn(10L);
+    UUID programId = UUID.randomUUID();
+    mockFacilitySupportedProgramActivate(programId);
+    when(periodService.searchByProgramAndFacilityAndDateRange(eq(programId), eq(facility.getId()),
+        any(LocalDate.class), any(LocalDate.class)))
+        .thenReturn(emptyList());
+
+    // when
+    RequisitionStatsData result = requisitionService.getStatusesStatsData(facility);
+
+    // then
+    assertEquals(facility.getId(), result.getFacilityId());
+    assertEquals(Long.valueOf(0L), result.getRequisitionsToBeCreated());
+    assertEquals(RequisitionStatus.values().length, result.getStatusesStats().size());
+  }
+
+  private void mockFacilitySupportedProgramActivate(UUID programId) {
+    facility.setSupportedPrograms(singletonList(supportedProgram));
+    when(supportedProgram.isProgramActive()).thenReturn(true);
+    when(supportedProgram.isSupportActive()).thenReturn(true);
+    when(supportedProgram.getId()).thenReturn(programId);
   }
 
   private void validateRequisitionDeleteWithStatus(RequisitionStatus status) {

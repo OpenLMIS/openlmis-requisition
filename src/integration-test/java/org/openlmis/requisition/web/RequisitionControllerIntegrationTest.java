@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -76,6 +77,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -109,6 +111,7 @@ import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
+import org.openlmis.requisition.testutils.UserDtoDataBuilder;
 import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -147,6 +150,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
       + "/requisitionsForConvert";
   private static final String NUMBER_OF_REQ_FOR_APPROVAL_URL = RESOURCE_URL
       + "/numberOfRequisitionsForApproval";
+  private static final String STATUSES_STATS_DATA_URL = RESOURCE_URL
+      + "/statusesStatsData";
 
   private static final String FACILITY = "facility";
   private static final String PROGRAM = "program";
@@ -1963,6 +1968,57 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     assertEquals(numberOfRequisitionsForApproval, result);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // GET /api/requisitions/statusesStatsData
+
+  @Test
+  public void shouldGetRequisitionStatsData() {
+    // given
+    RequisitionStatsData requisitionStatsData = new RequisitionStatsData();
+    requisitionStatsData.setRequisitionsToBeCreated(10L);
+    FacilityDto facility = mockFacility();
+
+    given(facilityReferenceDataService.findOne(eq(user.getHomeFacilityId())))
+        .willReturn(facility);
+    given(requisitionService.getStatusesStatsData(facility))
+        .willReturn(requisitionStatsData);
+
+    // when
+    RequisitionStatsData result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(STATUSES_STATS_DATA_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionStatsData.class);
+
+    // then
+    assertEquals(Long.valueOf(10), result.getRequisitionsToBeCreated());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetRequisitionStatsDataIfNoHomeFacilityAssigned() {
+    // given
+    UserDto userWithoutHomeFacility = new UserDtoDataBuilder().withoutHomeFacility().buildAsDto();
+
+    given(authenticationHelper.getCurrentUser()).willReturn(userWithoutHomeFacility);
+
+    // when
+    RequisitionStatsData result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(STATUSES_STATS_DATA_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(RequisitionStatsData.class);
+
+    // then
+    assertNull(result.getFacilityId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

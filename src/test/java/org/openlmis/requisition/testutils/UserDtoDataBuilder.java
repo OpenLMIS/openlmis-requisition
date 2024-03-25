@@ -23,6 +23,7 @@ import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserDtoDataBuilder implements DtoDataBuilder<UserDto> {
   private UUID id = UUID.randomUUID();
   private String username = RandomStringUtils.randomAlphanumeric(5);
@@ -67,6 +68,11 @@ public class UserDtoDataBuilder implements DtoDataBuilder<UserDto> {
 
   public UserDtoDataBuilder withoutLastName() {
     lastName = null;
+    return this;
+  }
+
+  public UserDtoDataBuilder withoutHomeFacility() {
+    homeFacilityId = null;
     return this;
   }
 
