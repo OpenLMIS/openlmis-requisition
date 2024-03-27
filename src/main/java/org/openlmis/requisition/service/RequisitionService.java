@@ -818,15 +818,15 @@ public class RequisitionService {
    * @return RequisitionStatsData object.
    */
   public RequisitionStatsData getStatusesStatsData(FacilityDto facility) {
+    Profiler profiler = new Profiler("GET_STATUSES_STATS_DATA");
+    profiler.setLogger(LOGGER);
+
     UUID facilityId = facility.getId();
     List<RequisitionStatus> postSubmittedStatuses = new ArrayList<>();
     Map<String, Long> statusesStats = new HashMap<>();
+    profiler.start("COUNT_REQUISITIONS_FOR_STATUSES");
     for (RequisitionStatus status : RequisitionStatus.values()) {
-      statusesStats.put(
-          status.name(),
-          requisitionRepository.countRequisitions(null, facilityId,
-              null, null, status)
-      );
+      countRequisitionsForStatus(status, statusesStats, facilityId);
       if (status.isPostSubmitted()) {
         postSubmittedStatuses.add(status);
       }
@@ -838,39 +838,27 @@ public class RequisitionService {
     // The maximum number of combinations of actively supported programs and periods for a given
     // facility will be the number of requisitions that can be created for that facility.
     Set<ProcessingPeriodDto> currentFacilityPeriods = new HashSet<>();
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS");
     List<SupportedProgramDto> activelySupportedPrograms = facility.getSupportedPrograms()
         .stream()
         .filter(SupportedProgramDto::isSupportActive)
         .filter(SupportedProgramDto::isProgramActive)
         .collect(toList());
-    activelySupportedPrograms.forEach(program -> {
-      if (program.isSupportActive()) {
-        List<ProcessingPeriodDto> foundPeriods =
-            new ArrayList<>(periodService.searchByProgramAndFacilityAndDateRange(
-                program.getId(), facilityId,
-                LocalDate.now(), LocalDate.now()));
-        currentFacilityPeriods.addAll(foundPeriods);
-      }
-    });
+    profiler.start("GET_CURRENT_PERIODS_FOR_FACILITY");
+    getCurrentPeriodsForFacility(activelySupportedPrograms, facilityId, currentFacilityPeriods);
 
+    profiler.start("CALCULATE_REQUISITIONS_TO_BE_CREATED");
     long maxRequisitionForFacility = currentFacilityPeriods.size();
     if (maxRequisitionForFacility == 0) {
       requisitionStatsData.setRequisitionsToBeCreated(0L);
     } else {
-      List<UUID> activelySupportedProgramsIds = activelySupportedPrograms.stream()
-          .map(SupportedProgramDto::getId)
-          .collect(toList());
-      List<UUID> currentFacilityPeriodsIds = currentFacilityPeriods.stream()
-          .map(ProcessingPeriodDto::getId)
-          .collect(toList());
-      Long createdRequisitions = requisitionRepository.countRequisitions(
-          facilityId, activelySupportedProgramsIds, currentFacilityPeriodsIds, null,
-          postSubmittedStatuses
-      );
+      Long createdRequisitions = calculateCurrentlyCreatedRequisitions(activelySupportedPrograms,
+          currentFacilityPeriods, facilityId, postSubmittedStatuses);
       long requisitionsToBeCreated = maxRequisitionForFacility - createdRequisitions;
       requisitionStatsData.setRequisitionsToBeCreated(requisitionsToBeCreated);
     }
 
+    profiler.stop().log();
     return requisitionStatsData;
   }
 
@@ -1023,4 +1011,50 @@ public class RequisitionService {
     requisition.setPatientsData(patientsData);
     return requisition;
   }
+
+  private void countRequisitionsForStatus(RequisitionStatus status,
+      Map<String, Long> statusesStats, UUID facilityId) {
+    statusesStats.put(
+        status.name(),
+        requisitionRepository.countRequisitions(null, facilityId,
+            null, null, status)
+    );
+  }
+
+  private void getCurrentPeriodsForFacility(List<SupportedProgramDto> activelySupportedPrograms,
+      UUID facilityId, Set<ProcessingPeriodDto> currentFacilityPeriods) {
+    activelySupportedPrograms.forEach(program -> {
+      if (program.isSupportActive()) {
+        List<ProcessingPeriodDto> foundPeriods =
+            new ArrayList<>(periodService.searchByProgramAndFacilityAndDateRange(
+                program.getId(), facilityId,
+                LocalDate.now(), LocalDate.now()));
+        currentFacilityPeriods.addAll(foundPeriods);
+      }
+    });
+  }
+
+  private Long calculateCurrentlyCreatedRequisitions(
+      List<SupportedProgramDto> activelySupportedPrograms,
+      Set<ProcessingPeriodDto> currentFacilityPeriods, UUID facilityId,
+      List<RequisitionStatus> postSubmittedStatuses) {
+    Profiler profiler = new Profiler("CALCULATE_CURRENTLY_CREATED_REQUISITIONS");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS_IDS");
+    List<UUID> activelySupportedProgramsIds = activelySupportedPrograms.stream()
+        .map(SupportedProgramDto::getId)
+        .collect(toList());
+    profiler.start("GET_CURRENT_FACILITY_PERIODS_IDS");
+    List<UUID> currentFacilityPeriodsIds = currentFacilityPeriods.stream()
+        .map(ProcessingPeriodDto::getId)
+        .collect(toList());
+
+    profiler.stop().log();
+    return requisitionRepository.countRequisitions(
+        currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, null,
+        postSubmittedStatuses
+    );
+  }
+
 }

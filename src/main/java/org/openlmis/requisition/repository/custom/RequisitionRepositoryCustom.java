@@ -38,7 +38,7 @@ public interface RequisitionRepositoryCustom {
   Long countRequisitions(UUID processingPeriod, UUID facility, UUID program, Boolean emergency,
       RequisitionStatus status);
 
-  Long countRequisitions(UUID facilityId, List<UUID> programIds, List<UUID> processingPeriodIds,
+  Long countRequisitions(List<UUID> processingPeriods, UUID facility, List<UUID> programs,
       Boolean emergency, List<RequisitionStatus> statuses);
 
   Optional<Requisition> findRegularRequisition(UUID processingPeriod, UUID facility, UUID program);
