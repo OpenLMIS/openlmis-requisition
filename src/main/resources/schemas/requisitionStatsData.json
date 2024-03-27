@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "RequisitionStatsData",
+  "description": "A single requisitionStatsData",
+  "properties": {
+    "requisitionsToBeCreated": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "title": "requisitionsToBeCreated"
+    },
+    "statusesStats": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "title": "statusesStats"
+    },
+    "facilityId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "facilityId"
+    }
+  }
+}

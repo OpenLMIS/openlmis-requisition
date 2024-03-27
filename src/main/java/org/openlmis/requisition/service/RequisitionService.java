@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -50,11 +51,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -807,6 +808,60 @@ public class RequisitionService {
     return null == recentRequisition || requisition.getId().equals(recentRequisition.getId());
   }
 
+
+  /**
+   * Returns statistics data regarding requisitions statuses for a specified facility:
+   * number of requisitions to be created for current periods and number of requisitions
+   * with each status available in the system.
+   *
+   * @param facility FacilityDto object.
+   * @return RequisitionStatsData object.
+   */
+  public RequisitionStatsData getStatusesStatsData(FacilityDto facility) {
+    Profiler profiler = new Profiler("GET_STATUSES_STATS_DATA");
+    profiler.setLogger(LOGGER);
+
+    UUID facilityId = facility.getId();
+    List<RequisitionStatus> postSubmittedStatuses = new ArrayList<>();
+    Map<String, Long> statusesStats = new HashMap<>();
+    profiler.start("COUNT_REQUISITIONS_FOR_STATUSES");
+    for (RequisitionStatus status : RequisitionStatus.values()) {
+      countRequisitionsForStatus(status, statusesStats, facilityId);
+      if (status.isPostSubmitted()) {
+        postSubmittedStatuses.add(status);
+      }
+    }
+    RequisitionStatsData requisitionStatsData = new RequisitionStatsData();
+    requisitionStatsData.setStatusesStats(statusesStats);
+    requisitionStatsData.setFacilityId(facilityId);
+
+    // The maximum number of combinations of actively supported programs and periods for a given
+    // facility will be the number of requisitions that can be created for that facility.
+    Set<ProcessingPeriodDto> currentFacilityPeriods = new HashSet<>();
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS");
+    List<SupportedProgramDto> activelySupportedPrograms = facility.getSupportedPrograms()
+        .stream()
+        .filter(SupportedProgramDto::isSupportActive)
+        .filter(SupportedProgramDto::isProgramActive)
+        .collect(toList());
+    profiler.start("GET_CURRENT_PERIODS_FOR_FACILITY");
+    getCurrentPeriodsForFacility(activelySupportedPrograms, facilityId, currentFacilityPeriods);
+
+    profiler.start("CALCULATE_REQUISITIONS_TO_BE_CREATED");
+    long maxRequisitionForFacility = currentFacilityPeriods.size();
+    if (maxRequisitionForFacility == 0) {
+      requisitionStatsData.setRequisitionsToBeCreated(0L);
+    } else {
+      Long createdRequisitions = calculateCurrentlyCreatedRequisitions(activelySupportedPrograms,
+          currentFacilityPeriods, facilityId, postSubmittedStatuses);
+      long requisitionsToBeCreated = maxRequisitionForFacility - createdRequisitions;
+      requisitionStatsData.setRequisitionsToBeCreated(requisitionsToBeCreated);
+    }
+
+    profiler.stop().log();
+    return requisitionStatsData;
+  }
+
   /**
    * Returns requisition associated with the most recent period for given program and facility.
    *
@@ -931,6 +986,7 @@ public class RequisitionService {
 
   /**
    * Adds approver details to unskipped requisition line items.
+   *
    * @param requisition object
    */
   public void processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
@@ -943,6 +999,7 @@ public class RequisitionService {
 
   /**
    * Updates patientsData of requisition.
+   *
    * @param requisitionId - id of requisition
    * @param patientsData - stringified JSON string to store patients data
    * @return requisition object.
@@ -954,4 +1011,50 @@ public class RequisitionService {
     requisition.setPatientsData(patientsData);
     return requisition;
   }
+
+  private void countRequisitionsForStatus(RequisitionStatus status,
+      Map<String, Long> statusesStats, UUID facilityId) {
+    statusesStats.put(
+        status.name(),
+        requisitionRepository.countRequisitions(null, facilityId,
+            null, null, status)
+    );
+  }
+
+  private void getCurrentPeriodsForFacility(List<SupportedProgramDto> activelySupportedPrograms,
+      UUID facilityId, Set<ProcessingPeriodDto> currentFacilityPeriods) {
+    activelySupportedPrograms.forEach(program -> {
+      if (program.isSupportActive()) {
+        List<ProcessingPeriodDto> foundPeriods =
+            new ArrayList<>(periodService.searchByProgramAndFacilityAndDateRange(
+                program.getId(), facilityId,
+                LocalDate.now(), LocalDate.now()));
+        currentFacilityPeriods.addAll(foundPeriods);
+      }
+    });
+  }
+
+  private Long calculateCurrentlyCreatedRequisitions(
+      List<SupportedProgramDto> activelySupportedPrograms,
+      Set<ProcessingPeriodDto> currentFacilityPeriods, UUID facilityId,
+      List<RequisitionStatus> postSubmittedStatuses) {
+    Profiler profiler = new Profiler("CALCULATE_CURRENTLY_CREATED_REQUISITIONS");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS_IDS");
+    List<UUID> activelySupportedProgramsIds = activelySupportedPrograms.stream()
+        .map(SupportedProgramDto::getId)
+        .collect(toList());
+    profiler.start("GET_CURRENT_FACILITY_PERIODS_IDS");
+    List<UUID> currentFacilityPeriodsIds = currentFacilityPeriods.stream()
+        .map(ProcessingPeriodDto::getId)
+        .collect(toList());
+
+    profiler.stop().log();
+    return requisitionRepository.countRequisitions(
+        currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, null,
+        postSubmittedStatuses
+    );
+  }
+
 }
