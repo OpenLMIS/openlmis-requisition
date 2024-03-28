@@ -402,9 +402,6 @@ public class Requisition extends BaseTimestampedEntity {
     profiler.start("SET_DRAFT_STATUS_MESSAGE");
     draftStatusMessage = requisition.draftStatusMessage;
 
-    profiler.start("SET_TEMPLATE");
-    template = requisition.getTemplate();
-
     profiler.start("SET_EXTRA_DATA");
     extraData = new ExtraDataEntity(requisition.getExtraData());
 
@@ -439,6 +436,8 @@ public class Requisition extends BaseTimestampedEntity {
       Map<VersionIdentityDto, ApprovedProductDto> approvedProducts,
       RequisitionService requisitionService, PeriodService periodService, Profiler profiler) {
     if (emergency) {
+      LOGGER.debug("Calculation and validation skipped for emergency requisition "
+          + "with following id: {}", id);
       return;
     }
 
@@ -456,7 +455,8 @@ public class Requisition extends BaseTimestampedEntity {
 
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage;
     if (previousPeriods.size() > 1) {
-      stockCardRangeSummariesToAverage = requisitionService.getStockCardRangeSummariesToAverage(requisition,
+      stockCardRangeSummariesToAverage =
+          requisitionService.getStockCardRangeSummariesToAverage(requisition,
           period, previousPeriods, profiler);
     } else {
       stockCardRangeSummariesToAverage = stockCardRangeSummaries;
@@ -1168,18 +1168,21 @@ public class Requisition extends BaseTimestampedEntity {
       Map<VersionIdentityDto, OrderableDto> orderables,
       List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage,
       List<ProcessingPeriodDto> periods) {
-
-    if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems(orderables)
-          .forEach(line -> line.setAdjustedConsumption(
-              LineItemFieldsCalculator.calculateAdjustedConsumption(
-              line, numberOfMonthsInPeriod,
-                  this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
-          ));
+    if (!template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)
+        && !template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
+      return;
     }
 
-    if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
-      for (RequisitionLineItem line : getNonSkippedFullSupplyRequisitionLineItems(orderables)) {
+    for (RequisitionLineItem line: getNonSkippedFullSupplyRequisitionLineItems(orderables)) {
+      if (template.isColumnInTemplateAndDisplayed(ADJUSTED_CONSUMPTION)) {
+        line.setAdjustedConsumption(
+            LineItemFieldsCalculator.calculateAdjustedConsumption(
+                line, numberOfMonthsInPeriod,
+                this.template.isColumnInTemplateAndDisplayed(ADDITIONAL_QUANTITY_REQUIRED))
+        );
+      }
+
+      if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
         StockCardRangeSummaryDto summaryToAverage = findStockCardRangeSummary(
             stockCardRangeSummariesToAverage, line.getOrderable().getId());
 
