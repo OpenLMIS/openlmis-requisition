@@ -223,7 +223,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("SUBMIT");
     requisition.submit(orderables, getCurrentUser(profiler).getId(),
-        program.getSkipAuthorization());
+        program.getSkipAuthorization(), period, requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, authenticationHelper.getCurrentUser());
@@ -396,9 +396,11 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+
     profiler.start("REJECT");
     Requisition rejectedRequisition = requisitionService.reject(requisition, orderables,
-            rejections);
+            rejections, period, requisitionService, periodService, profiler);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
@@ -601,7 +603,8 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("AUTHORIZE");
-    requisition.authorize(orderables, user.getId());
+    requisition.authorize(orderables, user.getId(), period,
+        requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, user);

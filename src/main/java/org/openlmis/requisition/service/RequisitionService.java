@@ -93,6 +93,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
@@ -186,6 +187,9 @@ public class RequisitionService {
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Autowired
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -341,7 +345,9 @@ public class RequisitionService {
    */
   public Requisition reject(Requisition requisition,
                             Map<VersionIdentityDto, OrderableDto> orderables,
-                            List<RejectionDto> rejections) {
+                            List<RejectionDto> rejections, ProcessingPeriodDto period,
+                            RequisitionService requisitionService, PeriodService periodService,
+                            Profiler profiler) {
     checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
@@ -349,7 +355,7 @@ public class RequisitionService {
     validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
     LOGGER.debug("Requisition rejected: {}", requisition.getId());
-    requisition.reject(orderables, userId);
+    requisition.reject(orderables, userId, period, requisitionService, periodService, profiler);
     requisition.setSupervisoryNodeId(null);
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
@@ -794,8 +800,10 @@ public class RequisitionService {
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser,
                         Map<VersionIdentityDto, OrderableDto> orderables,
-                        Requisition requisition, List<SupplyLineDto> supplyLines) {
-    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
+                        Requisition requisition, List<SupplyLineDto> supplyLines,
+                        ProcessingPeriodDto period, Profiler profiler) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId(), period, this,
+        periodService, profiler);
 
     saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);
@@ -1055,6 +1063,52 @@ public class RequisitionService {
         currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, null,
         postSubmittedStatuses
     );
+  }
+
+
+  /**
+   * Retrieves stockCardRangeSummariesToAverage from certain requisition.
+   * @param requisition - requisition
+   * @param profiler - java profiler
+   * @return retrieved list of stockCardRangeSummariesToAverage.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummariesToAverage(
+      Requisition requisition, ProcessingPeriodDto period,
+      List<ProcessingPeriodDto> previousPeriods, Profiler profiler) {
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
+
+    LocalDate startDate = previousPeriods.size() <= 1
+        ? period.getStartDate() :
+        previousPeriods.get(previousPeriods.size() - 1).getStartDate();
+
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES_TO_AVERAGE");
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            startDate, period.getEndDate());
+  }
+
+  /**
+   * Retrieves stockCardRangeSummaries from certain requisition.
+   * @param requisition - requisition
+   * @param period - period
+   * @param profiler - java profiler
+   * @return retrieved list of StockCardRangeSummaryDto.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummaries(Requisition requisition,
+                                                                   ProcessingPeriodDto period,
+                                                                   Profiler profiler) {
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
+
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES");
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            period.getStartDate(), period.getEndDate());
   }
 
 }

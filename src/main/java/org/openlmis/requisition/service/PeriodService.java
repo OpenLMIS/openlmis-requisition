@@ -194,12 +194,8 @@ public class PeriodService {
    * @param amount   of previous periods
    * @return list previous period or {@code null} if not found.
    */
-  List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
+  public List<ProcessingPeriodDto> findPreviousPeriods(UUID periodId, int amount) {
     ProcessingPeriodDto period = getPeriod(periodId);
-    if (null == period) {
-      return Collections.emptyList();
-    }
-
     return findPreviousPeriods(period, amount);
   }
 
@@ -210,7 +206,11 @@ public class PeriodService {
    * @param amount of previous periods
    * @return previous period or {@code null} if not found.
    */
-  List<ProcessingPeriodDto> findPreviousPeriods(ProcessingPeriodDto period, int amount) {
+  public List<ProcessingPeriodDto> findPreviousPeriods(ProcessingPeriodDto period, int amount) {
+    if (null == period) {
+      return Collections.emptyList();
+    }
+
     return periodReferenceDataService.search(
         period.getProcessingSchedule().getId(),
         period.getStartDate().minusDays(1),

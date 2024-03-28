@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyCollection;
@@ -253,13 +254,13 @@ public class RequisitionControllerTest {
 
   @Mock
   private HttpServletRequest request;
-  
+
   @Mock
   private ValidReasonStockmanagementService validReasonStockmanagementService;
-  
+
   @Mock
   private ReasonsValidator reasonsValidator;
-  
+
   @Mock
   private RequisitionTemplateService requisitionTemplateService;
 
@@ -415,10 +416,12 @@ public class RequisitionControllerTest {
     mockDependenciesForSubmit();
     requisitionController.submitRequisition(uuid1, request, response);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -432,10 +435,12 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1, request, response);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(true),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
     // we do not update in this endpoint
-    verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+    verify(initiatedRequsition, never()).updateFrom(any(Requisition.class), anyMap(), anyMap(),
+        anyBoolean(), any(RequisitionService.class), any(PeriodService.class));
   }
 
   @Test
@@ -448,10 +453,12 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1, request, response);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -467,10 +474,12 @@ public class RequisitionControllerTest {
 
     requisitionController.submitRequisition(uuid1, request, response);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), null, null);
   }
 
   @Test
@@ -479,10 +488,12 @@ public class RequisitionControllerTest {
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     requisitionController.submitRequisition(uuid1, request, response);
 
-    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false));
+    verify(initiatedRequsition).submit(eq(Collections.emptyMap()), any(UUID.class), eq(false),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
     // we do not update in this endpoint
     verify(initiatedRequsition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+        any(Requisition.class), anyMap(), anyMap(), anyBoolean(), isNull(), isNull());
     verify(initiatedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -594,10 +605,10 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true));
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
-        eq(initiatedRequsition));
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
@@ -640,10 +651,10 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true));
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
     verify(requisitionRepository).save(initiatedRequsition);
-    verify(requisitionVersionValidator).validateEtagVersionIfPresent(any(HttpServletRequest.class),
-        eq(initiatedRequsition));
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(
+        any(HttpServletRequest.class), eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
   }
 
@@ -843,8 +854,9 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(emptyList()));
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(), any(),
+        eq(authorizedRequsition), eq(emptyList()), any(ProcessingPeriodDto.class),
+        any(Profiler.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
@@ -883,10 +895,12 @@ public class RequisitionControllerTest {
     verify(requisitionService)
         .validateCanApproveRequisition(any(Requisition.class), any(UUID.class));
 
-    verify(requisitionService).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(emptyList()));
+    verify(requisitionService).doApprove(eq(parentNodeId), any(), any(),
+        eq(authorizedRequsition), eq(emptyList()), any(ProcessingPeriodDto.class),
+        any(Profiler.class));
     verify(requisitionService).doApprove(eq(partnerNode.getParentNodeId()), any(),
-        any(), eq(partnerRequisition), eq(emptyList()));
+        any(), eq(partnerRequisition), eq(emptyList()), any(ProcessingPeriodDto.class),
+        any(Profiler.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
@@ -915,8 +929,8 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(null));
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(), any(),
+        eq(authorizedRequsition), eq(null), any(ProcessingPeriodDto.class), any(Profiler.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
     verify(authorizedRequsition)
@@ -941,8 +955,9 @@ public class RequisitionControllerTest {
         any(Requisition.class),
         any(UUID.class));
 
-    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(requisitionService, times(1)).doApprove(eq(parentNodeId), any(), any(),
+        eq(authorizedRequsition), eq(singletonList(supplyLineDto)),
+        any(ProcessingPeriodDto.class), any(Profiler.class));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -965,8 +980,9 @@ public class RequisitionControllerTest {
     verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition,
         currentUser.getId(), Maps.newHashMap());
     verify(stockEventService).submit(stockEventDto);
-    verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(requisitionService, times(1)).doApprove(eq(null), any(), any(),
+        eq(authorizedRequsition), eq(singletonList(supplyLineDto)), any(ProcessingPeriodDto.class),
+        any(Profiler.class));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -984,8 +1000,9 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
-    verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(requisitionService, times(1)).doApprove(eq(null), any(), any(),
+        eq(authorizedRequsition), eq(singletonList(supplyLineDto)),
+        any(ProcessingPeriodDto.class), any(Profiler.class));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -1003,8 +1020,9 @@ public class RequisitionControllerTest {
         any(UUID.class));
 
     verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
-    verify(requisitionService, times(1)).doApprove(eq(null), any(),
-        any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)));
+    verify(requisitionService, times(1)).doApprove(eq(null), any(), any(),
+        eq(authorizedRequsition), eq(singletonList(supplyLineDto)),
+        any(ProcessingPeriodDto.class), any(Profiler.class));
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
@@ -1068,15 +1086,17 @@ public class RequisitionControllerTest {
   public void shouldRejectRequisitionWhenUserCanApproveRequisition() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
-            generateRejections()))
+    when(requisitionService.reject(eq(authorizedRequsition), eq(Collections.emptyMap()),
+        eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class)))
         .thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId(), request, response,
-            generateRejections());
+        generateRejections());
 
-    verify(requisitionService, times(1)).reject(authorizedRequsition,
-            Collections.emptyMap(), generateRejections());
+    verify(requisitionService, times(1)).reject(eq(authorizedRequsition),
+        eq(Collections.emptyMap()), eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class));
   }
 
   @Test
@@ -1089,16 +1109,18 @@ public class RequisitionControllerTest {
                 response, generateRejections()))
         .isInstanceOf(PermissionMessageException.class);
 
-    verify(requisitionService, times(0)).reject(authorizedRequsition,
-            Collections.emptyMap(), generateRejections());
+    verify(requisitionService, times(0)).reject(eq(authorizedRequsition),
+        eq(Collections.emptyMap()), eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class));
   }
 
   @Test
   public void shouldRejectRequisitionWithIdempotencyKey() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
-            generateRejections()))
+    when(requisitionService.reject(eq(authorizedRequsition), eq(emptyMap()),
+        eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class)))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
 
@@ -1118,8 +1140,9 @@ public class RequisitionControllerTest {
 
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
-            generateRejections()))
+    when(requisitionService.reject(eq(authorizedRequsition), eq(Collections.emptyMap()),
+        eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class)))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(wrongUuidFormat);
 
@@ -1135,7 +1158,8 @@ public class RequisitionControllerTest {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
     when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
-            generateRejections()))
+            generateRejections(), mock(ProcessingPeriodDto.class),
+        mock(RequisitionService.class), mock(PeriodService.class), mock(Profiler.class)))
         .thenReturn(initiatedRequsition);
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     when(processedRequestsRedisRepository.exists(key)).thenReturn(true);
@@ -1148,8 +1172,9 @@ public class RequisitionControllerTest {
   public void shouldCallRequisitionStatusNotifierWhenReject() {
     when(permissionService.canApproveRequisition(authorizedRequsition))
         .thenReturn(ValidationResult.success());
-    when(requisitionService.reject(authorizedRequsition, Collections.emptyMap(),
-            generateRejections()))
+    when(requisitionService.reject(eq(authorizedRequsition), eq(Collections.emptyMap()),
+        eq(generateRejections()), any(ProcessingPeriodDto.class),
+        any(RequisitionService.class), any(PeriodService.class), any(Profiler.class)))
         .thenReturn(initiatedRequsition);
 
     requisitionController.rejectRequisition(authorizedRequsition.getId(), request,
@@ -1179,6 +1204,10 @@ public class RequisitionControllerTest {
   public void shouldAuthorizeRequisitionWithIdempotencyKey() {
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
     setUpAuthorizer();
+
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
@@ -1215,6 +1244,10 @@ public class RequisitionControllerTest {
   public void shouldProcessStatusChangeWhenAuthorizingRequisition() {
     setUpAuthorizer();
 
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
+
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
     verify(requisitionStatusProcessor)
@@ -1224,6 +1257,10 @@ public class RequisitionControllerTest {
   @Test
   public void shouldCallValidationsWhenAuthorizingRequisition() {
     setUpAuthorizer();
+
+    RequisitionTemplate newTemplate = mock(RequisitionTemplate.class);
+    when(submittedRequsition.getTemplate()).thenReturn(newTemplate);
+    when(newTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(false);
 
     requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response);
 
@@ -1240,7 +1277,8 @@ public class RequisitionControllerTest {
         .validateCanChangeStatus(any(LocalDate.class), anyBoolean(), anyMap(), anyMap());
 
     assertThatThrownBy(() ->
-        requisitionController.authorizeRequisition(submittedRequsition.getId(), request, response))
+        requisitionController.authorizeRequisition(submittedRequsition.getId(),
+        request, response))
         .isInstanceOf(BindingResultException.class)
         .hasMessage(bindingResultMessage);
 
@@ -1430,26 +1468,30 @@ public class RequisitionControllerTest {
 
   private void verifyNoSubmitOrUpdate(Requisition requisition) {
     verifyNoMoreInteractions(requisitionService);
-    verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyMap(),
+        anyBoolean(), any(RequisitionService.class), any(PeriodService.class));
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
-    verify(requisition, never()).submit(eq(emptyMap()), any(UUID.class), anyBoolean());
+    verify(requisition, never()).submit(eq(emptyMap()), any(UUID.class), anyBoolean(),
+        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+        any(Profiler.class));
   }
 
   private void verifyNoApproveOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyMap(),
+        anyBoolean(), any(RequisitionService.class), any(PeriodService.class));
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
-    verify(requisition, never())
-        .approve(any(UUID.class), anyMap(), anyCollection(), any(UUID.class));
+    verify(requisition, never()).approve(any(UUID.class), anyMap(), anyCollection(),
+        any(UUID.class), any(ProcessingPeriodDto.class), any(RequisitionService.class),
+        any(PeriodService.class), any(Profiler.class));
   }
 
   private void verifyNoAuthorizeOrUpdate(Requisition requisition) {
-    verify(requisition, never()).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), anyBoolean());
+    verify(requisition, never()).updateFrom(any(Requisition.class), anyMap(), anyMap(),
+        anyBoolean(), any(RequisitionService.class), any(PeriodService.class));
     verify(requisition, never()).validateCanBeUpdated(any(RequisitionValidationService.class));
     verify(requisition, never())
-        .authorize(anyMap(), any(UUID.class));
+        .authorize(anyMap(), any(UUID.class), any(ProcessingPeriodDto.class),
+            any(RequisitionService.class), any(PeriodService.class), any(Profiler.class));
   }
 
   private void verifySupervisoryNodeWasNotUpdated(Requisition requisition) {
