@@ -1,7 +1,8 @@
-id,createdDate,numberOfPeriodsToAverage,populateStockOnHandFromStockCards,name,archived
-5a268780-fafd-4243-9551-5c7daa824913,2016-06-14T12:00:00,3,false,Family Planning,false
-4b30f6c9-b84b-4f17-8173-852101a5ea29,2016-03-17T12:00:00,3,false,Essential Meds,false
-6c4b004b-b7c9-46f0-bb1b-bd128d36729f,2016-06-14T12:00:00,3,true,EPI,false
-37f29736-f0db-4de3-98ad-f8d85c848711,2018-02-13T07:00:00,3,true,Vaccine Stock-Based R&R Template,false
-6fa1a58c-960b-4835-be22-05be5f7357e2,2018-10-26T16:00:00,3,false,CHAZ,false
-14e756d2-60a6-45fd-b135-3caff3f328cd,2020-01-01T00:00:00,3,false,Lab program,false
+id,createdDate,numberOfPeriodsToAverage,populateStockOnHandFromStockCards,name,archived,patientsTabEnabled
+5a268780-fafd-4243-9551-5c7daa824913,2016-06-14T12:00:00,3,false,Family Planning,false,false
+4b30f6c9-b84b-4f17-8173-852101a5ea29,2016-03-17T12:00:00,3,false,Essential Meds,false,false
+6c4b004b-b7c9-46f0-bb1b-bd128d36729f,2016-06-14T12:00:00,3,true,EPI,false,false
+37f29736-f0db-4de3-98ad-f8d85c848711,2018-02-13T07:00:00,3,true,Vaccine Stock-Based R&R Template,false,false
+6fa1a58c-960b-4835-be22-05be5f7357e2,2018-10-26T16:00:00,3,false,CHAZ,false,false
+14e756d2-60a6-45fd-b135-3caff3f328cd,2020-01-01T00:00:00,3,false,Lab program,false,false
+913f566e-a94d-467e-9309-f13db7685ff8,2016-06-14T12:00:00,3,false,TB Monthly,false,true
