@@ -54,6 +54,8 @@ public class TestDataInitializer implements CommandLineRunner {
   private static final String STOCK_ADJUSTMENT_REASONS = "stock_adjustment_reasons";
   private static final String STOCK_ADJUSTMENTS = "stock_adjustments";
   private static final String TEMPLATE_PARAMETERS = "template_parameters";
+  private static final String REJECTION_REASON_CATEGORIES = "rejection_reason_categories";
+  private static final String REJECTION_REASONS = "rejection_reasons";
 
   // database path
   private static final String DB_SCHEMA = "requisition.";
@@ -73,6 +75,8 @@ public class TestDataInitializer implements CommandLineRunner {
   static final String STOCK_ADJUSTMENT_REASONS_TABLE = DB_SCHEMA + STOCK_ADJUSTMENT_REASONS;
   static final String STOCK_ADJUSTMENTS_TABLE = DB_SCHEMA + STOCK_ADJUSTMENTS;
   static final String TEMPLATE_PARAMETERS_TABLE = DB_SCHEMA + TEMPLATE_PARAMETERS;
+  static final String REJECTION_REASON_CATEGORIES_TABLE = DB_SCHEMA + REJECTION_REASON_CATEGORIES;
+  static final String REJECTION_REASONS_TABLE = DB_SCHEMA + REJECTION_REASONS;
 
   @Value(value = DEMO_DATA_PATH + DB_SCHEMA + COLUMNS_MAPS + FILE_EXTENSION)
   private Resource columnsMapsResource;
@@ -114,6 +118,12 @@ public class TestDataInitializer implements CommandLineRunner {
   @Value(value = DEMO_DATA_PATH + DB_SCHEMA + TEMPLATE_PARAMETERS + FILE_EXTENSION)
   private Resource templateParametersResource;
 
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REJECTION_REASON_CATEGORIES + FILE_EXTENSION)
+  private Resource rejectionReasonCategoriesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + REJECTION_REASONS + FILE_EXTENSION)
+  private Resource rejectionReasonsResource;
+
   @Value(value = DB_MIGRATION_PATH
       + "20170822230153657__generate_requisition_permission_strings.sql")
   private Resource generateRequisitionPermissionStringsResource;
@@ -154,6 +164,9 @@ public class TestDataInitializer implements CommandLineRunner {
 
     loader.insertToDbFromCsv(JASPER_TEMPLATES_TABLE, jasperTemplatesResource);
     loader.insertToDbFromCsv(TEMPLATE_PARAMETERS_TABLE, templateParametersResource);
+    loader.insertToDbFromCsv(
+            REJECTION_REASON_CATEGORIES_TABLE, rejectionReasonCategoriesResource);
+    loader.insertToDbFromCsv(REJECTION_REASONS_TABLE, rejectionReasonsResource);
     loader.insertToDbFromCsv(
         JASPER_TEMPLATE_PARAMETER_DEPENDENCIES_TABLE, jasperTemplateParameterDependenciesResource);
 
