@@ -86,6 +86,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
       TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, AVERAGE_CONSUMPTION);
+  public static final String FACILITY_TYPES = "facilityTypes";
 
   private Errors errors;
 
@@ -140,11 +141,12 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     for (UUID facilityTypeId : template.getFacilityTypeIds()) {
       FacilityTypeDto facilityType = facilityTypeReferenceDataService.findOne(facilityTypeId);
       if (null == facilityType) {
-        rejectValue(errors, FACILITY_TYPE_ID,
+        rejectValue(errors, FACILITY_TYPES,
             new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
                 FACILITY_TYPE, facilityTypeId));
       } else if (facilityType.getCode().equals(WARD_SERVICE_TYPE)) {
-        errors.reject(new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE).toString());
+        rejectValue(errors, FACILITY_TYPES,
+            new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE));
       }
     }
   }

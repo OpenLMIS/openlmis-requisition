@@ -52,7 +52,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.COLUMNS_MAP;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE;
-import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPE_ID;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.FACILITY_TYPES;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.MAX_COLUMN_DEFINITION_LENGTH;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.NUMBER_OF_PERIODS_TO_AVERAGE;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.PROGRAM;
@@ -519,7 +519,7 @@ public class RequisitionTemplateDtoValidatorTest {
     when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(null);
 
     validator.validate(requisitionTemplate, errors);
-    verify(errors).rejectValue(eq(FACILITY_TYPE_ID),
+    verify(errors).rejectValue(eq(FACILITY_TYPES),
         eq(new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
             FACILITY_TYPE, facilityTypeId).toString()));
   }
@@ -535,7 +535,7 @@ public class RequisitionTemplateDtoValidatorTest {
             .buildAsDto());
 
     validator.validate(requisitionTemplate, errors);
-    verify(errors).reject(
+    verify(errors).rejectValue(eq(FACILITY_TYPES),
         eq(new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE).toString()));
   }
 
