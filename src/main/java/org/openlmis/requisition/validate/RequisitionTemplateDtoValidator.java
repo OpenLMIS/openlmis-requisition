@@ -63,11 +63,10 @@ import org.springframework.validation.Errors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateDtoValidator extends BaseValidator {
 
-  public static final String WARD_SERVICE_TYPE = "WS";
+  static final String WARD_SERVICE_TYPE = "WS";
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
   static final String PROGRAM_ID = "programId";
-  static final String FACILITY_TYPE_ID = "facilityTypeId";
   static final String PROGRAM = "program";
   static final String FACILITY_TYPE = "facility type";
   static final String REQUESTED_QUANTITY = "requestedQuantity";
@@ -86,7 +85,7 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
       TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, AVERAGE_CONSUMPTION);
-  public static final String FACILITY_TYPES = "facilityTypes";
+  static final String FACILITY_TYPES = "facilityTypes";
 
   private Errors errors;
 
