@@ -227,8 +227,6 @@ public abstract class MessageKeys {
       + ".validation.fieldMustBeGreaterOrEqual";
   public static final String ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST = ERROR_PREFIX
       + ".validation.referencedObjectDoesNotExist";
-  public static final String ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE = ERROR_PREFIX
-      + ".validation.cannotAssignWardServiceForRequisitionTemplate";
   public static final String ERROR_VALIDATION_CANNOT_CONVERT_WITHOUT_APPROVED_QTY = ERROR_PREFIX
       + ".validation.cannotConvertToOrderWithoutApprovedQty";
   public static final String ERROR_USER_NOT_FOUND = ERROR_PREFIX

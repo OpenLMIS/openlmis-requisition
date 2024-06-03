@@ -61,15 +61,4 @@ public class FacilityTypeDtoDataBuilder implements DtoDataBuilder<FacilityTypeDt
     this.active = active;
     return this;
   }
-
-  public FacilityTypeDtoDataBuilder withCode(String code) {
-    this.code = code;
-    return this;
-  }
-
-  public FacilityTypeDtoDataBuilder withId(UUID id) {
-    this.id = id;
-    return this;
-  }
-
 }

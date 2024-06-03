@@ -32,7 +32,6 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_CANNOT_BE_NULL;
@@ -48,7 +47,6 @@ import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
-import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
@@ -63,10 +61,10 @@ import org.springframework.validation.Errors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateDtoValidator extends BaseValidator {
 
-  static final String WARD_SERVICE_TYPE = "WS";
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
   static final String PROGRAM_ID = "programId";
+  static final String FACILITY_TYPE_ID = "facilityTypeId";
   static final String PROGRAM = "program";
   static final String FACILITY_TYPE = "facility type";
   static final String REQUESTED_QUANTITY = "requestedQuantity";
@@ -85,7 +83,6 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
   static final Set<String> STOCK_BASED_COLUMNS = Sets.asSet(
       BEGINNING_BALANCE, STOCK_ON_HAND, TOTAL_RECEIVED_QUANTITY, TOTAL_CONSUMED_QUANTITY,
       TOTAL_LOSSES_AND_ADJUSTMENTS, TOTAL_STOCKOUT_DAYS, AVERAGE_CONSUMPTION);
-  static final String FACILITY_TYPES = "facilityTypes";
 
   private Errors errors;
 
@@ -138,14 +135,10 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     }
 
     for (UUID facilityTypeId : template.getFacilityTypeIds()) {
-      FacilityTypeDto facilityType = facilityTypeReferenceDataService.findOne(facilityTypeId);
-      if (null == facilityType) {
-        rejectValue(errors, FACILITY_TYPES,
+      if (null == facilityTypeReferenceDataService.findOne(facilityTypeId)) {
+        rejectValue(errors, FACILITY_TYPE_ID,
             new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
                 FACILITY_TYPE, facilityTypeId));
-      } else if (facilityType.getCode().equals(WARD_SERVICE_TYPE)) {
-        rejectValue(errors, FACILITY_TYPES,
-            new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE));
       }
     }
   }
