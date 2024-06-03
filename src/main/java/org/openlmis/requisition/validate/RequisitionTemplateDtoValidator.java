@@ -32,6 +32,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_CANNOT_BE_NULL;
@@ -47,6 +48,7 @@ import org.javers.common.collections.Sets;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
+import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
@@ -61,6 +63,7 @@ import org.springframework.validation.Errors;
 @SuppressWarnings("PMD.TooManyMethods")
 public class RequisitionTemplateDtoValidator extends BaseValidator {
 
+  public static final String WARD_SERVICE_TYPE = "WS";
   static final String COLUMNS_MAP = "columnsMap";
   static final String NUMBER_OF_PERIODS_TO_AVERAGE = "numberOfPeriodsToAverage";
   static final String PROGRAM_ID = "programId";
@@ -135,10 +138,13 @@ public class RequisitionTemplateDtoValidator extends BaseValidator {
     }
 
     for (UUID facilityTypeId : template.getFacilityTypeIds()) {
-      if (null == facilityTypeReferenceDataService.findOne(facilityTypeId)) {
+      FacilityTypeDto facilityType = facilityTypeReferenceDataService.findOne(facilityTypeId);
+      if (null == facilityType) {
         rejectValue(errors, FACILITY_TYPE_ID,
             new Message(ERROR_VALIDATION_REFERENCED_OBJECT_DOES_NOT_EXIST,
                 FACILITY_TYPE, facilityTypeId));
+      } else if (facilityType.getCode().equals(WARD_SERVICE_TYPE)) {
+        errors.reject(new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE).toString());
       }
     }
   }

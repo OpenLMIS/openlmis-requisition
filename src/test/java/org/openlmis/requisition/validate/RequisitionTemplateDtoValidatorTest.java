@@ -37,6 +37,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ONLY_UTF8_LABEL_IS
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_OPTION_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_NOT_AVAILABLE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SOURCE_OF_REQUISITION_TEMPLATE_COLUMN_CANNOT_BE_NULL;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_MODIFIED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_COLUMN_DEFINITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_VALIDATION_FIELD_CANNOT_BE_NULL;
@@ -64,6 +65,7 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_LOSSES_AND_ADJUSTMENTS;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
+import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.WARD_SERVICE_TYPE;
 
 import java.util.Optional;
 import java.util.Random;
@@ -75,7 +77,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
 import org.openlmis.requisition.domain.AvailableRequisitionColumnOption;
 import org.openlmis.requisition.domain.RequisitionTemplate;
@@ -83,7 +85,6 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.dto.AvailableRequisitionColumnOptionDto;
-import org.openlmis.requisition.dto.FacilityTypeDto;
 import org.openlmis.requisition.dto.RequisitionTemplateColumnDto;
 import org.openlmis.requisition.dto.RequisitionTemplateDto;
 import org.openlmis.requisition.repository.AvailableRequisitionColumnRepository;
@@ -91,6 +92,7 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeReferenceDataS
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnOptionDataBuilder;
+import org.openlmis.requisition.testutils.FacilityTypeDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProgramDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.validation.Errors;
@@ -523,6 +525,21 @@ public class RequisitionTemplateDtoValidatorTest {
   }
 
   @Test
+  public void shouldRejectIfFacilityTypeIsWardService() throws Exception {
+    RequisitionTemplateDto requisitionTemplate = generateTemplate();
+    UUID facilityTypeId = requisitionTemplate.getFacilityTypeIds().iterator().next();
+    when(facilityTypeReferenceDataService.findOne(facilityTypeId))
+        .thenReturn(new FacilityTypeDtoDataBuilder()
+            .withId(facilityTypeId)
+            .withCode(WARD_SERVICE_TYPE)
+            .buildAsDto());
+
+    validator.validate(requisitionTemplate, errors);
+    verify(errors).reject(
+        eq(new Message(ERROR_VALIDATION_CANNOT_ASSIGN_WARD_SERVICE_TYPE).toString()));
+  }
+
+  @Test
   public void shouldRejectWhenSourceInRequisitionTemplateColumnIsNull() throws Exception {
     RequisitionTemplateDto requisitionTemplate = generateTemplate();
     requisitionTemplate.findColumn(REQUESTED_QUANTITY_EXPLANATION).setSource(null);
@@ -709,7 +726,7 @@ public class RequisitionTemplateDtoValidatorTest {
 
     for (UUID facilityTypeId : template.getFacilityTypeIds()) {
       when(facilityTypeReferenceDataService.findOne(facilityTypeId)).thenReturn(
-          new FacilityTypeDto());
+          new FacilityTypeDtoDataBuilder().buildAsDto());
     }
   }
 
