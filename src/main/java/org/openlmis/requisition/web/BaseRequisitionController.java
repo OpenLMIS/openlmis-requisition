@@ -201,6 +201,9 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private ReasonsValidator reasonsValidator;
 
+  @Autowired
+  FacilityTypeHelper facilityTypeHelper;
+
   InitiateResult doInitiate(UUID programId, UUID facilityId, UUID suggestedPeriod,
       boolean emergency, HttpServletRequest request, Profiler profiler) {
     if (null == facilityId || null == programId) {
@@ -213,6 +216,9 @@ public abstract class BaseRequisitionController extends BaseController {
     validateIdempotencyKey(request, profiler);
 
     FacilityDto facility = findFacility(facilityId, profiler);
+
+    profiler.start("CHECK_FACILITY_TYPE_SUPPORTED");
+    facilityTypeHelper.checkIfFacilityHasSupportedType(facility, "Requisitioning facility");
 
     profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);

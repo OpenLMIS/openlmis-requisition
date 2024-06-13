@@ -55,6 +55,7 @@ import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
+import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
@@ -85,7 +86,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 
 @Controller
 @Transactional
@@ -321,6 +321,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
     ValidationResult result = permissionService.canConvertToOrder(releaseDto
         .getRequisitionsToRelease());
     ResponseEntity response;
+
+    profiler.start("CHECK_SUPPLYING_DEPOTS_TYPE");
+    checkRequisitionsSupplyingDepotsTypes(releaseDto.getRequisitionsToRelease());
 
     if (addValidationErrors(processingStatus, result, null)) {
       response = ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -591,4 +594,15 @@ public class BatchRequisitionController extends BaseRequisitionController {
         .stream()
         .collect(toMap(ApprovedProductDto::getIdentity, Function.identity()));
   }
+
+  private void checkRequisitionsSupplyingDepotsTypes(
+      List<ReleasableRequisitionDto> releasableRequisitions) {
+    Set<UUID> supplyingDepotUuids = releasableRequisitions
+        .stream()
+        .map(ReleasableRequisitionDto::getSupplyingDepotId)
+        .collect(Collectors.toSet());
+
+    facilityTypeHelper.checkIfFacilityHasSupportedType(supplyingDepotUuids, "Supplying depot");
+  }
+
 }

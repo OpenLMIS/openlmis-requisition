@@ -25,6 +25,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -279,6 +281,9 @@ public class RequisitionControllerTest {
   @Mock
   private RejectionDto rejectionDto;
 
+  @Mock
+  private FacilityTypeHelper facilityTypeHelper;
+
   private UUID programUuid = UUID.randomUUID();
   private UUID facilityUuid = UUID.randomUUID();
   private UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -362,6 +367,10 @@ public class RequisitionControllerTest {
 
     when(approvedProductReferenceDataService.getApprovedProducts(any(), any()))
         .thenReturn(new ApproveProductsAggregator(emptyList(), UUID.randomUUID()));
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(
+        any(FacilityDto.class), anyString());
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(
+        anySet(), anyString());
   }
 
   private void stubValidations(Requisition... requisitions) {
