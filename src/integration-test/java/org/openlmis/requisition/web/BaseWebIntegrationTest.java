@@ -266,6 +266,9 @@ public abstract class BaseWebIntegrationTest {
   @MockBean
   protected ConfigurationSettingService configurationSettingService;
 
+  @MockBean
+  protected FacilityTypeHelper facilityTypeHelper;
+
   /**
    * Method called to initialize basic resources after the object is created.
    */

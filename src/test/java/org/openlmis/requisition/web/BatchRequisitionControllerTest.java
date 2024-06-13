@@ -15,8 +15,11 @@
 
 package org.openlmis.requisition.web;
 
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -29,6 +32,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -49,6 +53,9 @@ public class BatchRequisitionControllerTest {
   @Mock
   PermissionService permissionService;
 
+  @Mock
+  FacilityTypeHelper facilityTypeHelper;
+
   @InjectMocks
   BatchRequisitionController batchRequisitionController;
 
@@ -58,6 +65,10 @@ public class BatchRequisitionControllerTest {
 
     UserDto currentUser = DtoGenerator.of(UserDto.class);
     when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(
+        any(FacilityDto.class), anyString());
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(
+        anySet(), anyString());
   }
 
   @Test
