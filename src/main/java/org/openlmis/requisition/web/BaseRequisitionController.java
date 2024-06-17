@@ -98,7 +98,6 @@ import org.openlmis.requisition.utils.DateHelper;
 import org.openlmis.requisition.utils.DatePhysicalStockCountCompletedEnabledPredicate;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
-import org.openlmis.requisition.validate.ReasonsValidator;
 import org.openlmis.requisition.validate.RequisitionVersionValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,9 +197,6 @@ public abstract class BaseRequisitionController extends BaseController {
   @Autowired
   private RequisitionTemplateService requisitionTemplateService;
 
-  @Autowired
-  private ReasonsValidator reasonsValidator;
-
   InitiateResult doInitiate(UUID programId, UUID facilityId, UUID suggestedPeriod,
       boolean emergency, HttpServletRequest request, Profiler profiler) {
     if (null == facilityId || null == programId) {
@@ -242,9 +238,6 @@ public abstract class BaseRequisitionController extends BaseController {
     Requisition newRequisition = requisitionService.initiate(
         program, facility, period, emergency, stockAdjustmentReasons,
         requisitionTemplate, approvedProducts);
-
-    profiler.start("VALIDATE_REASONS");
-    reasonsValidator.validate(stockAdjustmentReasons, newRequisition.getTemplate());
 
     return new InitiateResult(newRequisition, approvedProducts, facility, program, period);
   }
