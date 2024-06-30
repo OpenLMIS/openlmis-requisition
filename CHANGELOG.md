@@ -1,5 +1,9 @@
 8.3.8-angola.1 / Ongoing
 ==================
+Improvements:
+* [OAM-186](https://openlmis.atlassian.net/browse/OAM-186): Added requisition template validation for Ward/Service type
+* [OAM-184](https://openlmis.atlassian.net/browse/OAM-184): Added validation for Wards/Services in requisition functions
+
 
 8.3.8 / 2024-04-19
 ==================
