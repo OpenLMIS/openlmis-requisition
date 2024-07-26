@@ -39,7 +39,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "test-run"})
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class JaVersIntegrationTest {
 

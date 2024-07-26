@@ -201,6 +201,7 @@ schemas:
       "type": "array",
       "items": { "type": "object", "$ref": "schemas/rejectionDto.json" }
       }
+  - requisitionStatsData: !include schemas/requisitionStatsData.json
 traits:
     - secured:
           queryParameters:
@@ -805,6 +806,18 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
+                  facility:
+                    displayName: facility
+                    description: This parameter contains facility UUID.
+                    type: string
+                    required: false
+                    repeat: false
+                  processingPeriod:
+                    displayName: processingPeriod
+                    description: This parameter contains processing period UUID.
+                    type: string
+                    required: false
+                    repeat: false
               responses:
                   "200":
                       headers:
@@ -813,6 +826,36 @@ resourceTypes:
                         application/json:
                             schema: basicRequisitionDtoPage
                   "500":
+      /numberOfRequisitionsForApproval:
+          get:
+              is: [ secured, paginated, sorted ]
+              description: Get number of requisitions to approve for right supervisor.
+              queryParameters:
+                  program:
+                      displayName: program
+                      description: This parameter contains program UUID.
+                      type: string
+                      required: false
+                      repeat: false
+              responses:
+                  "200":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                  "500":
+      /statusesStatsData:
+        get:
+          is: [ secured, paginated, sorted ]
+          description: Get statistics on the number of requisitions depending on the status.
+          responses:
+            "200":
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: requisitionStatsData
+            "500":
       /requisitionsForConvert:
           get:
               is: [ secured, paginated, sorted ]

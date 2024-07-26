@@ -171,6 +171,74 @@ public class RequisitionRepositoryImpl
   }
 
   /**
+   * Method returns number of all Requisitions with matched parameters.
+   *
+   * @param processingPeriod ProcessingPeriod of searched Requisitions.
+   * @param facility Facility of searched Requisitions.
+   * @param program Program of searched Requisitions.
+   * @param status Status of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return Number of Requisitions with matched parameters.
+   */
+  @Override
+  public Long countRequisitions(UUID processingPeriod, UUID facility,
+      UUID program, Boolean emergency, RequisitionStatus status) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    CriteriaQuery<Long> query = builder.createQuery(Long.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    query = query.select(builder.count(root));
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriod);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, program);
+    predicate = addEqualFilter(predicate, builder, root, STATUS, status);
+
+    query.where(predicate);
+
+    return countEntities(query);
+  }
+
+  /**
+   * Method returns number of all Requisitions with matched parameters.
+   *
+   * @param facility Facility of searched Requisitions.
+   * @param programs Program IDs of searched Requisitions.
+   * @param processingPeriods ProcessingPeriod IDs of searched Requisitions.
+   * @param statuses Statuses of searched Requisitions.
+   * @param emergency        if {@code true}, the method will look only for emergency requisitions,
+   *                         if {@code false}, the method will look only for standard requisitions,
+   *                         if {@code null} the method will check all requisitions.
+   * @return Number of Requisitions with matched parameters.
+   */
+  @Override
+  public Long countRequisitions(List<UUID> processingPeriods, UUID facility,
+      List<UUID> programs, Boolean emergency, List<RequisitionStatus> statuses) {
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    CriteriaQuery<Long> query = builder.createQuery(Long.class);
+    Root<Requisition> root = query.from(Requisition.class);
+
+    query = query.select(builder.count(root));
+
+    Predicate predicate = builder.conjunction();
+    predicate = addEqualFilter(predicate, builder, root, EMERGENCY, emergency);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facility);
+    predicate = addInFilter(predicate, builder, root, PROGRAM_ID, programs);
+    predicate = addInFilter(predicate, builder, root, PROCESSING_PERIOD_ID, processingPeriods);
+    predicate = addInFilter(predicate, builder, root, STATUS, statuses);
+
+    query.where(predicate);
+
+    return countEntities(query);
+  }
+
+  /**
    * Method returns Requisition with matched parameters.
    *
    * @param processingPeriod ProcessingPeriod of searched Requisition.
@@ -287,7 +355,7 @@ public class RequisitionRepositoryImpl
    */
   @Override
   public Page<Requisition> searchApprovableRequisitionsByProgramSupervisoryNodePairs(
-      Set<Pair<UUID, UUID>> programNodePairs, Pageable pageable) {
+      Set<Pair<UUID, UUID>> programNodePairs, UUID facilityId, UUID periodId, Pageable pageable) {
     XLOGGER.entry(programNodePairs, pageable);
 
     Profiler profiler = new Profiler("SEARCH_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
@@ -298,7 +366,8 @@ public class RequisitionRepositoryImpl
 
     profiler.start("PREPARE_COUNT_QUERY");
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, pageable);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true, facilityId,
+        periodId, pageable);
 
     profiler.start("EXECUTE_COUNT_QUERY");
     Long count = countEntities(countQuery);
@@ -318,7 +387,8 @@ public class RequisitionRepositoryImpl
 
     profiler.start("PREPARE_MAIN_QUERY");
     CriteriaQuery<Requisition> query = builder.createQuery(Requisition.class);
-    query = prepareApprovableQuery(builder, query, programNodePairs, false, pageable);
+    query = prepareApprovableQuery(builder, query, programNodePairs, false, facilityId, periodId,
+        pageable);
 
     profiler.start("EXECUTE_MAIN_QUERY");
     List<Requisition> requisitions = entityManager.createQuery(query)
@@ -352,6 +422,38 @@ public class RequisitionRepositoryImpl
     profiler.stop().log();
 
     return page;
+  }
+
+  /**
+   * Count all requisitions that match any of the program/supervisoryNode pairs, that can be
+   * approved (AUTHORIZED, IN_APPROVAL). Pairs must not be null.
+   *
+   * @param programNodePairs program / supervisoryNode pairs
+   * @return number of matching requisitions
+   */
+  @Override
+  public Long countApprovableRequisitionsByProgramSupervisoryNodePairs(
+      Set<Pair<UUID, UUID>> programNodePairs) {
+    XLOGGER.entry(programNodePairs);
+
+    Profiler profiler = new Profiler("COUNT_APPROBABLE_REQ_BY_PROGRAM_SUP_NODE_PAIRS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CREATE_BUILDER");
+    CriteriaBuilder builder = getCriteriaBuilder();
+
+    profiler.start("PREPARE_COUNT_QUERY");
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareApprovableQuery(builder, countQuery, programNodePairs, true,
+        null, null, null);
+
+    profiler.start("EXECUTE_COUNT_QUERY");
+    Long count = countEntities(countQuery);
+
+    XLOGGER.exit();
+    profiler.stop().log();
+
+    return count;
   }
 
   private <T> CriteriaQuery<T> prepareQuery(CriteriaBuilder builder, CriteriaQuery<T> query,
@@ -436,7 +538,7 @@ public class RequisitionRepositoryImpl
 
   private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
       CriteriaQuery<T> query, Set<Pair<UUID, UUID>> programNodePairs,
-      boolean isCountQuery, Pageable pageable) {
+      boolean isCountQuery, UUID facilityId, UUID periodId, Pageable pageable) {
 
     Root<Requisition> root = query.from(Requisition.class);
 
@@ -452,6 +554,8 @@ public class RequisitionRepositoryImpl
         .in(RequisitionStatus.AUTHORIZED, RequisitionStatus.IN_APPROVAL);
 
     Predicate predicate = builder.and(pairPredicate, statusPredicate);
+    predicate = addEqualFilter(predicate, builder, root, FACILITY_ID, facilityId);
+    predicate = addEqualFilter(predicate, builder, root, PROCESSING_PERIOD_ID, periodId);
 
     if (!isCountQuery) {
       Subquery<ZonedDateTime> subquery = query.subquery(ZonedDateTime.class);

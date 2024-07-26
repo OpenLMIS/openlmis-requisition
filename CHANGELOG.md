@@ -1,10 +1,25 @@
-8.3.7-SNAPSHOT / WIP
+8.3.8 / 2024-04-19
+==================
+Bug fixes:
+* [OLMIS-7860](https://openlmis.atlassian.net/browse/OLMIS-7860): Fix error with updating Requisition Template
+* [OLMIS-7793](https://openlmis.atlassian.net/browse/OLMIS-7793): Fix bug with invalid AMC calculation for stock management based facilities
+  
+Improvements:
+* [OLMIS-7858](https://openlmis.atlassian.net/browse/OLMIS-7793): Add four indexes on requisition schema
+
+New functionality:
+* [SELV3-705](https://openlmis.atlassian.net/browse/SELV3-705): Add endpoint to retrieve number of requisitions for approval
+* [SELV3-718](https://openlmis.atlassian.net/browse/SELV3-718): Add filtering by facility and period for requisitions for approval
+* [OAM-17](https://openlmis.atlassian.net/browse/OAM-17): Add endpoint to count requisitions with their statuses for all periods per facility
+
+8.3.7 / 2023-11-07
 ==================
 New functionality added in a backwards-compatible manner:
 * [TZUP-432](https://openlmis.atlassian.net/browse/TZUP-432): Added new columns based on the Patient(s) tab to the Requisition Template.
 
 Bug fixes:
 * [TZUP-363](https://openlmis.atlassian.net/browse/TZUP-363): Fix bug related to 'Report only flag when processing period is checked and requisition report only is unchecked'
+* [OLMIS-7808](https://openlmis.atlassian.net/browse/OLMIS-7808): Fix bug related to 'Issues with second approval of requisition'
 
 8.3.6 / 2023-06-26
 ==================

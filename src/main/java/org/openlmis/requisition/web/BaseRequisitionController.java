@@ -301,6 +301,11 @@ public abstract class BaseRequisitionController extends BaseController {
         period, requisitionToUpdate.getStatus(), orderables, productReferences);
     requisition.setId(requisitionId);
 
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setTemplate(requisitionToUpdate.getTemplate());
+    requisition.setProgramId(requisitionImporter.getProgramId());
+    requisition.setFacilityId(requisitionImporter.getFacilityId());
+
     ProgramDto program = findProgram(requisitionToUpdate.getProgramId(), profiler);
 
     profiler.start("VALIDATE_CAN_BE_UPDATED");
@@ -367,7 +372,6 @@ public abstract class BaseRequisitionController extends BaseController {
       approveRequisition(requisition, approveParams, parentNodeId, profiler);
     }
 
-
     logger.debug("Requisition with id {} approved", requisition.getId());
     stopProfiler(profiler);
   }
@@ -410,7 +414,7 @@ public abstract class BaseRequisitionController extends BaseController {
       UUID parentNodeId, Profiler profiler) {
     profiler.start("DO_APPROVE");
     requisitionService.doApprove(parentNodeId, approveParams.user, approveParams.orderables,
-        requisition, approveParams.supplyLines);
+        requisition, approveParams.supplyLines, approveParams.period, profiler);
 
     if (requisition.getStatus().isApproved() && !isEmpty(approveParams.supplyLines)) {
       profiler.start("RETRIEVE_SUPPLYING_FACILITY");
@@ -708,7 +712,7 @@ public abstract class BaseRequisitionController extends BaseController {
     void updateAndSave(Profiler profiler) {
       profiler.start("UPDATE");
       toUpdate.updateFrom(requisition, orderables, approvedProducts,
-          datePhysicalStockCountCompletedEnabledPredicate.exec(program));
+          datePhysicalStockCountCompletedEnabledPredicate.exec(program), null, null);
 
       profiler.start("SAVE");
       toUpdate = requisitionRepository.save(toUpdate);

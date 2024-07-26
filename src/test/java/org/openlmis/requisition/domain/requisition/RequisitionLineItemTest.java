@@ -30,7 +30,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 
 import com.google.common.collect.ImmutableMap;
@@ -670,6 +672,7 @@ public class RequisitionLineItemTest {
     RequisitionTemplate template = new RequisitionTemplateDataBuilder()
         .withColumn(ADDITIONAL_QUANTITY_REQUIRED, COLUMN_IDENTIFIER, SourceType.USER_INPUT,
             singleton(SourceType.USER_INPUT), false)
+        .withColumn(AVERAGE_CONSUMPTION, null, CALCULATED, Sets.newHashSet(CALCULATED))
         .withStockBasedColumn(TOTAL_CONSUMED_QUANTITY, COLUMN_IDENTIFIER, CONSUMED_TAG)
         .withNumberOfPeriodsToAverage(2)
         .build();

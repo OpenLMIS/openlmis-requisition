@@ -18,6 +18,7 @@ package org.openlmis.requisition.validate;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.APPROVED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BEGINNING_BALANCE;
@@ -122,6 +123,9 @@ public class RequisitionValidationTestUtils {
     columns.put(
         AVERAGE_CONSUMPTION,
         generateTemplateColumn(AVERAGE_CONSUMPTION, "P", CALCULATED)
+    );
+    columns.put(
+        ADJUSTED_CONSUMPTION, generateTemplateColumn(ADJUSTED_CONSUMPTION, "N", CALCULATED)
     );
     columns.put(NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH,
         generateTemplateColumn(NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH, "TC", CALCULATED)

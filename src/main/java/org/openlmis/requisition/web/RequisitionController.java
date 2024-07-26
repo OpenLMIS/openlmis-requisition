@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
@@ -62,7 +63,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,11 +72,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @SuppressWarnings("PMD.TooManyMethods")
-@Controller
+@RestController
 @Transactional
 public class RequisitionController extends BaseRequisitionController {
 
@@ -99,7 +99,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/initiate")
   @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
   public RequisitionDto initiate(@RequestParam(value = "program") UUID programId,
       @RequestParam(value = "facility") UUID facilityId,
       @RequestParam(value = "suggestedPeriod", required = false) UUID suggestedPeriod,
@@ -141,7 +140,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/periodsForInitiate")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Collection<RequisitionPeriodDto> getProcessingPeriodIds(
       @RequestParam(value = "programId") UUID programId,
       @RequestParam(value = "facilityId") UUID facilityId,
@@ -195,7 +193,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/submit")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto submitRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -226,7 +223,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("SUBMIT");
     requisition.submit(orderables, getCurrentUser(profiler).getId(),
-        program.getSkipAuthorization());
+        program.getSkipAuthorization(), period, requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, authenticationHelper.getCurrentUser());
@@ -262,7 +259,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -298,7 +294,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public RequisitionDto getRequisition(@PathVariable("id") UUID requisitionId,
       HttpServletResponse response) {
     Profiler profiler = getProfiler("GET_REQUISITION", requisitionId);
@@ -324,7 +319,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/search")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<BasicRequisitionDto> searchRequisitions(
       @RequestParam MultiValueMap<String, String> queryParams,
       Pageable pageable) {
@@ -351,7 +345,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}/skip")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto skipRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -386,7 +379,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PutMapping(RESOURCE_URL + "/{id}/reject")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto rejectRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -404,9 +396,11 @@ public class RequisitionController extends BaseRequisitionController {
         profiler, () -> getLineItemOrderableIdentities(requisition)
     );
 
+    ProcessingPeriodDto period = periodService.getPeriod(requisition.getProcessingPeriodId());
+
     profiler.start("REJECT");
     Requisition rejectedRequisition = requisitionService.reject(requisition, orderables,
-            rejections);
+            rejections, period, requisitionService, periodService, profiler);
 
     callStatusChangeProcessor(profiler, rejectedRequisition);
 
@@ -427,7 +421,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/approve")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto approveRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -481,16 +474,18 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/requisitionsForApproval")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<BasicRequisitionDto> requisitionsForApproval(
       @RequestParam(value = "program", required = false) UUID programId,
+      @RequestParam(value = "facility", required = false) UUID facilityId,
+      @RequestParam(value = "processingPeriod", required = false) UUID periodId,
       Pageable pageable) {
-    Profiler profiler = getProfiler("REQUISITIONS_FOR_APPROVAL", programId, pageable);
+    Profiler profiler = getProfiler("REQUISITIONS_FOR_APPROVAL", programId, facilityId, periodId,
+        pageable);
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     Page<Requisition> approvalRequisitions = requisitionService
-        .getRequisitionsForApproval(user, programId, pageable);
+        .getRequisitionsForApproval(user, programId, facilityId, periodId, pageable);
 
     profiler.start(BUILD_DTO_LIST);
     Page<BasicRequisitionDto> dtoPage = Pagination.getPage(
@@ -503,13 +498,55 @@ public class RequisitionController extends BaseRequisitionController {
   }
 
   /**
+   * Count requisitions to approve for right supervisor.
+   *
+   * @return Number of requisitions to be approved.
+   */
+  @GetMapping(RESOURCE_URL + "/numberOfRequisitionsForApproval")
+  @ResponseStatus(HttpStatus.OK)
+  public long countRequisitionsForApproval(
+      @RequestParam(value = "program", required = false) UUID programId) {
+    Profiler profiler = getProfiler("COUNT_REQUISITIONS_FOR_APPROVAL", programId);
+    UserDto user = getCurrentUser(profiler);
+
+    profiler.start("REQUISITION_SERVICE_COUNT_FOR_APPROVAL");
+    long numberOfRequisitionsForApproval = requisitionService
+        .countRequisitionsForApproval(user, programId);
+
+    stopProfiler(profiler);
+    return numberOfRequisitionsForApproval;
+  }
+
+  /**
+   * Returns data on the number of requisitions of each status for user's home facility.
+   *
+   * @return Requisitions statistics data.
+   */
+  @GetMapping(RESOURCE_URL + "/statusesStatsData")
+  @ResponseStatus(HttpStatus.OK)
+  public RequisitionStatsData getRequisitionsStatusesStatsData() {
+    Profiler profiler = getProfiler("GET_REQUISITIONS_STATUSES_STATS_DATA");
+    UUID homeFacilityId = getCurrentUser(profiler).getHomeFacilityId();
+    if (homeFacilityId == null) {
+      return new RequisitionStatsData();
+    }
+    FacilityDto homeFacility = findFacility(homeFacilityId, profiler);
+
+    profiler.start("REQUISITION_SERVICE_GET_STATUSES_STATS");
+    RequisitionStatsData requisitionStatusesData =
+        requisitionService.getStatusesStatsData(homeFacility);
+
+    stopProfiler(profiler);
+    return requisitionStatusesData;
+  }
+
+  /**
    * Get all submitted Requisitions.
    *
    * @return Submitted requisitions.
    */
   @GetMapping(RESOURCE_URL + "/submitted")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<RequisitionDto> getSubmittedRequisitions(Pageable pageable) {
     Profiler profiler = getProfiler("GET_SUBMITTED_REQUISITIONS", pageable);
 
@@ -539,7 +576,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @PostMapping(RESOURCE_URL + "/{id}/authorize")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public BasicRequisitionDto authorizeRequisition(
       @PathVariable("id") UUID requisitionId,
       HttpServletRequest request,
@@ -567,7 +603,8 @@ public class RequisitionController extends BaseRequisitionController {
     UserDto user = getCurrentUser(profiler);
 
     profiler.start("AUTHORIZE");
-    requisition.authorize(orderables, user.getId());
+    requisition.authorize(orderables, user.getId(), period,
+        requisitionService, periodService, profiler);
 
     profiler.start("SAVE");
     requisitionService.saveStatusMessage(requisition, user);
@@ -595,7 +632,6 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @GetMapping(RESOURCE_URL + "/requisitionsForConvert")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public Page<RequisitionWithSupplyingDepotsDto> listForConvertToOrder(
       @RequestParam(required = false) UUID programId,
       @RequestParam(required = false) UUID facilityId,

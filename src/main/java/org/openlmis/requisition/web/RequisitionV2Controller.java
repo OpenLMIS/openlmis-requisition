@@ -43,6 +43,7 @@ import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionLineItemV2Dto;
 import org.openlmis.requisition.dto.RequisitionV2Dto;
 import org.openlmis.requisition.dto.VersionObjectReferenceDto;
+import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionService;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,9 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
   @Autowired
   private RequisitionService requisitionService;
+
+  @Autowired
+  private PeriodService periodService;
 
   public static final String RESOURCE_URL = API_URL + "/v2/requisitions";
 
@@ -133,7 +137,8 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     profiler.start("UPDATE");
     requisitionToUpdate.updateFrom(result.getRequisition(),
         result.getOrderables(), result.getApprovedProducts(),
-        datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()));
+        datePhysicalStockCountCompletedEnabledPredicate.exec(result.getProgram()),
+        requisitionService, periodService);
 
     requisitionService.processUnSkippedRequisitionLineItems(requisitionToUpdate,
             LocaleContextHolder.getLocale());

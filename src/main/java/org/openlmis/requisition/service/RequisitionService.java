@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -50,11 +51,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -92,6 +93,7 @@ import org.openlmis.requisition.repository.StatusMessageRepository;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PermissionStringDto;
 import org.openlmis.requisition.service.referencedata.PermissionStrings;
@@ -185,6 +187,9 @@ public class RequisitionService {
 
   @Autowired
   private FacilitySupportsProgramHelper facilitySupportsProgramHelper;
+
+  @Autowired
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   /**
    * Initiated given requisition if possible.
@@ -340,7 +345,9 @@ public class RequisitionService {
    */
   public Requisition reject(Requisition requisition,
                             Map<VersionIdentityDto, OrderableDto> orderables,
-                            List<RejectionDto> rejections) {
+                            List<RejectionDto> rejections, ProcessingPeriodDto period,
+                            RequisitionService requisitionService, PeriodService periodService,
+                            Profiler profiler) {
     checkIfRejectable(requisition);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
@@ -348,7 +355,7 @@ public class RequisitionService {
     validateCanApproveRequisition(requisition, userId).throwExceptionIfHasErrors();
 
     LOGGER.debug("Requisition rejected: {}", requisition.getId());
-    requisition.reject(orderables, userId);
+    requisition.reject(orderables, userId, period, requisitionService, periodService, profiler);
     requisition.setSupervisoryNodeId(null);
     saveStatusMessage(requisition, currentUser);
     Requisition savedRequisition = requisitionRepository.save(requisition);
@@ -423,38 +430,53 @@ public class RequisitionService {
    * Get requisitions to approve for the specified user.
    */
   public Page<Requisition> getRequisitionsForApproval(UserDto user, UUID programId,
-                                                      Pageable pageable) {
+      UUID facilityId, UUID periodId, Pageable pageable) {
     Profiler profiler = new Profiler("REQUISITION_SERVICE_GET_FOR_APPROVAL");
     profiler.setLogger(LOGGER);
 
     Page<Requisition> requisitionsForApproval = Pagination.getPage(
-            Collections.emptyList(), pageable);
+        Collections.emptyList(), pageable);
     RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
-    List<DetailedRoleAssignmentDto> roleAssignments = userRoleAssignmentsReferenceDataService
-        .getRoleAssignments(user.getId())
-        .stream()
-        .filter(r -> r.getRole().getRights().contains(right))
-        .collect(toList());
+    List<DetailedRoleAssignmentDto> roleAssignments = getRoleAssignments(user, right);
 
     if (!CollectionUtils.isEmpty(roleAssignments)) {
-      profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
-      Set<Pair<UUID, UUID>> programNodePairs = roleAssignments
-              .stream()
-              .filter(item -> Objects.nonNull(item.getRole().getId()))
-              .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
-              .filter(item -> Objects.nonNull(item.getProgramId()))
-              .filter(item -> null == programId || programId.equals(item.getProgramId()))
-              .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
-              .collect(toSet());
+      Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+          profiler);
 
       profiler.start("REQUISITION_REPOSITORY_SEARCH_APPROVABLE_BY_PAIRS");
       requisitionsForApproval = requisitionRepository
               .searchApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs,
-                      pageable);
+                  facilityId, periodId, pageable);
     }
 
     profiler.stop().log();
     return requisitionsForApproval;
+  }
+
+  /**
+   * Count requisitions to approve for the specified user.
+   */
+  public Long countRequisitionsForApproval(UserDto user, UUID programId) {
+    Profiler profiler = new Profiler("REQUISITION_SERVICE_COUNT_FOR_APPROVAL");
+    profiler.setLogger(LOGGER);
+
+    RightDto right = rightReferenceDataService.findRight(PermissionService.REQUISITION_APPROVE);
+    List<DetailedRoleAssignmentDto> roleAssignments = getRoleAssignments(user, right);
+
+    if (CollectionUtils.isEmpty(roleAssignments)) {
+      profiler.stop().log();
+      return 0L;
+    }
+
+    Set<Pair<UUID, UUID>> programNodePairs = getProgramNodePairs(programId, roleAssignments,
+        profiler);
+
+    profiler.start("REQUISITION_REPOSITORY_COUNT_APPROVABLE_BY_PAIRS");
+    Long numberOfRequisitionsForApproval = requisitionRepository
+        .countApprovableRequisitionsByProgramSupervisoryNodePairs(programNodePairs);
+
+    profiler.stop().log();
+    return numberOfRequisitionsForApproval;
   }
 
   /**
@@ -778,8 +800,10 @@ public class RequisitionService {
    */
   public void doApprove(UUID parentNodeId, UserDto currentUser,
                         Map<VersionIdentityDto, OrderableDto> orderables,
-                        Requisition requisition, List<SupplyLineDto> supplyLines) {
-    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId());
+                        Requisition requisition, List<SupplyLineDto> supplyLines,
+                        ProcessingPeriodDto period, Profiler profiler) {
+    requisition.approve(parentNodeId, orderables, supplyLines, currentUser.getId(), period, this,
+        periodService, profiler);
 
     saveStatusMessage(requisition, currentUser);
     requisitionRepository.saveAndFlush(requisition);
@@ -790,6 +814,60 @@ public class RequisitionService {
             requisition.getProgramId(), requisition.getFacilityId()
     );
     return null == recentRequisition || requisition.getId().equals(recentRequisition.getId());
+  }
+
+
+  /**
+   * Returns statistics data regarding requisitions statuses for a specified facility:
+   * number of requisitions to be created for current periods and number of requisitions
+   * with each status available in the system.
+   *
+   * @param facility FacilityDto object.
+   * @return RequisitionStatsData object.
+   */
+  public RequisitionStatsData getStatusesStatsData(FacilityDto facility) {
+    Profiler profiler = new Profiler("GET_STATUSES_STATS_DATA");
+    profiler.setLogger(LOGGER);
+
+    UUID facilityId = facility.getId();
+    List<RequisitionStatus> postSubmittedStatuses = new ArrayList<>();
+    Map<String, Long> statusesStats = new HashMap<>();
+    profiler.start("COUNT_REQUISITIONS_FOR_STATUSES");
+    for (RequisitionStatus status : RequisitionStatus.values()) {
+      countRequisitionsForStatus(status, statusesStats, facilityId);
+      if (status.isPostSubmitted()) {
+        postSubmittedStatuses.add(status);
+      }
+    }
+    RequisitionStatsData requisitionStatsData = new RequisitionStatsData();
+    requisitionStatsData.setStatusesStats(statusesStats);
+    requisitionStatsData.setFacilityId(facilityId);
+
+    // The maximum number of combinations of actively supported programs and periods for a given
+    // facility will be the number of requisitions that can be created for that facility.
+    Set<ProcessingPeriodDto> currentFacilityPeriods = new HashSet<>();
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS");
+    List<SupportedProgramDto> activelySupportedPrograms = facility.getSupportedPrograms()
+        .stream()
+        .filter(SupportedProgramDto::isSupportActive)
+        .filter(SupportedProgramDto::isProgramActive)
+        .collect(toList());
+    profiler.start("GET_CURRENT_PERIODS_FOR_FACILITY");
+    getCurrentPeriodsForFacility(activelySupportedPrograms, facilityId, currentFacilityPeriods);
+
+    profiler.start("CALCULATE_REQUISITIONS_TO_BE_CREATED");
+    long maxRequisitionForFacility = currentFacilityPeriods.size();
+    if (maxRequisitionForFacility == 0) {
+      requisitionStatsData.setRequisitionsToBeCreated(0L);
+    } else {
+      Long createdRequisitions = calculateCurrentlyCreatedRequisitions(activelySupportedPrograms,
+          currentFacilityPeriods, facilityId, postSubmittedStatuses);
+      long requisitionsToBeCreated = maxRequisitionForFacility - createdRequisitions;
+      requisitionStatsData.setRequisitionsToBeCreated(requisitionsToBeCreated);
+    }
+
+    profiler.stop().log();
+    return requisitionStatsData;
   }
 
   /**
@@ -893,8 +971,30 @@ public class RequisitionService {
     }
   }
 
+  private List<DetailedRoleAssignmentDto> getRoleAssignments(UserDto user, RightDto right) {
+    return userRoleAssignmentsReferenceDataService
+        .getRoleAssignments(user.getId())
+        .stream()
+        .filter(r -> r.getRole().getRights().contains(right))
+        .collect(toList());
+  }
+
+  private static Set<Pair<UUID, UUID>> getProgramNodePairs(UUID programId,
+      List<DetailedRoleAssignmentDto> roleAssignments, Profiler profiler) {
+    profiler.start("GET_PROGRAM_AND_NODE_IDS_FROM_ROLE_ASSIGNMENTS");
+    return roleAssignments
+        .stream()
+        .filter(item -> Objects.nonNull(item.getRole().getId()))
+        .filter(item -> Objects.nonNull(item.getSupervisoryNodeId()))
+        .filter(item -> Objects.nonNull(item.getProgramId()))
+        .filter(item -> null == programId || programId.equals(item.getProgramId()))
+        .map(item -> new ImmutablePair<>(item.getProgramId(), item.getSupervisoryNodeId()))
+        .collect(toSet());
+  }
+
   /**
    * Adds approver details to unskipped requisition line items.
+   *
    * @param requisition object
    */
   public void processUnSkippedRequisitionLineItems(Requisition requisition,Locale locale) {
@@ -907,6 +1007,7 @@ public class RequisitionService {
 
   /**
    * Updates patientsData of requisition.
+   *
    * @param requisitionId - id of requisition
    * @param patientsData - stringified JSON string to store patients data
    * @return requisition object.
@@ -918,4 +1019,96 @@ public class RequisitionService {
     requisition.setPatientsData(patientsData);
     return requisition;
   }
+
+  private void countRequisitionsForStatus(RequisitionStatus status,
+      Map<String, Long> statusesStats, UUID facilityId) {
+    statusesStats.put(
+        status.name(),
+        requisitionRepository.countRequisitions(null, facilityId,
+            null, null, status)
+    );
+  }
+
+  private void getCurrentPeriodsForFacility(List<SupportedProgramDto> activelySupportedPrograms,
+      UUID facilityId, Set<ProcessingPeriodDto> currentFacilityPeriods) {
+    activelySupportedPrograms.forEach(program -> {
+      if (program.isSupportActive()) {
+        List<ProcessingPeriodDto> foundPeriods =
+            new ArrayList<>(periodService.searchByProgramAndFacilityAndDateRange(
+                program.getId(), facilityId,
+                LocalDate.now(), LocalDate.now()));
+        currentFacilityPeriods.addAll(foundPeriods);
+      }
+    });
+  }
+
+  private Long calculateCurrentlyCreatedRequisitions(
+      List<SupportedProgramDto> activelySupportedPrograms,
+      Set<ProcessingPeriodDto> currentFacilityPeriods, UUID facilityId,
+      List<RequisitionStatus> postSubmittedStatuses) {
+    Profiler profiler = new Profiler("CALCULATE_CURRENTLY_CREATED_REQUISITIONS");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS_IDS");
+    List<UUID> activelySupportedProgramsIds = activelySupportedPrograms.stream()
+        .map(SupportedProgramDto::getId)
+        .collect(toList());
+    profiler.start("GET_CURRENT_FACILITY_PERIODS_IDS");
+    List<UUID> currentFacilityPeriodsIds = currentFacilityPeriods.stream()
+        .map(ProcessingPeriodDto::getId)
+        .collect(toList());
+
+    profiler.stop().log();
+    return requisitionRepository.countRequisitions(
+        currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, null,
+        postSubmittedStatuses
+    );
+  }
+
+
+  /**
+   * Retrieves stockCardRangeSummariesToAverage from certain requisition.
+   * @param requisition - requisition
+   * @param profiler - java profiler
+   * @return retrieved list of stockCardRangeSummariesToAverage.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummariesToAverage(
+      Requisition requisition, ProcessingPeriodDto period,
+      List<ProcessingPeriodDto> previousPeriods, Profiler profiler) {
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
+
+    LocalDate startDate = previousPeriods.size() <= 1
+        ? period.getStartDate() :
+        previousPeriods.get(previousPeriods.size() - 1).getStartDate();
+
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES_TO_AVERAGE");
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            startDate, period.getEndDate());
+  }
+
+  /**
+   * Retrieves stockCardRangeSummaries from certain requisition.
+   * @param requisition - requisition
+   * @param period - period
+   * @param profiler - java profiler
+   * @return retrieved list of StockCardRangeSummaryDto.
+   */
+  public List<StockCardRangeSummaryDto> getStockCardRangeSummaries(Requisition requisition,
+                                                                   ProcessingPeriodDto period,
+                                                                   Profiler profiler) {
+    profiler.start("FIND_APPROVED_PRODUCTS");
+    ApproveProductsAggregator approvedProducts = approvedProductReferenceDataService
+        .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
+
+    profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES");
+    return stockCardRangeSummaryStockManagementService
+        .search(requisition.getProgramId(), requisition.getFacilityId(),
+            approvedProducts.getOrderableIdentities(), null,
+            period.getStartDate(), period.getEndDate());
+  }
+
 }
