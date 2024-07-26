@@ -217,9 +217,19 @@ public abstract class BaseRequisitionController extends BaseController {
     profiler.start("CHECK_FACILITY_SUPPORTS_PROGRAM");
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
-    profiler.start("FIND_PROCESSING_PERIOD");
-    ProcessingPeriodDto period = periodService
-        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+    profiler.start("FIND_PROCESSING_PERIOD_WHEN_NO_SUGGESTED_PERIOD");
+
+    ProcessingPeriodDto period;
+
+    if (suggestedPeriod != null) {
+
+      profiler.start("FIND_PROCESSING_PERIOD");
+
+      period = periodService
+          .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+    } else {
+      period = periodService.getPeriod(suggestedPeriod);
+    }
 
     boolean reportOnly = period.isReportOnly();
 
