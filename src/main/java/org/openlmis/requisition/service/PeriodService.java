@@ -248,14 +248,12 @@ public class PeriodService {
 
     if (suggestedPeriodId != null && period != null) {
 
-      ProcessingPeriodDto proposedPeriod = periodReferenceDataService
-          .searchById(suggestedPeriodId);
+      ProcessingPeriodDto
+          proposedPeriod = getPeriod(suggestedPeriodId);
 
-      if (!proposedPeriod.getId().equals(period.getId())) {
+      if (proposedPeriod != null && !proposedPeriod.getId()
+          .equals(period.getId())) {
         period = proposedPeriod;
-      } else {
-        throw new ValidationMessageException(new Message(
-            ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED));
       }
 
     }

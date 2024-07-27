@@ -406,12 +406,9 @@ public class PeriodServiceTest {
 
     mockSupportedProgramStartDateNotSet();
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Lists.newArrayList(currentPeriod));
+        .thenReturn(null);
 
-    when(periodReferenceDataService.searchById(currentPeriod.getId()))
-        .thenReturn(currentPeriod);
-
-    periodService.findPeriod(programId, facilityId, currentPeriod.getId(), false);
+    periodService.findPeriod(programId, facilityId, UUID.randomUUID(), false);
   }
 
   @Test
@@ -428,7 +425,7 @@ public class PeriodServiceTest {
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(currentPeriod));
 
-    when(periodReferenceDataService.searchById(suggestedPeriod.getId()))
+    when(periodService.getPeriod(suggestedPeriod.getId()))
         .thenReturn(suggestedPeriod);
 
     ProcessingPeriodDto period = periodService
