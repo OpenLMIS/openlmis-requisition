@@ -246,8 +246,21 @@ public class PeriodService {
       period = findCurrentPeriodForInitiate(programId, facilityId);
     }
 
-    if (period == null
-        || (null != suggestedPeriodId && !suggestedPeriodId.equals(period.getId()))) {
+    if (suggestedPeriodId != null && period != null) {
+
+      ProcessingPeriodDto proposedPeriod = periodReferenceDataService
+          .searchById(suggestedPeriodId);
+
+      if (!proposedPeriod.getId().equals(period.getId())) {
+        period = proposedPeriod;
+      } else {
+        throw new ValidationMessageException(new Message(
+            ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED));
+      }
+
+    }
+
+    if (period == null) {
       throw new ValidationMessageException(new Message(
           ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED));
     }

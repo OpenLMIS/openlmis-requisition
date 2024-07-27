@@ -96,6 +96,7 @@ public class PeriodServiceTest {
   private UUID requisitionId = UUID.randomUUID();
 
   private ProcessingPeriodDto currentPeriod;
+  private ProcessingPeriodDto suggestedPeriod;
   private ProcessingPeriodDto period1;
   private ProcessingPeriodDto period2;
   private ProcessingPeriodDto period3;
@@ -115,6 +116,7 @@ public class PeriodServiceTest {
     period2 = createPeriod(2);
     period3 = createPeriod(3);
     period4 = createPeriod(4);
+    suggestedPeriod = createPeriod(5);
   }
 
   @Test
@@ -406,7 +408,33 @@ public class PeriodServiceTest {
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
         .thenReturn(Lists.newArrayList(currentPeriod));
 
-    periodService.findPeriod(programId, facilityId, UUID.randomUUID(), false);
+    when(periodReferenceDataService.searchById(currentPeriod.getId()))
+        .thenReturn(currentPeriod);
+
+    periodService.findPeriod(programId, facilityId, currentPeriod.getId(), false);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfPeriodHasNoSuggestedPeriod() {
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDtoDataBuilder()
+        .buildAsDto();
+
+    currentPeriod.setProcessingSchedule(processingScheduleDto);
+    currentPeriod.setId(UUID.randomUUID());
+    suggestedPeriod.setProcessingSchedule(processingScheduleDto);
+    suggestedPeriod.setId(UUID.randomUUID());
+
+    mockSupportedProgramStartDateNotSet();
+    when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Lists.newArrayList(currentPeriod));
+
+    when(periodReferenceDataService.searchById(suggestedPeriod.getId()))
+        .thenReturn(suggestedPeriod);
+
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriod.getId(), false);
+
+    assertEquals(suggestedPeriod, period);
   }
 
   @Test(expected = ValidationMessageException.class)
