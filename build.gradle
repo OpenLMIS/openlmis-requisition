@@ -71,6 +71,7 @@ dependencies {
     compile 'org.springframework:spring-context-support'
     compile 'org.webjars.npm:api-console:3.0.17'
     compile 'redis.clients:jedis'
+    compile 'org.apache.httpcomponents:httpclient:4.5.10'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
 
