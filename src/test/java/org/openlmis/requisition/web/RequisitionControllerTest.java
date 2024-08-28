@@ -606,7 +606,6 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        //any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
         any(Requisition.class), anyMap(), anyMap(), eq(true), isNotNull(), isNotNull());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateEtagVersionIfPresent(
