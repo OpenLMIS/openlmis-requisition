@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -605,7 +606,7 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNotNull(), isNotNull());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateEtagVersionIfPresent(
         any(HttpServletRequest.class), eq(initiatedRequsition));
@@ -651,7 +652,7 @@ public class RequisitionControllerTest {
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
-        any(Requisition.class), anyMap(), anyMap(), eq(true), isNull(), isNull());
+        any(Requisition.class), anyMap(), anyMap(), eq(true), isNotNull(), isNotNull());
     verify(requisitionRepository).save(initiatedRequsition);
     verify(requisitionVersionValidator).validateEtagVersionIfPresent(
         any(HttpServletRequest.class), eq(initiatedRequsition));
