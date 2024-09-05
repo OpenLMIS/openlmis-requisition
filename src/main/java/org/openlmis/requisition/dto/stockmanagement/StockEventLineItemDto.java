@@ -32,6 +32,7 @@ import lombok.ToString;
 public class StockEventLineItemDto {
   private UUID orderableId;
   private Integer quantity;
+  private UUID unitOfOrderableId;
   private LocalDate occurredDate;
   private List<StockEventAdjustmentDto> stockAdjustments;
 }

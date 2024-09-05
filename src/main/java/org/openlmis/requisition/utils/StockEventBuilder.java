@@ -49,6 +49,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -60,6 +61,9 @@ public class StockEventBuilder {
   private static final String TOTAL_RECEIVED_QUANTITY = "totalReceivedQuantity";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StockEventBuilder.class);
+
+  @Value("${defaultUnitOfOrderables}")
+  private UUID defaultUnitOfOrderables;
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
@@ -137,6 +141,7 @@ public class StockEventBuilder {
     return StockEventLineItemDto.builder()
         .orderableId(lineItem.getOrderable().getId())
         .quantity(lineItem.getStockOnHand() != null ? lineItem.getStockOnHand() : 0)
+        .unitOfOrderableId(defaultUnitOfOrderables)
         .occurredDate(occurredDate)
         .stockAdjustments(getStockAdjustments(lineItem, reasons, template, stockCards))
         .build();
