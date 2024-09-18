@@ -58,7 +58,7 @@ services:
     image: redis:3.2.12
 
   log:
-    image: openlmis/rsyslog:1
+    image: openlmis/rsyslog:3
     volumes:
       - '../logs/requisition:/var/log'
 
