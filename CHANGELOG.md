@@ -1,3 +1,14 @@
+8.3.9 / WIP
+==================
+Bug fixes:
+* [OLMIS-7923](https://openlmis.atlassian.net/browse/OLMIS-7923): Fix missing fields in requisition prints
+* [MALAWISUP-5622](https://openlmis.atlassian.net/browse/MALAWISUP-5622): Fix issue with batch first and second approvals
+
+Improvements:
+* [OLMIS-7895](https://openlmis.atlassian.net/browse/OLMIS-7895): Add demo data for BUQ and TB Monthly
+* [OIS-14](https://openlmis.atlassian.net/browse/OIS-14): Upgrade Transifex API version
+* [OIS-48](https://openlmis.atlassian.net/browse/OIS-48): Update service base images to versions without known vulnerabilities
+
 8.3.8 / 2024-04-19
 ==================
 Bug fixes:
