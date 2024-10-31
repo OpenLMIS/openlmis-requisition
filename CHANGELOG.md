@@ -1,4 +1,4 @@
-8.3.9 / WIP
+8.3.9 / 31.10.2024
 ==================
 Bug fixes:
 * [OLMIS-7923](https://openlmis.atlassian.net/browse/OLMIS-7923): Fix missing fields in requisition prints
