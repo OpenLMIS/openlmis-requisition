@@ -1,4 +1,4 @@
-8.3.8-angola.1 / Ongoing
+8.3.8-angola.r1 / 2024-11-08
 ==================
 Improvements:
 * [OAM-186](https://openlmis.atlassian.net/browse/OAM-186): Added requisition template validation for Ward/Service type
@@ -10,7 +10,7 @@ Improvements:
 Bug fixes:
 * [OLMIS-7860](https://openlmis.atlassian.net/browse/OLMIS-7860): Fix error with updating Requisition Template
 * [OLMIS-7793](https://openlmis.atlassian.net/browse/OLMIS-7793): Fix bug with invalid AMC calculation for stock management based facilities
-  
+
 Improvements:
 * [OLMIS-7858](https://openlmis.atlassian.net/browse/OLMIS-7793): Add four indexes on requisition schema
 
@@ -71,7 +71,7 @@ Bug fixes:
 ==================
 
 Improvements:
-* [TZUP-123](https://openlmis.atlassian.net/browse/TZUP-123): persisting & email notification 
+* [TZUP-123](https://openlmis.atlassian.net/browse/TZUP-123): persisting & email notification
   of unskipped requisition line items
 * [TZUP-122](https://openlmis.atlassian.net/browse/TZUP-122): changes to enable unskipping skipped requisition line tiems during approval
 * [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Set Hibernate batch insert properties
@@ -97,7 +97,7 @@ New functionality added in a backwards-compatible manner:
 * [OLMIS-6784](https://openlmis.atlassian.net/browse/OLMIS-6784): Update Spring Boot version to 2.x:
   * Spring Boot version is 2.2.2.
   * Flyway is at 6.0.8, new mechanism for loading Spring Security for OAuth2 (matching Spring Boot version), new versions for REST Assured, RAML tester, RAML parser, PowerMock, Mockito (so tests will pass) and Java callback mechanism has changed to a general handle() method.
-  * Add lombok plugin in order to get build to recognize lombok annotations. 
+  * Add lombok plugin in order to get build to recognize lombok annotations.
   * Spring application properties for Flyway have changed.
   * Re-implement generation of Jasper reports.
   * Fix repository method signatures (findOne is now findById, etc.); additionally they return Optional.
