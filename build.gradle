@@ -64,13 +64,14 @@ dependencies {
     compile 'org.flywaydb:flyway-core'
     compile 'org.hibernate:hibernate-java8'
     compile 'org.jadira.usertype:usertype.core:7.0.0.CR1'
-    compile 'org.javers:javers-spring-boot-starter-sql:3.11.6'
+    compile 'org.javers:javers-spring-boot-starter-sql:5.13.2'
     compile 'org.joda:joda-money:0.12'
     compile 'org.openlmis:openlmis-service-util:3.0.0'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
     compile 'org.springframework:spring-context-support'
     compile 'org.webjars.npm:api-console:3.0.17'
     compile 'redis.clients:jedis'
+    compile 'com.google.guava:guava:33.3.1-jre'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 

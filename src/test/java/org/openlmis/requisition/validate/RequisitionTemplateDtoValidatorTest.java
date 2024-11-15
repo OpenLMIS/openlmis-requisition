@@ -65,12 +65,12 @@ import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_RECEIVED_QUANTITY;
 import static org.openlmis.requisition.validate.RequisitionTemplateDtoValidator.TOTAL_STOCKOUT_DAYS;
 
+import com.google.common.collect.Sets;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.javers.common.collections.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -186,7 +186,7 @@ public class RequisitionTemplateDtoValidatorTest {
         .withIndicator("X")
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(USER_INPUT))
+            .withSources(Sets.newHashSet(USER_INPUT))
             .withoutOptions()
             .build())
         .withSource(USER_INPUT)
@@ -223,7 +223,7 @@ public class RequisitionTemplateDtoValidatorTest {
         .withIndicator("X")
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(USER_INPUT))
+            .withSources(Sets.newHashSet(USER_INPUT))
             .withoutOptions()
             .build())
         .withSource(USER_INPUT)
@@ -289,7 +289,7 @@ public class RequisitionTemplateDtoValidatorTest {
         .withNotDisplayed()
         .withColumnDefinition(new AvailableRequisitionColumnDataBuilder()
             .withName(TOTAL_STOCKOUT_DAYS)
-            .withSources(Sets.asSet(STOCK_CARDS))
+            .withSources(Sets.newHashSet(STOCK_CARDS))
             .withOptions(singleton(option))
             .build())
         .withSource(STOCK_CARDS)
@@ -599,15 +599,15 @@ public class RequisitionTemplateDtoValidatorTest {
     return new RequisitionTemplateDataBuilder()
         .withRequiredColumns()
         .withColumn(TOTAL_CONSUMED_QUANTITY, "C", USER_INPUT,
-            Sets.asSet(USER_INPUT, CALCULATED))
+            Sets.newHashSet(USER_INPUT, CALCULATED))
         .withColumn(STOCK_ON_HAND, "E", USER_INPUT,
-            Sets.asSet(USER_INPUT, CALCULATED))
+            Sets.newHashSet(USER_INPUT, CALCULATED))
         .withColumn(BEGINNING_BALANCE, "A", USER_INPUT,
-            Sets.asSet(USER_INPUT))
+            Sets.newHashSet(USER_INPUT))
         .withColumn(COLUMN_NAME, "T", USER_INPUT,
-            Sets.asSet(USER_INPUT))
+            Sets.newHashSet(USER_INPUT))
         .withColumn(ADDITIONAL_QUANTITY_REQUIRED, "Z", USER_INPUT,
-            Sets.asSet(USER_INPUT), false)
+            Sets.newHashSet(USER_INPUT), false)
         .withAssignment(UUID.randomUUID(), UUID.randomUUID(), new Random().nextBoolean());
   }
 
@@ -621,11 +621,11 @@ public class RequisitionTemplateDtoValidatorTest {
   private RequisitionTemplateDto getTemplatePopulatedByStock() {
     RequisitionTemplate template = baseTemplateBuilder()
         .withColumn(TOTAL_RECEIVED_QUANTITY, "B", USER_INPUT,
-            Sets.asSet(USER_INPUT))
+            Sets.newHashSet(USER_INPUT))
         .withColumn(TOTAL_LOSSES_AND_ADJUSTMENTS, "D", STOCK_CARDS,
-            Sets.asSet(STOCK_CARDS))
+            Sets.newHashSet(STOCK_CARDS))
         .withColumn(TOTAL_STOCKOUT_DAYS, "X", STOCK_CARDS,
-            Sets.asSet(STOCK_CARDS))
+            Sets.newHashSet(STOCK_CARDS))
         .withPopulateStockOnHandFromStockCards()
         .build();
 
@@ -651,11 +651,11 @@ public class RequisitionTemplateDtoValidatorTest {
   private RequisitionTemplateDto addAdjustedConsumptionToColumnsMapAndGetRequisitionTemplate() {
     RequisitionTemplate template = baseTemplateBuilder()
         .withColumn(TOTAL_CONSUMED_QUANTITY, "X", USER_INPUT,
-            Sets.asSet(USER_INPUT))
+            Sets.newHashSet(USER_INPUT))
         .withColumn(ADJUSTED_CONSUMPTION, "N", CALCULATED,
-            Sets.asSet(CALCULATED))
+            Sets.newHashSet(CALCULATED))
         .withColumn(AVERAGE_CONSUMPTION, "P", CALCULATED,
-            Sets.asSet(CALCULATED))
+            Sets.newHashSet(CALCULATED))
         .build();
 
 
@@ -676,11 +676,11 @@ public class RequisitionTemplateDtoValidatorTest {
   private RequisitionTemplateDto getRequisitionTemplateForTestAdjustedAndAverageConsumptionField() {
     RequisitionTemplate template = baseTemplateBuilder()
         .withColumn(TOTAL_STOCKOUT_DAYS, "X", USER_INPUT,
-            Sets.asSet(USER_INPUT))
+            Sets.newHashSet(USER_INPUT))
         .withColumn(ADJUSTED_CONSUMPTION, "N", CALCULATED,
-            Sets.asSet(CALCULATED))
+            Sets.newHashSet(CALCULATED))
         .withColumn(AVERAGE_CONSUMPTION, "P", CALCULATED,
-            Sets.asSet(CALCULATED))
+            Sets.newHashSet(CALCULATED))
         .build();
 
     RequisitionTemplateDto dto = buildDto(template);
