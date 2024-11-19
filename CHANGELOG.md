@@ -1,5 +1,11 @@
-8.3.10 - wip
+8.3.10 / 19.10.2024
 ==================
+
+Patch release with performance improvements.
+
+Improvements:
+* [SELV3-774](https://openlmis.atlassian.net/browse/SELV3-774): Improved general performance of all create and update
+ actions
 
 8.3.9 / 31.10.2024
 ==================
