@@ -30,7 +30,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -70,7 +69,7 @@ public class StatusChange extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
-  @OneToMany(mappedBy = "statusChange")
+  @OneToMany(mappedBy = "statusChange", cascade = {CascadeType.REMOVE})
   @Getter
   @Setter
   private List<Rejection> rejections = new ArrayList<>();
