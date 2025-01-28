@@ -1,5 +1,8 @@
 8.4.0 / wip
 ==================
+Bug fixes:
+* [OLMIS-8066](https://openlmis.atlassian.net/browse/OLMIS-8066): Fix incorrect period names for emergency requisition
+
 
 8.3.10 / 19.10.2024
 ==================
