@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -145,16 +147,23 @@ public class PeriodService {
           .filter(requisitionPeriod ->  requisitionPeriod.getRequisitionStatus().isPreAuthorize())
           .collect(Collectors.toList());
 
-      preAuthorizeRequisitionsPeriods.forEach(preauthorizeRequisitionPeriod -> periods
-          .forEach(period -> {
-            RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
-            additionalPeriod.setRequisitionStatus(
-                preauthorizeRequisitionPeriod.getRequisitionStatus());
-            additionalPeriod.setRequisitionId(
-                preauthorizeRequisitionPeriod.getRequisitionId());
-            requisitionPeriods.add(additionalPeriod);
-          })
-      );
+      Set<UUID> periodIds = preAuthorizeRequisitionsPeriods.stream()
+          .map(RequisitionPeriod::getPeriodId).collect(Collectors.toSet());
+      List<ProcessingPeriodDto> periodList = periodReferenceDataService.search(periodIds);
+
+      preAuthorizeRequisitionsPeriods.forEach(preauthorizeRequisitionPeriod -> {
+        Optional<ProcessingPeriodDto> dto = periodList.stream()
+            .filter(period -> period.getId() == preauthorizeRequisitionPeriod.getPeriodId())
+            .findFirst();
+
+        dto.ifPresent(d -> {
+          RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(d);
+          additionalPeriod.setRequisitionStatus(preauthorizeRequisitionPeriod
+              .getRequisitionStatus());
+          additionalPeriod.setRequisitionId(preauthorizeRequisitionPeriod.getRequisitionId());
+          requisitionPeriods.add(additionalPeriod);
+        });
+      });
     } else {
       requisitionPeriods.addAll(periodDtos);
 
