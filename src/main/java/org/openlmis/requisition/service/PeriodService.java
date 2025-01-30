@@ -21,10 +21,10 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_SUGGESTE
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_SHOULD_BE_OLDEST_AND_NOT_ASSOCIATED;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -107,85 +107,123 @@ public class PeriodService {
   }
 
   /**
-   * Gets a period list for the given program and facility.
+   * Gets a RequisitionPeriodDto list for initiate, for the given program and facility.
    *
    * @param program   UUID of Program.
    * @param facility  UUID of Facility.
-   * @param emergency decide if periods should be find for standard or emergency requisitions.
-   * @return a list of periods.
+   * @param emergency decide if periods should be found for standard or emergency requisitions.
+   * @return a list of RequisitionPeriodDto.
    */
   public Collection<RequisitionPeriodDto> getPeriods(
       UUID program, UUID facility, boolean emergency) {
     Profiler profiler = new Profiler("PERIOD_SERVICE");
     profiler.setLogger(LOGGER);
-    Collection<ProcessingPeriodDto> periods;
 
-    if (emergency) {
-      profiler.start("GET_CURRENT_PERIODS");
-      periods = getCurrentPeriods(program, facility);
-    } else {
-      profiler.start("SEARCH_PERIODS_BY_PROGRAM_AND_FACILITY");
-      periods = searchByProgramAndFacility(program, facility);
-    }
+    return emergency ? getPeriodsForEmergency(program, facility, profiler)
+       : getPeriodsForNonEmergency(program, facility, profiler);
+  }
 
-    profiler.start("SEARCH_REQUISITION_PERIODS");
+
+  /**
+   * Retrieves a list of RequisitionPeriodDto for the specified program and facility.
+   * It processes non-emergency requisitions by filtering and adjusting the requisition periods
+   * and combining them with the corresponding requisition data.
+   *
+   * @param program   UUID of the Program.
+   * @param facility  UUID of the Facility.
+   * @return a list of RequisitionPeriodDto objects for non-emergency requisitions.
+   */
+  private Collection<RequisitionPeriodDto> getPeriodsForNonEmergency(
+      UUID program, UUID facility, Profiler profiler) {
+    profiler.start("SEARCH_PERIODS_BY_PROGRAM_AND_FACILITY");
+    Collection<ProcessingPeriodDto> periods = searchByProgramAndFacility(program, facility);
+
+    profiler.start("RETRIEVE_REQUISITION_ID_AND_STATUS_PAIRS");
     List<RequisitionPeriod> requisitionIdStatusList = requisitionRepository
-        .searchRequisitionIdAndStatusPairs(facility, program, emergency);
+        .searchRequisitionIdAndStatusPairs(facility, program, Boolean.FALSE);
 
     profiler.start("BUILD_REQUISITION_PERIOD_DTOS");
-    List<RequisitionPeriodDto> periodDtos = periods.stream()
-        .map(RequisitionPeriodDto::newInstance)
+    List<RequisitionPeriodDto> requisitionPeriods = periods.stream()
+        .map(RequisitionPeriodDto::newInstance).collect(Collectors.toList());
+
+    profiler.start("FILTER_POSTAUTHORIZE_REQUISITIONS");
+    List<RequisitionPeriod> postAuthorizeRequisitionsPeriods = requisitionIdStatusList.stream()
+        .filter(requisitionPeriod ->  !requisitionPeriod.getRequisitionStatus().isPreAuthorize())
         .collect(Collectors.toList());
 
-    List<RequisitionPeriodDto> requisitionPeriods = new ArrayList<>();
-    if (emergency) {
-      profiler.start("GET_PERIODS_FOR_EMERGENCY_REQUISITIONS");
-      periods.forEach(period -> requisitionPeriods.add(RequisitionPeriodDto.newInstance(period)));
-      List<RequisitionPeriod> preAuthorizeRequisitionsPeriods = requisitionIdStatusList.stream()
-          .filter(requisitionPeriod ->  requisitionPeriod.getRequisitionStatus().isPreAuthorize())
-          .collect(Collectors.toList());
+    profiler.start("REMOVE_POSTAUTHORIZE_PERIODS");
+    postAuthorizeRequisitionsPeriods.forEach(postAuthorizeRequisitionPeriod -> requisitionPeriods
+        .stream()
+        .filter(period -> period.getId().equals(postAuthorizeRequisitionPeriod.getPeriodId()))
+        .findFirst()
+        .ifPresent(requisitionPeriods::remove)
+    );
 
-      preAuthorizeRequisitionsPeriods.forEach(preauthorizeRequisitionPeriod -> periods
-          .forEach(period -> {
-            RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
-            additionalPeriod.setRequisitionStatus(
-                preauthorizeRequisitionPeriod.getRequisitionStatus());
-            additionalPeriod.setRequisitionId(
-                preauthorizeRequisitionPeriod.getRequisitionId());
-            requisitionPeriods.add(additionalPeriod);
-          })
-      );
-    } else {
-      requisitionPeriods.addAll(periodDtos);
-
-      profiler.start("GET_POSTAUTHORIZE_PERIODS_FOR_REGULAR_REQUISITIONS");
-      List<RequisitionPeriod> postAuthorizeRequisitionsPeriods = requisitionIdStatusList.stream()
-          .filter(requisitionPeriod ->  !requisitionPeriod.getRequisitionStatus().isPreAuthorize())
-          .collect(Collectors.toList());
-
-      profiler.start("REMOVE_POSTAUTHORIZE_PERIODS_FROM_REQUISITION_PERIODS");
-      postAuthorizeRequisitionsPeriods.forEach(postAuthorizeRequisitionPeriod -> requisitionPeriods
-            .stream()
-            .filter(period -> period.getId().equals(postAuthorizeRequisitionPeriod.getPeriodId()))
-            .findFirst()
-            .ifPresent(requisitionPeriods::remove)
-      );
-
-      profiler.start("SET_REQUISITION_ID_AND_STATUS_FOR_REQUISITION_PERIODS");
-      requisitionPeriods.forEach(requisitionPeriodDto -> requisitionIdStatusList
-          .stream()
-          .filter(requisitionPeriod ->
-              requisitionPeriod.getPeriodId().equals(requisitionPeriodDto.getId()))
-          .findFirst()
-          .ifPresent(requisitionPeriod -> setRequisitionPeriodStatusAndId(
-              requisitionPeriodDto, requisitionPeriod)
-          )
-      );
-    }
+    profiler.start("UPDATE_REQUISITION_PERIODS_WITH_ID_AND_STATUS");
+    requisitionPeriods.forEach(requisitionPeriodDto -> requisitionIdStatusList
+        .stream()
+        .filter(requisitionPeriod ->
+          requisitionPeriod.getPeriodId().equals(requisitionPeriodDto.getId()))
+        .findFirst()
+        .ifPresent(requisitionPeriod -> setRequisitionPeriodStatusAndId(
+          requisitionPeriodDto, requisitionPeriod)
+        )
+    );
 
     profiler.stop().log();
     return requisitionPeriods;
   }
+
+  /**
+   * Gets a list of RequisitionPeriodDto for the given program and facility.
+   * The method retrieves the current periods, searches for a 'preauthorized'
+   * requisition periods and combines the period information to return a list
+   * of requisition periods.
+   *
+   * @param program   UUID of Program.
+   * @param facility  UUID of Facility.
+   * @return a list of RequisitionPeriodDto.
+   */
+  private Collection<RequisitionPeriodDto> getPeriodsForEmergency(
+      UUID program, UUID facility, Profiler profiler) {
+    profiler.start("FETCH_CURRENT_PROCESSING_PERIODS");
+    Collection<ProcessingPeriodDto> periods = getCurrentPeriods(program, facility);
+
+    profiler.start("RETRIEVE_REQUISITION_ID_AND_STATUS_PAIRS");
+    List<RequisitionPeriod> requisitionIdStatusList = requisitionRepository
+        .searchRequisitionIdAndStatusPairs(facility, program, Boolean.TRUE);
+
+    profiler.start("FILTER_AND_PROCESS_PREAUTHORIZED_REQUISITIONS");
+    List<RequisitionPeriod> preAuthorizedRequisitions = requisitionIdStatusList.stream()
+        .filter(requisitionPeriod -> requisitionPeriod.getRequisitionStatus().isPreAuthorize())
+        .collect(Collectors.toList());
+
+    Set<UUID> periodIds = preAuthorizedRequisitions.stream()
+        .map(RequisitionPeriod::getPeriodId)
+        .collect(Collectors.toSet());
+    profiler.start("FETCH_PERIODS_FOR_PREAUTHORIZED_REQUISITIONS");
+    List<ProcessingPeriodDto> periodList = periodReferenceDataService.search(periodIds);
+
+    profiler.start("COMBINE_PERIODS_WITH_PREAUTHORIZED_REQUISITIONS");
+    List<RequisitionPeriodDto> requisitionPeriods = periods.stream()
+        .map(RequisitionPeriodDto::newInstance)
+        .collect(Collectors.toList());
+
+    profiler.start("PROCESS_PREAUTHORIZED_REQUISITION");
+    preAuthorizedRequisitions.forEach(preAuthorizeRequisition -> periodList.stream()
+        .filter(period -> period.getId().equals(preAuthorizeRequisition.getPeriodId()))
+        .findFirst()
+        .ifPresent(period -> {
+          RequisitionPeriodDto additionalPeriod = RequisitionPeriodDto.newInstance(period);
+          additionalPeriod.setRequisitionStatus(preAuthorizeRequisition.getRequisitionStatus());
+          additionalPeriod.setRequisitionId(preAuthorizeRequisition.getRequisitionId());
+          requisitionPeriods.add(additionalPeriod);
+        }));
+
+    profiler.stop().log();
+    return requisitionPeriods;
+  }
+
 
   /**
    * Find recent periods for the given period.

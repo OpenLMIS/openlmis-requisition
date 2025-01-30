@@ -287,7 +287,7 @@ public class PeriodServiceTest {
     mockSupportedProgramStartDateNotSet();
 
     RequisitionPeriod requisitionPeriodInitiated =
-        createRequisitionPeriod(UUID.randomUUID(), INITIATED, currentPeriod.getId());
+        createRequisitionPeriod(UUID.randomUUID(), INITIATED, period1.getId());
     RequisitionPeriod requisitionPeriodSubmitted =
         createRequisitionPeriod(UUID.randomUUID(), SUBMITTED, currentPeriod.getId());
 
@@ -295,21 +295,30 @@ public class PeriodServiceTest {
         .when(requisitionRepository)
         .searchRequisitionIdAndStatusPairs(facilityId, programId, true);
 
+    doReturn(Arrays.asList(currentPeriod, period1))
+        .when(periodReferenceDataService)
+        .search(any());
+
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, true);
 
     assertNotNull(periods);
     assertThat(periods, hasSize(3));
 
-    for (RequisitionPeriodDto period : periods) {
-      assertEquals(currentPeriod.getId(), period.getId());
-    }
+    List<String> periodNames = periods
+            .stream()
+            .map(RequisitionPeriodDto::getName)
+            .collect(Collectors.toList());
+    assertTrue(periodNames.contains(currentPeriod.getName()));
+    assertTrue(periodNames.contains(period1.getName()));
+
     List<UUID> requisitionIds = periods
         .stream()
         .map(RequisitionPeriodDto::getRequisitionId)
         .collect(Collectors.toList());
     assertTrue(requisitionIds.contains(requisitionPeriodInitiated.getRequisitionId()));
     assertTrue(requisitionIds.contains(requisitionPeriodSubmitted.getRequisitionId()));
+
     // should allow to initiate another requisition for the same period
     assertTrue(requisitionIds.contains(null));
   }
