@@ -43,6 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -965,28 +966,52 @@ public class RequisitionControllerTest {
   }
 
   @Test
-  public void shouldApproveAuthorizedRequisitionWithoutParentNode() {
+  public void shouldApproveAuthorizedRequisitionWithoutParentNodeWhenTransferStockDataIsEnabled() {
+    ReflectionTestUtils.setField(requisitionController,
+            "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(false);
     StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
     when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
-        .thenReturn(stockEventDto);
+            .thenReturn(stockEventDto);
 
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
-    verify(requisitionService, times(1)).validateCanApproveRequisition(
-        any(Requisition.class),
-        any(UUID.class));
-
-    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition,
-        currentUser.getId(), Maps.newHashMap());
-    verify(stockEventService).submit(stockEventDto);
-    verify(requisitionService, times(1)).doApprove(eq(null), any(), any(),
-        eq(authorizedRequsition), eq(singletonList(supplyLineDto)), any(ProcessingPeriodDto.class),
-        any(Profiler.class));
+    verify(requisitionService).validateCanApproveRequisition(
+            any(Requisition.class),
+            any(UUID.class));
     verify(authorizedRequsition)
-        .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
-            true, Maps.newHashMap(), Maps.newHashMap());
+            .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+                    true, Maps.newHashMap(), Maps.newHashMap());
+    verify(requisitionService).doApprove(eq(null), any(), any(), eq(authorizedRequsition),
+            eq(singletonList(supplyLineDto)), any(ProcessingPeriodDto.class), any(Profiler.class));
+    verify(stockEventBuilderBuilder).fromRequisition(authorizedRequsition,
+            currentUser.getId(), Maps.newHashMap());
+    verify(stockEventService).submit(stockEventDto);
+  }
+
+  @Test
+  public void shouldApproveAuthorizedRequisitionWithoutParentNodeWhenTransferStockDataIsDisabled() {
+    ReflectionTestUtils.setField(requisitionController,
+            "isTransferStockDataFromRequisitionToStockManagementEnabled", false);
+    final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
+    when(authorizedRequsition.getEmergency()).thenReturn(false);
+    StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
+    when(stockEventBuilderBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
+            .thenReturn(stockEventDto);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+
+    verify(requisitionService).validateCanApproveRequisition(
+            any(Requisition.class),
+            any(UUID.class));
+    verify(authorizedRequsition)
+            .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
+                    true, Maps.newHashMap(), Maps.newHashMap());
+    verify(requisitionService).doApprove(eq(null), any(),
+            any(), eq(authorizedRequsition), eq(singletonList(supplyLineDto)),
+            any(ProcessingPeriodDto.class), any(Profiler.class));
+    verifyNoInteractions(stockEventBuilderBuilder, stockEventService);
   }
 
   @Test
