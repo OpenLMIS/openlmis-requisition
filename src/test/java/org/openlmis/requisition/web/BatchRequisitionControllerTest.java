@@ -15,28 +15,52 @@
 
 package org.openlmis.requisition.web;
 
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.UserDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
+import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.StockEventBuilder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class BatchRequisitionControllerTest {
 
@@ -49,14 +73,56 @@ public class BatchRequisitionControllerTest {
   @Mock
   PermissionService permissionService;
 
+  @Mock
+  RequisitionRepository requisitionRepository;
+
+  @Mock
+  UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @Mock
+  OrderableReferenceDataService orderableReferenceDataService;
+
+  @Mock
+  FacilityReferenceDataService facilityReferenceDataService;
+
+  @Mock
+  PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  FacilityTypeApprovedProductReferenceDataService facilityTypeApprovedService;
+
+  @Mock
+  SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Mock
+  MessageService messageService;
+
+  @Mock
+  StockEventBuilder stockEventBuilder;
+
+  @Mock
+  StockEventStockManagementService stockEventStockManagementService;
+
+  @Mock
+  Requisition requisition;
+
   @InjectMocks
-  BatchRequisitionController batchRequisitionController;
+  private BatchRequisitionController batchRequisitionController;
+
+  private final UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+  private final UUID uuid2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+  private UserDto currentUser;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    UserDto currentUser = DtoGenerator.of(UserDto.class);
+    currentUser = DtoGenerator.of(UserDto.class);
     when(authenticationHelper.getCurrentUser()).thenReturn(currentUser);
   }
 
@@ -98,4 +164,54 @@ public class BatchRequisitionControllerTest {
     verify(requisitionService, atLeastOnce()).releaseWithoutOrder(any());
   }
 
+  @Test
+  public void approveMultipleRequisitionsWhenTransferStockDataIsEnabled() {
+    ReflectionTestUtils.setField(batchRequisitionController,
+            "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Collections.singletonList(requisition));
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
+    when(stockEventBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
+            .thenReturn(stockEventDto);
+
+    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    verify(authenticationHelper).getCurrentUser();
+    verify(requisitionRepository).readDistinctByIdIn(anyCollection());
+    verify(userReferenceDataService).getPermissionStrings(currentUser.getId());
+    verify(supervisoryNodeReferenceDataService).findByIds(anyList());
+    verify(orderableReferenceDataService).findByIdentities(anySet());
+    verify(facilityReferenceDataService).search(anySet());
+    verify(periodReferenceDataService).search(anySet());
+    verify(facilityTypeApprovedService).findByIdentities(anySet());
+    verify(stockEventBuilder).fromRequisition(requisition, currentUser.getId(), Maps.newHashMap());
+    verify(stockEventStockManagementService).submit(stockEventDto);
+  }
+
+  @Test
+  public void approveMultipleRequisitionsWhenTransferStockDataIsDisabled() {
+    ReflectionTestUtils.setField(batchRequisitionController,
+            "isTransferStockDataFromRequisitionToStockManagementEnabled", false);
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+            .thenReturn(Collections.singletonList(requisition));
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
+    when(stockEventBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
+            .thenReturn(stockEventDto);
+
+    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    verify(authenticationHelper).getCurrentUser();
+    verify(requisitionRepository).readDistinctByIdIn(anyCollection());
+    verify(userReferenceDataService).getPermissionStrings(currentUser.getId());
+    verify(supervisoryNodeReferenceDataService).findByIds(anyList());
+    verify(orderableReferenceDataService).findByIdentities(anySet());
+    verify(facilityReferenceDataService).search(anySet());
+    verify(periodReferenceDataService).search(anySet());
+    verify(facilityTypeApprovedService).findByIdentities(anySet());
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
 }
