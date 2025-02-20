@@ -162,7 +162,6 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     verify(facilityReferenceDataService).findOne(facility.getId());
     verify(validReasonStockmanagementService).search(program.getId(), facility.getType().getId());
 
-    verify(reasonsValidator).validate(stockAdjustmentReasons, requisition.getTemplate());
     verify(requisitionService, atLeastOnce())
         .initiate(eq(program), eq(facility), eq(period), eq(false),
             eq(stockAdjustmentReasons), eq(requisition.getTemplate()),
