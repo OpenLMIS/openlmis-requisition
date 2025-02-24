@@ -73,6 +73,7 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
   private Integer totalQuantityNeededByHf = 0;
   private Integer quantityToIssue = 0;
   private Integer convertedQuantityToIssue = 0;
+  private Integer dosesPerPatient = 1;
 
   /**
    * Constructs builder for {@link RequisitionLineItem}.
@@ -137,7 +138,8 @@ public class RequisitionLineItemDataBuilder implements DataBuilder<RequisitionLi
         additionalQuantityRequired, adjustedConsumption, previousAdjustedConsumptions,
         averageConsumption, maximumStockQuantity, calculatedOrderQuantity, stockAdjustments,
         idealStockAmount, calculatedOrderQuantityIsa, numberOfPatientsOnTreatmentNextMonth,
-        totalRequirement, totalQuantityNeededByHf, quantityToIssue, convertedQuantityToIssue
+        totalRequirement, totalQuantityNeededByHf, quantityToIssue, convertedQuantityToIssue,
+        dosesPerPatient
     );
     lineItem.setId(id);
 

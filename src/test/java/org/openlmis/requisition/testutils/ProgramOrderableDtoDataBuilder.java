@@ -30,6 +30,7 @@ public class ProgramOrderableDtoDataBuilder implements DtoDataBuilder<ProgramOrd
   private Boolean fullSupply;
   private Integer displayOrder;
   private Money pricePerPack;
+  private Integer dosesPerPatient;
 
   /**
    * Builder for {@link ProgramOrderableDto}.
@@ -42,6 +43,7 @@ public class ProgramOrderableDtoDataBuilder implements DtoDataBuilder<ProgramOrd
     fullSupply = true;
     displayOrder = 0;
     pricePerPack = Money.of(CurrencyUnit.EUR, 15.6);
+    dosesPerPatient = 1;
   }
 
   @Override
@@ -53,6 +55,7 @@ public class ProgramOrderableDtoDataBuilder implements DtoDataBuilder<ProgramOrd
         orderableCategoryDisplayOrder,
         fullSupply,
         displayOrder,
+        dosesPerPatient,
         pricePerPack
     );
   }

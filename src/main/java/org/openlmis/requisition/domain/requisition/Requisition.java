@@ -981,6 +981,25 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Sets doses per patient of line items for a Requisition report.
+   */
+  public void setDosesPerPatientForLineItems(
+          List<RequisitionLineItem> requisitionLineItems,
+          Map<VersionIdentityDto, OrderableDto> orderables
+  ) {
+    if (null == requisitionLineItems || requisitionLineItems.isEmpty()) {
+      return;
+    }
+
+    for (RequisitionLineItem line : requisitionLineItems) {
+      OrderableDto orderable = orderables.get(new VersionIdentityDto(line.getOrderable()));
+      ProgramOrderableDto programOrderable = orderable.getProgramOrderable(programId);
+
+      line.setDosesPerPatient(programOrderable.getDosesPerPatient());
+    }
+  }
+
+  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to
