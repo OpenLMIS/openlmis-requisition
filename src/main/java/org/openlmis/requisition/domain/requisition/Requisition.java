@@ -28,6 +28,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AD
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.AVERAGE_CONSUMPTION;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.INDIVIDUAL_MONTHLY_REQUIREMENT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.SKIPPED_COLUMN;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FIELD_MUST_HAVE_VALUES;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_MUST_BE_INITIATED_TO_BE_SUBMMITED;
@@ -978,6 +979,23 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     return list;
+  }
+
+  /**
+   * Sets doses per patient of line items for a Requisition report.
+   */
+  public void setDosesPerPatientForLineItems(
+          List<RequisitionLineItem> requisitionLineItems,
+          Map<VersionIdentityDto, OrderableDto> orderables
+  ) {
+    if (template.isColumnInTemplateAndDisplayed(INDIVIDUAL_MONTHLY_REQUIREMENT)) {
+      for (RequisitionLineItem line : requisitionLineItems) {
+        OrderableDto orderable = orderables.get(new VersionIdentityDto(line.getOrderable()));
+        ProgramOrderableDto programOrderable = orderable.getProgramOrderable(programId);
+
+        line.setDosesPerPatient(programOrderable.getDosesPerPatient());
+      }
+    }
   }
 
   /**

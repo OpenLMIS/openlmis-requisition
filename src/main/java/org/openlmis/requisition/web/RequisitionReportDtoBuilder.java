@@ -82,19 +82,21 @@ public class RequisitionReportDtoBuilder {
         .stream()
         .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
 
-    List<RequisitionLineItem> fullSupply =
-        requisition.getNonSkippedFullSupplyRequisitionLineItems(orderables);
-    List<RequisitionLineItem> nonFullSupply =
-        requisition.getNonSkippedNonFullSupplyRequisitionLineItems(orderables);
-
     RequisitionReportDto reportDto = new RequisitionReportDto();
     reportDto.setRequisition(requisitionDtoBuilder.build(requisition));
+    reportDto.setTotalCost(requisition.getTotalCost());
+
+    List<RequisitionLineItem> fullSupply =
+        requisition.getNonSkippedFullSupplyRequisitionLineItems(orderables);
+    requisition.setDosesPerPatientForLineItems(fullSupply, orderables);
     reportDto.setFullSupply(exportLinesToDtos(fullSupply, orderables, requisition.getProgramId()));
+    reportDto.setFullSupplyTotalCost(requisition.getFullSupplyTotalCost(orderables));
+
+    List<RequisitionLineItem> nonFullSupply =
+        requisition.getNonSkippedNonFullSupplyRequisitionLineItems(orderables);
     reportDto.setNonFullSupply(exportLinesToDtos(nonFullSupply, orderables,
         requisition.getProgramId()));
-    reportDto.setFullSupplyTotalCost(requisition.getFullSupplyTotalCost(orderables));
     reportDto.setNonFullSupplyTotalCost(requisition.getNonFullSupplyTotalCost(orderables));
-    reportDto.setTotalCost(requisition.getTotalCost());
 
     List<StatusChange> statusChanges = requisition.getStatusChanges();
     if (statusChanges != null) {

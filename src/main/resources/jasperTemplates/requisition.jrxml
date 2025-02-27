@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.20.5.final using JasperReports Library version 6.20.5-3efcf2e67f959db3888d79f73dde2dbd7acb4f8e  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisition" pageWidth="1140" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="20" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisition" pageWidth="1165" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="20" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
 	<property name="ireport.y" value="0"/>
@@ -73,7 +73,7 @@
 				<textFieldExpression><![CDATA[MessageFormat.format("Report and Requisition for: {0} ({1})", $F{requisition}.getProgram().getName(), $F{requisition}.getFacility().getType().getName())]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement mode="Opaque" x="10" y="35" width="1100" height="50" backcolor="#C0C0C0" uuid="65fe1d4d-8334-48d2-b383-ee533c8d5742"/>
+				<reportElement mode="Opaque" x="10" y="35" width="1142" height="50" backcolor="#C0C0C0" uuid="65fe1d4d-8334-48d2-b383-ee533c8d5742"/>
 				<graphicElement>
 					<pen lineWidth="0.0"/>
 				</graphicElement>
@@ -206,7 +206,7 @@
 	<detail>
 		<band height="80">
 			<subreport>
-				<reportElement key="fullSupplySubreport" x="0" y="0" width="1120" height="40" uuid="4475ef7c-a24a-4301-812c-f41869743f79">
+				<reportElement key="fullSupplySubreport" x="0" y="0" width="1160" height="40" uuid="4475ef7c-a24a-4301-812c-f41869743f79">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="template">
@@ -234,7 +234,7 @@
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>
 			</subreport>
 			<subreport>
-				<reportElement key="nonFullSupplySubreport" positionType="Float" x="0" y="40" width="1120" height="40" uuid="c5a8dc95-8635-4a3c-9fca-38e46ac77ab8">
+				<reportElement key="nonFullSupplySubreport" positionType="Float" x="0" y="40" width="1160" height="40" uuid="c5a8dc95-8635-4a3c-9fca-38e46ac77ab8">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[!$F{nonFullSupply}.isEmpty()]]></printWhenExpression>
 				</reportElement>

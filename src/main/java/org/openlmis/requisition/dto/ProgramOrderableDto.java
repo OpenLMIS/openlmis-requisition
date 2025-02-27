@@ -39,6 +39,7 @@ public final class ProgramOrderableDto {
   private Integer orderableCategoryDisplayOrder;
   private Boolean fullSupply;
   private Integer displayOrder;
+  private Integer dosesPerPatient;
   @JsonSerialize(using = MoneySerializer.class)
   @JsonDeserialize(using = MoneyDeserializer.class)
   private Money pricePerPack;

@@ -53,6 +53,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -88,6 +90,7 @@ public class RequisitionLineItem extends BaseEntity {
   public static final String STOCK_ON_HAND = "stockOnHand";
   public static final String TOTAL_CONSUMED_QUANTITY = "totalConsumedQuantity";
   public static final String TOTAL_LOSSES_AND_ADJUSTMENTS = "totalLossesAndAdjustments";
+  public static final String INDIVIDUAL_MONTHLY_REQUIREMENT = "dosesPerPatient";
   public static final String APPROVED_QUANTITY = "approvedQuantity";
   public static final String REMARKS_COLUMN = "remarks";
   public static final String TOTAL_STOCKOUT_DAYS = "totalStockoutDays";
@@ -257,6 +260,10 @@ public class RequisitionLineItem extends BaseEntity {
   @Setter
   private Integer convertedQuantityToIssue;
 
+  @Setter
+  @Transient
+  private Integer dosesPerPatient;
+
   /**
    * Initiates a requisition line item.
    */
@@ -306,7 +313,7 @@ public class RequisitionLineItem extends BaseEntity {
         original.idealStockAmount, original.calculatedOrderQuantityIsa,
         original.numberOfPatientsOnTreatmentNextMonth, original.totalRequirement,
         original.totalQuantityNeededByHf, original.quantityToIssue,
-        original.convertedQuantityToIssue);
+        original.convertedQuantityToIssue, original.dosesPerPatient);
     setId(original.getId());
     this.orderable = new VersionEntityReference(original.orderable);
     this.facilityTypeApprovedProduct = new VersionEntityReference(
@@ -539,6 +546,7 @@ public class RequisitionLineItem extends BaseEntity {
     exporter.setTotalQuantityNeededByHf(totalQuantityNeededByHf);
     exporter.setQuantityToIssue(quantityToIssue);
     exporter.setConvertedQuantityToIssue(convertedQuantityToIssue);
+    exporter.setDosesPerPatient(dosesPerPatient);
   }
 
   private void exportStockAdjustments(Exporter exporter) {
@@ -957,6 +965,8 @@ public class RequisitionLineItem extends BaseEntity {
     void setQuantityToIssue(Integer quantityToIssue);
 
     void setConvertedQuantityToIssue(Integer convertedQuantityToIssue);
+
+    void setDosesPerPatient(Integer dosesPerPatient);
   }
 
   public interface Importer {

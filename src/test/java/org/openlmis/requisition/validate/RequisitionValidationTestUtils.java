@@ -16,6 +16,7 @@
 package org.openlmis.requisition.validate;
 
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
+import static org.openlmis.requisition.domain.SourceType.REFERENCE_DATA;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADDITIONAL_QUANTITY_REQUIRED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.ADJUSTED_CONSUMPTION;
@@ -25,6 +26,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.BE
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CALCULATED_ORDER_QUANTITY_ISA;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.CONVERTED_QUANTITY_TO_ISSUE;
+import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.INDIVIDUAL_MONTHLY_REQUIREMENT;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.MAXIMUM_STOCK_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_NEW_PATIENTS_ADDED;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.NUMBER_OF_PATIENTS_ON_TREATMENT_NEXT_MONTH;
@@ -144,6 +146,9 @@ public class RequisitionValidationTestUtils {
     columns.put(
         ADDITIONAL_QUANTITY_REQUIRED,
         column
+    );
+    columns.put(INDIVIDUAL_MONTHLY_REQUIREMENT,
+        generateTemplateColumn(INDIVIDUAL_MONTHLY_REQUIREMENT, "TD", REFERENCE_DATA)
     );
 
     return columns;
