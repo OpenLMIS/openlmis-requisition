@@ -1,8 +1,11 @@
-8.4.0 / wip
+8.4.0 / 28.02.2025
 ==================
 Bug fixes:
 * [OLMIS-8066](https://openlmis.atlassian.net/browse/OLMIS-8066): Fix incorrect period names for emergency requisition
+* [OLMIS-7923](https://openlmis.atlassian.net/browse/OLMIS-7923): Add missing fields in requisition prints
 
+Improvements:
+* [OPSD-13](https://openlmis.atlassian.net/browse/OPSD-13): Enabling/disabling automatic adjustment on stock cards
 
 8.3.10 / 19.10.2024
 ==================
