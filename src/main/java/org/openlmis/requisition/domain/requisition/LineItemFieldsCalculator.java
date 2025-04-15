@@ -219,6 +219,23 @@ public final class LineItemFieldsCalculator {
   }
 
   /**
+   * Calculates Average Consumption (N) value and returns it.
+   * The formula is
+   * P = (N<sub>t0</sub> + N<sub>t-1</sub> + N<sub>t-2</sub> + N<sub>t-(n-1)</sub>) / (n).
+   * N = Adjusted Consumption.
+   * P = Average Consumption.
+   * n = number of periods to be averaged.
+   * t = indicates relative period (t0 = current reporting period).
+   * If no previous periods, and there is only t0 formula is P = N.
+   * If one previous period, so t0 and t-1 formula is
+   * P = Roundup( (N<sub>t0</sub> + N<sub>t-1</sub>) / 2).
+   */
+  public static int calculateAverageConsumptionForCurrentMonth(
+      Integer adjustedConsumption) {
+    return (int) Math.ceil((adjustedConsumption) / 2.0);
+  }
+
+  /**
    * Calculates Maximum Stock Quantity (H) value and returns it.
    * The formula depends on selected option:
    * default => P * MaxPeriodsOfStock

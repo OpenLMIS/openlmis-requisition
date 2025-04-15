@@ -1177,8 +1177,14 @@ public class Requisition extends BaseTimestampedEntity {
     }
 
     if (template.isColumnInTemplateAndDisplayed(AVERAGE_CONSUMPTION)) {
-      getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
-          RequisitionLineItem::calculateAndSetAverageConsumption);
+
+      if (template.isEnableAvgConsumptionForCurrentPeriod()) {
+        getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
+            RequisitionLineItem::calculateAndSetAverageConsumptionForCurrentPeriod);
+      } else {
+        getNonSkippedFullSupplyRequisitionLineItems(orderables).forEach(
+            RequisitionLineItem::calculateAndSetAverageConsumption);
+      }
     }
   }
 

@@ -80,6 +80,10 @@ public final class RequisitionTemplateDto extends BaseRequisitionTemplateDto
   @Setter
   private boolean patientsTabEnabled;
 
+  @Getter
+  @Setter
+  private boolean enableAvgConsumptionForCurrentPeriod;
+
   @Override
   @JsonIgnore
   public UUID getProgramId() {

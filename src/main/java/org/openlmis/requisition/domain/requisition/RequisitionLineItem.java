@@ -18,6 +18,7 @@ package org.openlmis.requisition.domain.requisition;
 import static org.openlmis.requisition.CurrencyConfig.currencyCode;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAdjustedConsumption;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumption;
+import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateAverageConsumptionForCurrentMonth;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantity;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateCalculatedOrderQuantityIsa;
 import static org.openlmis.requisition.domain.requisition.LineItemFieldsCalculator.calculateMaximumStockQuantity;
@@ -715,6 +716,15 @@ public class RequisitionLineItem extends BaseEntity {
   /**
    * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
    */
+  void calculateAndSetAverageConsumptionForCurrentPeriod() {
+    Integer calculated =
+        calculateAverageConsumptionForCurrentMonth(getAdjustedConsumption());
+    setAverageConsumption(calculated);
+  }
+
+  /**
+   * Sets appropriate value for Average Consumption field in {@link RequisitionLineItem}.
+   */
   void calculateAndSetAverageConsumption() {
     List<Integer> previous = new ArrayList<>(getPreviousAdjustedConsumptions());
     previous.add(getAdjustedConsumption());
@@ -728,7 +738,12 @@ public class RequisitionLineItem extends BaseEntity {
   private void calculateAndSetAverageConsumption(RequisitionTemplate template) {
     if (template.isColumnInTemplate(AVERAGE_CONSUMPTION)) {
       Integer averageConsumptionPassed = this.getAverageConsumption();
-      calculateAndSetAverageConsumption();
+
+      if (template.isEnableAvgConsumptionForCurrentPeriod()) {
+        calculateAndSetAverageConsumptionForCurrentPeriod();
+      } else {
+        calculateAndSetAverageConsumption();
+      }
 
       if (averageConsumptionPassed != null
           && !Objects.equals(averageConsumptionPassed, getAverageConsumption())) {

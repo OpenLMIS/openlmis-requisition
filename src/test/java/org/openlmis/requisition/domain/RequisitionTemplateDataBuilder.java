@@ -63,6 +63,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   private Set<Triple<UUID, UUID, Boolean>> templateAssignments;
   private Boolean rejectionReasonWindowVisible;
   private boolean patientsTabEnabled = false;
+  private boolean enableAvgConsumptionForCurrentPeriod = false;
 
   /**
    * Builder for {@link RequisitionTemplate} class.
@@ -79,7 +80,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
     columnsMap = new HashMap<>();
     rejectionReasonWindowVisible = false;
     patientsTabEnabled = false;
-
+    enableAvgConsumptionForCurrentPeriod = false;
     templateAssignments = new HashSet<>();
   }
 
@@ -100,7 +101,7 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
   public RequisitionTemplate build() {
     RequisitionTemplate template = new RequisitionTemplate(id, numberOfPeriodsToAverage,
         populateStockOnHandFromStockCards, name, columnsMap, new HashSet<>(),
-            rejectionReasonWindowVisible);
+            rejectionReasonWindowVisible, enableAvgConsumptionForCurrentPeriod);
     template.setCreatedDate(createdDate);
     template.setModifiedDate(modifiedDate);
     template.setPatientsTabEnabled(patientsTabEnabled);

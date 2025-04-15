@@ -103,6 +103,9 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   @Getter
   private boolean requisitionReportingOnly = false;
 
+  @Getter
+  private boolean enableAvgConsumptionForCurrentPeriod;
+
   @ElementCollection(fetch = FetchType.LAZY)
   @MapKeyColumn(name = "key")
   @Column(name = "value")
@@ -139,7 +142,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
   private boolean patientsTabEnabled = false;
 
   RequisitionTemplate(UUID id) {
-    this(id, null, false, null, null, null, false);
+    this(id, null, false, null, null, null, false, false);
   }
 
   /**
@@ -148,7 +151,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
    * @param columns Columns to appear in requisition template.
    */
   public RequisitionTemplate(Map<String, RequisitionTemplateColumn> columns) {
-    this(null, null, false, null, columns, null, false);
+    this(null, null, false, null, columns, null, false, false);
   }
 
   /**
@@ -159,13 +162,15 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
                              String name,
                              Map<String, RequisitionTemplateColumn> columnsMap,
                              Set<RequisitionTemplateAssignment> templateAssignments,
-                             boolean rejectionReasonWindowVisible) {
+                             boolean rejectionReasonWindowVisible,
+                             boolean enableAvgConsumptionForCurrentPeriod) {
     setId(id);
 
     this.numberOfPeriodsToAverage = numberOfPeriodsToAverage;
     this.populateStockOnHandFromStockCards = populateStockOnHandFromStockCards;
     this.name = name;
     this.rejectionReasonWindowVisible = rejectionReasonWindowVisible;
+    this.enableAvgConsumptionForCurrentPeriod = enableAvgConsumptionForCurrentPeriod;
 
     addColumns(columnsMap);
     addAssignments(templateAssignments);
@@ -194,6 +199,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.facilityTypeIds = new HashSet<>();
     this.facilityTypeIds.addAll(source.facilityTypeIds);
     this.requisitionReportOnly = source.requisitionReportOnly;
+    this.enableAvgConsumptionForCurrentPeriod = source.enableAvgConsumptionForCurrentPeriod;
   }
 
   /**
@@ -376,6 +382,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     this.name = requisitionTemplate.name;
     this.rejectionReasonWindowVisible = requisitionTemplate.rejectionReasonWindowVisible;
     this.patientsTabEnabled = requisitionTemplate.patientsTabEnabled;
+    this.enableAvgConsumptionForCurrentPeriod = requisitionTemplate
+        .enableAvgConsumptionForCurrentPeriod;
 
     addColumns(requisitionTemplate.columnsMap);
     addAssignments(requisitionTemplate.templateAssignments);
@@ -466,7 +474,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     RequisitionTemplate template = new RequisitionTemplate(
         importer.getId(), importer.getNumberOfPeriodsToAverage(),
         importer.isPopulateStockOnHandFromStockCards(), importer.getName(),
-        columns, new HashSet<>(), importer.isRejectionReasonWindowVisible()
+        columns, new HashSet<>(), importer.isRejectionReasonWindowVisible(),
+        importer.isEnableAvgConsumptionForCurrentPeriod()
     );
     template.setCreatedDate(importer.getCreatedDate());
     template.setModifiedDate(importer.getModifiedDate());
@@ -501,6 +510,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     exporter.setRejectionReasonWindowVisible(rejectionReasonWindowVisible);
     exporter.setRequisitionReportOnly(requisitionReportOnly);
     exporter.setPatientsTabEnabled(patientsTabEnabled);
+    exporter.setEnableAvgConsumptionForCurrentPeriod(enableAvgConsumptionForCurrentPeriod);
   }
 
   @PostLoad
@@ -640,6 +650,8 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     Boolean getRequisitionReportOnly();
 
     boolean isPatientsTabEnabled();
+
+    boolean isEnableAvgConsumptionForCurrentPeriod();
   }
 
   public interface Exporter {
@@ -664,5 +676,7 @@ public class RequisitionTemplate extends BaseTimestampedEntity {
     void setRequisitionReportOnly(Boolean requisitionReportOnly);
 
     void setPatientsTabEnabled(boolean patientsTabEnabled);
+
+    void setEnableAvgConsumptionForCurrentPeriod(boolean enableAvgConsumptionForCurrentPeriod);
   }
 }

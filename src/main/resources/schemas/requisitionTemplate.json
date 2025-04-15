@@ -57,6 +57,10 @@
     "requisitionReportingOnly": {
       "type": "boolean",
       "title": "requisitionReportingOnly"
+    },
+    "enableAvgConsumptionForCurrentPeriod": {
+      "type": "boolean",
+      "title": "enableAvgConsumptionForCurrentPeriod"
     }
   }
 }
