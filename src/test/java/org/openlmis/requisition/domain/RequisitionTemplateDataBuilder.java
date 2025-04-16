@@ -283,6 +283,15 @@ public class RequisitionTemplateDataBuilder implements DataBuilder<RequisitionTe
             Sets.asSet(SourceType.USER_INPUT), "tag1", true);
   }
 
+  /**
+   * Set populateStockOnHandFromStockCards flag. If builder contains stock based columns,
+   * the method will modify the source to {@link SourceType#STOCK_CARDS}.
+   */
+  public RequisitionTemplateDataBuilder withEnableAvgConsumptionForCurrentPeriod() {
+    enableAvgConsumptionForCurrentPeriod = true;
+    return this;
+  }
+
   public RequisitionTemplateDataBuilder withColumn(String name, String indicator,
                                                    SourceType source,
                                                    Set<SourceType> sources) {

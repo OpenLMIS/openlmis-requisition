@@ -658,4 +658,16 @@ public class LineItemFieldsCalculatorTest {
     assertEquals(new Integer(10), calculateStockBasedAverageConsumption(
         stockCardRangeSummaryDto, orderableId, template, periods, 10));
   }
+
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentMonth() {
+    RequisitionLineItem requisitionLineItem = new RequisitionLineItemDataBuilder()
+        .withAdjustedConsumption(200)
+        .build();
+
+    assertEquals(100, LineItemFieldsCalculator
+        .calculateAverageConsumptionForCurrentMonth(
+            requisitionLineItem.getAdjustedConsumption()));
+  }
+
 }
