@@ -232,6 +232,11 @@ public final class LineItemFieldsCalculator {
    */
   public static int calculateAverageConsumptionForCurrentMonth(
       Integer adjustedConsumption) {
+
+    if (adjustedConsumption == null) {
+      return 0;
+    }
+
     return (int) Math.ceil((adjustedConsumption) / 2.0);
   }
 

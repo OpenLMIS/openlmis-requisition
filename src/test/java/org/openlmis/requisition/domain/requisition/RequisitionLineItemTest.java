@@ -691,6 +691,56 @@ public class RequisitionLineItemTest {
     assertEquals(new Integer(51), item.getAverageConsumption());
   }
 
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentPeriodWithNonNullValue() {
+    // given
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withAdjustedConsumption(10)
+        .build();
+
+    // when
+    item.calculateAndSetAverageConsumptionForCurrentPeriod();
+
+    // then
+    assertEquals(5, item.getAverageConsumption().intValue());
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentPeriodWithNullValue() {
+    // given
+    RequisitionLineItem item = new RequisitionLineItemDataBuilder()
+        .withAdjustedConsumption(null)
+        .build();
+    // when
+    item.calculateAndSetAverageConsumptionForCurrentPeriod();
+    // then
+    assertEquals(0, item.getAverageConsumption().intValue());
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentMonthWithEvenNumber() {
+    // when
+    int result = LineItemFieldsCalculator.calculateAverageConsumptionForCurrentMonth(10);
+    // then
+    assertEquals(5, result);
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentMonthWithOddNumber() {
+    // when
+    int result = LineItemFieldsCalculator.calculateAverageConsumptionForCurrentMonth(11);
+    // then
+    assertEquals(6, result);
+  }
+
+  @Test
+  public void shouldCalculateAverageConsumptionForCurrentMonthWithZero() {
+    // when
+    int result = LineItemFieldsCalculator.calculateAverageConsumptionForCurrentMonth(0);
+    // then
+    assertEquals(0, result);
+  }
+
   private void checkResultsOfConstruction(RequisitionLineItem item) {
     assertEquals(initiatedRequisition, item.getRequisition());
     assertEquals(orderableId, item.getOrderable().getId());
