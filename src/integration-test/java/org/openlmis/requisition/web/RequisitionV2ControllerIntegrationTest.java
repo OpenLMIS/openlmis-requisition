@@ -18,11 +18,11 @@ package org.openlmis.requisition.web;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyListOf;
+import static org.mockito.ArgumentMatchers.anySetOf;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -155,7 +155,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .then()
         .statusCode(HttpStatus.CREATED.value())
         .extract()
-        .as(RequisitionV2Dto.class);
+            .as(RequisitionV2Dto.class);
 
     // then
     assertEquals(requisition.getId(), result.getId());

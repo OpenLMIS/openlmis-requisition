@@ -19,7 +19,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;

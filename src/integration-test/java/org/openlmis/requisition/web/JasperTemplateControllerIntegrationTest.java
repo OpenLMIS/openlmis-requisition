@@ -18,10 +18,10 @@ package org.openlmis.requisition.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -61,7 +61,7 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   @Test
   public void shouldGetAllTemplates() {
     // given
-    JasperTemplate[] templates = { generateTemplate(), generateTemplate(), generateTemplate() };
+    JasperTemplate[] templates = {generateTemplate(), generateTemplate(), generateTemplate()};
     given(jasperTemplateRepository.findAll()).willReturn(Arrays.asList(templates));
 
     // when

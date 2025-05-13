@@ -21,9 +21,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -281,7 +281,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .then()
         .statusCode(200)
         .extract()
-        .as(RequisitionTemplateDto.class);
+            .as(RequisitionTemplateDto.class);
 
     // then
     assertEquals(template.getId(), result.getId());
@@ -317,7 +317,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .then()
         .statusCode(200)
         .extract()
-        .as(RequisitionTemplateDto.class);
+            .as(RequisitionTemplateDto.class);
 
     // then
     assertThat(result.getId(), is(not(template.getId())));
@@ -351,7 +351,7 @@ public class RequisitionTemplateControllerIntegrationTest extends BaseWebIntegra
         .then()
         .statusCode(200)
         .extract()
-        .as(RequisitionTemplateDto.class);
+            .as(RequisitionTemplateDto.class);
 
     // then
     assertEquals(templateDto.getProgramId(), result.getProgramId());
