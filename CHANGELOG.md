@@ -1,5 +1,9 @@
-8.4.1 / wip
+8.4.1 / 16.05.2025
 ==================
+
+Improvements:
+* added enableAvgConsumptionForCurrentPeriod to enable calculation of average consumption based on current reporting
+  consumption
 
 8.4.0 / 28.02.2025
 ==================
