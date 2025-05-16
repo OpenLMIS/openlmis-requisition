@@ -19,11 +19,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -333,8 +333,8 @@ public abstract class BaseWebIntegrationTest {
         .withStatus(requisitionStatus)
         .withEmergency(true)
         .withNumberOfMonthsInPeriod(1)
-        .withProcessingPeriodId(generateProcessingPeriod())
-        .withTemplate(generateRequisitionTemplate())
+            .withProcessingPeriodId(generateProcessingPeriod())
+            .withTemplate(generateRequisitionTemplate())
         .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
 
@@ -358,13 +358,13 @@ public abstract class BaseWebIntegrationTest {
         .withOrderable(UUID.randomUUID(), 1L)
         .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
-        .build();
+            .build();
 
     RequisitionLineItem lineItem2 = new RequisitionLineItemDataBuilder()
         .withOrderable(UUID.randomUUID(), 1L)
         .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
         .withRequisition(requisition)
-        .build();
+            .build();
 
     return Lists.newArrayList(lineItem1, lineItem2);
   }
@@ -398,7 +398,7 @@ public abstract class BaseWebIntegrationTest {
     wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
         .willReturn(aResponse()
             .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
+                .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
 
   }
 

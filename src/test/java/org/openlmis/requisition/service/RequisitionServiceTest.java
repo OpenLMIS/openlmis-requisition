@@ -25,16 +25,15 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hibernate.validator.internal.util.CollectionHelper.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySetOf;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1937,8 +1936,8 @@ public class RequisitionServiceTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(permissionStringsHandler);
     when(permissionStringsHandler.get())
-        .thenReturn(asSet(
-            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId())));
+        .thenReturn(new HashSet<>(Arrays.asList(
+            PermissionStringDto.create(ORDERS_EDIT, facility.getId(), program.getId()))));
     when(supplyLineReferenceDataService.search(singleton(facility.getId()), program.getId()))
         .thenReturn(singletonList(supplyLine));
   }

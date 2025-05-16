@@ -26,15 +26,15 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyCollectionOf;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyListOf;
+import static org.mockito.ArgumentMatchers.anyMapOf;
+import static org.mockito.ArgumentMatchers.anySetOf;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -563,8 +563,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .post(SUBMIT_URL)
         .then()
         .statusCode(200)
-        .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
-        .extract().as(BasicRequisitionDto.class);
+            .header(HttpHeaders.LOCATION, BASE_URL + RESOURCE_URL + '/' + requisition.getId())
+            .extract().as(BasicRequisitionDto.class);
 
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, null);
     verify(processedRequestsRedisRepository, times(1)).addOrUpdate(key, requisition.getId());
@@ -632,7 +632,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -666,8 +666,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // then
     verify(requisition, never()).submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyUuid(), anyBoolean(),
-        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
-        any(Profiler.class));
+            any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+            any(Profiler.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -694,8 +694,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     // then
     verify(requisition, never()).submit(anyMapOf(VersionIdentityDto.class, OrderableDto.class),
         anyUuid(), anyBoolean(),
-        any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
-        any(Profiler.class));
+            any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
+            any(Profiler.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -840,7 +840,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1017,7 +1017,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     given(requisitionService.reject(eq(requisition), eq(emptyMap()), eq(emptyList()),
         any(ProcessingPeriodDto.class), any(RequisitionService.class), any(PeriodService.class),
         any(Profiler.class)))
-            .willReturn(requisition);
+        .willReturn(requisition);
     doReturn(ValidationResult.success())
         .when(permissionService).canApproveRequisition(requisition);
 
@@ -1032,7 +1032,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1235,7 +1235,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1389,7 +1389,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         mockValidationException(MessageKeys.ERROR_INCORRECT_SUGGESTED_PERIOD);
     given(requisitionService
         .initiate(eq(program), eq(facility), eq(period), eq(false),
-            anyListOf(StockAdjustmentReason.class), any(RequisitionTemplate.class),
+        anyListOf(StockAdjustmentReason.class), any(RequisitionTemplate.class),
             any(ApproveProductsAggregator.class)))
         .willThrow(err);
 
@@ -1494,7 +1494,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .when(requisitionService)
         .initiate(eq(program), eq(facility), eq(period), eq(false),
             anyListOf(StockAdjustmentReason.class), eq(requisition.getTemplate()),
-                any(ApproveProductsAggregator.class));
+            any(ApproveProductsAggregator.class));
     mockValidationSuccess();
 
     // when
@@ -1607,7 +1607,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     // then
     verify(requisitionService, never())
@@ -1709,7 +1709,7 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .then()
         .statusCode(400)
         .body(MESSAGE,
-            equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
+        equalTo(getMessage(MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT, wrongFormatKey)));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -1824,10 +1824,10 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
         .flatMap(Collection::stream)
         .map(line -> new OrderableDtoDataBuilder()
             .withId(line.getOrderable().getId())
-            .withVersionNumber(line.getOrderable().getVersionNumber())
+                .withVersionNumber(line.getOrderable().getVersionNumber())
             .withProgramOrderable(line.getRequisition().getProgramId(), true)
             .buildAsDto())
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     given(requisitionService.searchRequisitions(
         any(RequisitionSearchParams.class), any(Pageable.class)))

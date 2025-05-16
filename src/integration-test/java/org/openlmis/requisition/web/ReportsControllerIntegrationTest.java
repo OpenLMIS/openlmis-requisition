@@ -16,8 +16,8 @@
 package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -176,12 +176,12 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     List<RequisitionLineItemDto> fullSupply = IntStream
         .range(1, 3)
         .mapToObj(idx -> generateValidRequisitionLineItemDto(programId))
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     List<RequisitionLineItemDto> nonFullSupply = IntStream
         .range(1, 5)
         .mapToObj(idx -> generateValidRequisitionLineItemDto(programId))
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     List<RequisitionLineItemDto> items = Stream
         .concat(fullSupply.stream(), nonFullSupply.stream())
@@ -217,7 +217,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
         .withEmergency(false)
         .withSupplyingFacilityId(UUID.randomUUID())
         .withSupervisoryNodeId(UUID.randomUUID())
-        .buildAsDto();
+            .buildAsDto();
     requisition.setRequisitionLineItems(items);
     requisition.setFacility(generateValidFacilityDto(programId));
     requisition.setProgram(generateValidProgramDto(programId));
@@ -264,7 +264,7 @@ public class ReportsControllerIntegrationTest extends BaseWebIntegrationTest {
     FacilityOperatorDto operator = new FacilityOperatorDtoDataBuilder().buildAsDto();
     List<SupportedProgramDto> programs = Stream.of(supportedPrograms)
         .map(this::generateValidSupportedProgramDto)
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     return new FacilityDtoDataBuilder()
         .withGoLiveDate(LocalDate.MIN)

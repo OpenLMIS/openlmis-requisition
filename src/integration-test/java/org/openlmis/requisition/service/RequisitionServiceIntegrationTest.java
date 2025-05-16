@@ -22,9 +22,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -360,7 +360,7 @@ public class RequisitionServiceIntegrationTest {
       List<ReleasableRequisitionDto> requisitions) {
     ReleasableRequisitionBatchDto batch = new ReleasableRequisitionBatchDtoDataBuilder()
         .withRequisitionsToRelease(requisitions)
-        .buildAsDto();
+            .buildAsDto();
     batch.setCreateOrder(true);
     return batch;
   }
@@ -381,7 +381,7 @@ public class RequisitionServiceIntegrationTest {
         urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
         .willReturn(aResponse()
             .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
+                .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
   }
 
   private UserDto mockUserAuthenticated() {

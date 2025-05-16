@@ -59,8 +59,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.JasperTemplateParameter;
@@ -148,7 +148,8 @@ public class JasperTemplateServiceTest {
     jasperTemplate.setName("Name");
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage(ERROR_REPORTING_TEMPLATE_EXIST);
-    when(jasperTemplateRepository.findByName(Matchers.anyObject())).thenReturn(jasperTemplate);
+    when(jasperTemplateRepository.findByName(ArgumentMatchers.anyObject()))
+        .thenReturn(jasperTemplate);
 
     jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, null);
   }
