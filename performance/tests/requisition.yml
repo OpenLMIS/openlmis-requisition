@@ -1,15 +1,22 @@
 execution:
-  - concurrency: 1
+  - concurrency: 10
     iterations: 10
     scenario: requisition-workflow
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 150
+    ramp-up: 10m
+    hold-for: 50m
+    scenario: requisition-workflow
+  - concurrency: 10
+    iterations: 10
+    scenario: requisition-workflow
+  - concurrency: 10
+    iterations: 10
     scenario: search-one-page
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
     scenario: get-requisitions-for-approval
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
     scenario: get-requisitions-for-convert
 
 scenarios:
@@ -150,6 +157,7 @@ scenarios:
         label: RejectRequisition
         headers:
           Authorization: Bearer ${access_token}
+          Content-Type: application/json
   approve-requisition:
     requests:
       - url: ${__P(base-uri)}/api/requisitions/${requisition_id}/approve
@@ -207,6 +215,8 @@ scenarios:
       emergency: false
       # SCH001
       schedule_id: 9c15bd6e-3f6b-4b91-b53a-36c199d35eac
+      emergency: false
+    think-time: ~45s
     requests:
       - include-scenario: get-user-token
       - include-scenario: get-period-for-initiate
@@ -223,6 +233,7 @@ scenarios:
       - include-scenario: get-supplying-depot
       - include-scenario: convert-to-order
   search-one-page:
+    think-time: ~60s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/requisitions/search?page=0&size=10
@@ -232,6 +243,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   get-requisitions-for-approval:
+    think-time: ~60s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/requisitions/requisitionsForApproval?page=0&size=10
@@ -241,6 +253,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   get-requisitions-for-convert:
+      think-time: ~60s
       requests:
         - include-scenario: get-user-token
         - url: ${__P(base-uri)}/api/requisitions/requisitionsForConvert?page=0&size=10
@@ -251,17 +264,48 @@ scenarios:
             Content-Type: application/json
 
 reporting:
-    - module: passfail
-      criteria:
-        90% of get requisition for convert fail to get in 5000 milliseconds: p90 of GetAPageOfTenRequisitionsForConvert>5000ms
-        90% of get periods for initiate fail to get in 7000 milliseconds: p90 of GetPeriodsForInitiate>7000ms
-        90% of initiate requisition fail to get in 15000 milliseconds: p90 of InitiateRequisition>15000ms
-        90% of get requisition to update fail to get in 5000 milliseconds: p90 of GetRequisitionToUpdate>5000ms
-        90% of update requisition fail to get in 3000 milliseconds: p90 of UpdateRequisition>3000ms
-        90% of submit requisition fail to get in 2000 milliseconds: p90 of SubmitRequisition>2000ms
-        90% of authorize requisition fail to get in 5000 milliseconds: p90 of AuthorizeRequisition>5000ms
-        90% of reject requisition fail to get in 10000 milliseconds: p90 of RejectRequisition>10000ms
-        90% of approve requisition fail to get in 60000 milliseconds: p90 of ApproveRequisition>70000ms
-        90% of get supplying depot for facility fail to get in 8000 milliseconds: p90 of GetSupplyingDepotForFacility>8000ms
-        90% of convert requisition to order fail to get in 20000 milliseconds: p90 of ConvertRequisitionToOrder>20000ms
-        90% of delete requisition fail to get in 5000 milliseconds: p90 of DeleteRequisition>5000ms
+  - module: passfail
+    criteria:
+      - 'p90<=5000ms, continue as passed, label=GetPeriodsForInitiate, title="Get Periods for Initiate is successful"'
+      - 'p90>5000ms and p90<=7000ms, continue as passed, label=GetPeriodsForInitiate, title="Get Periods for Initiate needs improvement"'
+      - 'p90>7000ms, continue as failed, label=GetPeriodsForInitiate, title="Get Periods for Initiate is too high"'
+
+      - 'p90<=10000ms, continue as passed, label=InitiateRequisition, title="Initiate Requisition is successful"'
+      - 'p90>10000ms and p90<=15000ms, continue as passed, label=InitiateRequisition, title="Initiate Requisition needs improvement"'
+      - 'p90>15000ms, continue as failed, label=InitiateRequisition, title="Initiate Requisition is too high"'
+
+      - 'p90<=3000ms, continue as passed, label=GetRequisitionToUpdate, title="Get Requisition to Update is successful"'
+      - 'p90>3000ms and p90<=5000ms, continue as passed, label=GetRequisitionToUpdate, title="Get Requisition to Update needs improvement"'
+      - 'p90>5000ms, continue as failed, label=GetRequisitionToUpdate, title="Get Requisition to Update is too high"'
+
+      - 'p90<=2000ms, continue as passed, label=UpdateRequisition, title="Update Requisition is successful"'
+      - 'p90>2000ms and p90<=3000ms, continue as passed, label=UpdateRequisition, title="Update Requisition needs improvement"'
+      - 'p90>3000ms, continue as failed, label=UpdateRequisition, title="Update Requisition is too high"'
+
+      - 'p90<=1500ms, continue as passed, label=SubmitRequisition, title="Submit Requisition is successful"'
+      - 'p90>1500ms and p90<=2000ms, continue as passed, label=SubmitRequisition, title="Submit Requisition needs improvement"'
+      - 'p90>2000ms, continue as failed, label=SubmitRequisition, title="Submit Requisition is too high"'
+
+      - 'p90<=3000ms, continue as passed, label=AuthorizeRequisition, title="Authorize Requisition is successful"'
+      - 'p90>3000ms and p90<=5000ms, continue as passed, label=AuthorizeRequisition, title="Authorize Requisition needs improvement"'
+      - 'p90>5000ms, continue as failed, label=AuthorizeRequisition, title="Authorize Requisition is too high"'
+
+      - 'p90<=7000ms, continue as passed, label=RejectRequisition, title="Reject Requisition is successful"'
+      - 'p90>7000ms and p90<=10000ms, continue as passed, label=RejectRequisition, title="Reject Requisition needs improvement"'
+      - 'p90>10000ms, continue as failed, label=RejectRequisition, title="Reject Requisition is too high"'
+
+      - 'p90<=50000ms, continue as passed, label=ApproveRequisition, title="Approve Requisition is successful"'
+      - 'p90>50000ms and p90<=70000ms, continue as passed, label=ApproveRequisition, title="Approve Requisition needs improvement"'
+      - 'p90>70000ms, continue as failed, label=ApproveRequisition, title="Approve Requisition is too high"'
+
+      - 'p90<=5000ms, continue as passed, label=GetSupplyingDepotForFacility, title="Get Supplying Depot is successful"'
+      - 'p90>5000ms and p90<=8000ms, continue as passed, label=GetSupplyingDepotForFacility, title="Get Supplying Depot needs improvement"'
+      - 'p90>8000ms, continue as failed, label=GetSupplyingDepotForFacility, title="Get Supplying Depot is too high"'
+
+      - 'p90<=15000ms, continue as passed, label=ConvertRequisitionToOrder, title="Convert Requisition to Order is successful"'
+      - 'p90>15000ms and p90<=20000ms, continue as passed, label=ConvertRequisitionToOrder, title="Convert Requisition to Order needs improvement"'
+      - 'p90>20000ms, continue as failed, label=ConvertRequisitionToOrder, title="Convert Requisition to Order is too high"'
+
+      - 'p90<=3000ms, continue as passed, label=DeleteRequisition, title="Delete Requisition is successful"'
+      - 'p90>3000ms and p90<=5000ms, continue as passed, label=DeleteRequisition, title="Delete Requisition needs improvement"'
+      - 'p90>5000ms, continue as failed, label=DeleteRequisition, title="Delete Requisition is too high"'
