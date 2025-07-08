@@ -152,8 +152,6 @@ public class Application {
         .withSchema(preferredSchema)
         .build();
 
-    JaVersDateProvider customDateProvider = new JaVersDateProvider();
-
     return TransactionalJaversBuilder
         .javers()
         .withTxManager(transactionManager)
@@ -167,7 +165,6 @@ public class Application {
         .withPrettyPrint(javersProperties.isPrettyPrint())
         .withTypeSafeValues(javersProperties.isTypeSafeValues())
         .withPackagesToScan(javersProperties.getPackagesToScan())
-        .withDateTimeProvider(customDateProvider)
         .build();
   }
 

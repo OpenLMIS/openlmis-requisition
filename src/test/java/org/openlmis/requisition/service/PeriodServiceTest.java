@@ -96,6 +96,7 @@ public class PeriodServiceTest {
   private UUID requisitionId = UUID.randomUUID();
 
   private ProcessingPeriodDto currentPeriod;
+  private ProcessingPeriodDto suggestedPeriod;
   private ProcessingPeriodDto period1;
   private ProcessingPeriodDto period2;
   private ProcessingPeriodDto period3;
@@ -115,6 +116,7 @@ public class PeriodServiceTest {
     period2 = createPeriod(2);
     period3 = createPeriod(3);
     period4 = createPeriod(4);
+    suggestedPeriod = createPeriod(5);
   }
 
   @Test
@@ -285,7 +287,7 @@ public class PeriodServiceTest {
     mockSupportedProgramStartDateNotSet();
 
     RequisitionPeriod requisitionPeriodInitiated =
-        createRequisitionPeriod(UUID.randomUUID(), INITIATED, currentPeriod.getId());
+        createRequisitionPeriod(UUID.randomUUID(), INITIATED, period1.getId());
     RequisitionPeriod requisitionPeriodSubmitted =
         createRequisitionPeriod(UUID.randomUUID(), SUBMITTED, currentPeriod.getId());
 
@@ -293,21 +295,30 @@ public class PeriodServiceTest {
         .when(requisitionRepository)
         .searchRequisitionIdAndStatusPairs(facilityId, programId, true);
 
+    doReturn(Arrays.asList(currentPeriod, period1))
+        .when(periodReferenceDataService)
+        .search(any());
+
     Collection<RequisitionPeriodDto> periods =
         periodService.getPeriods(programId, facilityId, true);
 
     assertNotNull(periods);
     assertThat(periods, hasSize(3));
 
-    for (RequisitionPeriodDto period : periods) {
-      assertEquals(currentPeriod.getId(), period.getId());
-    }
+    List<String> periodNames = periods
+            .stream()
+            .map(RequisitionPeriodDto::getName)
+            .collect(Collectors.toList());
+    assertTrue(periodNames.contains(currentPeriod.getName()));
+    assertTrue(periodNames.contains(period1.getName()));
+
     List<UUID> requisitionIds = periods
         .stream()
         .map(RequisitionPeriodDto::getRequisitionId)
         .collect(Collectors.toList());
     assertTrue(requisitionIds.contains(requisitionPeriodInitiated.getRequisitionId()));
     assertTrue(requisitionIds.contains(requisitionPeriodSubmitted.getRequisitionId()));
+
     // should allow to initiate another requisition for the same period
     assertTrue(requisitionIds.contains(null));
   }
@@ -404,9 +415,32 @@ public class PeriodServiceTest {
 
     mockSupportedProgramStartDateNotSet();
     when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
-        .thenReturn(Lists.newArrayList(currentPeriod));
+        .thenReturn(null);
 
     periodService.findPeriod(programId, facilityId, UUID.randomUUID(), false);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfPeriodHasNoSuggestedPeriod() {
+    ProcessingScheduleDto processingScheduleDto = new ProcessingScheduleDtoDataBuilder()
+        .buildAsDto();
+
+    currentPeriod.setProcessingSchedule(processingScheduleDto);
+    currentPeriod.setId(UUID.randomUUID());
+    suggestedPeriod.setProcessingSchedule(processingScheduleDto);
+    suggestedPeriod.setId(UUID.randomUUID());
+
+    mockSupportedProgramStartDateNotSet();
+    when(periodReferenceDataService.searchByProgramAndFacility(programId, facilityId))
+        .thenReturn(Lists.newArrayList(currentPeriod));
+
+    when(periodService.getPeriod(suggestedPeriod.getId()))
+        .thenReturn(suggestedPeriod);
+
+    ProcessingPeriodDto period = periodService
+        .findPeriod(programId, facilityId, suggestedPeriod.getId(), false);
+
+    assertEquals(suggestedPeriod, period);
   }
 
   @Test(expected = ValidationMessageException.class)

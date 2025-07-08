@@ -218,8 +218,9 @@ public abstract class BaseRequisitionController extends BaseController {
     facilitySupportsProgramHelper.checkIfFacilitySupportsProgram(facility, programId);
 
     profiler.start("FIND_PROCESSING_PERIOD");
+
     ProcessingPeriodDto period = periodService
-        .findPeriod(programId, facilityId, suggestedPeriod, emergency);
+          .findPeriod(programId, facilityId, suggestedPeriod, emergency);
 
     boolean reportOnly = period.isReportOnly();
 
@@ -319,6 +320,11 @@ public abstract class BaseRequisitionController extends BaseController {
     );
     Map<VersionIdentityDto, ApprovedProductDto> approvedProducts = findApprovedProducts(
         requisitionToUpdate::getAllApprovedProductIdentities, profiler);
+
+    if (Boolean.FALSE.equals(requisitionToUpdate.getEmergency())) {
+      requisition.setProcessingPeriodId(requisitionToUpdate.getProcessingPeriodId());
+      requisition.setFacilityId(requisitionToUpdate.getFacilityId());
+    }
 
     UpdateParams params = new UpdateParams(requisitionToUpdate, requisition, orderables,
         facility, program, null, approvedProducts);
@@ -702,7 +708,8 @@ public abstract class BaseRequisitionController extends BaseController {
     void updateAndSave(Profiler profiler) {
       profiler.start("UPDATE");
       toUpdate.updateFrom(requisition, orderables, approvedProducts,
-          datePhysicalStockCountCompletedEnabledPredicate.exec(program), null, null);
+          datePhysicalStockCountCompletedEnabledPredicate.exec(program),
+          requisitionService, periodService);
 
       profiler.start("SAVE");
       toUpdate = requisitionRepository.save(toUpdate);

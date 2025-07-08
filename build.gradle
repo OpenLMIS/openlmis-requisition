@@ -50,7 +50,7 @@ dependencies {
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     compile "net.sf.jasperreports:jasperreports:6.5.1"
     compile "org.apache.poi:poi:3.15"
-    compile "org.postgresql:postgresql:42.2.6"
+    compile "org.postgresql:postgresql:42.6.2"
     compile "org.projectlombok:lombok"
     compile "org.slf4j:slf4j-ext"
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -64,13 +64,14 @@ dependencies {
     compile 'org.flywaydb:flyway-core'
     compile 'org.hibernate:hibernate-java8'
     compile 'org.jadira.usertype:usertype.core:7.0.0.CR1'
-    compile 'org.javers:javers-spring-boot-starter-sql:3.11.6'
+    compile 'org.javers:javers-spring-boot-starter-sql:5.13.2'
     compile 'org.joda:joda-money:0.12'
     compile 'org.openlmis:openlmis-service-util:3.0.0'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
     compile 'org.springframework:spring-context-support'
     compile 'org.webjars.npm:api-console:3.0.17'
     compile 'redis.clients:jedis'
+    compile 'com.google.guava:guava:33.3.1-jre'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
@@ -178,6 +179,7 @@ configure(checkApiIsRaml) {
 }
 
 jacocoTestReport {
+    dependsOn integrationTest, test
     group = "reporting"
     description = "Generate Jacoco coverage reports after running tests."
     reports {
@@ -186,7 +188,8 @@ jacocoTestReport {
         csv.enabled false
     }
 
-    additionalSourceDirs(files(sourceSets.main.allJava.srcDirs))
+    executionData file("$buildDir/jacoco/test.exec"), file("$buildDir/jacoco/integrationTest.exec")
+    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
 }
 
 checkstyle {

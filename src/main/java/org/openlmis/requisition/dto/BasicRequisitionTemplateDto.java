@@ -39,6 +39,8 @@ public class BasicRequisitionTemplateDto extends BaseRequisitionTemplateDto
 
   private Map<String, BasicRequisitionTemplateColumnDto> columnsMap;
 
+  private boolean enableAvgConsumptionForCurrentPeriod;
+
   /**
    * Create new list of RequisitionTemplateDto based on given list of {@link RequisitionTemplate}.
    *

@@ -351,7 +351,6 @@ public class RequisitionTemplateRepositoryIntegrationTest
   }
 
   @Test
-  @Ignore("Disabled by Team Lesotho")
   public void shouldGetActiveTemplates() {
     int size = 6; // make sure to have an even number here
     List<UUID> currentTemplates = new ArrayList<>();
