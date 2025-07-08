@@ -48,7 +48,7 @@ services:
 
   image:
     build: .
-    image: openlmis/requisition
+    image: elmislesotho/requisition
 
   db:
     image: openlmis/postgres:12-debezium
