@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.Rejection;
@@ -66,6 +67,7 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
+import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
@@ -237,7 +239,8 @@ public class RequisitionService {
             .forProgram(program.getId())
             .forFacility(facility.getId())
             .forProducts(approvedProducts)
-            .asOfDate(period.getEndDate())
+            //.asOfDate(period.getEndDate())
+            .asOfDate(LocalDate.now())
             .build()
             .get();
 
@@ -268,11 +271,20 @@ public class RequisitionService {
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
     List<ProcessingPeriodDto> previousPeriods = null;
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
+      profiler.start("GET_STOCK_CARD_RANGE_SUMMARY_1");
       stockCardRangeSummaryDtos =
               stockCardRangeSummaryStockManagementService
                       .search(program.getId(), facility.getId(),
                               approvedProducts.getOrderableIdentities(), null,
                               period.getStartDate(), period.getEndDate());
+      // LOGGER.debug("1. Period start date: {}, end date: {}",
+      //         period.getStartDate(), period.getEndDate());
+      // LOGGER.debug("1. Stock card range summaries found: {}", stockCardRangeSummaryDtos.size());
+
+      // LOGGER.debug("Approved Products: " + approvedProducts.getOrderableIdentities()
+      //                                                       .stream()
+      //                                                       .map(BaseDto::getId)
+      //                                                       .collect(Collectors.toList()));
 
       profiler.start("GET_PREVIOUS_PERIODS");
       previousPeriods = periodService
@@ -280,12 +292,18 @@ public class RequisitionService {
 
       profiler.start("FIND_IDEAL_STOCK_AMOUNTS_FOR_AVERAGE");
       if (previousPeriods.size() > 1) {
+        profiler.start("GET_STOCK_CARD_RANGE_SUMMARY_2");
         stockCardRangeSummariesToAverage =
                 stockCardRangeSummaryStockManagementService
                         .search(program.getId(), facility.getId(),
                                 approvedProducts.getOrderableIdentities(), null,
                                 previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
                                 period.getEndDate());
+        // LOGGER.debug("2. Period start date: {}, end date: {}",
+        //         previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
+        //         period.getEndDate()); 
+        // LOGGER.debug("2. Stock card range summaries found: {}",
+        //         stockCardRangeSummariesToAverage.size());
       } else {
         stockCardRangeSummariesToAverage = stockCardRangeSummaryDtos;
       }

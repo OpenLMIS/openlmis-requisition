@@ -10,3 +10,4 @@ out/
 .tx/
 node_modules/
 demo-data/*.sql
+bin/
