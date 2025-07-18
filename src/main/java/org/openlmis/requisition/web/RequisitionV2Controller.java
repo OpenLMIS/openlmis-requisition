@@ -124,11 +124,12 @@ public class RequisitionV2Controller extends BaseRequisitionController {
   @PutMapping("/{id}")
   public RequisitionV2Dto updateRequisition(@PathVariable("id") UUID requisitionId,
       @RequestBody RequisitionV2Dto requisitionDto,
+      @RequestParam(name = "override", required = false, defaultValue = "false") boolean override,
       HttpServletRequest request, HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION_V2", requisitionId, requisitionDto);
 
     UpdatePreparationResult result = doUpdatePreparation(requisitionId, requisitionDto,
-        request, profiler);
+        request, override,  profiler);
 
     Requisition requisitionToUpdate = result.getRequisitionToUpdate();
 

@@ -1,6 +1,11 @@
 Upcoming Version (WIP)
 ==================
 
+Improvements:
+* Optional `override` query parameter to `PUT /requisitions/{id}` endpoint.
+  * When `override=true`, the endpoint skips date validation during the update process.
+  * Existing ETag behavior remains unchanged.
+
 8.4.1 / 16.05.2025
 ==================
 

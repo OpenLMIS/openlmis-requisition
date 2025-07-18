@@ -251,7 +251,8 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   UpdatePreparationResult doUpdatePreparation(UUID requisitionId,
-      Requisition.Importer requisitionImporter, HttpServletRequest request, Profiler profiler) {
+      Requisition.Importer requisitionImporter, HttpServletRequest request, boolean override,
+      Profiler profiler) {
     if (null != requisitionImporter.getId()
         && !Objects.equals(requisitionImporter.getId(), requisitionId)) {
       throw new ValidationMessageException(ERROR_ID_MISMATCH);
@@ -260,9 +261,12 @@ public abstract class BaseRequisitionController extends BaseController {
     Requisition requisitionToUpdate = findRequisition(requisitionId, profiler);
 
     profiler.start("VALIDATE_TIMESTAMPS");
-    requisitionVersionValidator
-        .validateRequisitionTimestamps(requisitionImporter.getModifiedDate(), requisitionToUpdate)
-        .throwExceptionIfHasErrors();
+    if (!override) {
+      requisitionVersionValidator
+          .validateRequisitionTimestamps(requisitionImporter.getModifiedDate(),
+              requisitionToUpdate)
+          .throwExceptionIfHasErrors();
+    }
 
     checkPermission(
         profiler,

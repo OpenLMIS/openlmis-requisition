@@ -550,7 +550,7 @@ public class RequisitionControllerTest {
     RequisitionDto requisitionDto = mock(RequisitionDto.class);
     when(requisitionDto.getId()).thenReturn(uuid1);
 
-    requisitionController.updateRequisition(requisitionDto, uuid2, request, response);
+    requisitionController.updateRequisition(requisitionDto, uuid2, false, request, response);
   }
 
   @Test(expected = VersionMismatchException.class)
@@ -571,7 +571,7 @@ public class RequisitionControllerTest {
         any(ZonedDateTime.class), any(Requisition.class)))
         .thenCallRealMethod();
 
-    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
+    requisitionController.updateRequisition(requisitionDto, uuid1, false, request, response);
   }
 
   @Test
@@ -603,7 +603,7 @@ public class RequisitionControllerTest {
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(
         DtoGenerator.of(FacilityDto.class));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
+    requisitionController.updateRequisition(requisitionDto, uuid1, true, request, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
@@ -649,7 +649,7 @@ public class RequisitionControllerTest {
         any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(Collections.singletonList(stockCardRangeSummaryDto));
 
-    requisitionController.updateRequisition(requisitionDto, uuid1, request, response);
+    requisitionController.updateRequisition(requisitionDto, uuid1, false, request, response);
 
     assertEquals(template, initiatedRequsition.getTemplate());
     verify(initiatedRequsition).updateFrom(
@@ -675,7 +675,7 @@ public class RequisitionControllerTest {
         .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class));
 
     assertThatThrownBy(() -> requisitionController
-        .updateRequisition(requisitionDto, uuid1, request, response))
+        .updateRequisition(requisitionDto, uuid1, false, request, response))
         .isInstanceOf(VersionMismatchException.class);
 
     verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);

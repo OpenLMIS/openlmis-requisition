@@ -265,12 +265,13 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.OK)
   public RequisitionDto updateRequisition(@RequestBody RequisitionDto requisitionDto,
       @PathVariable("id") UUID requisitionId,
+      @RequestParam(name = "override", required = false, defaultValue = "false") boolean override,
       HttpServletRequest request,
       HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
     UpdatePreparationResult result = doUpdatePreparation(requisitionId, requisitionDto,
-        request, profiler);
+        request, override, profiler);
 
     Requisition requisitionToUpdate = result.getRequisitionToUpdate();
 
