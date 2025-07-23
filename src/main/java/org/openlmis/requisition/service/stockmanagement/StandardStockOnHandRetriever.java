@@ -16,6 +16,7 @@
 package org.openlmis.requisition.service.stockmanagement;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,10 @@ final class StandardStockOnHandRetriever implements StockOnHandRetriever {
   }
 
   private List<StockCardSummaryDto> getCards() {
+    // return stockCardSummariesService
+    //     .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate);
     return stockCardSummariesService
-        .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate);
+        .postSearch(Collections.singletonList(programId), facilityId, products.getFullSupplyOrderableIds(), asOfDate);
   }
 
   private Map<UUID, Integer> convert(List<StockCardSummaryDto> cards) {
