@@ -57,9 +57,45 @@ public class StockCardRangeSummaryStockManagementService
             .collect(Collectors.toList()))
         .set("startDate", startDate)
         .set("endDate", endDate);
+    
+    logger.debug("Searching stock card range summaries with params - orderableIdentities size: {}", orderableIdentities.size());    
 
     return getPage(params).getContent();
   }
+
+  /**
+   * Get a list of stock card range summaries based on the provided parameters.
+   *
+   * @param programId id of the program
+   * @param facilityId id of the facility
+   * @param orderableIdentities set of orderable IDs
+   * @param tag string value of the tag
+   * @param startDate start date
+   * @param endDate end date
+   * @return a paginated list of stock card range summaries
+   */
+  public List<StockCardRangeSummaryDto> postSearch(UUID programId, UUID facilityId,
+      Set<VersionIdentityDto> orderableIdentities, String tag,
+      LocalDate startDate, LocalDate endDate) {
+
+    List<UUID> orderableIds = orderableIdentities.stream()
+        .map(BaseDto::getId)
+        .collect(Collectors.toList());
+
+    StockCardRangeSummaryPostRequest payload = new StockCardRangeSummaryPostRequest();
+    payload.setProgramId(programId);
+    payload.setFacilityId(facilityId);
+    payload.setOrderableIds(orderableIds);
+    payload.setTag(tag);
+    payload.setStartDate(startDate);
+    payload.setEndDate(endDate);
+
+    RequestParameters params = RequestParameters.init()
+        .set("size", Integer.MAX_VALUE);
+
+    return getPage("", params, payload).getContent(); // this uses POST
+  }
+
 
   @Override
   protected String getUrl() {
