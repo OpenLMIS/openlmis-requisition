@@ -83,7 +83,7 @@ public class OrderableDtoDataBuilder implements DtoDataBuilder<OrderableDto> {
   public OrderableDtoDataBuilder withProgramOrderable(UUID programId, boolean fullSupply,
       Money pricePerPack, Integer orderableCategoryDisplayOrder) {
     this.programs.add(new ProgramOrderableDto(
-        programId, null, null, orderableCategoryDisplayOrder, fullSupply, null, pricePerPack
+        programId, null, null, orderableCategoryDisplayOrder, fullSupply, null, null, pricePerPack
     ));
 
     return this;

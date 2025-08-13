@@ -67,6 +67,7 @@ import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -110,6 +111,9 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
+
+  @Value("${transferDataToStockManagement.enabled}")
+  private boolean isTransferStockDataFromRequisitionToStockManagementEnabled;
 
   @Autowired
   private StockOnHandRetrieverBuilderFactory stockOnHandRetrieverBuilderFactory;
@@ -484,7 +488,8 @@ public class RequisitionController extends BaseRequisitionController {
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
     RequisitionTemplate requisitionTemplate = requisition.getTemplate();
     if (!requisitionTemplate.isPopulateStockOnHandFromStockCards()
-        && !requisitionTemplate.isPatientsTabEnabled()) {
+        && !requisitionTemplate.isPatientsTabEnabled()
+        && isTransferStockDataFromRequisitionToStockManagementEnabled) {
       submitStockEvent(requisition, user.getId(), orderables);
     }
 

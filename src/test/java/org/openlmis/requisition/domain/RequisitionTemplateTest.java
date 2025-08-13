@@ -164,6 +164,8 @@ public class RequisitionTemplateTest {
         templateDto.getNumberOfPeriodsToAverage());
     assertEquals(requisitionTemplate.isPatientsTabEnabled(),
         templateDto.isPatientsTabEnabled());
+    assertEquals(requisitionTemplate.isEnableAvgConsumptionForCurrentPeriod(),
+        templateDto.isEnableAvgConsumptionForCurrentPeriod());
   }
 
   @Test
@@ -197,6 +199,8 @@ public class RequisitionTemplateTest {
         hasItems(templateDto.getFacilityTypeIds().toArray(new UUID[0]))
     );
     assertEquals(templateDto.isPatientsTabEnabled(), newTemplate.isPatientsTabEnabled());
+    assertEquals(templateDto.isEnableAvgConsumptionForCurrentPeriod(),
+        newTemplate.isEnableAvgConsumptionForCurrentPeriod());
   }
 
   @Test
@@ -362,6 +366,27 @@ public class RequisitionTemplateTest {
     RequisitionTemplate templateCopy = new RequisitionTemplate(template);
     
     assertEquals(template, templateCopy);
+  }
+
+  @Test
+  public void shouldUpdateEnableAvgConsumptionForCurrentPeriod() {
+    //given
+    RequisitionTemplate template = new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .withEnableAvgConsumptionForCurrentPeriod()
+        .build();
+
+    RequisitionTemplateDto templateDto = new RequisitionTemplateDto();
+    requisitionTemplate.export(templateDto);
+    setColumns(templateDto, template);
+
+    // This shouldn't throw exception, even though we don't have tags
+
+    RequisitionTemplate newTemplate = RequisitionTemplate
+        .newInstance(templateDto, columnsWithTags);
+
+    assertEquals(templateDto.isEnableAvgConsumptionForCurrentPeriod(),
+        newTemplate.isEnableAvgConsumptionForCurrentPeriod());
   }
 
   private void setColumns(RequisitionTemplateDto templateDto, RequisitionTemplate template) {

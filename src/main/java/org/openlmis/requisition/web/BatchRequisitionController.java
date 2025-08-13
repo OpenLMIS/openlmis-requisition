@@ -75,6 +75,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -106,6 +107,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Value("${transferDataToStockManagement.enabled}")
+  private boolean isTransferStockDataFromRequisitionToStockManagementEnabled;
 
   /**
    * Attempts to retrieve requisitions with the provided UUIDs.
@@ -210,7 +214,9 @@ public class BatchRequisitionController extends BaseRequisitionController {
           facilities, periods, approveParams, approvedProducts);
     }
 
-    submitStockEvent(profiler, user, requisitions, orderables);
+    if (isTransferStockDataFromRequisitionToStockManagementEnabled) {
+      submitStockEvent(profiler, user, requisitions, orderables);
+    }
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
         buildResponse(processingStatus, profiler, HttpStatus.OK);

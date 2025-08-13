@@ -237,7 +237,8 @@ public class RequisitionService {
             .forProgram(program.getId())
             .forFacility(facility.getId())
             .forProducts(approvedProducts)
-            .asOfDate(period.getEndDate())
+            //.asOfDate(period.getEndDate())
+            .asOfDate(LocalDate.now())
             .build()
             .get();
 
@@ -270,7 +271,7 @@ public class RequisitionService {
     if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
       stockCardRangeSummaryDtos =
               stockCardRangeSummaryStockManagementService
-                      .search(program.getId(), facility.getId(),
+                      .postSearch(program.getId(), facility.getId(),
                               approvedProducts.getOrderableIdentities(), null,
                               period.getStartDate(), period.getEndDate());
 
@@ -282,7 +283,7 @@ public class RequisitionService {
       if (previousPeriods.size() > 1) {
         stockCardRangeSummariesToAverage =
                 stockCardRangeSummaryStockManagementService
-                        .search(program.getId(), facility.getId(),
+                        .postSearch(program.getId(), facility.getId(),
                                 approvedProducts.getOrderableIdentities(), null,
                                 previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
                                 period.getEndDate());
@@ -1143,7 +1144,7 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES_TO_AVERAGE");
     return stockCardRangeSummaryStockManagementService
-        .search(requisition.getProgramId(), requisition.getFacilityId(),
+        .postSearch(requisition.getProgramId(), requisition.getFacilityId(),
             approvedProducts.getOrderableIdentities(), null,
             startDate, period.getEndDate());
   }
@@ -1164,7 +1165,7 @@ public class RequisitionService {
 
     profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES");
     return stockCardRangeSummaryStockManagementService
-        .search(requisition.getProgramId(), requisition.getFacilityId(),
+        .postSearch(requisition.getProgramId(), requisition.getFacilityId(),
             approvedProducts.getOrderableIdentities(), null,
             period.getStartDate(), period.getEndDate());
   }

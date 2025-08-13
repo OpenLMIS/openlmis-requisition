@@ -45,6 +45,37 @@ public class StockCardSummariesStockManagementService
 
     return getPage(params).getContent();
   }
+  
+  /**
+   * Retrieves the list of stock cards summaries for the given parameters.
+   *
+   * @param facilityId       ID of the facility
+   * @param programIds       List of program IDs
+   * @param orderableIds     List of orderable IDs
+   * @param asOfDate         Date to filter stock cards as of this date
+   * @return  the list of matching stock card summaries
+   */
+  public List<StockCardSummaryDto> postSearch(List<UUID> programIds,
+                                               UUID facilityId,
+                                               Set<UUID> orderableIds,
+                                               LocalDate asOfDate) {
+
+    StockCardSummariesV2PostRequest payload = new StockCardSummariesV2PostRequest();
+    payload.setFacilityId(facilityId);
+    payload.setProgramIds(programIds);
+    payload.setOrderableIds(orderableIds);
+    payload.setOrderableName(null);
+    payload.setOrderableCode(null);
+    payload.setLotCode(null);
+    payload.setNonEmptyOnly(false);
+    payload.setAsOfDate(asOfDate);
+
+    RequestParameters params = RequestParameters.init()
+          .set("size", Integer.MAX_VALUE);
+
+    return getPage("", params, payload).getContent(); // Uses POST
+  }
+
 
   @Override
   protected String getUrl() {

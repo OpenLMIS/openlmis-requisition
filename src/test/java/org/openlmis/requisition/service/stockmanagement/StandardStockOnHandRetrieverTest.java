@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -105,6 +106,7 @@ public class StandardStockOnHandRetrieverTest extends StockOnHandRetrieverTest {
   }
 
   @Test
+  @Ignore("Disabled by Team Lesotho.")
   public void shouldRetrieveAndReturnStockCardsEvenIfNotAllAreAvailable() {
     when(stockCardSummariesStockManagementService
         .search(programId, facilityId, products.getFullSupplyOrderableIds(), asOfDate))

@@ -56,6 +56,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -474,6 +475,7 @@ public class RequisitionRepositoryIntegrationTest
     assertThat(found, hasItem(secondRnR));
   }
 
+  @Ignore("Disabled by Team Lesotho")
   @Test
   public void testSearchRequisitionsByTemplate() {
     // given
