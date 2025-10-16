@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.5.final using JasperReports Library version 6.20.5-3efcf2e67f959db3888d79f73dde2dbd7acb4f8e  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.20.6  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="requisition" pageWidth="1165" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="20" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -38,6 +38,7 @@
 	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
 		<property name="displayName" value="decimalFormat"/>
 	</parameter>
+	<parameter name="showInDoses" class="java.lang.Boolean" isForPrompting="false"/>
 	<queryString language="SQL">
 		<![CDATA[]]>
 	</queryString>
@@ -230,6 +231,9 @@
 				<subreportParameter name="currencyDecimalFormat">
 					<subreportParameterExpression><![CDATA[$P{currencyDecimalFormat}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="showInDoses">
+					<subreportParameterExpression><![CDATA[$P{showInDoses}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{fullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>
 			</subreport>
@@ -258,6 +262,9 @@
 				</subreportParameter>
 				<subreportParameter name="currencyDecimalFormat">
 					<subreportParameterExpression><![CDATA[$P{currencyDecimalFormat}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="$P{showInDoses}">
+					<subreportParameterExpression><![CDATA[]]></subreportParameterExpression>
 				</subreportParameter>
 				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($F{nonFullSupply})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport})]]></subreportExpression>

@@ -188,7 +188,7 @@ public class JasperReportsViewService {
    * @return generated report.
    * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public byte[] generateRequisitionReport(Requisition requisition)
+  public byte[] generateRequisitionReport(Requisition requisition, Boolean showInDoses)
       throws JasperReportViewException {
     RequisitionReportDto reportDto = requisitionReportDtoBuilder.build(requisition);
     RequisitionTemplate template = requisition.getTemplate();
@@ -200,6 +200,7 @@ public class JasperReportsViewService {
     params.put("template", template);
     params.put("dateFormat", dateFormat);
     params.put("decimalFormat", createDecimalFormat());
+    params.put("showInDoses", showInDoses);
     params.put("currencyDecimalFormat",
         NumberFormat.getCurrencyInstance(getLocaleFromService()));
 

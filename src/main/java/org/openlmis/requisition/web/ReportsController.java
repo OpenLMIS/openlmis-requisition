@@ -32,6 +32,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -55,7 +56,9 @@ public class ReportsController extends BaseController {
    */
   @RequestMapping(value = "/requisitions/{id}/print", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<byte[]> print(@PathVariable("id") UUID id)
+  public ResponseEntity<byte[]> print(@PathVariable("id") UUID id,
+                                      @RequestParam(required = false, defaultValue = "true")
+                                      Boolean showInDoses)
       throws JasperReportViewException {
     permissionService.canViewRequisition(id).throwExceptionIfHasErrors();
 
@@ -63,7 +66,7 @@ public class ReportsController extends BaseController {
         .orElseThrow(() -> new ContentNotFoundMessageException(
             new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id)));
 
-    byte[] bytes = jasperReportsViewService.generateRequisitionReport(requisition);
+    byte[] bytes = jasperReportsViewService.generateRequisitionReport(requisition, showInDoses);
 
     return ResponseEntity
         .ok()

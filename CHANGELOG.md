@@ -2,6 +2,7 @@ Upcoming Version (WIP)
 ==================
 
 Improvements:
+* [OE-114](https://openlmis.atlassian.net/browse/OE-114): Add packs quantities to Create/Authorize/Approve Print
 * Optional `override` query parameter to `PUT /requisitions/{id}` endpoint.
   * When `override=true`, the endpoint skips date validation during the update process.
   * Existing ETag behavior remains unchanged.

@@ -453,7 +453,8 @@ public class JasperReportsViewServiceTest {
     RequisitionReportDto requisitionReportDto = DtoGenerator.of(RequisitionReportDto.class);
     when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
 
-    byte[] reportData = service.generateRequisitionReport(requisition);
+    Boolean showInDoses = true;
+    byte[] reportData = service.generateRequisitionReport(requisition, showInDoses);
     ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
     verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
     Map<String, Object> outputParams = paramArg.getValue();
