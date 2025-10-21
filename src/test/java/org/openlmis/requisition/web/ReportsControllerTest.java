@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -72,7 +73,7 @@ public class ReportsControllerTest {
     when(permissionService.canViewRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.notFound("requisition.not.found"));
     // when
-    reportsController.print(UUID.randomUUID());
+    reportsController.print(UUID.randomUUID(), Boolean.TRUE);
   }
 
   @Test
@@ -84,12 +85,12 @@ public class ReportsControllerTest {
     when(requisitionRepository.findById(any(UUID.class)))
         .thenReturn(Optional.of(mock(Requisition.class)));
     when(jasperReportsViewService.generateRequisitionReport(
-        any(Requisition.class))).thenReturn(reportData);
+        any(Requisition.class), anyBoolean())).thenReturn(reportData);
     when(permissionService.canViewRequisition(any(UUID.class)))
         .thenReturn(ValidationResult.success());
 
     // when
-    byte[] actualReportData = reportsController.print(UUID.randomUUID()).getBody();
+    byte[] actualReportData = reportsController.print(UUID.randomUUID(), Boolean.TRUE).getBody();
 
     // then
     assertEquals(reportData, actualReportData);
