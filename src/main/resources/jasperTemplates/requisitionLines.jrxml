@@ -769,7 +769,16 @@
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getIsDisplayed() && $F{totalLossesAndAdjustments} != null ? $P{decimalFormat}.format($F{totalLossesAndAdjustments}).toString() : null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalLossesAndAdjustments").getIsDisplayed() && $F{totalLossesAndAdjustments} != null ?
+				(
+	                $P{showInDoses}
+                          ? $P{decimalFormat}.format($F{totalLossesAndAdjustments}).toString()
+                          : (
+                              ($F{totalLossesAndAdjustments} / ($V{netContent} == null ? 1 : $V{netContent}))
+                              + " (+" + ($F{totalLossesAndAdjustments} % ($V{netContent} == null ? 1 : $V{netContent})) + ")"
+                              )
+                ).toString() : null]]>
+                </textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="stockOnHand" x="274" y="0" width="32" height="25" uuid="0185ea38-1d83-4eed-929f-508e1ffe010c">
@@ -1183,7 +1192,16 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalRequirement").getIsDisplayed() && $F{totalRequirement} != null ? $P{decimalFormat}.format($F{totalRequirement}).toString() :  null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalRequirement").getIsDisplayed() && $F{totalRequirement} != null ?
+				(
+	                $P{showInDoses}
+                          ? $P{decimalFormat}.format($F{totalRequirement}).toString()
+                          : (
+                              ($F{totalRequirement} / ($V{netContent} == null ? 1 : $V{netContent}))
+                              + " (+" + ($F{totalRequirement} % ($V{netContent} == null ? 1 : $V{netContent})) + ")"
+                              )
+                ).toString() : null]]>
+                </textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="totalQuantityNeededByHf" x="1010" y="0" width="29" height="25" uuid="c2816bc0-b4c9-4ba3-8586-fb56bfecac57">
@@ -1200,7 +1218,16 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalQuantityNeededByHf").getIsDisplayed() && $F{totalQuantityNeededByHf} != null ? $P{decimalFormat}.format($F{totalQuantityNeededByHf}).toString() :  null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("totalQuantityNeededByHf").getIsDisplayed() && $F{totalQuantityNeededByHf} != null ?
+				(
+	                $P{showInDoses}
+                          ? $P{decimalFormat}.format($F{totalQuantityNeededByHf}).toString()
+                          : (
+                              ($F{totalQuantityNeededByHf} / ($V{netContent} == null ? 1 : $V{netContent}))
+                              + " (+" + ($F{totalQuantityNeededByHf} % ($V{netContent} == null ? 1 : $V{netContent})) + ")"
+                              )
+                ).toString() : null]]>
+                </textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="quantityToIssue" x="1039" y="0" width="29" height="25" uuid="86b55e50-ffc1-4a68-b3a6-480f65154791">
@@ -1217,7 +1244,16 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{template}.viewColumns().get("quantityToIssue").getIsDisplayed() && $F{quantityToIssue} != null ? $P{decimalFormat}.format($F{quantityToIssue}).toString() :  null]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{template}.viewColumns().get("quantityToIssue").getIsDisplayed() && $F{quantityToIssue} != null ?
+				(
+	                $P{showInDoses}
+                          ? $P{decimalFormat}.format($F{quantityToIssue}).toString()
+                          : (
+                              ($F{quantityToIssue} / ($V{netContent} == null ? 1 : $V{netContent}))
+                              + " (+" + ($F{quantityToIssue} % ($V{netContent} == null ? 1 : $V{netContent})) + ")"
+                              )
+                ).toString() : null]]>
+                </textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="convertedQuantityToIssue" x="1068" y="0" width="40" height="25" uuid="95f41d8d-fe61-433c-9d9f-32763b0efb34">
