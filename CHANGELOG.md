@@ -7,6 +7,9 @@ Improvements:
   * When `override=true`, the endpoint skips date validation during the update process.
   * Existing ETag behavior remains unchanged.
 
+Changes:
+* Upgrade PostgreSQL JDBC driver to 42.6.2 for PostgreSQL 14 compatibility
+
 8.4.1 / 16.05.2025
 ==================
 
