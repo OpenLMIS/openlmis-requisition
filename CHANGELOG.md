@@ -1,4 +1,4 @@
-Upcoming Version (WIP)
+8.5.0 / 2025-11-27
 ==================
 
 Improvements:
@@ -10,14 +10,14 @@ Improvements:
 Changes:
 * Upgrade PostgreSQL JDBC driver to 42.6.2 for PostgreSQL 14 compatibility
 
-8.4.1 / 16.05.2025
+8.4.1 / 2025-05-16
 ==================
 
 Improvements:
 * added enableAvgConsumptionForCurrentPeriod to enable calculation of average consumption based on current reporting
   consumption
 
-8.4.0 / 28.02.2025
+8.4.0 / 2025-02-28
 ==================
 Bug fixes:
 * [OLMIS-8066](https://openlmis.atlassian.net/browse/OLMIS-8066): Fix incorrect period names for emergency requisition
@@ -26,7 +26,7 @@ Bug fixes:
 Improvements:
 * [OPSD-13](https://openlmis.atlassian.net/browse/OPSD-13): Enabling/disabling automatic adjustment on stock cards
 
-8.3.10 / 19.10.2024
+8.3.10 / 2024-11-19
 ==================
 
 Patch release with performance improvements.
@@ -35,7 +35,7 @@ Improvements:
 * [SELV3-774](https://openlmis.atlassian.net/browse/SELV3-774): Improved general performance of all create and update
  actions
 
-8.3.9 / 31.10.2024
+8.3.9 / 2024-10-31
 ==================
 Bug fixes:
 * [OLMIS-7923](https://openlmis.atlassian.net/browse/OLMIS-7923): Fix missing fields in requisition prints
