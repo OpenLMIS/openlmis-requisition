@@ -46,6 +46,7 @@ repositories {
 }
 
 dependencies {
+    compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     compile "net.sf.jasperreports:jasperreports:6.5.1"
@@ -331,5 +332,5 @@ build {
     dependsOn check
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
-    dependsOn copyConsulRegistrationToBuild
+    dependsOn prepareConsulBuild
 }

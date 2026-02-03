@@ -86,6 +86,7 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
         .cors().and()
         .authorizeRequests()
         .antMatchers(
+            "/actuator/health",
             "/requisition",
             "/webjars/**",
             "/requisition/webjars/**",
