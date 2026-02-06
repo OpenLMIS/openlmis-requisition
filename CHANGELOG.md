@@ -1,11 +1,12 @@
-8.6.0 / 2026-02-05
-=================
+Upcoming Version (WIP)
+==================
+
 Improvements:
-* Localization & translations update (FR, ES, PT)
 * Stabilized consul registration and health checks
 
 8.5.0 / 2025-11-27
 ==================
+
 Improvements:
 * [OE-114](https://openlmis.atlassian.net/browse/OE-114): Add packs quantities to Create/Authorize/Approve Print
 * Optional `override` query parameter to `PUT /requisitions/{id}` endpoint.
@@ -17,6 +18,7 @@ Changes:
 
 8.4.1 / 2025-05-16
 ==================
+
 Improvements:
 * added enableAvgConsumptionForCurrentPeriod to enable calculation of average consumption based on current reporting
   consumption
