@@ -72,6 +72,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.report.ReportService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.ReportUtils;
@@ -112,6 +113,9 @@ public class JasperReportsViewService {
   private RequisitionService requisitionService;
 
   @Autowired
+  private ReportService reportService;
+
+  @Autowired
   private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
 
   @Value("${dateFormat}")
@@ -135,11 +139,9 @@ public class JasperReportsViewService {
    * @param jasperTemplate template that will be used to generate the report
    * @param params report parameters
    * @return generated report.
-   * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public byte[] generateReport(JasperTemplate jasperTemplate, Map<String, Object> params)
-      throws JasperReportViewException {
-    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), params);
+  public byte[] generateReport(JasperTemplate jasperTemplate, Map<String, Object> params) {
+    return reportService.generateReport(jasperTemplate, params);
   }
 
   /**
@@ -178,7 +180,7 @@ public class JasperReportsViewService {
     params.put("dateFormat", dateFormat);
     params.put("decimalFormat", createDecimalFormat());
 
-    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), params);
+    return reportService.generateReport(jasperTemplate, params);
   }
 
   /**
@@ -237,7 +239,7 @@ public class JasperReportsViewService {
     parameters.put("period", period);
     parameters.put("district", district);
 
-    return fillAndExportReport(getReportFromTemplateData(jasperTemplate), parameters);
+    return reportService.generateReport(jasperTemplate, parameters);
   }
 
   private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template,

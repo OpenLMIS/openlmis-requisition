@@ -18,12 +18,10 @@ package org.openlmis.requisition.service;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.APPROVED;
@@ -33,9 +31,7 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELE
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED_WITHOUT_ORDER;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -75,6 +71,7 @@ import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ReportingRateReportDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
@@ -84,6 +81,7 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.report.ReportService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
@@ -123,13 +121,7 @@ public class JasperReportsViewServiceTest {
   private RequisitionService requisitionService;
 
   @Mock
-  private ObjectInputStream objectInputStream;
-
-  @Mock
   private JasperTemplate jasperTemplate;
-
-  @Mock
-  private JasperReport jasperReport;
 
   @Mock
   private JasperPrint jasperPrint;
@@ -142,10 +134,14 @@ public class JasperReportsViewServiceTest {
 
   @Mock
   private RequisitionLineItem lineItem2;
-  
+
+  @Mock
+  private ReportService reportService;
+
   @Mock
   private DataSource replicationDataSource; //NOPMD
 
+  @Spy
   @InjectMocks
   private JasperReportsViewService service;
 
@@ -167,8 +163,9 @@ public class JasperReportsViewServiceTest {
 
   @Before
   public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+
     generateRequisition();
-    service = spy(new JasperReportsViewService());
 
     ReflectionTestUtils.setField(service, "dateFormat", DATE_FORMAT);
     ReflectionTestUtils.setField(service, "groupingSeparator", GROUPING_SEPARATOR);
@@ -178,15 +175,11 @@ public class JasperReportsViewServiceTest {
 
     expectedReportData = new byte[1];
 
-    doReturn(objectInputStream).when(service).createObjectInputStream(any(JasperTemplate.class));
-    doReturn(jasperReport).when(service).readReportData(objectInputStream);
-    doReturn(jasperPrint).when(service)
-        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
     doReturn(jasperPrint).when(service)
         .fillJasperReport(any(JasperReport.class), anyMap(), any(JRDataSource.class));
     doReturn(expectedReportData).when(service).exportJasperReportToPdf(any(JasperPrint.class));
 
-    MockitoAnnotations.initMocks(this);
+    when(reportService.generateReport(any(), anyMap())).thenReturn(expectedReportData);
   }
 
   @Test
@@ -198,45 +191,46 @@ public class JasperReportsViewServiceTest {
     
     //then
     assertEquals(expectedReportData, reportData);
+    verify(reportService).generateReport(jasperTemplate, reportParams);
   }
 
   @Test
   public void generateReportShouldReturnCsvReport() throws Exception {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "csv");
-    doReturn(expectedReportData).when(service).exportJasperReportToCsv(any(JasperPrint.class));
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
 
     //then
     assertEquals(expectedReportData, reportData);
+    verify(reportService).generateReport(jasperTemplate, reportParams);
   }
 
   @Test
   public void generateReportShouldReturnXlsReport() throws Exception {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "xls");
-    doReturn(expectedReportData).when(service).exportJasperReportToXls(any(JasperPrint.class));
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
 
     //then
     assertEquals(expectedReportData, reportData);
+    verify(reportService).generateReport(jasperTemplate, reportParams);
   }
 
   @Test
   public void generateReportShouldReturnHtmlReport() throws Exception {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "html");
-    doReturn(expectedReportData).when(service).exportJasperReportToHtml(any(JasperPrint.class));
 
     //when
     byte[] reportData = service.generateReport(jasperTemplate, reportParams);
 
     //then
     assertEquals(expectedReportData, reportData);
+    verify(reportService).generateReport(jasperTemplate, reportParams);
   }
 
   @Test
@@ -246,14 +240,17 @@ public class JasperReportsViewServiceTest {
     reportParams.put(PROGRAM, program.getId().toString());
     reportParams.put(PERIOD, period.getId().toString());
     reportParams.put(DISTRICT, districtId.toString());
+
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService).generateReport(any(), paramArg.capture());
+
     Map<String, Object> outputParams = paramArg.getValue();
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
@@ -271,6 +268,7 @@ public class JasperReportsViewServiceTest {
     // given
     reportParams.put(PROGRAM, program.getId().toString());
     reportParams.put(PERIOD, period.getId().toString());
+
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
@@ -278,8 +276,9 @@ public class JasperReportsViewServiceTest {
 
     // active facilities missing RnR
     FacilityDto facility = mockFacility(true, true, UUID.randomUUID(), "Test", "Test");
-    FacilityDto anotherFacility = mockFacility(true, true,
-        UUID.randomUUID(), "zone", "facility");
+    FacilityDto anotherFacility = mockFacility(
+        true, true, UUID.randomUUID(), "zone", "facility");
+
     facilitiesToReturn.add(facility);
     facilitiesToReturn.add(anotherFacility);
 
@@ -294,8 +293,10 @@ public class JasperReportsViewServiceTest {
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService).generateReport(any(), paramArg.capture());
+
     Map<String, Object> outputParams = paramArg.getValue();
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
@@ -303,7 +304,9 @@ public class JasperReportsViewServiceTest {
     assertEquals(expectedReportData, reportData);
     assertEquals(2, facilities.size());
     List<UUID> facilityIds = facilities.stream()
-        .map(FacilityDto::getId).collect(Collectors.toList());
+        .map(FacilityDto::getId)
+        .collect(Collectors.toList());
+
     Assert.assertTrue(facilityIds.contains(facility.getId()));
     Assert.assertTrue(facilityIds.contains(anotherFacility.getId()));
   }
@@ -321,9 +324,10 @@ public class JasperReportsViewServiceTest {
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
     // active facilities missing RnR
-    MinimalFacilityDto facility = mockBasicFacility(true, true, districtId, "parent-zone", "f1");
-    MinimalFacilityDto childFacility =
-        mockBasicFacility(true, true, UUID.randomUUID(), "child-zone", "f2");
+    MinimalFacilityDto facility = mockBasicFacility(
+        true, true, districtId, "parent-zone", "f1");
+    MinimalFacilityDto childFacility = mockBasicFacility(
+        true, true, UUID.randomUUID(), "child-zone", "f2");
 
     GeographicLevelDto childLevel = mock(GeographicLevelDto.class);
 
@@ -339,8 +343,10 @@ public class JasperReportsViewServiceTest {
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService).generateReport(any(), paramArg.capture());
+
     Map<String, Object> outputParams = paramArg.getValue();
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
@@ -348,7 +354,9 @@ public class JasperReportsViewServiceTest {
     assertEquals(expectedReportData, reportData);
     assertEquals(2, facilities.size());
     List<UUID> facilityIds = facilities.stream()
-        .map(FacilityDto::getId).collect(Collectors.toList());
+        .map(FacilityDto::getId)
+        .collect(Collectors.toList());
+
     Assert.assertTrue(facilityIds.contains(facility.getId()));
     Assert.assertTrue(facilityIds.contains(childFacility.getId()));
   }
@@ -378,8 +386,10 @@ public class JasperReportsViewServiceTest {
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService).generateReport(any(), paramArg.capture());
+
     Map<String, Object> outputParams = paramArg.getValue();
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
@@ -387,9 +397,11 @@ public class JasperReportsViewServiceTest {
     assertEquals(expectedReportData, reportData);
     assertEquals(4, facilities.size());
     List<UUID> facilityIds = facilities.stream()
-        .map(FacilityDto::getId).collect(Collectors.toList());
-    for (MinimalFacilityDto facility : facilitiesToReturn) {
-      Assert.assertTrue(facilityIds.contains(facility.getId()));
+        .map(FacilityDto::getId)
+        .collect(Collectors.toList());
+
+    for (MinimalFacilityDto f : facilitiesToReturn) {
+      Assert.assertTrue(facilityIds.contains(f.getId()));
     }
   }
 
@@ -406,28 +418,30 @@ public class JasperReportsViewServiceTest {
     UUID zone1Id = UUID.randomUUID();
     UUID zone2Id = UUID.randomUUID();
 
-    FacilityDto facility1A = mockFacility(true, true, zone1Id, "zone1", "facilityA");
-    FacilityDto facility1B = mockFacility(true, true, zone1Id, "zone1", "facilityB");
-    FacilityDto facility2A = mockFacility(true, true, zone2Id, "zone2", "facilityA");
-    FacilityDto facility2B = mockFacility(true, true, zone2Id, "zone2", "facilityB");
+    FacilityDto fac1A = mockFacility(true, true, zone1Id, "zone1", "facilityA");
+    FacilityDto fac1B = mockFacility(true, true, zone1Id, "zone1", "facilityB");
+    FacilityDto fac2A = mockFacility(true, true, zone2Id, "zone2", "facilityA");
+    FacilityDto fac2B = mockFacility(true, true, zone2Id, "zone2", "facilityB");
 
     when(facilityReferenceDataService.findAll()).thenReturn(Arrays.asList(
-        facility2B, facility2A, facility1A, facility1B));
+        fac2B, fac2A, fac1A, fac1B));
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService).generateReport(any(), paramArg.capture());
+
     Map<String, Object> outputParams = paramArg.getValue();
     List<FacilityDto> facilities = extractFacilitiesFromOutputParams(outputParams);
 
     // then
     assertEquals(expectedReportData, reportData);
     assertEquals(4, facilities.size());
-    assertEquals(facility1A.getId(), facilities.get(0).getId());
-    assertEquals(facility1B.getId(), facilities.get(1).getId());
-    assertEquals(facility2A.getId(), facilities.get(2).getId());
-    assertEquals(facility2B.getId(), facilities.get(3).getId());
+    assertEquals(fac1A.getId(), facilities.get(0).getId());
+    assertEquals(fac1B.getId(), facilities.get(1).getId());
+    assertEquals(fac2A.getId(), facilities.get(2).getId());
+    assertEquals(fac2B.getId(), facilities.get(3).getId());
   }
 
   @Test
@@ -437,12 +451,26 @@ public class JasperReportsViewServiceTest {
     reportParams.put("Period", period.getId().toString());
     reportParams.put("GeographicZone", districtId.toString());
     reportParams.put("DueDays", "10");
+
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
     when(geographicZoneReferenceDataService.findOne(districtId)).thenReturn(district);
+
+    // FIX: Mock the builder so the service doesn't throw a NullPointerException
+    ReportingRateReportDto mockRateDto = mock(ReportingRateReportDto.class);
+    when(reportingRateReportDtoBuilder.build(any(), any(), any(), any())).thenReturn(mockRateDto);
 
     service.generateReportingRateReport(jasperTemplate, reportParams);
 
-    assertEquals(DATE_FORMAT, reportParams.get("dateFormat"));
-    assertEquals(createDecimalFormat(), reportParams.get("decimalFormat"));
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+
+    // FIX: Verify against the external reportService
+    verify(reportService).generateReport(any(), paramArg.capture());
+
+    Map<String, Object> outputParams = paramArg.getValue();
+
+    assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
+    assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
   }
 
   @Test
@@ -466,6 +494,7 @@ public class JasperReportsViewServiceTest {
         outputParams.get("currencyDecimalFormat"));
   }
 
+  @SuppressWarnings("unchecked")
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
     return (List<FacilityDto>) outputParams.get("datasource");
   }
@@ -522,8 +551,7 @@ public class JasperReportsViewServiceTest {
         facilityId, program.getId(), period.getId(), null, null, null, null,
         null, null, EnumSet.of(APPROVED, RELEASED, RELEASED_WITHOUT_ORDER));
 
-    when(requisitionService.searchRequisitions(eq(params), any()))
-        .thenReturn(requisitionPage);
+    when(requisitionService.searchRequisitions(eq(params), any())).thenReturn(requisitionPage);
 
     return geographicZoneDto;
   }
