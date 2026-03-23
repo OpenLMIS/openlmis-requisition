@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -161,13 +162,16 @@ public class JasperTemplateController extends BaseController {
    * @param request    request (to get the request parameters)
    * @param templateId report template ID
    * @param format     report format to generate, default is PDF
+   * @param lang       the lang
    * @return the generated report
+   * @throws JasperReportViewException the jasper report view exception
    */
   @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<byte[]> generateReport(HttpServletRequest request,
       @PathVariable("id") UUID templateId,
-      @PathVariable("format") String format) throws JasperReportViewException {
+      @PathVariable("format") String format,
+      @RequestParam(defaultValue = "en") String lang) throws JasperReportViewException {
     permissionService.canViewReports().throwExceptionIfHasErrors();
 
     JasperTemplate template = jasperTemplateRepository.findById(templateId)
@@ -176,6 +180,7 @@ public class JasperTemplateController extends BaseController {
 
     Map<String, Object> map = jasperTemplateService
         .mapRequestParametersToTemplate(request, template);
+    map.put("lang", lang);
     map.put("format", format);
     map.put("dateTimeFormat", dateTimeFormat);
     map.put("timeZoneId", timeZoneId);

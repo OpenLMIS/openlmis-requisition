@@ -13,20 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.dto;
+package org.openlmis.requisition.service.report;
 
-import lombok.EqualsAndHashCode;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@EqualsAndHashCode(callSuper = true)
-public final class TimelinessReportFacilityDto extends FacilityDto implements FacilityDto.Exporter {
+public class GenerateReportDtoTest {
 
-  public static final Integer DISTRICT_LEVEL = 3;
-
-  /**
-   * Get zone of the facility that has the district level.
-   * @return district of the facility.
-   */
-  public GeographicZoneDto getThirdLevel() {
-    return getZoneByLevelNumber(DISTRICT_LEVEL);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(GenerateReportDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
   }
 }
