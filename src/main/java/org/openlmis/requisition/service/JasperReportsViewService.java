@@ -16,7 +16,6 @@
 package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.dto.TimelinessReportFacilityDto.DISTRICT_LEVEL;
-import static org.openlmis.requisition.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_FORMAT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID;
@@ -40,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -78,12 +78,12 @@ import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.ReportUtils;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class JasperReportsViewService {
   private static final String DATASOURCE = "datasource";
@@ -91,32 +91,15 @@ public class JasperReportsViewService {
   private static final String REQUISITION_LINE_REPORT_DIR =
       "/jasperTemplates/requisitionLines.jrxml";
 
-  @Autowired
-  private DataSource replicationDataSource;
-
-  @Autowired
-  private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Autowired
-  private GeographicZoneReferenceDataService geographicZoneReferenceDataService;
-
-  @Autowired
-  private RequisitionService requisitionService;
-
-  @Autowired
-  private ReportService reportService;
-
-  @Autowired
-  private ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
+  private final DataSource replicationDataSource;
+  private final RequisitionReportDtoBuilder requisitionReportDtoBuilder;
+  private final FacilityReferenceDataService facilityReferenceDataService;
+  private final ProgramReferenceDataService programReferenceDataService;
+  private final PeriodReferenceDataService periodReferenceDataService;
+  private final GeographicZoneReferenceDataService geographicZoneReferenceDataService;
+  private final RequisitionService requisitionService;
+  private final ReportService reportService;
+  private final ReportingRateReportDtoBuilder reportingRateReportDtoBuilder;
 
   @Value("${dateFormat}")
   private String dateFormat;
@@ -311,22 +294,6 @@ public class JasperReportsViewService {
       throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
     } catch (JRException ex) {
       throw new JasperReportViewException(ex, ERROR_JASPER_FILE_FORMAT, ex.getMessage());
-    }
-  }
-
-  /**
-   * Get (compiled) Jasper report from Jasper template.
-   */
-  private JasperReport getReportFromTemplateData(JasperTemplate jasperTemplate)
-      throws JasperReportViewException {
-
-    try (ObjectInputStream inputStream = createObjectInputStream(jasperTemplate)) {
-
-      return readReportData(inputStream);
-    } catch (IOException ex) {
-      throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
-    } catch (ClassNotFoundException ex) {
-      throw new JasperReportViewException(ex, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
     }
   }
 

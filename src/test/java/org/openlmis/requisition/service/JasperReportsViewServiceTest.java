@@ -55,9 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openlmis.requisition.domain.JasperTemplate;
@@ -141,8 +139,6 @@ public class JasperReportsViewServiceTest {
   @Mock
   private DataSource replicationDataSource; //NOPMD
 
-  @Spy
-  @InjectMocks
   private JasperReportsViewService service;
 
   @Spy
@@ -163,7 +159,17 @@ public class JasperReportsViewServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
+    service = org.mockito.Mockito.spy(new JasperReportsViewService(
+        replicationDataSource,
+        requisitionReportDtoBuilder,
+        facilityReferenceDataService,
+        programReferenceDataService,
+        periodReferenceDataService,
+        geographicZoneReferenceDataService,
+        requisitionService,
+        reportService,
+        reportingRateReportDtoBuilder
+    ));
 
     generateRequisition();
 
@@ -183,7 +189,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnPdfReportAsDefault() throws Exception {
+  public void generateReportShouldReturnPdfReportAsDefault() {
     //given
 
     //when
@@ -195,7 +201,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnCsvReport() throws Exception {
+  public void generateReportShouldReturnCsvReport() {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "csv");
 
@@ -208,7 +214,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnXlsReport() throws Exception {
+  public void generateReportShouldReturnXlsReport() {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "xls");
 
@@ -221,7 +227,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnHtmlReport() throws Exception {
+  public void generateReportShouldReturnHtmlReport() {
     //given
     reportParams.put(PARAM_KEY_FORMAT, "html");
 
@@ -324,7 +330,7 @@ public class JasperReportsViewServiceTest {
     when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
 
     // active facilities missing RnR
-    MinimalFacilityDto facility = mockBasicFacility(
+    MinimalFacilityDto mockedFacility = mockBasicFacility(
         true, true, districtId, "parent-zone", "f1");
     MinimalFacilityDto childFacility = mockBasicFacility(
         true, true, UUID.randomUUID(), "child-zone", "f2");
@@ -332,14 +338,14 @@ public class JasperReportsViewServiceTest {
     GeographicLevelDto childLevel = mock(GeographicLevelDto.class);
 
     GeographicZoneDto childZone = childFacility.getGeographicZone();
-    childZone.setParent(facility.getGeographicZone());
+    childZone.setParent(mockedFacility.getGeographicZone());
     childZone.setLevel(childLevel);
 
     // facility missing RnR from another district
     mockFacility(true, true);
 
     when(facilityReferenceDataService.search(any(), any(), eq(districtId), eq(true)))
-        .thenReturn(Arrays.asList(facility, childFacility));
+        .thenReturn(Arrays.asList(mockedFacility, childFacility));
 
     // when
     byte[] reportData = service.generateTimelinessReport(jasperTemplate, reportParams);
@@ -357,7 +363,7 @@ public class JasperReportsViewServiceTest {
         .map(FacilityDto::getId)
         .collect(Collectors.toList());
 
-    Assert.assertTrue(facilityIds.contains(facility.getId()));
+    Assert.assertTrue(facilityIds.contains(mockedFacility.getId()));
     Assert.assertTrue(facilityIds.contains(childFacility.getId()));
   }
 
