@@ -20,13 +20,18 @@ import java.util.concurrent.Executor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
+  /**
+   * Creates a custom async executor that propagates locale from the calling thread
+   * to async execution threads. This ensures notifications are sent in
+   * the correct language when requisitions are approved/converted.
+   */
   @Bean(name = "taskExecutor")
   public ThreadPoolTaskExecutor taskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor() {

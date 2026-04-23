@@ -107,7 +107,8 @@ public abstract class BaseCommunicationService<T> {
       return runWithTokenRetry(() -> restTemplate.exchange(
               createUri(url, params),
               HttpMethod.GET,
-              RequestHelper.createEntity(RequestHeaders.init().setAuth(authService.obtainAccessToken())),
+              RequestHelper.createEntity(RequestHeaders.init()
+                      .setAuth(authService.obtainAccessToken())),
               type)).getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
