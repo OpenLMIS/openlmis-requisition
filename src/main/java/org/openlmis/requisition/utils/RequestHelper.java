@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.service.RequestHeaders;
 import org.openlmis.requisition.service.RequestParameters;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -70,12 +71,12 @@ public final class RequestHelper {
     if (payload == null) {
       return createEntity(token);
     } else {
-      return new HttpEntity<>(payload, createHeadersWithAuth(token));
+      return new HttpEntity<>(payload, createHeadersWithAuthAndLocale(token));
     }
   }
 
   public static <E> HttpEntity<E> createEntity(String token) {
-    return new HttpEntity<>(createHeadersWithAuth(token));
+    return new HttpEntity<>(createHeadersWithAuthAndLocale(token));
   }
 
   /**
@@ -119,6 +120,12 @@ public final class RequestHelper {
   private static HttpHeaders createHeadersWithAuth(String token) {
     HttpHeaders headers = new HttpHeaders();
     headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    return headers;
+  }
+
+  private static HttpHeaders createHeadersWithAuthAndLocale(String token) {
+    HttpHeaders headers = createHeadersWithAuth(token);
+    headers.set(HttpHeaders.COOKIE, "lang=" + LocaleContextHolder.getLocale().getLanguage());
     return headers;
   }
 

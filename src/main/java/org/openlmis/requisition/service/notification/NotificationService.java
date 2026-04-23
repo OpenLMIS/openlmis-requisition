@@ -18,15 +18,18 @@ package org.openlmis.requisition.service.notification;
 import static org.openlmis.requisition.service.notification.NotificationChannelDto.EMAIL;
 import static org.openlmis.requisition.service.notification.NotificationChannelDto.SMS;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.service.AuthService;
+import org.openlmis.requisition.service.RequestHeaders;
 import org.openlmis.requisition.utils.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
@@ -60,10 +63,10 @@ public class NotificationService {
     NotificationDto request = buildNotification(user, subject, emailContent, smsContent, tag);
 
     try {
-      restTemplate.postForObject(
-              RequestHelper.createUri(url),
-              RequestHelper.createEntity(request, authService.obtainAccessToken()),
-              Object.class);
+      RequestHeaders headers = RequestHeaders.init().setAuth(authService.obtainAccessToken());
+      URI uri = RequestHelper.createUri(url);
+      HttpEntity<NotificationDto> entity = new HttpEntity<>(request, headers.toHeaders());
+      restTemplate.postForObject(uri, entity, Object.class);
     } catch (HttpStatusCodeException ex) {
       logger.error(
           "Unable to send notification. Error code: {}, response message: {}",
