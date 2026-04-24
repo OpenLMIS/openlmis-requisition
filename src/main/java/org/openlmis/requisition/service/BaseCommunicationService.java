@@ -178,7 +178,7 @@ public abstract class BaseCommunicationService<T> {
     try {
       RequestHeaders headers = RequestHeaders.init().setIfNoneMatch(etag);
       ResponseEntity<P[]> response = restTemplate.exchange(
-          url, HttpMethod.GET, RequestHelper.createEntity(null, addAuthHeader(headers)), type
+          url, HttpMethod.GET, createEntity(null, addAuthHeader(headers)), type
       );
 
       if (response.getStatusCode() == HttpStatus.NOT_MODIFIED) {

@@ -3,6 +3,8 @@ Upcoming Version (WIP)
 
 Improvements:
 * Stabilized consul registration and health checks
+* [ODRC-67](https://openlmis.atlassian.net/browse/ODRC-67): Added a locale cookie to communication between services
+to ensure notifications are returned in the correct language.
 
 8.5.0 / 2025-11-27
 ==================

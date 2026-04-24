@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 
 public final class RequestHeaders {
@@ -29,11 +30,16 @@ public final class RequestHeaders {
   }
 
   public static RequestHeaders init() {
-    return new RequestHeaders();
+    return new RequestHeaders().setLocale();
   }
 
   public RequestHeaders setAuth(String token) {
     return isNotBlank(token) ? set(HttpHeaders.AUTHORIZATION, "Bearer " + token) : this;
+  }
+
+  public RequestHeaders setLocale() {
+    headers.put(HttpHeaders.COOKIE, "lang=" + LocaleContextHolder.getLocale().getLanguage());
+    return this;
   }
 
   public RequestHeaders setIfNoneMatch(String value) {
