@@ -15,45 +15,48 @@
 
 package org.openlmis.requisition;
 
-import java.util.Locale;
 import java.util.concurrent.Executor;
-
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
+  private final ThreadPoolTaskExecutor taskExecutor;
+
+  public AsyncConfig() {
+    this.taskExecutor = taskExecutor();
+  }
 
   /**
    * Creates a custom async executor that propagates locale from the calling thread
    * to async execution threads. This ensures notifications are sent in
    * the correct language when requisitions are approved/converted.
    */
-  @Bean(name = "taskExecutor")
   public ThreadPoolTaskExecutor taskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor() {
       @Override
       public void execute(Runnable task) {
-        final Locale locale = LocaleContextHolder.getLocale();
+        final LocaleContext context = LocaleContextHolder.getLocaleContext();
         super.execute(() -> {
-          LocaleContextHolder.setLocale(locale);
-          task.run();
+          LocaleContext previousContext = LocaleContextHolder.getLocaleContext();
+          LocaleContextHolder.setLocaleContext(context);
+          try {
+            task.run();
+          } finally {
+            LocaleContextHolder.setLocaleContext(previousContext);
+          }
         });
       }
     };
-    executor.setCorePoolSize(5);
-    executor.setMaxPoolSize(10);
-    executor.setQueueCapacity(100);
-    executor.setThreadNamePrefix("async-");
     executor.initialize();
     return executor;
   }
 
   @Override
   public Executor getAsyncExecutor() {
-    return taskExecutor();
+    return taskExecutor;
   }
 }
