@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -76,7 +78,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -94,9 +95,6 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
       BatchRequisitionController.class);
-
-  @Autowired
-  private ThreadPoolTaskExecutor taskExecutor;
 
   @Autowired
   private MessageService messageService;
@@ -434,11 +432,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
   private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions,
       Map<VersionIdentityDto, OrderableDto> orderables) {
     profiler.start("SEND_STOCK_EVENT");
+    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
       for (Requisition requisition : requisitions) {
         CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, user.getId(), orderables), taskExecutor);
+            () -> submitStockEvent(requisition, user.getId(), orderables), executor);
         futures.add(future);
       }
     } finally {

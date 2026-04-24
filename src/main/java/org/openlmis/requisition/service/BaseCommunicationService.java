@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_OCCURED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SERVICE_REQUIRED;
+import static org.openlmis.requisition.utils.RequestHelper.createEntity;
 import static org.openlmis.requisition.utils.RequestHelper.createUri;
 
 import java.lang.reflect.Array;
@@ -107,8 +108,7 @@ public abstract class BaseCommunicationService<T> {
       return runWithTokenRetry(() -> restTemplate.exchange(
               createUri(url, params),
               HttpMethod.GET,
-              RequestHelper.createEntity(RequestHeaders.init()
-                      .setAuth(authService.obtainAccessToken())),
+              createEntity(authService.obtainAccessToken()),
               type)).getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
@@ -178,7 +178,7 @@ public abstract class BaseCommunicationService<T> {
     try {
       RequestHeaders headers = RequestHeaders.init().setIfNoneMatch(etag);
       ResponseEntity<P[]> response = restTemplate.exchange(
-          url, HttpMethod.GET, RequestHelper.createEntity(null, addAuthHeader(headers)), type
+          url, HttpMethod.GET, createEntity(null, addAuthHeader(headers)), type
       );
 
       if (response.getStatusCode() == HttpStatus.NOT_MODIFIED) {
@@ -239,7 +239,7 @@ public abstract class BaseCommunicationService<T> {
     ResponseEntity<ResultDto<P>> response = runWithTokenRetry(() -> restTemplate.exchange(
         createUri(url, params),
         HttpMethod.GET,
-        RequestHelper.createEntity(RequestHeaders.init().setAuth(authService.obtainAccessToken())),
+        createEntity(authService.obtainAccessToken()),
         new DynamicResultDtoTypeReference<>(type)
     ));
 
@@ -250,7 +250,7 @@ public abstract class BaseCommunicationService<T> {
                                                 Object payload, HttpMethod method,
                                                 Class<E[]> type) {
     HttpEntity<Object> entity = RequestHelper
-        .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
+        .createEntity(payload, authService.obtainAccessToken());
     List<E[]> arrays = new ArrayList<>();
 
     for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
@@ -271,7 +271,7 @@ public abstract class BaseCommunicationService<T> {
                                                        HttpMethod method,
                                                        Class<E> type) {
     HttpEntity<Object> entity = RequestHelper
-        .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
+        .createEntity(payload, authService.obtainAccessToken());
     ParameterizedTypeReference<PageDto<E>> parameterizedType =
         new DynamicPageTypeReference<>(type);
     List<PageDto<E>> pages = new ArrayList<>();
