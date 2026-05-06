@@ -1634,7 +1634,7 @@ public class RequisitionServiceTest {
         any(LocalDate.class), any(LocalDate.class)))
         .thenReturn(singletonList(DtoGenerator.of(ProcessingPeriodDto.class)));
     when(requisitionRepository.countRequisitions(any(List.class), eq(facility.getId()),
-        any(List.class), eq(null), any(List.class)))
+        any(List.class), eq(false), any(List.class)))
         .thenReturn(0L);
 
     // when

@@ -5,6 +5,8 @@ Improvements:
 * Stabilized consul registration and health checks
 * [ODRC-67](https://openlmis.atlassian.net/browse/ODRC-67): Added a locale cookie to communication between services
 to ensure notifications are returned in the correct language.
+* [ODRC-101](https://openlmis.atlassian.net/browse/ODRC-101): Panel 'Number of Requisitions to be 
+  created this month' on home page should not count emergency requisitions
 
 8.5.0 / 2025-11-27
 ==================
