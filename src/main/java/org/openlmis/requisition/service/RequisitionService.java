@@ -860,9 +860,9 @@ public class RequisitionService {
     if (maxRequisitionForFacility == 0) {
       requisitionStatsData.setRequisitionsToBeCreated(0L);
     } else {
-      Long createdRequisitions = calculateCurrentlyCreatedRequisitions(activelySupportedPrograms,
-          currentFacilityPeriods, facilityId, postSubmittedStatuses);
-      long requisitionsToBeCreated = maxRequisitionForFacility - createdRequisitions;
+      Long createdRegularRequisitions = calculateCurrentlyCreatedRegularRequisitions(
+          activelySupportedPrograms, currentFacilityPeriods, facilityId, postSubmittedStatuses);
+      long requisitionsToBeCreated = maxRequisitionForFacility - createdRegularRequisitions;
       requisitionStatsData.setRequisitionsToBeCreated(requisitionsToBeCreated);
     }
 
@@ -1042,11 +1042,11 @@ public class RequisitionService {
     });
   }
 
-  private Long calculateCurrentlyCreatedRequisitions(
+  private Long calculateCurrentlyCreatedRegularRequisitions(
       List<SupportedProgramDto> activelySupportedPrograms,
       Set<ProcessingPeriodDto> currentFacilityPeriods, UUID facilityId,
       List<RequisitionStatus> postSubmittedStatuses) {
-    Profiler profiler = new Profiler("CALCULATE_CURRENTLY_CREATED_REQUISITIONS");
+    Profiler profiler = new Profiler("CALCULATE_CURRENTLY_CREATED_REGULAR_REQUISITIONS");
     profiler.setLogger(LOGGER);
 
     profiler.start("GET_ACTIVELY_SUPPORTED_PROGRAMS_IDS");
@@ -1060,7 +1060,7 @@ public class RequisitionService {
 
     profiler.stop().log();
     return requisitionRepository.countRequisitions(
-        currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, null,
+        currentFacilityPeriodsIds, facilityId, activelySupportedProgramsIds, false,
         postSubmittedStatuses
     );
   }
