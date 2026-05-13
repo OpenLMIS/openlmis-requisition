@@ -8,6 +8,10 @@ to ensure notifications are returned in the correct language.
 * [ODRC-101](https://openlmis.atlassian.net/browse/ODRC-101): Panel 'Number of Requisitions to be 
   created this month' on home page should not count emergency requisitions
 
+Bug fixes:
+* [OLMIS-8223](https://openlmis.atlassian.net/browse/OLMIS-8223): Fix placeholder bug in messages
+
+
 8.5.0 / 2025-11-27
 ==================
 
