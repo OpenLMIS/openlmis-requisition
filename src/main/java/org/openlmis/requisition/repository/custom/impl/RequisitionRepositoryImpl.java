@@ -527,13 +527,19 @@ public class RequisitionRepositoryImpl
             createProgramNodePairPredicate(builder, root, programNodePairs)));
   }
 
+  // emits `permission_string = ANY(?)` instead of `IN (?, ?, …, ?)`
+  // so user perm count doesn't push placeholder count past Postgres' 65 535 limit
   private Predicate createPermissionStringsPredicate(Root<Requisition> root,
       List<String> userPermissionStrings) {
     Join<Requisition, RequisitionPermissionString> permissionStringJoin = root
         .join("permissionStrings");
     Expression<String> permissionStringExp = permissionStringJoin.get("permissionString");
 
-    return permissionStringExp.in(userPermissionStrings);
+    String[] perms = userPermissionStrings.toArray(new String[0]);
+    CriteriaBuilder builder = getCriteriaBuilder();
+    return builder.isTrue(builder.function("text_any", Boolean.class,
+        permissionStringExp,
+        builder.literal(perms)));
   }
 
   private <T> CriteriaQuery<T> prepareApprovableQuery(CriteriaBuilder builder,
@@ -584,20 +590,23 @@ public class RequisitionRepositoryImpl
     return query.where(predicate);
   }
 
+  // emits `EXISTS (… unnest(parr, sarr) …)`
+  // arrays instead of `(p=? AND s=?) OR (p=? AND s=?) OR …` with 2*N placeholders
+  // Keeps pair count from pushing total placeholders past Postgres' 65 535 limit
   private Predicate createProgramNodePairPredicate(CriteriaBuilder builder,
       Root<Requisition> root, Set<Pair<UUID, UUID>> programNodePairs) {
-    Predicate[] combinedPredicates = new Predicate[programNodePairs.size()];
+    UUID[] programIds = programNodePairs.stream()
+        .map(Pair::getLeft)
+        .toArray(UUID[]::new);
+    UUID[] nodeIds = programNodePairs.stream()
+        .map(Pair::getRight)
+        .toArray(UUID[]::new);
 
-    int index = 0;
-    for (Pair pair : programNodePairs) {
-      Predicate predicate = builder.conjunction();
-      predicate = addEqualFilter(predicate, builder, root, PROGRAM_ID, pair.getLeft());
-      predicate = addEqualFilter(predicate, builder, root, SUPERVISORY_NODE_ID, pair.getRight());
-
-      combinedPredicates[index++] = predicate;
-    }
-
-    return builder.or(combinedPredicates);
+    return builder.isTrue(builder.function("uuid_pair_any", Boolean.class,
+        root.get(PROGRAM_ID),
+        root.get(SUPERVISORY_NODE_ID),
+        builder.literal(programIds),
+        builder.literal(nodeIds)));
   }
 
   private <T> CriteriaQuery<T> addSortProperties(CriteriaBuilder builder,
