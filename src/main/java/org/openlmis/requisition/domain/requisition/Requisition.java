@@ -39,6 +39,8 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_SKIP_FAILED_WRONG_
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+import io.hypersistence.utils.hibernate.type.array.UUIDArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -82,6 +84,7 @@ import lombok.Setter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.joda.money.CurrencyUnit;
@@ -117,6 +120,12 @@ import org.springframework.util.CollectionUtils;
 @SuppressWarnings("PMD.TooManyMethods")
 @Entity
 @TypeName("Requisition")
+@TypeDef(name = "string-array",
+    typeClass = StringArrayType.class,
+    defaultForType = String[].class)
+@TypeDef(name = "uuid-array",
+    typeClass = UUIDArrayType.class,
+    defaultForType = UUID[].class)
 @Table(name = "requisitions")
 @NoArgsConstructor
 @AllArgsConstructor
