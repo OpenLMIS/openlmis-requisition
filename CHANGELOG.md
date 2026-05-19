@@ -9,6 +9,7 @@ to ensure notifications are returned in the correct language.
   created this month' on home page should not count emergency requisitions
 
 Bug fixes:
+* [MALAWISUP-7022](https://openlmis.atlassian.net/browse/MALAWISUP-7022): Fix /api/requisitions/search failing for users with many permissions (Postgres bind-parameter limit).
 * [OLMIS-8223](https://openlmis.atlassian.net/browse/OLMIS-8223): Fix placeholder bug in messages
 
 
