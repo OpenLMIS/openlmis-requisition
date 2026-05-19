@@ -10,6 +10,7 @@ to ensure notifications are returned in the correct language.
 
 Bug fixes:
 * [MALAWISUP-7022](https://openlmis.atlassian.net/browse/MALAWISUP-7022): Fix /api/requisitions/search failing for users with many permissions (Postgres bind-parameter limit).
+* [OLMIS-8223](https://openlmis.atlassian.net/browse/OLMIS-8223): Fix placeholder bug in messages
 
 
 8.5.0 / 2025-11-27
