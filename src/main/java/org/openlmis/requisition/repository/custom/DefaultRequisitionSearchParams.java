@@ -36,6 +36,7 @@ public final class DefaultRequisitionSearchParams implements RequisitionSearchPa
   private UUID program;
   private UUID processingPeriod;
   private UUID supervisoryNode;
+  private UUID supplyingFacility;
 
   private Boolean emergency;
 

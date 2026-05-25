@@ -1016,6 +1016,7 @@ public class RequisitionRepositoryIntegrationTest
     RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams(
         requisitionToCopy.getFacilityId(), requisitionToCopy.getProgramId(),
         requisitionToCopy.getProcessingPeriodId(), requisitionToCopy.getSupervisoryNodeId(),
+        null,
         requisitionToCopy.getEmergency(), null, null, null, null,
         EnumSet.of(requisitionToCopy.getStatus()));
 
