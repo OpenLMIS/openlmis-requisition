@@ -405,4 +405,64 @@ public class JasperTemplateServiceTest {
 
     assertThat(resultMap.size(), is(0));
   }
+
+  @Test
+  public void shouldSetDisplayOrderFromJrxmlDeclarationOrder() throws Exception {
+    MultipartFile file = mock(MultipartFile.class);
+    when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
+
+    mockStatic(JasperCompileManager.class);
+    JasperReport report = mock(JasperReport.class);
+    InputStream inputStream = mock(InputStream.class);
+    when(file.getInputStream()).thenReturn(inputStream);
+
+    JRParameter first = mock(JRParameter.class);
+    JRParameter skipped = mock(JRParameter.class);
+    JRParameter second = mock(JRParameter.class);
+    JRParameter third = mock(JRParameter.class);
+    JRPropertiesMap propertiesMap = mock(JRPropertiesMap.class);
+    JRExpression jrExpression = mock(JRExpression.class);
+
+    String[] propertyNames = {DISPLAY_NAME};
+    when(report.getParameters())
+        .thenReturn(new JRParameter[]{first, skipped, second, third});
+    when(JasperCompileManager.compileReport(inputStream)).thenReturn(report);
+    when(propertiesMap.getPropertyNames()).thenReturn(propertyNames);
+    when(propertiesMap.getProperty(DISPLAY_NAME)).thenReturn(PARAM_DISPLAY_NAME);
+    when(jrExpression.getText()).thenReturn("text");
+
+    for (JRParameter p : new JRParameter[]{first, second, third}) {
+      when(p.getPropertiesMap()).thenReturn(propertiesMap);
+      when(p.getValueClassName()).thenReturn("java.lang.String");
+      when(p.isForPrompting()).thenReturn(true);
+      when(p.getDefaultValueExpression()).thenReturn(jrExpression);
+    }
+    when(first.getName()).thenReturn(PARAM1);
+    when(second.getName()).thenReturn(PARAM2);
+    when(third.getName()).thenReturn(PARAM3);
+
+    when(skipped.isSystemDefined()).thenReturn(true);
+    when(skipped.isForPrompting()).thenReturn(false);
+
+    ByteArrayOutputStream byteOutputStream = mock(ByteArrayOutputStream.class);
+    whenNew(ByteArrayOutputStream.class).withAnyArguments().thenReturn(byteOutputStream);
+    ObjectOutputStream objectOutputStream = spy(new ObjectOutputStream(byteOutputStream));
+    whenNew(ObjectOutputStream.class).withArguments(byteOutputStream)
+        .thenReturn(objectOutputStream);
+    doNothing().when(objectOutputStream).writeObject(report);
+    when(byteOutputStream.toByteArray()).thenReturn(new byte[1]);
+
+    JasperTemplate jasperTemplate = new JasperTemplate();
+
+    jasperTemplateService.validateFileAndInsertTemplate(jasperTemplate, file);
+
+    List<JasperTemplateParameter> params = jasperTemplate.getTemplateParameters();
+    assertEquals(3, params.size());
+    assertEquals(PARAM1, params.get(0).getName());
+    assertEquals(Integer.valueOf(0), params.get(0).getDisplayOrder());
+    assertEquals(PARAM2, params.get(1).getName());
+    assertEquals(Integer.valueOf(1), params.get(1).getDisplayOrder());
+    assertEquals(PARAM3, params.get(2).getName());
+    assertEquals(Integer.valueOf(2), params.get(2).getDisplayOrder());
+  }
 }
