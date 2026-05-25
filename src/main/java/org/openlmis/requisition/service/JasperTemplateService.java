@@ -79,15 +79,11 @@ public class JasperTemplateService {
   }
 
   /**
-   * Validate ".jrmxl" file and insert if template not exist. If this name of template already
-   * exist, remove older template and insert new.
+   * Validate ".jrxml" file and persist the template in place. The previous
+   * delete-then-insert caused a managed-entity conflict on duplicate-name uploads.
    */
   public void validateFileAndSaveTemplate(JasperTemplate jasperTemplate, MultipartFile file)
       throws ReportingException {
-    JasperTemplate templateTmp = jasperTemplateRepository.findByName(jasperTemplate.getName());
-    if (templateTmp != null) {
-      jasperTemplateRepository.deleteById(templateTmp.getId());
-    }
     validateFileAndSetData(jasperTemplate, file);
     saveWithParameters(jasperTemplate);
   }
@@ -163,7 +159,14 @@ public class JasperTemplateService {
       }
     }
 
-    jasperTemplate.setTemplateParameters(parameters);
+    // Mutate existing collection instead of replacing the reference; orphanRemoval=true
+    // throws "collection no longer referenced" otherwise on the override=true update path.
+    if (jasperTemplate.getTemplateParameters() == null) {
+      jasperTemplate.setTemplateParameters(new ArrayList<>());
+    } else {
+      jasperTemplate.getTemplateParameters().clear();
+    }
+    jasperTemplate.getTemplateParameters().addAll(parameters);
   }
 
   /**
@@ -261,7 +264,7 @@ public class JasperTemplateService {
 
   private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {
     if (jasperTemplateRepository.findByName(name) != null) {
-      throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXIST);
+      throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXIST, name);
     }
   }
 
