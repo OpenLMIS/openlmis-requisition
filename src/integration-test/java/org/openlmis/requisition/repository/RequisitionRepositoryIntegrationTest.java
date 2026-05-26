@@ -310,6 +310,62 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
+  public void testSearchRequisitionsBySupplyingFacility() {
+    UUID matchingSupplyingFacility = UUID.randomUUID();
+    UUID otherSupplyingFacility = UUID.randomUUID();
+    Requisition requisitionToCopy = requisitions.get(0);
+
+    Requisition matchingRequisition = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToCopy.getFacilityId())
+        .withProgramId(requisitionToCopy.getProgramId())
+        .withStatus(requisitionToCopy.getStatus())
+        .withSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId())
+        .withSupplyingFacilityId(matchingSupplyingFacility)
+        .withTemplate(testTemplate)
+        .withNumberOfMonthsInPeriod(1)
+        .withEmergency(true)
+        .buildAsNew();
+    matchingRequisition.setStatusChanges(
+        singletonList(new StatusChangeDataBuilder()
+            .withRequisition(matchingRequisition)
+            .buildAsNew()
+        )
+    );
+    repository.save(matchingRequisition);
+
+    Requisition otherRequisition = new RequisitionDataBuilder()
+        .withFacilityId(requisitionToCopy.getFacilityId())
+        .withProgramId(requisitionToCopy.getProgramId())
+        .withStatus(requisitionToCopy.getStatus())
+        .withSupervisoryNodeId(requisitionToCopy.getSupervisoryNodeId())
+        .withSupplyingFacilityId(otherSupplyingFacility)
+        .withTemplate(testTemplate)
+        .withNumberOfMonthsInPeriod(1)
+        .withEmergency(false)
+        .buildAsNew();
+    otherRequisition.setStatusChanges(
+        singletonList(new StatusChangeDataBuilder()
+            .withRequisition(otherRequisition)
+            .buildAsNew()
+        )
+    );
+    repository.save(otherRequisition);
+
+    RequisitionSearchParams searchParams = new DefaultRequisitionSearchParamsDataBuilder()
+        .withSupplyingFacility(matchingSupplyingFacility)
+        .build();
+
+    List<Requisition> receivedRequisitions = repository
+        .searchRequisitions(searchParams, userPermissionStrings, programNodePairs, pageRequest)
+        .getContent();
+
+    assertEquals(1, receivedRequisitions.size());
+    assertEquals(
+        matchingSupplyingFacility,
+        receivedRequisitions.get(0).getSupplyingFacilityId());
+  }
+
+  @Test
   public void testSearchRequisitionsByAllParametersNull() {
     RequisitionSearchParams searchParams = new DefaultRequisitionSearchParams();
 
