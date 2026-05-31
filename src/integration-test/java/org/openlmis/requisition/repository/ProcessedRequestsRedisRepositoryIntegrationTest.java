@@ -73,4 +73,18 @@ public class ProcessedRequestsRedisRepositoryIntegrationTest {
     redisRepository.addOrUpdate(idempotencyKey1, resource2);
     assertEquals(resource2, redisRepository.findByIdempotencyKey(idempotencyKey1));
   }
+
+  @Test
+  public void shouldLockRequisitionForApprovalOnlyOnceUntilUnlocked() {
+    UUID requisitionId = UUID.randomUUID();
+    try {
+      assertTrue(redisRepository.lockRequisitionForApproval(requisitionId));
+      assertFalse(redisRepository.lockRequisitionForApproval(requisitionId));
+
+      redisRepository.unlockRequisitionForApproval(requisitionId);
+      assertTrue(redisRepository.lockRequisitionForApproval(requisitionId));
+    } finally {
+      redisRepository.unlockRequisitionForApproval(requisitionId);
+    }
+  }
 }

@@ -433,6 +433,16 @@ public class RequisitionController extends BaseRequisitionController {
 
     Profiler profiler = getProfiler("APPROVE_REQUISITION", requisitionId);
 
+    acquireApprovalLock(requisitionId, profiler);
+    try {
+      return doApproveRequisition(requisitionId, request, response, profiler);
+    } finally {
+      releaseApprovalLockAfterTransaction(requisitionId);
+    }
+  }
+
+  private BasicRequisitionDto doApproveRequisition(UUID requisitionId,
+      HttpServletRequest request, HttpServletResponse response, Profiler profiler) {
     Requisition requisition = findRequisition(requisitionId, profiler);
     UserDto user = getCurrentUser(profiler);
 

@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,10 @@ import org.springframework.stereotype.Repository;
 public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRedisRepository {
 
   private static final String HASH_KEY = "PROCESSED_REQUESTS";
+  private static final String APPROVE_LOCK_PREFIX = "REQUISITION_APPROVE_LOCK:";
+
+  @Value("${approval.lock.timeoutMinutes}")
+  private long approvalLockTimeoutMinutes;
 
   private RedisTemplate<String, String> redisTemplate;
   private HashOperations hashOperations;
@@ -60,5 +65,19 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
     hashOperations.put(key.toString(), HASH_KEY, resourceId == null
         ? StringUtils.EMPTY : resourceId.toString());
     redisTemplate.expire(key.toString(), 24, TimeUnit.HOURS);
+  }
+
+  @Override
+  public boolean lockRequisitionForApproval(UUID requisitionId) {
+    // Atomic acquire-if-absent with a TTL crash safety-net; normally released in a finally block.
+    Boolean acquired = redisTemplate.opsForValue().setIfAbsent(
+        APPROVE_LOCK_PREFIX + requisitionId, requisitionId.toString(),
+        approvalLockTimeoutMinutes, TimeUnit.MINUTES);
+    return Boolean.TRUE.equals(acquired);
+  }
+
+  @Override
+  public void unlockRequisitionForApproval(UUID requisitionId) {
+    redisTemplate.delete(APPROVE_LOCK_PREFIX + requisitionId);
   }
 }

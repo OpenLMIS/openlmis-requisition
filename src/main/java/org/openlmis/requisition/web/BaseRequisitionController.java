@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_APPROVAL_IN_PROGRESS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
@@ -109,6 +110,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseRequisitionController extends BaseController {
@@ -636,6 +639,35 @@ public abstract class BaseRequisitionController extends BaseController {
         throw new IdempotencyKeyException(new Message(IDEMPOTENCY_KEY_ALREADY_USED));
       }
       processedRequestsRedisRepository.addOrUpdate(key, null);
+    }
+  }
+
+  /** Locks the requisition before approval so two approvals cannot run at once. */
+  void acquireApprovalLock(UUID requisitionId, Profiler profiler) {
+    profiler.start("ACQUIRE_APPROVAL_LOCK");
+    if (!processedRequestsRedisRepository.lockRequisitionForApproval(requisitionId)) {
+      throw new IdempotencyKeyException(new Message(ERROR_APPROVAL_IN_PROGRESS, requisitionId));
+    }
+  }
+
+  void releaseApprovalLock(UUID requisitionId) {
+    processedRequestsRedisRepository.unlockRequisitionForApproval(requisitionId);
+  }
+
+  /**
+   * Releases the lock only after the transaction ends, so a concurrent approval cannot see
+   * uncommitted requisition status.
+   */
+  void releaseApprovalLockAfterTransaction(UUID requisitionId) {
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+        @Override
+        public void afterCompletion(int status) {
+          releaseApprovalLock(requisitionId);
+        }
+      });
+    } else {
+      releaseApprovalLock(requisitionId);
     }
   }
 

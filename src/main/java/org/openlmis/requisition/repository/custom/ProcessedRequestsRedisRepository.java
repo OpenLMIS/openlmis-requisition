@@ -24,4 +24,9 @@ public interface ProcessedRequestsRedisRepository {
   UUID findByIdempotencyKey(UUID resourceId);
 
   void addOrUpdate(UUID key, UUID resourceId);
+
+  /** Atomically takes a short-lived approval lock for the requisition; false if already held. */
+  boolean lockRequisitionForApproval(UUID requisitionId);
+
+  void unlockRequisitionForApproval(UUID requisitionId);
 }
