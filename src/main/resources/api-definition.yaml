@@ -743,6 +743,11 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
+                  supplyingFacility:
+                      displayName: supplyingFacility
+                      type: string
+                      required: false
+                      repeat: false
                   requisitionStatus:
                       displayName: supervisoryNode
                       type: string
