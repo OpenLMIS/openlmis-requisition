@@ -13,27 +13,33 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.repository.custom;
+package org.openlmis.requisition.web;
 
 import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
 
-public interface ProcessedRequestsRedisRepository {
+/** Holds an acquired approval lock: its owner token and the task that keeps its TTL alive. */
+final class ApprovalLock {
 
-  boolean exists(UUID idempotencyKey);
+  private final UUID requisitionId;
+  private final String token;
+  private final ScheduledFuture<?> renewalTask;
 
-  UUID findByIdempotencyKey(UUID resourceId);
+  ApprovalLock(UUID requisitionId, String token, ScheduledFuture<?> renewalTask) {
+    this.requisitionId = requisitionId;
+    this.token = token;
+    this.renewalTask = renewalTask;
+  }
 
-  void addOrUpdate(UUID key, UUID resourceId);
+  UUID getRequisitionId() {
+    return requisitionId;
+  }
 
-  /**
-   * Atomically takes the approval lock for the requisition and returns a unique owner token,
-   * or null if the lock is already held by someone else.
-   */
-  String lockRequisitionForApproval(UUID requisitionId);
+  String getToken() {
+    return token;
+  }
 
-  /** Releases the approval lock only if the given token still owns it; true when released. */
-  boolean unlockRequisitionForApproval(UUID requisitionId, String token);
-
-  /** Extends the lock's expiry only if the given token still owns it; true when renewed. */
-  boolean renewApprovalLock(UUID requisitionId, String token);
+  ScheduledFuture<?> getRenewalTask() {
+    return renewalTask;
+  }
 }

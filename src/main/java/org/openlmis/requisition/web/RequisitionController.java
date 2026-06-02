@@ -433,11 +433,11 @@ public class RequisitionController extends BaseRequisitionController {
 
     Profiler profiler = getProfiler("APPROVE_REQUISITION", requisitionId);
 
-    acquireApprovalLock(requisitionId, profiler);
+    ApprovalLock approvalLock = acquireApprovalLock(requisitionId, profiler);
     try {
       return doApproveRequisition(requisitionId, request, response, profiler);
     } finally {
-      releaseApprovalLockAfterTransaction(requisitionId);
+      releaseApprovalLockAfterTransaction(approvalLock);
     }
   }
 

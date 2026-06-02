@@ -204,7 +204,8 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     mockSearchSupervisoryNodeByProgramAndFacility();
 
     when(processedRequestsRedisRepository.exists(any())).thenReturn(false);
-    when(processedRequestsRedisRepository.lockRequisitionForApproval(anyUuid())).thenReturn(true);
+    when(processedRequestsRedisRepository.lockRequisitionForApproval(anyUuid()))
+        .thenReturn(UUID.randomUUID().toString());
 
     when(approvedProductReferenceDataService.getApprovedProducts(anyUuid(), anyUuid()))
         .thenReturn(new ApproveProductsAggregator(emptyList(), UUID.randomUUID()));

@@ -36,6 +36,7 @@ import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -68,6 +69,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -250,6 +252,9 @@ public class RequisitionControllerTest {
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
 
   @Mock
+  private ScheduledExecutorService approvalLockRenewalScheduler;
+
+  @Mock
   private DateHelper dateHelper;
 
   @Mock
@@ -345,7 +350,7 @@ public class RequisitionControllerTest {
     when(processedRequestsRedisRepository.exists(any()))
         .thenReturn(false);
     when(processedRequestsRedisRepository.lockRequisitionForApproval(any(UUID.class)))
-        .thenReturn(true);
+        .thenReturn(UUID.randomUUID().toString());
 
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER))
         .thenReturn(null);
@@ -1103,7 +1108,7 @@ public class RequisitionControllerTest {
   public void shouldRejectApprovalWhenAnotherApprovalIsInProgress() {
     // OLMIS-8206 (W1): a concurrent approval of the same requisition is rejected with 409
     when(processedRequestsRedisRepository.lockRequisitionForApproval(any(UUID.class)))
-        .thenReturn(false);
+        .thenReturn(null);
 
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
   }
@@ -1123,7 +1128,7 @@ public class RequisitionControllerTest {
     }
 
     verify(processedRequestsRedisRepository)
-        .unlockRequisitionForApproval(authorizedRequsition.getId());
+        .unlockRequisitionForApproval(eq(authorizedRequsition.getId()), anyString());
   }
 
   @Test(expected = PermissionMessageException.class)

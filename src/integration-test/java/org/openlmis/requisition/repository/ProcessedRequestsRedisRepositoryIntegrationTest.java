@@ -17,6 +17,7 @@ package org.openlmis.requisition.repository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -77,14 +78,48 @@ public class ProcessedRequestsRedisRepositoryIntegrationTest {
   @Test
   public void shouldLockRequisitionForApprovalOnlyOnceUntilUnlocked() {
     UUID requisitionId = UUID.randomUUID();
+    String token = null;
     try {
-      assertTrue(redisRepository.lockRequisitionForApproval(requisitionId));
-      assertFalse(redisRepository.lockRequisitionForApproval(requisitionId));
+      token = redisRepository.lockRequisitionForApproval(requisitionId);
+      assertNotNull(token);
+      assertNull(redisRepository.lockRequisitionForApproval(requisitionId));
 
-      redisRepository.unlockRequisitionForApproval(requisitionId);
-      assertTrue(redisRepository.lockRequisitionForApproval(requisitionId));
+      assertTrue(redisRepository.unlockRequisitionForApproval(requisitionId, token));
+      token = redisRepository.lockRequisitionForApproval(requisitionId);
+      assertNotNull(token);
     } finally {
-      redisRepository.unlockRequisitionForApproval(requisitionId);
+      if (token != null) {
+        redisRepository.unlockRequisitionForApproval(requisitionId, token);
+      }
+    }
+  }
+
+  @Test
+  public void shouldNotUnlockApprovalWhenTokenDoesNotMatch() {
+    // OLMIS-8206: an approval whose lock expired and was taken over must not release the new lock.
+    UUID requisitionId = UUID.randomUUID();
+    String token = redisRepository.lockRequisitionForApproval(requisitionId);
+    try {
+      assertNotNull(token);
+      assertFalse(redisRepository.unlockRequisitionForApproval(requisitionId, "stale-token"));
+      // the real lock is still held, so it cannot be acquired again
+      assertNull(redisRepository.lockRequisitionForApproval(requisitionId));
+    } finally {
+      redisRepository.unlockRequisitionForApproval(requisitionId, token);
+    }
+  }
+
+  @Test
+  public void shouldRenewApprovalLockOnlyForMatchingToken() {
+    // OLMIS-8206: only the current holder may extend the lock's expiry.
+    UUID requisitionId = UUID.randomUUID();
+    String token = redisRepository.lockRequisitionForApproval(requisitionId);
+    try {
+      assertNotNull(token);
+      assertTrue(redisRepository.renewApprovalLock(requisitionId, token));
+      assertFalse(redisRepository.renewApprovalLock(requisitionId, "stale-token"));
+    } finally {
+      redisRepository.unlockRequisitionForApproval(requisitionId, token);
     }
   }
 }

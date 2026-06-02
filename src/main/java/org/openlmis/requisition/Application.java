@@ -18,6 +18,8 @@ package org.openlmis.requisition;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.PostConstruct;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.callback.Callback;
@@ -209,6 +211,11 @@ public class Application {
     RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(connectionFactory(properties));
     return redisTemplate;
+  }
+
+  @Bean(destroyMethod = "shutdownNow")
+  public ScheduledExecutorService approvalLockRenewalScheduler() {
+    return Executors.newScheduledThreadPool(4);
   }
 
   @Bean

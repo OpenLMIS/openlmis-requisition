@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.repository.custom.impl;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -24,6 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -32,11 +36,21 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
   private static final String HASH_KEY = "PROCESSED_REQUESTS";
   private static final String APPROVE_LOCK_PREFIX = "REQUISITION_APPROVE_LOCK:";
 
+  // Release/renew only when the stored value still equals our token, so an approval that outlived
+  // its TTL cannot delete or extend a lock that a later approval has already taken over.
+  private static final RedisScript<Long> UNLOCK_SCRIPT = new DefaultRedisScript<>(
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) "
+          + "else return 0 end", Long.class);
+  private static final RedisScript<Long> RENEW_SCRIPT = new DefaultRedisScript<>(
+      "if redis.call('get', KEYS[1]) == ARGV[1] "
+          + "then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end", Long.class);
+
   @Value("${approval.lock.timeoutMinutes}")
   private long approvalLockTimeoutMinutes;
 
   private RedisTemplate<String, String> redisTemplate;
   private HashOperations hashOperations;
+  private StringRedisTemplate lockRedisTemplate;
 
   @Autowired
   public ProcessedRequestsRedisRepositoryImpl(RedisTemplate<String, String> redisTemplate) {
@@ -46,6 +60,10 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
   @PostConstruct
   private void init() {
     hashOperations = redisTemplate.opsForHash();
+    // Plain-string template for the lock keys so the Lua scripts compare tokens and pass the
+    // expiry as readable values; the shared template uses JDK serialization for idempotency data.
+    lockRedisTemplate = new StringRedisTemplate(redisTemplate.getConnectionFactory());
+    lockRedisTemplate.afterPropertiesSet();
   }
 
   @Override
@@ -68,16 +86,29 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
   }
 
   @Override
-  public boolean lockRequisitionForApproval(UUID requisitionId) {
-    // Atomic acquire-if-absent with a TTL crash safety-net; normally released in a finally block.
-    Boolean acquired = redisTemplate.opsForValue().setIfAbsent(
-        APPROVE_LOCK_PREFIX + requisitionId, requisitionId.toString(),
+  public String lockRequisitionForApproval(UUID requisitionId) {
+    // Atomic acquire-if-absent with a TTL crash safety-net. The value is a per-acquisition token
+    // so release and renewal can tell whether the lock sitting here is still ours.
+    String token = UUID.randomUUID().toString();
+    Boolean acquired = lockRedisTemplate.opsForValue().setIfAbsent(
+        APPROVE_LOCK_PREFIX + requisitionId, token,
         approvalLockTimeoutMinutes, TimeUnit.MINUTES);
-    return Boolean.TRUE.equals(acquired);
+    return Boolean.TRUE.equals(acquired) ? token : null;
   }
 
   @Override
-  public void unlockRequisitionForApproval(UUID requisitionId) {
-    redisTemplate.delete(APPROVE_LOCK_PREFIX + requisitionId);
+  public boolean unlockRequisitionForApproval(UUID requisitionId, String token) {
+    Long released = lockRedisTemplate.execute(UNLOCK_SCRIPT,
+        Collections.singletonList(APPROVE_LOCK_PREFIX + requisitionId), token);
+    return Long.valueOf(1).equals(released);
+  }
+
+  @Override
+  public boolean renewApprovalLock(UUID requisitionId, String token) {
+    long leaseMillis = TimeUnit.MINUTES.toMillis(approvalLockTimeoutMinutes);
+    Long renewed = lockRedisTemplate.execute(RENEW_SCRIPT,
+        Collections.singletonList(APPROVE_LOCK_PREFIX + requisitionId),
+        token, Long.toString(leaseMillis));
+    return Long.valueOf(1).equals(renewed);
   }
 }
