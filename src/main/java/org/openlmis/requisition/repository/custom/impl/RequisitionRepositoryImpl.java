@@ -99,6 +99,7 @@ public class RequisitionRepositoryImpl
   private static final String CREATED_DATE = "createdDate";
   private static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   private static final String SUPERVISORY_NODE_ID = "supervisoryNodeId";
+  private static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   private static final String AUTHORIZED_DATE = "authorizedDate";
   private static final String MODIFIED_DATE = "modifiedDate";
 
@@ -476,6 +477,8 @@ public class RequisitionRepositoryImpl
         PROCESSING_PERIOD_ID, params.getProcessingPeriod());
     predicate = addEqualFilter(predicate, builder, root,
         SUPERVISORY_NODE_ID, params.getSupervisoryNode());
+    predicate = addEqualFilter(predicate, builder, root,
+        SUPPLYING_FACILITY_ID, params.getSupplyingFacility());
     predicate = addInFilter(predicate, builder, root, STATUS, params.getRequisitionStatuses());
     predicate = addEqualFilter(predicate, builder, root, EMERGENCY, params.getEmergency());
 

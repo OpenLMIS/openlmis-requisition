@@ -558,7 +558,7 @@ public class RequisitionController extends BaseRequisitionController {
 
     profiler.start("SEARCH_REQUISITIONS");
     RequisitionSearchParams params = new DefaultRequisitionSearchParams(
-        null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null,
         EnumSet.of(RequisitionStatus.SUBMITTED));
 
     Page<Requisition> submittedRequisitions = requisitionService

@@ -8,6 +8,8 @@ to ensure notifications are returned in the correct language.
 * [ODRC-101](https://openlmis.atlassian.net/browse/ODRC-101): Panel 'Number of Requisitions to be 
   created this month' on home page should not count emergency requisitions
 * [OLMIS-8231](https://openlmis.atlassian.net/browse/OLMIS-8231): Preserve Jasper template parameters order as declared in the .jrxml file.
+* [OLMIS-8235](https://openlmis.atlassian.net/browse/OLMIS-8235): Add override query parameter to Jasper template upload to safely replace an existing template.
+* [OLMIS-7779](https://openlmis.atlassian.net/browse/OLMIS-7779): Add supplyingFacility query parameter to /api/requisitions/search.
 
 Bug fixes:
 * [MALAWISUP-7022](https://openlmis.atlassian.net/browse/MALAWISUP-7022): Fix /api/requisitions/search failing for users with many permissions (Postgres bind-parameter limit).

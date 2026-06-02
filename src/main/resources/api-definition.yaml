@@ -743,6 +743,11 @@ resourceTypes:
                       type: string
                       required: false
                       repeat: false
+                  supplyingFacility:
+                      displayName: supplyingFacility
+                      type: string
+                      required: false
+                      repeat: false
                   requisitionStatus:
                       displayName: supervisoryNode
                       type: string
@@ -984,6 +989,11 @@ resourceTypes:
                     description:
                          displayName: Description of Template
                          type: string
+                         required: false
+                         repeat: false
+                    override:
+                         displayName: Replace existing template with the same name
+                         type: boolean
                          required: false
                          repeat: false
           responses:

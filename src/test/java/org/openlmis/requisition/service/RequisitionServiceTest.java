@@ -1297,6 +1297,7 @@ public class RequisitionServiceTest {
     RequisitionSearchParams params = new DefaultRequisitionSearchParams(
         requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), requisition.getSupervisoryNodeId(),
+        null,
         requisition.getEmergency(), requisition.getCreatedDate().minusDays(2).toLocalDate(),
         requisition.getCreatedDate().plusDays(2).toLocalDate(),
         requisition.getModifiedDate().minusDays(2), requisition.getModifiedDate().plusDays(2),
@@ -1359,6 +1360,7 @@ public class RequisitionServiceTest {
     final RequisitionSearchParams params = new DefaultRequisitionSearchParams(
         requisition.getFacilityId(), requisition.getProgramId(),
         requisition.getProcessingPeriodId(), requisition.getSupervisoryNodeId(),
+        null,
         requisition.getEmergency(), requisition.getCreatedDate().minusDays(2).toLocalDate(),
         requisition.getCreatedDate().plusDays(2).toLocalDate(),
         requisition.getModifiedDate().minusDays(2), requisition.getModifiedDate().plusDays(2),

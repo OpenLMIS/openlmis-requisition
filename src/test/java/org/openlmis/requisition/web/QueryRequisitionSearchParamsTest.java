@@ -53,6 +53,7 @@ public class QueryRequisitionSearchParamsTest
   private static final String INITIATED_DATE_TO = "initiatedDateTo";
   private static final String PROCESSING_PERIOD = "processingPeriod";
   private static final String SUPERVISORY_NODE = "supervisoryNode";
+  private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String REQUISITION_STATUS = "requisitionStatus";
   private static final String EMERGENCY = "emergency";
   private static final String MODIFIED_DATE_FROM = "modifiedDateFrom";
@@ -161,6 +162,21 @@ public class QueryRequisitionSearchParamsTest
   }
 
   @Test
+  public void shouldGetSupplyingFacilityValueFromParameters() {
+    queryMap.add(SUPPLYING_FACILITY, id.toString());
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
+
+    assertEquals(id, params.getSupplyingFacility());
+  }
+
+  @Test
+  public void shouldGetNullIfMapHasNoSupplyingFacilityProperty() {
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
+
+    assertNull(params.getSupplyingFacility());
+  }
+
+  @Test
   public void shouldGetRequisitionStatusValueFromParameters() {
     queryMap.add(REQUISITION_STATUS, RequisitionStatus.APPROVED.toString());
     queryMap.add(REQUISITION_STATUS, RequisitionStatus.AUTHORIZED.toString());
@@ -262,6 +278,7 @@ public class QueryRequisitionSearchParamsTest
   protected void prepare(ToStringVerifier<QueryRequisitionSearchParams> verifier) {
     verifier.ignore("FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
         "MODIFIED_DATE_FROM", "MODIFIED_DATE_TO", "PROCESSING_PERIOD",
-        "SUPERVISORY_NODE", "REQUISITION_STATUS", "EMERGENCY", "ALL_PARAMETERS");
+        "SUPERVISORY_NODE", "SUPPLYING_FACILITY", "REQUISITION_STATUS", "EMERGENCY",
+        "ALL_PARAMETERS");
   }
 }

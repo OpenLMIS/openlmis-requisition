@@ -24,6 +24,7 @@ import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.exception.ContentNotFoundMessageException;
 import org.openlmis.requisition.exception.JasperReportViewException;
 import org.openlmis.requisition.exception.ReportingException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
@@ -42,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -87,7 +89,8 @@ public class JasperTemplateController extends BaseController {
   @RequestMapping(method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public void createJasperReportTemplate(
-      @RequestPart("file") MultipartFile file, String name, String description)
+      @RequestPart("file") MultipartFile file, String name, String description,
+      @RequestParam(value = "override", required = false) Boolean override)
       throws ReportingException {
     permissionService.canEditReportTemplates().throwExceptionIfHasErrors();
 
@@ -98,6 +101,10 @@ public class JasperTemplateController extends BaseController {
           description);
       jasperTemplateService.validateFileAndInsertTemplate(jasperTemplateToUpdate, file);
     } else {
+      if (!Boolean.TRUE.equals(override)) {
+        throw new ValidationMessageException(
+            new Message(MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST, name));
+      }
       LOGGER.debug("Template found, updating template");
       jasperTemplateToUpdate.setDescription(description);
       jasperTemplateService.validateFileAndSaveTemplate(jasperTemplateToUpdate, file);
