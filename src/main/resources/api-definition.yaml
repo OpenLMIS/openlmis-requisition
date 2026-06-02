@@ -991,6 +991,11 @@ resourceTypes:
                          type: string
                          required: false
                          repeat: false
+                    override:
+                         displayName: Replace existing template with the same name
+                         type: boolean
+                         required: false
+                         repeat: false
           responses:
                 200:
                   headers:
