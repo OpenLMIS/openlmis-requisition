@@ -31,6 +31,8 @@ public interface RequisitionSearchParams {
 
   UUID getSupervisoryNode();
 
+  UUID getSupplyingFacility();
+
   Boolean getEmergency();
 
   LocalDate getInitiatedDateFrom();

@@ -519,7 +519,7 @@ public class JasperReportsViewServiceTest {
         (isMissingRnR) ? Collections.emptyList() : singletonList(mockRequisition));
 
     RequisitionSearchParams params = new DefaultRequisitionSearchParams(
-        facilityId, program.getId(), period.getId(), null, null, null, null,
+        facilityId, program.getId(), period.getId(), null, null, null, null, null,
         null, null, EnumSet.of(APPROVED, RELEASED, RELEASED_WITHOUT_ORDER));
 
     when(requisitionService.searchRequisitions(eq(params), any()))

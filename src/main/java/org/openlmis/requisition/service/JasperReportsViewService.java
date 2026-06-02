@@ -347,7 +347,7 @@ public class JasperReportsViewService {
       if (facility.getActive()) {
         RequisitionSearchParams params = new DefaultRequisitionSearchParams(
             facility.getId(), program.getId(), processingPeriod.getId(),
-            null, null, null, null, null, null, validStatuses);
+            null, null, null, null, null, null, null, validStatuses);
 
         PageRequest pageRequest = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER,
             Pagination.NO_PAGINATION);

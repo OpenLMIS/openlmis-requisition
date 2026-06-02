@@ -31,6 +31,7 @@ public class DefaultRequisitionSearchParamsDataBuilder implements
   private UUID program;
   private UUID processingPeriod;
   private UUID supervisoryNode;
+  private UUID supplyingFacility;
 
   private Boolean emergency;
 
@@ -52,6 +53,7 @@ public class DefaultRequisitionSearchParamsDataBuilder implements
         program,
         processingPeriod,
         supervisoryNode,
+        supplyingFacility,
         emergency,
         initiatedDateFrom,
         initiatedDateTo,
@@ -78,6 +80,11 @@ public class DefaultRequisitionSearchParamsDataBuilder implements
 
   public DefaultRequisitionSearchParamsDataBuilder withSupervisoryNode(UUID supervisoryNode) {
     this.supervisoryNode = supervisoryNode;
+    return this;
+  }
+
+  public DefaultRequisitionSearchParamsDataBuilder withSupplyingFacility(UUID supplyingFacility) {
+    this.supplyingFacility = supplyingFacility;
     return this;
   }
 
