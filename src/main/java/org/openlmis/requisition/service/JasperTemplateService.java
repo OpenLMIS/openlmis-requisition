@@ -150,11 +150,13 @@ public class JasperTemplateService {
   private void setTemplateParameters(JasperTemplate jasperTemplate, JRParameter[] jrParameters)
       throws ReportingException {
     ArrayList<JasperTemplateParameter> parameters = new ArrayList<>();
+    int order = 0;
 
     for (JRParameter jrParameter : jrParameters) {
       if (!jrParameter.isSystemDefined() && jrParameter.isForPrompting()) {
         JasperTemplateParameter jasperTemplateParameter = createParameter(jrParameter);
         jasperTemplateParameter.setTemplate(jasperTemplate);
+        jasperTemplateParameter.setDisplayOrder(order++);
         parameters.add(jasperTemplateParameter);
       }
     }

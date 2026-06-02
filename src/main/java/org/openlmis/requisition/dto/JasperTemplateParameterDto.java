@@ -42,6 +42,7 @@ public class JasperTemplateParameterDto implements JasperTemplateParameter.Impor
   private String displayProperty;
   private String description;
   private Boolean required;
+  private Integer displayOrder;
   private List<String> options;
   private List<JasperTemplateParameterDependencyDto> dependencies;
 
