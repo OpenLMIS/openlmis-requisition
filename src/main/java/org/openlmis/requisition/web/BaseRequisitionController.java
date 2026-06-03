@@ -663,6 +663,9 @@ public abstract class BaseRequisitionController extends BaseController {
    * Releases the lock only after the transaction ends, so a concurrent approval cannot see
    * uncommitted requisition status.
    */
+  // S1604: TransactionSynchronization has only default methods in Spring 5.2, so it is not a
+  // functional interface and this anonymous class cannot be rewritten as a lambda.
+  @SuppressWarnings("java:S1604")
   void releaseApprovalLockAfterTransaction(UUID requisitionId, String token) {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
       TransactionSynchronizationManager.registerSynchronization(
