@@ -16,11 +16,17 @@
 package org.openlmis.requisition.repository.custom.impl;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.requisition.repository.custom.ProcessedRequestsRedisRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
@@ -45,16 +51,23 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
       "if redis.call('get', KEYS[1]) == ARGV[1] "
           + "then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end", Long.class);
 
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ProcessedRequestsRedisRepositoryImpl.class);
+
   @Value("${approval.lock.timeoutMinutes}")
   private long approvalLockTimeoutMinutes;
 
-  private RedisTemplate<String, String> redisTemplate;
+  private final RedisTemplate<String, String> redisTemplate;
+  private final ScheduledExecutorService approvalLockRenewalScheduler;
+  private final Map<String, ScheduledFuture<?>> approvalLockRenewals = new ConcurrentHashMap<>();
   private HashOperations hashOperations;
   private StringRedisTemplate lockRedisTemplate;
 
   @Autowired
-  public ProcessedRequestsRedisRepositoryImpl(RedisTemplate<String, String> redisTemplate) {
+  public ProcessedRequestsRedisRepositoryImpl(RedisTemplate<String, String> redisTemplate,
+      ScheduledExecutorService approvalLockRenewalScheduler) {
     this.redisTemplate = redisTemplate;
+    this.approvalLockRenewalScheduler = approvalLockRenewalScheduler;
   }
 
   @PostConstruct
@@ -93,11 +106,24 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
     Boolean acquired = lockRedisTemplate.opsForValue().setIfAbsent(
         APPROVE_LOCK_PREFIX + requisitionId, token,
         approvalLockTimeoutMinutes, TimeUnit.MINUTES);
-    return Boolean.TRUE.equals(acquired) ? token : null;
+    if (!Boolean.TRUE.equals(acquired)) {
+      return null;
+    }
+    // Keep the lock alive while the approval runs; if this node dies the renewal stops and the
+    // TTL frees the lock on its own.
+    long intervalMillis = TimeUnit.MINUTES.toMillis(approvalLockTimeoutMinutes) / 3;
+    approvalLockRenewals.put(token, approvalLockRenewalScheduler.scheduleWithFixedDelay(
+        () -> renewQuietly(requisitionId, token), intervalMillis, intervalMillis,
+        TimeUnit.MILLISECONDS));
+    return token;
   }
 
   @Override
   public boolean unlockRequisitionForApproval(UUID requisitionId, String token) {
+    ScheduledFuture<?> renewal = approvalLockRenewals.remove(token);
+    if (renewal != null) {
+      renewal.cancel(false);
+    }
     Long released = lockRedisTemplate.execute(UNLOCK_SCRIPT,
         Collections.singletonList(APPROVE_LOCK_PREFIX + requisitionId), token);
     return Long.valueOf(1).equals(released);
@@ -110,5 +136,14 @@ public class ProcessedRequestsRedisRepositoryImpl implements ProcessedRequestsRe
         Collections.singletonList(APPROVE_LOCK_PREFIX + requisitionId),
         token, Long.toString(leaseMillis));
     return Long.valueOf(1).equals(renewed);
+  }
+
+  private void renewQuietly(UUID requisitionId, String token) {
+    try {
+      renewApprovalLock(requisitionId, token);
+    } catch (RuntimeException ex) {
+      // Swallow so a transient Redis error does not cancel the recurring renewal task.
+      LOGGER.warn("Could not renew approval lock for requisition {}", requisitionId, ex);
+    }
   }
 }

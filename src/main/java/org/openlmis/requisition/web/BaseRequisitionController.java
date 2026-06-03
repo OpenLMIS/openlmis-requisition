@@ -39,9 +39,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -187,12 +184,6 @@ public abstract class BaseRequisitionController extends BaseController {
 
   @Autowired
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
-
-  @Autowired
-  private ScheduledExecutorService approvalLockRenewalScheduler;
-
-  @Value("${approval.lock.timeoutMinutes}")
-  private long approvalLockTimeoutMinutes;
 
   @Autowired
   private RequisitionSplitter requisitionSplitter;
@@ -651,57 +642,38 @@ public abstract class BaseRequisitionController extends BaseController {
     }
   }
 
-  /** Locks the requisition before approval so two approvals cannot run at once. */
-  ApprovalLock acquireApprovalLock(UUID requisitionId, Profiler profiler) {
+  /**
+   * Locks the requisition before approval so two approvals cannot run at once. Returns the owner
+   * token needed to release it; the repository renews the lock until it is released.
+   */
+  String acquireApprovalLock(UUID requisitionId, Profiler profiler) {
     profiler.start("ACQUIRE_APPROVAL_LOCK");
     String token = processedRequestsRedisRepository.lockRequisitionForApproval(requisitionId);
     if (token == null) {
       throw new IdempotencyKeyException(new Message(ERROR_APPROVAL_IN_PROGRESS, requisitionId));
     }
-    return new ApprovalLock(requisitionId, token, startLockRenewal(requisitionId, token));
+    return token;
   }
 
-  /**
-   * Keeps the lock alive while the approval runs, so an approval slower than the TTL does not let
-   * a second one in. If the holder dies the renewal stops and the TTL frees the lock on its own.
-   */
-  private ScheduledFuture<?> startLockRenewal(UUID requisitionId, String token) {
-    long intervalMillis = TimeUnit.MINUTES.toMillis(approvalLockTimeoutMinutes) / 3;
-    return approvalLockRenewalScheduler.scheduleWithFixedDelay(() -> {
-      try {
-        processedRequestsRedisRepository.renewApprovalLock(requisitionId, token);
-      } catch (RuntimeException ex) {
-        // Swallow so a transient Redis error does not cancel the recurring renewal task.
-        extLogger.warn("Could not renew approval lock for requisition {}", requisitionId, ex);
-      }
-    }, intervalMillis, intervalMillis, TimeUnit.MILLISECONDS);
-  }
-
-  void releaseApprovalLock(ApprovalLock lock) {
-    if (lock == null) {
-      return;
-    }
-    if (lock.getRenewalTask() != null) {
-      lock.getRenewalTask().cancel(false);
-    }
-    processedRequestsRedisRepository
-        .unlockRequisitionForApproval(lock.getRequisitionId(), lock.getToken());
+  void releaseApprovalLock(UUID requisitionId, String token) {
+    processedRequestsRedisRepository.unlockRequisitionForApproval(requisitionId, token);
   }
 
   /**
    * Releases the lock only after the transaction ends, so a concurrent approval cannot see
    * uncommitted requisition status.
    */
-  void releaseApprovalLockAfterTransaction(ApprovalLock lock) {
+  void releaseApprovalLockAfterTransaction(UUID requisitionId, String token) {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-        @Override
-        public void afterCompletion(int status) {
-          releaseApprovalLock(lock);
-        }
-      });
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+              releaseApprovalLock(requisitionId, token);
+            }
+          });
     } else {
-      releaseApprovalLock(lock);
+      releaseApprovalLock(requisitionId, token);
     }
   }
 

@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
@@ -69,7 +68,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -250,9 +248,6 @@ public class RequisitionControllerTest {
 
   @Mock
   private ProcessedRequestsRedisRepository processedRequestsRedisRepository;
-
-  @Mock
-  private ScheduledExecutorService approvalLockRenewalScheduler;
 
   @Mock
   private DateHelper dateHelper;
@@ -1120,13 +1115,14 @@ public class RequisitionControllerTest {
     doThrow(mock(PermissionMessageException.class)).when(requisitionService)
         .validateCanApproveRequisition(any(Requisition.class), any(UUID.class));
 
+    boolean approvalFailed = false;
     try {
       requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
-      fail("expected the approval to fail");
     } catch (PermissionMessageException expected) {
-      assertNotNull(expected);
+      approvalFailed = true;
     }
 
+    assertTrue("expected the approval to fail", approvalFailed);
     verify(processedRequestsRedisRepository)
         .unlockRequisitionForApproval(eq(authorizedRequsition.getId()), anyString());
   }
