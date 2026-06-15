@@ -22,5 +22,6 @@ public enum OrderStatus {
   RECEIVED,
   TRANSFER_FAILED,
   IN_ROUTE,
-  READY_TO_PACK
+  READY_TO_PACK,
+  CANCELLED
 }
