@@ -2,6 +2,7 @@ Upcoming Version (WIP)
 ==================
 
 Improvements:
+* [OPSD-45](https://openlmis.atlassian.net/browse/OPSD-45): Add CANCELLED order status.
 * Stabilized consul registration and health checks
 * [ODRC-67](https://openlmis.atlassian.net/browse/ODRC-67): Added a locale cookie to communication between services
 to ensure notifications are returned in the correct language.
