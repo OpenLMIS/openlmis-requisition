@@ -24,4 +24,16 @@ public interface ProcessedRequestsRedisRepository {
   UUID findByIdempotencyKey(UUID resourceId);
 
   void addOrUpdate(UUID key, UUID resourceId);
+
+  /**
+   * Atomically takes the approval lock for the requisition and returns a unique owner token,
+   * or null if the lock is already held by someone else.
+   */
+  String lockRequisitionForApproval(UUID requisitionId);
+
+  /** Releases the approval lock only if the given token still owns it; true when released. */
+  boolean unlockRequisitionForApproval(UUID requisitionId, String token);
+
+  /** Extends the lock's expiry only if the given token still owns it; true when renewed. */
+  boolean renewApprovalLock(UUID requisitionId, String token);
 }

@@ -18,6 +18,7 @@ package org.openlmis.requisition.web;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_APPROVAL_IN_PROGRESS;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_PERIOD_END_DATE_WRONG;
@@ -109,6 +110,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseRequisitionController extends BaseController {
@@ -636,6 +639,44 @@ public abstract class BaseRequisitionController extends BaseController {
         throw new IdempotencyKeyException(new Message(IDEMPOTENCY_KEY_ALREADY_USED));
       }
       processedRequestsRedisRepository.addOrUpdate(key, null);
+    }
+  }
+
+  /**
+   * Locks the requisition before approval so two approvals cannot run at once. Returns the owner
+   * token needed to release it; the repository renews the lock until it is released.
+   */
+  String acquireApprovalLock(UUID requisitionId, Profiler profiler) {
+    profiler.start("ACQUIRE_APPROVAL_LOCK");
+    String token = processedRequestsRedisRepository.lockRequisitionForApproval(requisitionId);
+    if (token == null) {
+      throw new IdempotencyKeyException(new Message(ERROR_APPROVAL_IN_PROGRESS, requisitionId));
+    }
+    return token;
+  }
+
+  void releaseApprovalLock(UUID requisitionId, String token) {
+    processedRequestsRedisRepository.unlockRequisitionForApproval(requisitionId, token);
+  }
+
+  /**
+   * Releases the lock only after the transaction ends, so a concurrent approval cannot see
+   * uncommitted requisition status.
+   */
+  // S1604: TransactionSynchronization has only default methods in Spring 5.2, so it is not a
+  // functional interface and this anonymous class cannot be rewritten as a lambda.
+  @SuppressWarnings("java:S1604")
+  void releaseApprovalLockAfterTransaction(UUID requisitionId, String token) {
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+              releaseApprovalLock(requisitionId, token);
+            }
+          });
+    } else {
+      releaseApprovalLock(requisitionId, token);
     }
   }
 

@@ -35,6 +35,7 @@ import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -343,6 +344,8 @@ public class RequisitionControllerTest {
 
     when(processedRequestsRedisRepository.exists(any()))
         .thenReturn(false);
+    when(processedRequestsRedisRepository.lockRequisitionForApproval(any(UUID.class)))
+        .thenReturn(UUID.randomUUID().toString());
 
     when(request.getHeader(IDEMPOTENCY_KEY_HEADER))
         .thenReturn(null);
@@ -1094,6 +1097,34 @@ public class RequisitionControllerTest {
     requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
 
     verify(requisitionService, never()).convertToOrder(anyList(), any(UserDto.class));
+  }
+
+  @Test(expected = IdempotencyKeyException.class)
+  public void shouldRejectApprovalWhenAnotherApprovalIsInProgress() {
+    // OLMIS-8206 (W1): a concurrent approval of the same requisition is rejected with 409
+    when(processedRequestsRedisRepository.lockRequisitionForApproval(any(UUID.class)))
+        .thenReturn(null);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+  }
+
+  @Test
+  public void shouldReleaseApprovalLockWhenApprovalFails() {
+    // OLMIS-8206 (W1): the approval lock must still be released when the approval throws
+    mockSupervisoryNodeForApprove();
+    doThrow(mock(PermissionMessageException.class)).when(requisitionService)
+        .validateCanApproveRequisition(any(Requisition.class), any(UUID.class));
+
+    boolean approvalFailed = false;
+    try {
+      requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+    } catch (PermissionMessageException expected) {
+      approvalFailed = true;
+    }
+
+    assertTrue("expected the approval to fail", approvalFailed);
+    verify(processedRequestsRedisRepository)
+        .unlockRequisitionForApproval(eq(authorizedRequsition.getId()), anyString());
   }
 
   @Test(expected = PermissionMessageException.class)

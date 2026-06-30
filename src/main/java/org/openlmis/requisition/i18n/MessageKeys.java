@@ -84,6 +84,8 @@ public abstract class MessageKeys {
       + ".submittedRequisitionsNotFound";
   public static final String ERROR_REQUISITION_MUST_BE_AUTHORIZED = ERROR_PREFIX
       + ".approve.requisitionMustBeAuthorized";
+  public static final String ERROR_APPROVAL_IN_PROGRESS = ERROR_PREFIX
+      + ".approve.inProgress";
   public static final String ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION = ERROR_PREFIX
       + ".approve.noPermissionForSupervisoryNode";
   public static final String ERROR_PERIOD_END_DATE_WRONG = ERROR_PREFIX
