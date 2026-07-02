@@ -1,5 +1,6 @@
 8.6.0-SNAPSHOT (WIP)
 ==================
+* [OLMIS-8176](https://openlmis.atlassian.net/browse/OLMIS-8176): Added a Pack Size column to the requisition printed report.
 
 8.5.1 / 2026-06-09
 ==================
