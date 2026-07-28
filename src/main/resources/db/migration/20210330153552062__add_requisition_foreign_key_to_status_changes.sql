@@ -1,0 +1,4 @@
+alter table requisition.status_changes
+add constraint fk_status_changes_requisitions
+foreign key (requisitionid)
+references requisition.requisitions;
