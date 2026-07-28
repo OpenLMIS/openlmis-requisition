@@ -15,22 +15,6 @@ services:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false'
     env_file: .env
 
-  sonar:
-    image: openlmis/dev:10
-    links:
-      - db
-      - redis
-      - log
-    volumes:
-      - '.:/app'
-    entrypoint:
-      - 'gradle'
-    command:
-      - 'sonarqube'
-    environment:
-      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
-    env_file: .env
-
   demo-data:
     image: openlmis/dev:10
     links:
