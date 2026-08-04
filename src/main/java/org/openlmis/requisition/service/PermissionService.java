@@ -54,6 +54,8 @@ public class PermissionService {
 
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
 
+  public static final String STOCK_CARDS_VIEW = "STOCK_CARDS_VIEW";
+
   @Autowired
   private RightAssignmentPermissionValidator rightAssignmentPermissionValidator;
 
@@ -279,6 +281,19 @@ public class PermissionService {
     return ValidationResult
         .noPermission(ERROR_NO_FOLLOWING_PERMISSION_FOR_REQUISITION_UPDATE,
             status.toString(), rightName);
+  }
+
+  /**
+   * Checks whether the current user may view stock cards at the given facility. Used by the
+   * supplying-facility stock-on-hand feature to gate display of the value, not the cross-service
+   * stock fetch itself (which uses the service account). Evaluated under the ambient user token.
+   *
+   * @param facilityId the resolved supplying facility to evaluate the right at
+   * @param programId  the requisition program
+   * @return success when the user holds STOCK_CARDS_VIEW at the facility, no-permission otherwise
+   */
+  public ValidationResult canViewStockCards(UUID facilityId, UUID programId) {
+    return checkRight(STOCK_CARDS_VIEW, facilityId, programId);
   }
 
   private ValidationResult checkRight(String rightName) {
