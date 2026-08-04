@@ -20,7 +20,12 @@ public enum SourceType {
   CALCULATED,
   REFERENCE_DATA,
   STOCK_CARDS,
-  PREVIOUS_REQUISITION;
+  PREVIOUS_REQUISITION,
+  // Read-only value derived from the supplying facility's stock and computed at read time. It is
+  // deliberately neither a reference nor a stock source: it has no backing requisition line-item
+  // property, so treating it as a stock source would make the line-item stock invariants reflect on
+  // a non-existent property. Must stay LAST - columns_maps.source is persisted by enum ordinal.
+  SUPPLYING_FACILITY_STOCK;
 
   public boolean isReferenceSource() {
     return REFERENCE_DATA.equals(this) || STOCK_CARDS.equals(this);

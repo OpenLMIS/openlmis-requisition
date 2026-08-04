@@ -29,4 +29,21 @@ public class SourceTypeTest {
     assertFalse(SourceType.USER_INPUT.isReferenceSource());
     assertFalse(SourceType.CALCULATED.isReferenceSource());
   }
+
+  @Test
+  public void shouldCheckIfSourceIsStockType() {
+    assertTrue(SourceType.STOCK_CARDS.isStockSource());
+    assertFalse(SourceType.USER_INPUT.isStockSource());
+    assertFalse(SourceType.CALCULATED.isStockSource());
+    assertFalse(SourceType.REFERENCE_DATA.isStockSource());
+    assertFalse(SourceType.PREVIOUS_REQUISITION.isStockSource());
+  }
+
+  @Test
+  public void supplyingFacilityStockShouldBeNeitherReferenceNorStockSource() {
+    // It is display-only and has no backing line-item property; treating it as a stock source would
+    // make the line-item stock invariants reflect on a non-existent property and fail.
+    assertFalse(SourceType.SUPPLYING_FACILITY_STOCK.isReferenceSource());
+    assertFalse(SourceType.SUPPLYING_FACILITY_STOCK.isStockSource());
+  }
 }
