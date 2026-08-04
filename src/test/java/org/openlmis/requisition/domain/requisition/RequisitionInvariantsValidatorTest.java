@@ -17,6 +17,7 @@ package org.openlmis.requisition.domain.requisition;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.requisition.domain.requisition.Requisition.EMERGENCY_FIELD;
 import static org.openlmis.requisition.domain.requisition.Requisition.FACILITY_ID;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
@@ -98,6 +100,25 @@ public class RequisitionInvariantsValidatorTest {
   @Test
   public void shouldValidate() {
     validator.validateCanUpdate(errors);
+    assertThat(errors.entrySet(), hasSize(0));
+  }
+
+  @Test
+  public void shouldNotTreatSupplyingFacilityStockColumnAsStockField() throws Exception {
+    // On a stock-based template the SUPPLYING_FACILITY_STOCK column must be ignored by the
+    // line-item stock invariants (it is not a stock source), i.e. it must not be reflected on -
+    // it has no line-item property. Otherwise validation would fail with a reflection error.
+    requisitionToUpdate.setTemplate(new RequisitionTemplateDataBuilder()
+        .withAllColumns()
+        .withColumn("supplyingFacilityStockOnHand", "SF", SourceType.SUPPLYING_FACILITY_STOCK,
+            asSet(SourceType.SUPPLYING_FACILITY_STOCK), false)
+        .withPopulateStockOnHandFromStockCards()
+        .build()
+    );
+    requisitionUpdater.setTemplate(requisitionToUpdate.getTemplate());
+
+    validator.validateCanUpdate(errors);
+
     assertThat(errors.entrySet(), hasSize(0));
   }
 
