@@ -24,4 +24,6 @@ public interface AvailableRequisitionColumnRepository
     extends PagingAndSortingRepository<AvailableRequisitionColumn, UUID> {
 
   List<AvailableRequisitionColumn> findBySupportsTag(Boolean supportsTag);
+
+  AvailableRequisitionColumn findByName(String name);
 }
