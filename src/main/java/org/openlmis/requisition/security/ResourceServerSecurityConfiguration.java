@@ -89,7 +89,8 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
             "/requisition",
             "/webjars/**",
             "/requisition/webjars/**",
-            "/requisition/docs/**"
+            "/requisition/docs/**",
+            "/actuator/prometheus"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }
