@@ -118,6 +118,7 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
 import org.openlmis.requisition.service.RequisitionStatusProcessor;
 import org.openlmis.requisition.service.RequisitionTemplateService;
+import org.openlmis.requisition.service.SupplyingFacilityStockService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -160,6 +161,9 @@ public class RequisitionControllerTest {
 
   @Mock
   private RequisitionService requisitionService;
+
+  @Mock
+  private SupplyingFacilityStockService supplyingFacilityStockService;
 
   @Mock
   private PeriodService periodService;
