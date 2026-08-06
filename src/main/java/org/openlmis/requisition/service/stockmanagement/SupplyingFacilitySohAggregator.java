@@ -23,11 +23,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockCardSummaryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,18 +37,13 @@ import org.springframework.stereotype.Component;
  * Any single lookup failure yields no values at all, so approvers never see an under-counted total.
  */
 @Component
+@RequiredArgsConstructor
 public class SupplyingFacilitySohAggregator {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(SupplyingFacilitySohAggregator.class);
 
   private final StockCardSummariesStockManagementService stockCardSummariesService;
-
-  @Autowired
-  public SupplyingFacilitySohAggregator(
-      StockCardSummariesStockManagementService stockCardSummariesService) {
-    this.stockCardSummariesService = stockCardSummariesService;
-  }
 
   /**
    * Aggregates supplying-facility SOH per orderable.

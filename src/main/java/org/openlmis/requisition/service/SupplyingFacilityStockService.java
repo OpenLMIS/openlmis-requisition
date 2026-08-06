@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.BaseRequisitionDto;
@@ -33,7 +34,6 @@ import org.openlmis.requisition.service.referencedata.SupplyingFacilityResolver;
 import org.openlmis.requisition.service.stockmanagement.SupplyingFacilitySohAggregator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
  * the DTO is left untouched. Display-only: the approve endpoint is never involved.
  */
 @Service
+@RequiredArgsConstructor
 public class SupplyingFacilityStockService {
 
   static final String COLUMN = "supplyingFacilityStockOnHand";
@@ -53,21 +54,6 @@ public class SupplyingFacilityStockService {
   private final PermissionService permissionService;
   private final SupplyingFacilityResolver resolver;
   private final SupplyingFacilitySohAggregator aggregator;
-
-  /**
-   * Creates the service.
-   *
-   * @param permissionService gate for approval and stock-card-view rights
-   * @param resolver          resolves the supplying facilities from SupplyLine
-   * @param aggregator        fetches and aggregates supplying-facility stock on hand
-   */
-  @Autowired
-  public SupplyingFacilityStockService(PermissionService permissionService,
-      SupplyingFacilityResolver resolver, SupplyingFacilitySohAggregator aggregator) {
-    this.permissionService = permissionService;
-    this.resolver = resolver;
-    this.aggregator = aggregator;
-  }
 
   /**
    * Adds supplying-facility metadata and per-line stock on hand to the DTO when the requisition is

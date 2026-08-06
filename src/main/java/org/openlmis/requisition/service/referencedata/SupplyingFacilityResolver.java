@@ -21,10 +21,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,15 +32,10 @@ import org.springframework.stereotype.Component;
  * configuration for its (program, current supervisory node). Internal only; not exposed over HTTP.
  */
 @Component
+@RequiredArgsConstructor
 public class SupplyingFacilityResolver {
 
   private final SupplyLineReferenceDataService supplyLineReferenceDataService;
-
-  @Autowired
-  public SupplyingFacilityResolver(
-      SupplyLineReferenceDataService supplyLineReferenceDataService) {
-    this.supplyLineReferenceDataService = supplyLineReferenceDataService;
-  }
 
   /**
    * Resolves the distinct supplying facilities for the requisition. Returns an empty list when the
