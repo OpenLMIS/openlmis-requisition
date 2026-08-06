@@ -16,15 +16,17 @@
 package org.openlmis.requisition.domain;
 
 public enum SourceType {
+  // Persisted by ORDINAL in columns_maps.source (RequisitionTemplateColumn.source has no
+  // @Enumerated), so existing constants must keep their position: only append new values,
+  // never reorder or insert.
   USER_INPUT,
   CALCULATED,
   REFERENCE_DATA,
   STOCK_CARDS,
   PREVIOUS_REQUISITION,
-  // Read-only value derived from the supplying facility's stock and computed at read time. It is
-  // deliberately neither a reference nor a stock source: it has no backing requisition line-item
-  // property, so treating it as a stock source would make the line-item stock invariants reflect on
-  // a non-existent property. Must stay LAST - columns_maps.source is persisted by enum ordinal.
+  // Ordinal 5, written as source = 5 by the requisition-template migration. It is deliberately
+  // neither a reference nor a stock source: it has no backing line-item property, so treating it
+  // as a stock source would make the line-item stock invariants reflect on a missing property.
   SUPPLYING_FACILITY_STOCK;
 
   public boolean isReferenceSource() {
