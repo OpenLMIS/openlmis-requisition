@@ -101,6 +101,17 @@ public abstract class BaseRequisitionDto
   @Setter
   private Map<String, Object> extraData;
 
+  // Supplying-facility stock visibility (populated only for approval-eligible requisitions when the
+  // template column is enabled and the caller is authorised; see SupplyingFacilityStockService).
+  // Distinct from the single supplyingFacility UUID above (convert-to-order depot).
+  @Getter
+  @Setter
+  private List<SupplyingFacilityDto> supplyingFacilities;
+
+  @Getter
+  @Setter
+  private Boolean supplyingFacilityAccessDenied;
+
   @Override
   public List<RequisitionLineItem.Importer> getRequisitionLineItems() {
     return new ArrayList<>(

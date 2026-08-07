@@ -51,6 +51,7 @@ import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.RequisitionStatusNotifier;
+import org.openlmis.requisition.service.SupplyingFacilityStockService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
@@ -85,6 +86,9 @@ public class RequisitionController extends BaseRequisitionController {
 
   @Autowired
   private RequisitionStatusNotifier requisitionStatusNotifier;
+
+  @Autowired
+  private SupplyingFacilityStockService supplyingFacilityStockService;
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeService;
@@ -312,6 +316,9 @@ public class RequisitionController extends BaseRequisitionController {
         findProgram(requisition.getProgramId(), profiler),
         null
     );
+
+    profiler.start("POPULATE_SUPPLYING_FACILITY_SOH");
+    supplyingFacilityStockService.enrich(requisition, requisitionDto);
 
     stopProfiler(profiler, requisitionDto);
 
