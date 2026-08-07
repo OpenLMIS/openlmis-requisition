@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.requisition.domain.RequisitionTemplateColumn.DEFINITION_KEY;
 import static org.openlmis.requisition.domain.SourceType.CALCULATED;
 import static org.openlmis.requisition.domain.SourceType.STOCK_CARDS;
+import static org.openlmis.requisition.domain.SourceType.SUPPLYING_FACILITY_STOCK;
 import static org.openlmis.requisition.domain.SourceType.USER_INPUT;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_COLUMN_SOURCE_INVALID;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DISPLAYED_WHEN_CALC_ORDER_QUANTITY_EXPLANATION_NOT_DISPLAYED;
@@ -590,6 +591,35 @@ public class RequisitionTemplateDtoValidatorTest {
     validator.validate(template, errors);
 
     template.findColumn(TOTAL_LOSSES_AND_ADJUSTMENTS).setIsDisplayed(true);
+
+    verify(errors, never()).rejectValue(anyString(), anyString());
+  }
+
+  @Test
+  public void shouldNotRejectSupplyingFacilityStockColumnOnStockBasedTemplate() {
+    // The SUPPLYING_FACILITY_STOCK column must validate on a stock-based template and must not be
+    // forced to STOCK_CARDS (it is not part of STOCK_BASED_COLUMNS). This mirrors
+    // getTemplatePopulatedByStock() with the new column added.
+    RequisitionTemplate template = baseTemplateBuilder()
+        .withColumn(TOTAL_RECEIVED_QUANTITY, "B", USER_INPUT, Sets.newHashSet(USER_INPUT))
+        .withColumn(TOTAL_LOSSES_AND_ADJUSTMENTS, "D", STOCK_CARDS, Sets.newHashSet(STOCK_CARDS))
+        .withColumn(TOTAL_STOCKOUT_DAYS, "X", STOCK_CARDS, Sets.newHashSet(STOCK_CARDS))
+        .withColumn("supplyingFacilityStockOnHand", "SF", SUPPLYING_FACILITY_STOCK,
+            Sets.newHashSet(SUPPLYING_FACILITY_STOCK), false)
+        .withPopulateStockOnHandFromStockCards()
+        .build();
+
+    RequisitionTemplateDto dto = buildDto(template);
+    STOCK_BASED_COLUMNS
+        .stream()
+        .filter(dto::isColumnInTemplate)
+        .forEach(c -> {
+          dto.findColumn(c).setSource(STOCK_CARDS);
+          dto.findColumn(c).getColumnDefinition().getSources().add(STOCK_CARDS);
+        });
+    mockResponses(dto);
+
+    validator.validate(dto, errors);
 
     verify(errors, never()).rejectValue(anyString(), anyString());
   }

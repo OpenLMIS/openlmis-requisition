@@ -13,17 +13,29 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.repository;
+package org.openlmis.requisition.dto;
 
-import java.util.List;
 import java.util.UUID;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-public interface AvailableRequisitionColumnRepository
-    extends PagingAndSortingRepository<AvailableRequisitionColumn, UUID> {
-
-  List<AvailableRequisitionColumn> findBySupportsTag(Boolean supportsTag);
-
-  AvailableRequisitionColumn findByName(String name);
+/**
+ * Lean representation of a supplying facility ({@code id}, {@code code}, {@code name}) exposed on
+ * the requisition read payload during approval. Distinct from the requisition-level
+ * {@code supplyingFacility} UUID, which denotes the convert-to-order depot.
+ */
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
+public class SupplyingFacilityDto {
+  private UUID id;
+  private String code;
+  private String name;
 }

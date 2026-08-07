@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -31,6 +32,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -38,7 +40,13 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateColumn;
+import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.UserDto;
@@ -213,5 +221,30 @@ public class BatchRequisitionControllerTest {
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
     verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
+  public void shouldNotFailNullingCalculatedFieldsForHiddenSupplyingFacilityStockColumn() {
+    // The supplyingFacilityStockOnHand column is read-only and has no line-item property, so a
+    // template carrying it hidden must not make the calculated-field nulling reflect on a missing
+    // setter (which would throw). See getColumnNameConditions in BatchRequisitionController.
+    RequisitionTemplateColumn hiddenColumn = new RequisitionTemplateColumnDataBuilder()
+        .withName("supplyingFacilityStockOnHand")
+        .withSource(SourceType.SUPPLYING_FACILITY_STOCK)
+        .withNotDisplayed()
+        .build();
+    Map<String, RequisitionTemplateColumn> columns =
+        Collections.singletonMap("supplyingFacilityStockOnHand", hiddenColumn);
+
+    RequisitionTemplate template = mock(RequisitionTemplate.class);
+    when(template.viewColumns()).thenReturn(columns);
+
+    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder().build();
+    when(requisition.getTemplate()).thenReturn(template);
+    when(requisition.getRequisitionLineItems()).thenReturn(Collections.singletonList(lineItem));
+
+    // Fails (throws IllegalArgumentException) without the exception-list entry.
+    ReflectionTestUtils.invokeMethod(
+        batchRequisitionController, "setNullForCalculatedFields", requisition);
   }
 }
