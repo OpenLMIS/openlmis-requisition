@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
@@ -36,6 +37,10 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 public final class ReportUtils {
+  private static final String FULL_PRODUCT_NAME_COLUMN = "orderable.fullProductName";
+  // key of the static Pack size column in requisitionLines.jrxml (not a template column)
+  private static final String PACK_SIZE_COLUMN = "packSize";
+
   private ReportUtils() {
     throw new UnsupportedOperationException();
   }
@@ -94,6 +99,8 @@ public final class ReportUtils {
   public static void customizeBandWithTemplateFields(
       JRBand band, Map<String, RequisitionTemplateColumn> columns, int width, int margin) {
     List<String> foundTemplateKeys = columns.keySet().stream()
+        .flatMap(key -> FULL_PRODUCT_NAME_COLUMN.equals(key)
+            ? Stream.of(key, PACK_SIZE_COLUMN) : Stream.of(key))
         .filter(key -> band.getElementByKey(key) != null)
         .collect(Collectors.toList());
     List<JRDesignTextField> foundColumns = band.getChildren().stream()
@@ -118,16 +125,16 @@ public final class ReportUtils {
 
   private static double getWidthMultipier(int width, int margin, List<String> foundTemplateKeys,
                                           List<JRDesignTextField> foundColumns) {
-    int toFill = 0;
+    int keptTotal = 0;
     for (JRDesignTextField field : foundColumns) {
-      if (!foundTemplateKeys.contains(field.getKey())) {
-        toFill += field.getWidth();
+      if (foundTemplateKeys.contains(field.getKey())) {
+        keptTotal += field.getWidth();
       }
     }
 
-    if (toFill != 0) {
+    if (keptTotal != 0) {
       int lineWidth = width - 2 * margin;
-      return (double)lineWidth / (lineWidth - toFill);
+      return (double) lineWidth / keptTotal;
     }
     return 1;
   }

@@ -231,6 +231,32 @@ public class ReportUtilsTest {
     assertEquals(FIELD_THREE_WIDTH, fieldThree.getWidth(), DELTA);
   }
 
+  @Test
+  public void shouldKeepPackSizeColumnAfterProductNameWhenNotInTemplate() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField productName = getField("orderable.fullProductName", FIELD_ONE_WIDTH);
+    JRDesignTextField packSize = getField("packSize", FIELD_THREE_WIDTH);
+
+    LinkedList<JRChild> children = new LinkedList<>(Arrays.asList(productName, packSize));
+    when(jrBand.getChildren()).thenReturn(children);
+    when(jrBand.getElementByKey("orderable.fullProductName")).thenReturn(productName);
+    when(jrBand.getElementByKey("packSize")).thenReturn(packSize);
+
+    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
+    RequisitionTemplateColumn productNameColumn = mock(RequisitionTemplateColumn.class);
+    stubDisplay(productNameColumn, 1);
+    columns.put("orderable.fullProductName", productNameColumn);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand, columns, WIDTH, MARGIN);
+
+    // then
+    assertTrue(children.contains(packSize));
+    assertEquals(MARGIN, productName.getX());
+    assertEquals(productName.getX() + productName.getWidth(), packSize.getX());
+  }
+
   private void stubDisplay(RequisitionTemplateColumn column, int displayOrder) {
     when(column.getDisplayOrder()).thenReturn(displayOrder);
     when(column.getIsDisplayed()).thenReturn(true);
