@@ -69,11 +69,13 @@ import org.openlmis.requisition.dto.RequisitionLineItemV2Dto;
 import org.openlmis.requisition.dto.RequisitionV2Dto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
+import org.openlmis.requisition.service.SupplyingFacilityStockService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -94,6 +96,9 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
   @Autowired
   private RequisitionV2Controller controller;
+
+  @MockBean
+  private SupplyingFacilityStockService supplyingFacilityStockService;
 
   private List<StockAdjustmentReason> stockAdjustmentReasons;
 
@@ -302,6 +307,33 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .body("id", is(requisition.getId().toString()));
 
     // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldEnrichRequisitionWithSupplyingFacilityStock() {
+    // given
+    mockFacility();
+    Requisition requisition = generateRequisition(RequisitionStatus.INITIATED);
+    doReturn(ValidationResult.success())
+        .when(permissionService)
+        .canViewRequisition(requisition);
+
+    generateApprovedProducts(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    // then
+    verify(supplyingFacilityStockService)
+        .enrich(any(Requisition.class), any(RequisitionV2Dto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

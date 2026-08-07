@@ -3,6 +3,7 @@
 
 Improvements:
 * [OPSD-99](https://openlmis.atlassian.net/browse/OPSD-99): Return supplying-facility stock on hand and supplying-facility metadata in GET /api/requisitions/{id} for approval-eligible requisitions, gated by the supplyingFacilityStockOnHand template column and STOCK_CARDS_VIEW at the supplying facility (display-only; the approve endpoint is unchanged).
+* [OPSD-99](https://openlmis.atlassian.net/browse/OPSD-99): Return the same supplying-facility stock on hand and metadata from GET /api/v2/requisitions/{id}, so the requisition approval view (which loads through the v2 endpoint) receives the fields.
 * [OPSD-98](https://openlmis.atlassian.net/browse/OPSD-98): Registered the read-only supplyingFacilityStockOnHand requisition-template column (disabled by default, kept out of generated requisition reports).
 * [OLMIS-8280](https://openlmis.atlassian.net/browse/OLMIS-8280) Migrated the SonarCloud analysis to Java 21 by running it through the SonarQube scan action instead of the Gradle plugin, and removed the now-unused Gradle sonar plugin and configuration.
 * [OLMIS-8280](https://openlmis.atlassian.net/browse/OLMIS-8280) Removed the axios dependency from the Consul registration script, replacing it with the native Node `http` client (no more axios security advisories to track).
