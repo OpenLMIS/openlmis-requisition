@@ -1,5 +1,6 @@
 8.6.0-SNAPSHOT (WIP)
 ==================
+* [OLMIS-4412](https://openlmis.atlassian.net/browse/OLMIS-4412): Release requisitions with all zero quantities without creating an order.
 
 Improvements:
 * [OPSD-99](https://openlmis.atlassian.net/browse/OPSD-99): Return supplying-facility stock on hand and supplying-facility metadata in GET /api/requisitions/{id} for approval-eligible requisitions, gated by the supplyingFacilityStockOnHand template column and STOCK_CARDS_VIEW at the supplying facility (display-only; the approve endpoint is unchanged).

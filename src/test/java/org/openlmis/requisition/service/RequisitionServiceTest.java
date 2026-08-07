@@ -1711,12 +1711,47 @@ public class RequisitionServiceTest {
       requisition.setId(UUID.randomUUID());
       requisition.setSupervisoryNodeId(UUID.randomUUID());
       requisition.setSupplyingFacilityId(facility.getId());
-      requisition.setRequisitionLineItems(Lists.newArrayList());
+      RequisitionLineItem nonZeroLine = new RequisitionLineItemDataBuilder()
+          .withPacksToShip(5L)
+          .build();
+      requisition.setRequisitionLineItems(Lists.newArrayList(nonZeroLine));
       requisition.setTemplate(requisitionTemplate);
 
       when(requisitionRepository.findById(requisition.getId()))
           .thenReturn(Optional.of(requisition));
       when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+
+      result.add(new ReleasableRequisitionDto(requisition.getId(), facility.getId()));
+    }
+
+    return result;
+  }
+
+  private List<ReleasableRequisitionDto> setUpZeroPacksToShipRequisitions(
+      int amount, RequisitionStatus status) {
+    if (amount < 1) {
+      throw new IllegalArgumentException("Amount must be a positive number");
+    }
+
+    List<ReleasableRequisitionDto> result = new ArrayList<>();
+
+    for (int i = 0; i < amount; i++) {
+      FacilityDto facility = mock(FacilityDto.class);
+      when(facility.getId()).thenReturn(UUID.randomUUID());
+
+      Requisition requisition = new Requisition(UUID.randomUUID(), UUID.randomUUID(),
+          UUID.randomUUID(), status, false);
+      requisition.setId(UUID.randomUUID());
+      requisition.setSupervisoryNodeId(UUID.randomUUID());
+      requisition.setSupplyingFacilityId(facility.getId());
+      RequisitionLineItem zeroLine = new RequisitionLineItemDataBuilder()
+          .withPacksToShip(0L)
+          .build();
+      requisition.setRequisitionLineItems(Lists.newArrayList(zeroLine));
+      requisition.setTemplate(requisitionTemplate);
+
+      when(requisitionRepository.findById(requisition.getId()))
+          .thenReturn(Optional.of(requisition));
 
       result.add(new ReleasableRequisitionDto(requisition.getId(), facility.getId()));
     }
@@ -1995,6 +2030,68 @@ public class RequisitionServiceTest {
     when(facilitySupportsProgramHelper.getSupportedProgram(any(UUID.class), any(UUID.class)))
             .thenReturn(supportedProgram);
     when(supportedProgram.getSupportStartDate()).thenReturn(null);
+  }
+
+  @Test
+  public void shouldAutoReleaseWithoutOrderWhenAllPacksToShipAreZero() {
+    // given
+    List<ReleasableRequisitionDto> list = setUpZeroPacksToShipRequisitions(3, APPROVED);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        user.getId(), convertToOrderRight.getId())).thenReturn(emptyList());
+
+    // when
+    List<Requisition> result = requisitionService.convertToOrder(list, user);
+
+    // then
+    assertEquals(3, result.size());
+    result.forEach(req -> assertEquals(RELEASED_WITHOUT_ORDER, req.getStatus()));
+    verify(orderFulfillmentService, never()).create(any(List.class));
+  }
+
+  @Test
+  public void shouldProcessStatusChangeForZeroPacksToShipRequisitions() {
+    // given
+    List<ReleasableRequisitionDto> list = setUpZeroPacksToShipRequisitions(1, APPROVED);
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        user.getId(), convertToOrderRight.getId())).thenReturn(emptyList());
+
+    // when
+    requisitionService.convertToOrder(list, user);
+
+    // then
+    verify(requisitionStatusProcessor).statusChange(any(Requisition.class), any(Locale.class));
+  }
+
+  @Test
+  public void shouldCreateOrderOnlyForRequisitionsWithNonZeroPacksToShip() {
+    // given: 2 non-zero + 2 zero
+    List<ReleasableRequisitionDto> nonZeroList =
+        setUpReleaseRequisitionsAsOrder(2, APPROVED);
+    List<ReleasableRequisitionDto> zeroList =
+        setUpZeroPacksToShipRequisitions(2, APPROVED);
+    List<ReleasableRequisitionDto> combined = new ArrayList<>(nonZeroList);
+    combined.addAll(zeroList);
+
+    List<FacilityDto> facilities = nonZeroList.stream()
+        .map(r -> facilityReferenceDataService.findOne(r.getSupplyingDepotId()))
+        .collect(toList());
+    when(fulfillmentFacilitiesReferenceDataService.getFulfillmentFacilities(
+        user.getId(), convertToOrderRight.getId())).thenReturn(facilities);
+    when(requisitionForConvertBuilder.getAvailableSupplyingDepots(any(UUID.class)))
+        .thenReturn(facilities);
+
+    // when
+    List<Requisition> result = requisitionService.convertToOrder(combined, user);
+
+    // then: all 4 returned
+    assertEquals(4, result.size());
+    long releasedCount = result.stream()
+        .filter(r -> RELEASED.equals(r.getStatus())).count();
+    long releasedWithoutOrderCount = result.stream()
+        .filter(r -> RELEASED_WITHOUT_ORDER.equals(r.getStatus())).count();
+    assertEquals(2, releasedCount);
+    assertEquals(2, releasedWithoutOrderCount);
+    verify(orderFulfillmentService).create(any(List.class));
   }
 
 }
