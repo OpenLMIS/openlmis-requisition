@@ -2,6 +2,7 @@
 ==================
 
 Improvements:
+* [ODRC-130](https://openlmis.atlassian.net/browse/ODRC-130): Requisition print is now filled by the report service, so it is translated for the language given by the new `lang` parameter on GET /api/requisitions/{id}/print and carries the global header with the logo.
 * [OPSD-99](https://openlmis.atlassian.net/browse/OPSD-99): Return supplying-facility stock on hand and supplying-facility metadata in GET /api/requisitions/{id} for approval-eligible requisitions, gated by the supplyingFacilityStockOnHand template column and STOCK_CARDS_VIEW at the supplying facility (display-only; the approve endpoint is unchanged).
 * [OPSD-99](https://openlmis.atlassian.net/browse/OPSD-99): Return the same supplying-facility stock on hand and metadata from GET /api/v2/requisitions/{id}, so the requisition approval view (which loads through the v2 endpoint) receives the fields.
 * [OPSD-98](https://openlmis.atlassian.net/browse/OPSD-98): Registered the read-only supplyingFacilityStockOnHand requisition-template column (disabled by default, kept out of generated requisition reports).

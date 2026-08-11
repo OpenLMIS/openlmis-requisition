@@ -38,7 +38,6 @@ import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +67,7 @@ import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
@@ -75,6 +75,7 @@ import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
@@ -84,7 +85,9 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.report.ReportService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.RequisitionReportDtoDataBuilder;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.springframework.data.domain.Page;
@@ -145,6 +148,9 @@ public class JasperReportsViewServiceTest {
   
   @Mock
   private DataSource replicationDataSource; //NOPMD
+
+  @Mock
+  private ReportService reportService;
 
   @InjectMocks
   private JasperReportsViewService service;
@@ -446,24 +452,56 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateRequisitionReportShouldSetParams() throws Exception {
+  public void generateRequisitionReportShouldDelegateToReportService() throws Exception {
     doReturn(locale).when(service).getLocaleFromService();
     reportParams.put("Requisition", requisition.getId());
 
-    RequisitionReportDto requisitionReportDto = DtoGenerator.of(RequisitionReportDto.class);
+    RequisitionReportDto requisitionReportDto = requisitionReportDto();
     when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
+    when(reportService.generate(eq("requisition"), any(byte[].class), anyMap()))
+        .thenReturn(expectedReportData);
 
-    Boolean showInDoses = true;
-    byte[] reportData = service.generateRequisitionReport(requisition, showInDoses);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+    byte[] reportData = service.generateRequisitionReport(requisition, true, "fr");
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService)
+        .generate(eq("requisition"), any(byte[].class), paramArg.capture());
     Map<String, Object> outputParams = paramArg.getValue();
 
     assertEquals(expectedReportData, reportData);
     assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
-    assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
-    assertEquals(NumberFormat.getCurrencyInstance(locale),
-        outputParams.get("currencyDecimalFormat"));
+    assertEquals("fr", outputParams.get("lang"));
+    assertEquals("pdf", outputParams.get(PARAM_KEY_FORMAT));
+    assertEquals(true, outputParams.get("showInDoses"));
+    assertEquals(requisition.getStatus().isAuthorized(),
+        outputParams.get("requisitionAuthorized"));
+    Assert.assertTrue(outputParams.get("columnLabels") instanceof Map);
+    Assert.assertTrue(outputParams.get("subreport_bytes") instanceof String);
+  }
+
+  @Test
+  public void generateRequisitionReportShouldSendJsonSerializableParams() throws Exception {
+    doReturn(locale).when(service).getLocaleFromService();
+
+    RequisitionReportDto requisitionReportDto = requisitionReportDto();
+    when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
+
+    service.generateRequisitionReport(requisition, true, "en");
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService)
+        .generate(eq("requisition"), any(byte[].class), paramArg.capture());
+
+    // must stay JSON serializable
+    new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsBytes(paramArg.getValue());
+  }
+
+  private RequisitionReportDto requisitionReportDto() {
+    RequisitionDto requisitionDto = new RequisitionDataBuilder().buildAsDto();
+    requisitionDto.setFacility(facility);
+    requisitionDto.setProgram(program);
+    requisitionDto.setProcessingPeriod(period);
+    return new RequisitionReportDtoDataBuilder().withRequisition(requisitionDto).buildAsDto();
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {

@@ -51,6 +51,8 @@ public class ReportsController extends BaseController {
    * Print out requisition as a PDF file.
    *
    * @param id The UUID of the requisition to print
+   * @param showInDoses whether quantities should be rendered in doses
+   * @param lang language tag the report should be rendered in
    * @return ResponseEntity with the "#200 OK" HTTP response status and PDF file on success, or
    *     ResponseEntity containing the error description status.
    */
@@ -58,7 +60,8 @@ public class ReportsController extends BaseController {
   @ResponseBody
   public ResponseEntity<byte[]> print(@PathVariable("id") UUID id,
                                       @RequestParam(required = false, defaultValue = "true")
-                                      Boolean showInDoses)
+                                      Boolean showInDoses,
+                                      @RequestParam(defaultValue = "en") String lang)
       throws JasperReportViewException {
     permissionService.canViewRequisition(id).throwExceptionIfHasErrors();
 
@@ -66,7 +69,8 @@ public class ReportsController extends BaseController {
         .orElseThrow(() -> new ContentNotFoundMessageException(
             new Message(MessageKeys.ERROR_REQUISITION_NOT_FOUND, id)));
 
-    byte[] bytes = jasperReportsViewService.generateRequisitionReport(requisition, showInDoses);
+    byte[] bytes = jasperReportsViewService
+        .generateRequisitionReport(requisition, showInDoses, lang);
 
     return ResponseEntity
         .ok()

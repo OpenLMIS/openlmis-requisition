@@ -22,17 +22,21 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_JASPER_FILE_FORMAT
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -72,6 +76,8 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.report.ReportService;
+import org.openlmis.requisition.service.report.RequisitionReportPayloadBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.Pagination;
 import org.openlmis.requisition.utils.ReportUtils;
@@ -86,12 +92,17 @@ import org.springframework.stereotype.Service;
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class JasperReportsViewService {
   private static final String DATASOURCE = "datasource";
+  private static final String SUBREPORT_BYTES = "subreport_bytes";
+  private static final String REQUISITION_REPORT_NAME = "requisition";
   private static final String REQUISITION_REPORT_DIR = "/jasperTemplates/requisition.jrxml";
   private static final String REQUISITION_LINE_REPORT_DIR =
       "/jasperTemplates/requisitionLines.jrxml";
 
   @Autowired
   private DataSource replicationDataSource;
+
+  @Autowired
+  private ReportService reportService;
 
   @Autowired
   private RequisitionReportDtoBuilder requisitionReportDtoBuilder;
@@ -182,29 +193,42 @@ public class JasperReportsViewService {
   }
 
   /**
-   * Generate Jasper Report for printing a requisition.
+   * Generate Jasper Report for printing a requisition. Filling is delegated to the report service,
+   * so all parameters have to be JSON serializable.
    *
    * @param requisition requisition for printing the report.
+   * @param showInDoses whether quantities are rendered in doses.
+   * @param lang language the report should be rendered in.
    * @return generated report.
    * @throws JasperReportViewException if there will be any problem with generating the report.
    */
-  public byte[] generateRequisitionReport(Requisition requisition, Boolean showInDoses)
+  public byte[] generateRequisitionReport(Requisition requisition, Boolean showInDoses, String lang)
       throws JasperReportViewException {
     RequisitionReportDto reportDto = requisitionReportDtoBuilder.build(requisition);
     RequisitionTemplate template = requisition.getTemplate();
 
-    Map<String, Object> params = ReportUtils.createParametersMap();
-    params.put("subreport", createCustomizedRequisitionLineSubreport(template,
-        requisition.getStatus()));
-    params.put(DATASOURCE, Collections.singletonList(reportDto));
-    params.put("template", template);
-    params.put("dateFormat", dateFormat);
-    params.put("decimalFormat", createDecimalFormat());
-    params.put("showInDoses", showInDoses);
-    params.put("currencyDecimalFormat",
-        NumberFormat.getCurrencyInstance(getLocaleFromService()));
+    Map<String, RequisitionTemplateColumn> columns = ReportUtils
+        .getSortedTemplateColumnsForPrint(template.viewColumns(), requisition.getStatus());
 
-    return fillAndExportReport(compileReportFromTemplateUrl(REQUISITION_REPORT_DIR), params);
+    Map<String, Object> params = new HashMap<>();
+    params.put(SUBREPORT_BYTES, Base64.getEncoder().encodeToString(
+        serializeReport(compileSubreport(createCustomizedRequisitionLineSubreport(columns)))));
+    params.put(DATASOURCE, Collections.singletonList(
+        RequisitionReportPayloadBuilder.buildReportRecord(reportDto, dateFormat,
+            NumberFormat.getCurrencyInstance(getLocaleFromService()))));
+    params.put("columnLabels", RequisitionReportPayloadBuilder.buildColumnLabels(columns));
+    params.put("columnLabelKeys",
+        RequisitionReportPayloadBuilder.buildColumnLabelKeys(columns));
+    params.put("requisitionAuthorized", requisition.getStatus().isAuthorized());
+    params.put("dateFormat", dateFormat);
+    params.put("showInDoses", showInDoses);
+    params.put("format", "pdf");
+    params.put("lang", lang);
+
+    byte[] compiledTemplate =
+        serializeReport(compileReportFromTemplateUrl(REQUISITION_REPORT_DIR));
+
+    return reportService.generate(REQUISITION_REPORT_NAME, compiledTemplate, params);
   }
 
   /**
@@ -240,16 +264,12 @@ public class JasperReportsViewService {
     return fillAndExportReport(getReportFromTemplateData(jasperTemplate), parameters);
   }
 
-  private JasperDesign createCustomizedRequisitionLineSubreport(RequisitionTemplate template,
-                                                                RequisitionStatus requisitionStatus)
-      throws JasperReportViewException {
+  private JasperDesign createCustomizedRequisitionLineSubreport(
+      Map<String, RequisitionTemplateColumn> columns) throws JasperReportViewException {
     try (InputStream inputStream = getClass().getResourceAsStream(REQUISITION_LINE_REPORT_DIR)) {
       JasperDesign design = JRXmlLoader.load(inputStream);
       JRBand detail = design.getDetailSection().getBands()[0];
       JRBand header = design.getColumnHeader();
-
-      Map<String, RequisitionTemplateColumn> columns =
-          ReportUtils.getSortedTemplateColumnsForPrint(template.viewColumns(), requisitionStatus);
 
       ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 9);
       ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 9);
@@ -259,6 +279,28 @@ public class JasperReportsViewService {
       throw new JasperReportViewException(err, ERROR_IO, err.getMessage());
     } catch (JRException err) {
       throw new JasperReportViewException(err, ERROR_JASPER_FILE_FORMAT, err.getMessage());
+    }
+  }
+
+  private JasperReport compileSubreport(JasperDesign design) throws JasperReportViewException {
+    try {
+      return JasperCompileManager.compileReport(design);
+    } catch (JRException ex) {
+      throw new JasperReportViewException(ex, ERROR_JASPER_FILE_FORMAT, ex.getMessage());
+    }
+  }
+
+  /**
+   * Serializes a compiled report so the report service can read it back.
+   */
+  private byte[] serializeReport(JasperReport report) throws JasperReportViewException {
+    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         ObjectOutputStream out = new ObjectOutputStream(bos)) {
+      out.writeObject(report);
+      out.flush();
+      return bos.toByteArray();
+    } catch (IOException ex) {
+      throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
     }
   }
 
