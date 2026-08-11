@@ -117,7 +117,7 @@ public class RequisitionReportPayloadBuilderTest {
     Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
     columns.put(SOH, untouched);
 
-    assertEquals("report.column.requisition." + SOH,
+    assertEquals("report.column." + SOH,
         RequisitionReportPayloadBuilder.buildColumnLabelKeys(columns).get(SOH));
     assertEquals(SOH_LABEL,
         RequisitionReportPayloadBuilder.buildColumnLabels(columns).get(SOH));

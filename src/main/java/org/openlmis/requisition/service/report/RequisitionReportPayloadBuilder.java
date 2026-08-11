@@ -38,7 +38,7 @@ import org.openlmis.requisition.dto.UserDto;
  */
 public final class RequisitionReportPayloadBuilder {
 
-  private static final String COLUMN_KEY_PREFIX = "report.column.requisition.";
+  private static final String COLUMN_KEY_PREFIX = "report.column.";
 
   private RequisitionReportPayloadBuilder() {
     throw new UnsupportedOperationException();
