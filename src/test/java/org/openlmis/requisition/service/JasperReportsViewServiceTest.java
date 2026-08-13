@@ -475,7 +475,6 @@ public class JasperReportsViewServiceTest {
     assertEquals(true, outputParams.get("showInDoses"));
     assertEquals(requisition.getStatus().isAuthorized(),
         outputParams.get("requisitionAuthorized"));
-    Assert.assertTrue(outputParams.get("columnLabels") instanceof Map);
     Assert.assertTrue(outputParams.get("subreport_bytes") instanceof String);
   }
 

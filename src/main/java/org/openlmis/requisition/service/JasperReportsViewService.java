@@ -216,9 +216,6 @@ public class JasperReportsViewService {
     params.put(DATASOURCE, Collections.singletonList(
         RequisitionReportPayloadBuilder.buildReportRecord(reportDto, dateFormat,
             NumberFormat.getCurrencyInstance(getLocaleFromService()))));
-    params.put("columnLabels", RequisitionReportPayloadBuilder.buildColumnLabels(columns));
-    params.put("columnLabelKeys",
-        RequisitionReportPayloadBuilder.buildColumnLabelKeys(columns));
     params.put("requisitionAuthorized", requisition.getStatus().isAuthorized());
     params.put("dateFormat", dateFormat);
     params.put("showInDoses", showInDoses);

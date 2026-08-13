@@ -21,18 +21,21 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.NumberFormat;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.Test;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
-import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
+import org.openlmis.requisition.dto.DispensableDto;
+import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.ProgramOrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
+import org.openlmis.requisition.dto.RequisitionLineItemDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
@@ -41,8 +44,7 @@ import org.openlmis.requisition.testutils.RequisitionReportDtoDataBuilder;
 public class RequisitionReportPayloadBuilderTest {
 
   private static final String DATE_FORMAT = "dd/MM/yyyy";
-  private static final String SOH = "stockOnHand";
-  private static final String SOH_LABEL = "Stock on hand";
+  private static final String FULL_SUPPLY = "fullSupply";
 
   private final NumberFormat currencyFormat =
       NumberFormat.getCurrencyInstance(new Locale("en", "US"));
@@ -63,30 +65,33 @@ public class RequisitionReportPayloadBuilderTest {
   public void shouldFlattenRequisitionIntoPlainValues() {
     RequisitionReportDto reportDto = reportDto();
 
-    Map<String, Object> record = RequisitionReportPayloadBuilder
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
         .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
 
-    assertEquals(reportDto.getRequisition().getFacility().getName(), record.get("facilityName"));
-    assertEquals(reportDto.getRequisition().getFacility().getCode(), record.get("facilityCode"));
-    assertEquals(reportDto.getRequisition().getProgram().getName(), record.get("programName"));
-    assertEquals(reportDto.getRequisition().getStatus().toString(), record.get("status"));
-    assertTrue(record.get("fullSupply") instanceof List);
-    assertTrue(record.get("nonFullSupply") instanceof List);
+    assertEquals(reportDto.getRequisition().getFacility().getName(),
+        reportRecord.get("facilityName"));
+    assertEquals(reportDto.getRequisition().getFacility().getCode(),
+        reportRecord.get("facilityCode"));
+    assertEquals(reportDto.getRequisition().getProgram().getName(),
+        reportRecord.get("programName"));
+    assertEquals(reportDto.getRequisition().getStatus().toString(), reportRecord.get("status"));
+    assertTrue(reportRecord.get(FULL_SUPPLY) instanceof List);
+    assertTrue(reportRecord.get("nonFullSupply") instanceof List);
   }
 
   @Test
   public void shouldProduceOnlyJsonSerializableValues() throws Exception {
     RequisitionReportDto reportDto = reportDto();
 
-    Map<String, Object> record = RequisitionReportPayloadBuilder
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
         .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
 
-    // the record travels to the report service as JSON
+    // the reportRecord travels to the report service as JSON
     ObjectMapper mapper = new ObjectMapper();
-    Map<?, ?> roundTripped = mapper.readValue(mapper.writeValueAsBytes(record), Map.class);
+    Map<?, ?> roundTripped = mapper.readValue(mapper.writeValueAsBytes(reportRecord), Map.class);
 
-    assertEquals(record.get("facilityName"), roundTripped.get("facilityName"));
-    assertEquals(record.get("status"), roundTripped.get("status"));
+    assertEquals(reportRecord.get("facilityName"), roundTripped.get("facilityName"));
+    assertEquals(reportRecord.get("status"), roundTripped.get("status"));
   }
 
   @Test
@@ -95,52 +100,107 @@ public class RequisitionReportPayloadBuilderTest {
     reportDto.setAuthorizedBy(null);
     reportDto.setAuthorizedDate(null);
 
-    Map<String, Object> record = RequisitionReportPayloadBuilder
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
         .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
 
-    assertNull(record.get("authorizedBy"));
-    assertNull(record.get("authorizedDate"));
+    assertNull(reportRecord.get("authorizedBy"));
+    assertNull(reportRecord.get("authorizedDate"));
   }
 
   @Test
-  public void shouldKeyColumnsThatStillUseTheShippedLabel() {
-    AvailableRequisitionColumn definition = new AvailableRequisitionColumn();
-    definition.setName(SOH);
-    definition.setLabel(SOH_LABEL);
+  public void shouldFlattenLineItemsSoTheTemplateReadsPlainKeys() {
+    RequisitionDto requisition = new RequisitionDataBuilder().buildAsDto();
+    requisition.setFacility(new FacilityDtoDataBuilder().buildAsDto());
+    requisition.setProgram(DtoGenerator.of(ProgramDto.class));
+    requisition.setProcessingPeriod(DtoGenerator.of(ProcessingPeriodDto.class));
 
-    RequisitionTemplateColumn untouched = new RequisitionTemplateColumnDataBuilder()
-        .withName(SOH)
-        .withLabel(SOH_LABEL)
-        .withColumnDefinition(definition)
-        .build();
+    OrderableDto orderable = new OrderableDto();
+    orderable.setProductCode("C100");
+    orderable.setFullProductName("Levora");
+    orderable.setNetContent(10);
+    orderable.setDispensable(new DispensableDto("pack", "each"));
+    orderable.setPrograms(Collections.singleton(new ProgramOrderableDto(
+        requisition.getProgram().getId(), null, "Category A", 1, true, 1, 1,
+        Money.of(CurrencyUnit.USD, 2))));
 
-    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
-    columns.put(SOH, untouched);
+    RequisitionLineItemDto lineItem = new RequisitionLineItemDto();
+    lineItem.setOrderable(orderable);
+    lineItem.setBeginningBalance(100);
+    lineItem.setPricePerPack(Money.of(CurrencyUnit.USD, 2));
+    lineItem.setTotalCost(Money.of(CurrencyUnit.USD, 20));
 
-    assertEquals("report.column." + SOH,
-        RequisitionReportPayloadBuilder.buildColumnLabelKeys(columns).get(SOH));
-    assertEquals(SOH_LABEL,
-        RequisitionReportPayloadBuilder.buildColumnLabels(columns).get(SOH));
+    RequisitionReportDto reportDto = new RequisitionReportDtoDataBuilder()
+        .withRequisition(requisition)
+        .withFullSupply(Collections.singletonList(lineItem))
+        .buildAsDto();
+
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
+        .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
+    List<?> fullSupply = (List<?>) reportRecord.get(FULL_SUPPLY);
+    Map<?, ?> flattened = (Map<?, ?>) fullSupply.get(0);
+
+    assertEquals("C100", flattened.get("productCode"));
+    assertEquals("Levora", flattened.get("fullProductName"));
+    assertEquals("each", flattened.get("dispensableDisplayUnit"));
+    assertEquals("Category A", flattened.get("categoryDisplayName"));
+    assertEquals(10L, flattened.get("netContent"));
+    assertEquals(100, flattened.get("beginningBalance"));
+    // money is formatted here because the formatter cannot be sent to the report service
+    assertEquals(currencyFormat.format(20), flattened.get("totalCost"));
   }
 
   @Test
-  public void shouldNotKeyColumnsAnAdministratorRenamed() {
-    AvailableRequisitionColumn definition = new AvailableRequisitionColumn();
-    definition.setName(SOH);
-    definition.setLabel(SOH_LABEL);
+  public void shouldReturnEmptyListWhenThereAreNoLineItems() {
+    RequisitionReportDto reportDto = reportDto();
 
-    RequisitionTemplateColumn renamed = new RequisitionTemplateColumnDataBuilder()
-        .withName(SOH)
-        .withLabel("Close bal")
-        .withColumnDefinition(definition)
-        .build();
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
+        .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
 
-    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
-    columns.put(SOH, renamed);
+    assertTrue(((List<?>) reportRecord.get(FULL_SUPPLY)).isEmpty());
+    assertTrue(((List<?>) reportRecord.get("nonFullSupply")).isEmpty());
+  }
 
-    // a renamed label is printed as entered, in every language
-    assertNull(RequisitionReportPayloadBuilder.buildColumnLabelKeys(columns).get(SOH));
-    assertEquals("Close bal",
-        RequisitionReportPayloadBuilder.buildColumnLabels(columns).get(SOH));
+  @Test
+  public void shouldHandleLineItemsWithoutOrderableOrMoney() {
+    RequisitionDto requisition = new RequisitionDataBuilder().buildAsDto();
+    requisition.setFacility(new FacilityDtoDataBuilder().buildAsDto());
+    requisition.setProgram(DtoGenerator.of(ProgramDto.class));
+    requisition.setProcessingPeriod(DtoGenerator.of(ProcessingPeriodDto.class));
+
+    RequisitionLineItemDto lineItem = new RequisitionLineItemDto();
+    lineItem.setBeginningBalance(5);
+
+    RequisitionReportDto reportDto = new RequisitionReportDtoDataBuilder()
+        .withRequisition(requisition)
+        .withFullSupply(Collections.singletonList(lineItem))
+        .withTotalCost(null)
+        .buildAsDto();
+
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
+        .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
+    Map<?, ?> flattened = (Map<?, ?>) ((List<?>) reportRecord.get(FULL_SUPPLY)).get(0);
+
+    assertNull(reportRecord.get("totalCost"));
+    assertNull(flattened.get("productCode"));
+    assertNull(flattened.get("dispensableDisplayUnit"));
+    assertEquals(5, flattened.get("beginningBalance"));
+  }
+
+  @Test
+  public void shouldTreatNullLineItemListAsEmpty() {
+    RequisitionDto requisition = new RequisitionDataBuilder().buildAsDto();
+    requisition.setFacility(new FacilityDtoDataBuilder().buildAsDto());
+    requisition.setProgram(DtoGenerator.of(ProgramDto.class));
+    requisition.setProcessingPeriod(DtoGenerator.of(ProcessingPeriodDto.class));
+
+    RequisitionReportDto reportDto = new RequisitionReportDtoDataBuilder()
+        .withRequisition(requisition)
+        .withFullSupply(null)
+        .buildAsDto();
+
+    Map<String, Object> reportRecord = RequisitionReportPayloadBuilder
+        .buildReportRecord(reportDto, DATE_FORMAT, currencyFormat);
+
+    assertTrue(((List<?>) reportRecord.get(FULL_SUPPLY)).isEmpty());
   }
 }

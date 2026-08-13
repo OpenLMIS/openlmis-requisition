@@ -20,12 +20,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.joda.money.Money;
-import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionLineItemDto;
@@ -37,8 +35,6 @@ import org.openlmis.requisition.dto.UserDto;
  * report service as JSON and domain objects would not survive the trip.
  */
 public final class RequisitionReportPayloadBuilder {
-
-  private static final String COLUMN_KEY_PREFIX = "report.column.";
 
   private RequisitionReportPayloadBuilder() {
     throw new UnsupportedOperationException();
@@ -60,76 +56,37 @@ public final class RequisitionReportPayloadBuilder {
     RequisitionDto requisition = reportDto.getRequisition();
     UUID programId = requisition.getProgram().getId();
 
-    Map<String, Object> record = new HashMap<>();
-    record.put("facilityName", requisition.getFacility().getName());
-    record.put("facilityCode", requisition.getFacility().getCode());
-    record.put("facilityTypeName", requisition.getFacility().getType().getName());
-    record.put("zoneName", requisition.getFacility().getGeographicZone().getName());
-    record.put("programName", requisition.getProgram().getName());
-    record.put("emergency", requisition.getEmergency());
-    record.put("status", requisition.getStatus().toString());
-    record.put("reportingPeriod",
+    Map<String, Object> reportRecord = new HashMap<>();
+    reportRecord.put("facilityName", requisition.getFacility().getName());
+    reportRecord.put("facilityCode", requisition.getFacility().getCode());
+    reportRecord.put("facilityTypeName", requisition.getFacility().getType().getName());
+    reportRecord.put("zoneName", requisition.getFacility().getGeographicZone().getName());
+    reportRecord.put("programName", requisition.getProgram().getName());
+    reportRecord.put("emergency", requisition.getEmergency());
+    reportRecord.put("status", requisition.getStatus().toString());
+    reportRecord.put("reportingPeriod",
         formatter.format(requisition.getProcessingPeriod().getStartDate())
             + " - " + formatter.format(requisition.getProcessingPeriod().getEndDate()));
 
-    record.put("initiatedBy", printName(reportDto.getInitiatedBy()));
-    record.put("initiatedDate", formatDate(reportDto.getInitiatedDate(), formatter));
-    record.put("submittedBy", printName(reportDto.getSubmittedBy()));
-    record.put("submittedDate", formatDate(reportDto.getSubmittedDate(), formatter));
-    record.put("authorizedBy", printName(reportDto.getAuthorizedBy()));
-    record.put("authorizedDate", formatDate(reportDto.getAuthorizedDate(), formatter));
+    reportRecord.put("initiatedBy", printName(reportDto.getInitiatedBy()));
+    reportRecord.put("initiatedDate", formatDate(reportDto.getInitiatedDate(), formatter));
+    reportRecord.put("submittedBy", printName(reportDto.getSubmittedBy()));
+    reportRecord.put("submittedDate", formatDate(reportDto.getSubmittedDate(), formatter));
+    reportRecord.put("authorizedBy", printName(reportDto.getAuthorizedBy()));
+    reportRecord.put("authorizedDate", formatDate(reportDto.getAuthorizedDate(), formatter));
 
-    record.put("fullSupplyTotalCost",
+    reportRecord.put("fullSupplyTotalCost",
         formatMoney(reportDto.getFullSupplyTotalCost(), currencyFormat));
-    record.put("nonFullSupplyTotalCost",
+    reportRecord.put("nonFullSupplyTotalCost",
         formatMoney(reportDto.getNonFullSupplyTotalCost(), currencyFormat));
-    record.put("totalCost", formatMoney(reportDto.getTotalCost(), currencyFormat));
+    reportRecord.put("totalCost", formatMoney(reportDto.getTotalCost(), currencyFormat));
 
-    record.put("fullSupply", buildLineItems(reportDto.getFullSupply(), programId, currencyFormat));
-    record.put("nonFullSupply",
+    reportRecord.put("fullSupply",
+        buildLineItems(reportDto.getFullSupply(), programId, currencyFormat));
+    reportRecord.put("nonFullSupply",
         buildLineItems(reportDto.getNonFullSupply(), programId, currencyFormat));
 
-    return record;
-  }
-
-  /**
-   * Builds the label the line item subreport falls back to for each column header.
-   *
-   * @param columns the columns that will be printed, in display order.
-   * @return column key to configured label.
-   */
-  public static Map<String, String> buildColumnLabels(
-      Map<String, RequisitionTemplateColumn> columns) {
-    Map<String, String> labels = new LinkedHashMap<>();
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
-      labels.put(entry.getKey(), entry.getValue().getLabel());
-    }
-    return labels;
-  }
-
-  /**
-   * Builds the translation key for each column header. A column is only keyed while its label is
-   * still the shipped default, so a label an administrator renamed is printed as entered.
-   *
-   * @param columns the columns that will be printed, in display order.
-   * @return column key to translation key, for columns with an untouched label.
-   */
-  public static Map<String, String> buildColumnLabelKeys(
-      Map<String, RequisitionTemplateColumn> columns) {
-    Map<String, String> keys = new LinkedHashMap<>();
-    for (Map.Entry<String, RequisitionTemplateColumn> entry : columns.entrySet()) {
-      RequisitionTemplateColumn column = entry.getValue();
-      if (usesShippedLabel(column)) {
-        keys.put(entry.getKey(), COLUMN_KEY_PREFIX + column.getName());
-      }
-    }
-    return keys;
-  }
-
-  private static boolean usesShippedLabel(RequisitionTemplateColumn column) {
-    return column.getColumnDefinition() != null
-        && column.getLabel() != null
-        && column.getLabel().equals(column.getColumnDefinition().getLabel());
+    return reportRecord;
   }
 
   private static List<Map<String, Object>> buildLineItems(List<RequisitionLineItemDto> lineItems,
@@ -150,53 +107,53 @@ public final class RequisitionReportPayloadBuilder {
   private static Map<String, Object> buildLineItem(RequisitionLineItemDto lineItem,
                                                    UUID programId,
                                                    NumberFormat currencyFormat) {
-    Map<String, Object> record = new HashMap<>();
+    Map<String, Object> lineItemRecord = new HashMap<>();
 
-    record.put("beginningBalance", lineItem.getBeginningBalance());
-    record.put("totalReceivedQuantity", lineItem.getTotalReceivedQuantity());
-    record.put("totalLossesAndAdjustments", lineItem.getTotalLossesAndAdjustments());
-    record.put("stockOnHand", lineItem.getStockOnHand());
-    record.put("requestedQuantity", lineItem.getRequestedQuantity());
-    record.put("totalConsumedQuantity", lineItem.getTotalConsumedQuantity());
-    record.put("requestedQuantityExplanation", lineItem.getRequestedQuantityExplanation());
-    record.put("remarks", lineItem.getRemarks());
-    record.put("approvedQuantity", lineItem.getApprovedQuantity());
-    record.put("totalStockoutDays", lineItem.getTotalStockoutDays());
-    record.put("total", lineItem.getTotal());
-    record.put("packsToShip", lineItem.getPacksToShip());
-    record.put("numberOfNewPatientsAdded", lineItem.getNumberOfNewPatientsAdded());
-    record.put("skipped", lineItem.getSkipped());
-    record.put("adjustedConsumption", lineItem.getAdjustedConsumption());
-    record.put("averageConsumption", lineItem.getAverageConsumption());
-    record.put("maximumStockQuantity", lineItem.getMaximumStockQuantity());
-    record.put("calculatedOrderQuantity", lineItem.getCalculatedOrderQuantity());
-    record.put("idealStockAmount", lineItem.getIdealStockAmount());
-    record.put("calculatedOrderQuantityIsa", lineItem.getCalculatedOrderQuantityIsa());
-    record.put("additionalQuantityRequired", lineItem.getAdditionalQuantityRequired());
-    record.put("numberOfPatientsOnTreatmentNextMonth",
+    lineItemRecord.put("beginningBalance", lineItem.getBeginningBalance());
+    lineItemRecord.put("totalReceivedQuantity", lineItem.getTotalReceivedQuantity());
+    lineItemRecord.put("totalLossesAndAdjustments", lineItem.getTotalLossesAndAdjustments());
+    lineItemRecord.put("stockOnHand", lineItem.getStockOnHand());
+    lineItemRecord.put("requestedQuantity", lineItem.getRequestedQuantity());
+    lineItemRecord.put("totalConsumedQuantity", lineItem.getTotalConsumedQuantity());
+    lineItemRecord.put("requestedQuantityExplanation", lineItem.getRequestedQuantityExplanation());
+    lineItemRecord.put("remarks", lineItem.getRemarks());
+    lineItemRecord.put("approvedQuantity", lineItem.getApprovedQuantity());
+    lineItemRecord.put("totalStockoutDays", lineItem.getTotalStockoutDays());
+    lineItemRecord.put("total", lineItem.getTotal());
+    lineItemRecord.put("packsToShip", lineItem.getPacksToShip());
+    lineItemRecord.put("numberOfNewPatientsAdded", lineItem.getNumberOfNewPatientsAdded());
+    lineItemRecord.put("skipped", lineItem.getSkipped());
+    lineItemRecord.put("adjustedConsumption", lineItem.getAdjustedConsumption());
+    lineItemRecord.put("averageConsumption", lineItem.getAverageConsumption());
+    lineItemRecord.put("maximumStockQuantity", lineItem.getMaximumStockQuantity());
+    lineItemRecord.put("calculatedOrderQuantity", lineItem.getCalculatedOrderQuantity());
+    lineItemRecord.put("idealStockAmount", lineItem.getIdealStockAmount());
+    lineItemRecord.put("calculatedOrderQuantityIsa", lineItem.getCalculatedOrderQuantityIsa());
+    lineItemRecord.put("additionalQuantityRequired", lineItem.getAdditionalQuantityRequired());
+    lineItemRecord.put("numberOfPatientsOnTreatmentNextMonth",
         lineItem.getNumberOfPatientsOnTreatmentNextMonth());
-    record.put("totalRequirement", lineItem.getTotalRequirement());
-    record.put("totalQuantityNeededByHf", lineItem.getTotalQuantityNeededByHf());
-    record.put("quantityToIssue", lineItem.getQuantityToIssue());
-    record.put("convertedQuantityToIssue", lineItem.getConvertedQuantityToIssue());
-    record.put("dosesPerPatient", lineItem.getDosesPerPatient());
+    lineItemRecord.put("totalRequirement", lineItem.getTotalRequirement());
+    lineItemRecord.put("totalQuantityNeededByHf", lineItem.getTotalQuantityNeededByHf());
+    lineItemRecord.put("quantityToIssue", lineItem.getQuantityToIssue());
+    lineItemRecord.put("convertedQuantityToIssue", lineItem.getConvertedQuantityToIssue());
+    lineItemRecord.put("dosesPerPatient", lineItem.getDosesPerPatient());
 
-    record.put("pricePerPack", formatMoney(lineItem.getPricePerPack(), currencyFormat));
-    record.put("totalCost", formatMoney(lineItem.getTotalCost(), currencyFormat));
+    lineItemRecord.put("pricePerPack", formatMoney(lineItem.getPricePerPack(), currencyFormat));
+    lineItemRecord.put("totalCost", formatMoney(lineItem.getTotalCost(), currencyFormat));
 
     OrderableDto orderable = lineItem.getOrderable();
     if (orderable != null) {
-      record.put("productCode", orderable.getProductCode());
-      record.put("fullProductName", orderable.getFullProductName());
-      record.put("netContent", orderable.getNetContent());
-      record.put("categoryDisplayName", orderable.getProgramOrderable(programId)
+      lineItemRecord.put("productCode", orderable.getProductCode());
+      lineItemRecord.put("fullProductName", orderable.getFullProductName());
+      lineItemRecord.put("netContent", orderable.getNetContent());
+      lineItemRecord.put("categoryDisplayName", orderable.getProgramOrderable(programId)
           .getOrderableCategoryDisplayName());
       if (orderable.getDispensable() != null) {
-        record.put("dispensableDisplayUnit", orderable.getDispensable().getDisplayUnit());
+        lineItemRecord.put("dispensableDisplayUnit", orderable.getDispensable().getDisplayUnit());
       }
     }
 
-    return record;
+    return lineItemRecord;
   }
 
   private static String printName(UserDto user) {
