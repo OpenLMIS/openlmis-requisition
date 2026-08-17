@@ -232,7 +232,7 @@ public class ReportUtilsTest {
   }
 
   @Test
-  public void shouldKeepPackSizeColumnAfterProductNameWhenNotInTemplate() {
+  public void shouldKeepPackSizeColumnAfterProductNameWhenProductNameInTemplate() {
     // given
     JRBand jrBand = mock(JRBand.class);
     JRDesignTextField productName = getField("orderable.fullProductName", FIELD_ONE_WIDTH);
