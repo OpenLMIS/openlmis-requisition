@@ -134,6 +134,9 @@ public final class ReportUtils {
 
     if (keptTotal != 0) {
       int lineWidth = width - 2 * margin;
+      // Scale the kept columns to fill the line width. The injected static pack size column
+      // breaks the old assumption that every column sums to the line width, so we divide by the
+      // kept total instead of (line width - removed width).
       return (double) lineWidth / keptTotal;
     }
     return 1;
