@@ -539,6 +539,44 @@ public class JasperReportsViewServiceTest {
         texts.contains(echo("report.column.stockOnHand")));
   }
 
+  @Test
+  public void generateRequisitionReportShouldScaleColumnHeaderFontEndToEnd() throws Exception {
+    JasperPrint print = fillReportAsReportServiceWould(echoBundle());
+
+    List<JRPrintText> headers = new ArrayList<>();
+    for (JRPrintPage page : print.getPages()) {
+      collectColumnHeaders(page.getElements(), headers);
+    }
+
+    Assert.assertFalse("no column headers were rendered", headers.isEmpty());
+
+    float fontSize = headers.get(0).getFontsize();
+    Assert.assertTrue("font is scaled up from the old hard-coded 6pt default", fontSize > 6f);
+    Assert.assertTrue("font is one of the column-count sizes: " + fontSize,
+        fontSize == 8f || fontSize == 9f || fontSize == 10f);
+    headers.forEach(header -> Assert.assertEquals("all column headers share one size",
+        fontSize, header.getFontsize(), 0f));
+
+    // RELATIVE_TO_TALLEST_OBJECT keeps every header cell the same height even when a long label
+    // wraps, so the column borders stay aligned
+    int height = headers.get(0).getHeight();
+    headers.forEach(header -> Assert.assertEquals("all column headers share one height",
+        height, header.getHeight()));
+  }
+
+  private void collectColumnHeaders(List<JRPrintElement> elements, List<JRPrintText> headers) {
+    for (JRPrintElement element : elements) {
+      if (element instanceof JRPrintText) {
+        String text = ((JRPrintText) element).getFullText();
+        if (text != null && text.startsWith("[report.column.")) {
+          headers.add((JRPrintText) element);
+        }
+      } else if (element instanceof JRPrintFrame) {
+        collectColumnHeaders(((JRPrintFrame) element).getElements(), headers);
+      }
+    }
+  }
+
   private JasperPrint fillReportAsReportServiceWould(ResourceBundle bundle) throws Exception {
     doReturn(locale).when(service).getLocaleFromService();
     when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto());
