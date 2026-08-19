@@ -31,11 +31,21 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
+import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 public final class ReportUtils {
+
+  // Print font size for the requisition line table, chosen by how many columns are displayed:
+  // few columns print large and readable, dense tables step down so they still fit the page width.
+  private static final int READABLE_FONT_SIZE = 10;
+  private static final int MEDIUM_FONT_SIZE = 9;
+  private static final int COMPACT_FONT_SIZE = 8;
+  private static final int MAX_COLUMNS_FOR_READABLE_FONT = 12;
+  private static final int MAX_COLUMNS_FOR_MEDIUM_FONT = 14;
+
   private ReportUtils() {
     throw new UnsupportedOperationException();
   }
@@ -96,10 +106,7 @@ public final class ReportUtils {
     List<String> foundTemplateKeys = columns.keySet().stream()
         .filter(key -> band.getElementByKey(key) != null)
         .collect(Collectors.toList());
-    List<JRDesignTextField> foundColumns = band.getChildren().stream()
-        .filter(child -> child instanceof JRDesignTextField)
-        .map(child -> (JRDesignTextField)child)
-        .collect(Collectors.toList());
+    List<JRDesignTextField> foundColumns = textFields(band);
 
     double widthMultipier = getWidthMultipier(width, margin, foundTemplateKeys, foundColumns);
 
@@ -114,6 +121,43 @@ public final class ReportUtils {
 
     fillWidthGap(prevField, width, margin);
     removeSpareColumns(band, foundColumns, foundTemplateKeys);
+  }
+
+  /**
+   * Scales the font of an already customized band to how many columns it ended up with, so a
+   * requisition with few columns prints in a readable size while a dense one still fits the page.
+   * Fields are allowed to grow vertically so the larger text does not get clipped.
+   *
+   * @param band a band already reduced to its displayed columns.
+   */
+  public static void applyColumnCountFont(JRBand band) {
+    List<JRDesignTextField> fields = textFields(band);
+
+    int fontSize = fontSizeForColumnCount(fields.size());
+    for (JRDesignTextField field : fields) {
+      field.setFontSize((float) fontSize);
+      // let a cell grow when its larger text wraps, and keep every cell in the row the same
+      // height so the column borders stay aligned
+      field.setStretchWithOverflow(true);
+      field.setStretchType(StretchTypeEnum.RELATIVE_TO_TALLEST_OBJECT);
+    }
+  }
+
+  static int fontSizeForColumnCount(int columnCount) {
+    if (columnCount <= MAX_COLUMNS_FOR_READABLE_FONT) {
+      return READABLE_FONT_SIZE;
+    }
+    if (columnCount <= MAX_COLUMNS_FOR_MEDIUM_FONT) {
+      return MEDIUM_FONT_SIZE;
+    }
+    return COMPACT_FONT_SIZE;
+  }
+
+  private static List<JRDesignTextField> textFields(JRBand band) {
+    return band.getChildren().stream()
+        .filter(child -> child instanceof JRDesignTextField)
+        .map(child -> (JRDesignTextField) child)
+        .collect(Collectors.toList());
   }
 
   private static double getWidthMultipier(int width, int margin, List<String> foundTemplateKeys,

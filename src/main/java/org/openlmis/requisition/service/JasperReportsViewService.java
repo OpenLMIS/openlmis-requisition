@@ -271,6 +271,9 @@ public class JasperReportsViewService {
       ReportUtils.customizeBandWithTemplateFields(detail, columns, design.getPageWidth(), 9);
       ReportUtils.customizeBandWithTemplateFields(header, columns, design.getPageWidth(), 9);
 
+      ReportUtils.applyColumnCountFont(detail);
+      ReportUtils.applyColumnCountFont(header);
+
       return design;
     } catch (IOException err) {
       throw new JasperReportViewException(err, ERROR_IO, err.getMessage());
