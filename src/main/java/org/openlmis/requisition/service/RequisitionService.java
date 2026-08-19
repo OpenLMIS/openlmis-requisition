@@ -553,14 +553,17 @@ public class RequisitionService {
 
   /**
    * Releases the list of given requisitions as order.
+   * Requisitions with all zero packsToShip are automatically released without order
+   * and collected in autoReleasedWithoutOrder instead of the returned list.
    *
-   * @param convertToOrderDtos list of Requisitions with their supplyingDepots to be released as
-   *                           order
-   * @return list of released requisitions
+   * @param convertToOrderDtos       list of Requisitions with their supplyingDepots
+   * @param autoReleasedWithoutOrder output list populated with requisitions auto-released
+   *                                 without order (all packsToShip zero or null)
+   * @return list of requisitions released as order (non-zero packsToShip only)
    */
   private List<Requisition> releaseRequisitionsAsOrder(
           List<ReleasableRequisitionDto> convertToOrderDtos, UserDto user,
-          Boolean isLocallyFulfilled) {
+          Boolean isLocallyFulfilled, List<Requisition> autoReleasedWithoutOrder) {
     Profiler profiler = new Profiler("RELEASE_REQUISITIONS_AS_ORDER");
     profiler.setLogger(LOGGER);
 
@@ -581,6 +584,13 @@ public class RequisitionService {
               .orElseThrow(() -> new ContentNotFoundMessageException(ERROR_REQUISITION_NOT_FOUND,
                       requisitionId));
       isEligibleForConvertToOrder(loadedRequisition).throwExceptionIfHasErrors();
+
+      if (!loadedRequisition.hasNonZeroPacksToShip()) {
+        loadedRequisition.releaseWithoutOrder(authenticationHelper.getCurrentUser().getId());
+        autoReleasedWithoutOrder.add(loadedRequisition);
+        continue;
+      }
+
       loadedRequisition.release(authenticationHelper.getCurrentUser().getId());
 
       UUID facilityId = convertToOrderDto.getSupplyingDepotId();
@@ -713,6 +723,7 @@ public class RequisitionService {
 
   /**
    * Converting Requisition list to Orders.
+   * Requisitions with all zero packsToShip are automatically released without order.
    */
   public List<Requisition> convertToOrder(List<ReleasableRequisitionDto> list, UserDto user,
                                           Boolean isLocallyFulfilled) {
@@ -720,17 +731,28 @@ public class RequisitionService {
     profiler.setLogger(LOGGER);
 
     profiler.start("RELEASE_REQUISITIONS_AS_ORDER");
-    List<Requisition> releasedRequisitions =
-            releaseRequisitionsAsOrder(list, user, isLocallyFulfilled);
+    List<Requisition> autoReleasedWithoutOrder = new ArrayList<>();
+    final List<Requisition> releasedRequisitions =
+            releaseRequisitionsAsOrder(list, user, isLocallyFulfilled, autoReleasedWithoutOrder);
+
+    profiler.start("SAVE_AUTO_RELEASED_WITHOUT_ORDER");
+    for (Requisition requisition : autoReleasedWithoutOrder) {
+      requisitionRepository.save(requisition);
+      requisitionStatusProcessor.statusChange(requisition, LocaleContextHolder.getLocale());
+    }
 
     profiler.start("BUILD_ORDER_DTOS_AND_SAVE_REQUISITION");
     List<OrderDto> orders = buildOrders(releasedRequisitions, user);
 
     profiler.start("CREATE_ORDER_IN_FULFILLMENT");
-    orderFulfillmentService.create(orders);
+    if (!orders.isEmpty()) {
+      orderFulfillmentService.create(orders);
+    }
 
     profiler.stop().log();
-    return releasedRequisitions;
+    List<Requisition> allReleased = new ArrayList<>(releasedRequisitions);
+    allReleased.addAll(autoReleasedWithoutOrder);
+    return allReleased;
   }
 
   /**

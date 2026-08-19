@@ -1,5 +1,6 @@
 Upcoming Version / WIP
 ==================
+* [OLMIS-4412](https://openlmis.atlassian.net/browse/OLMIS-4412): Release requisitions with all zero quantities without creating an order.
 
 8.6.0 / 2026-08-13
 ==================
