@@ -13,17 +13,27 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.repository;
+package org.openlmis.requisition.service.report;
 
-import java.util.List;
-import java.util.UUID;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-public interface AvailableRequisitionColumnRepository
-    extends PagingAndSortingRepository<AvailableRequisitionColumn, UUID> {
-
-  List<AvailableRequisitionColumn> findBySupportsTag(Boolean supportsTag);
-
-  AvailableRequisitionColumn findByName(String name);
+/**
+ * Request payload of the report service generate endpoint.
+ */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
+public final class GenerateReportDto {
+  private String name;
+  private byte[] template;
+  private Map<String, Object> params;
 }

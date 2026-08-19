@@ -16,6 +16,8 @@
 package org.openlmis.requisition.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_CONSUMED_QUANTITY;
 import static org.openlmis.requisition.domain.requisition.RequisitionLineItem.TOTAL_LOSSES_AND_ADJUSTMENTS;
@@ -26,6 +28,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.openlmis.requisition.domain.AvailableRequisitionColumn;
+import org.openlmis.requisition.domain.ColumnType;
+import org.openlmis.requisition.domain.SourceType;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -58,5 +62,18 @@ public class AvailableRequisitionColumnRepositoryIntegrationTest
     assertTrue(columnNames.contains(TOTAL_CONSUMED_QUANTITY));
     assertTrue(columnNames.contains(TOTAL_LOSSES_AND_ADJUSTMENTS));
     assertTrue(columnNames.contains(TOTAL_RECEIVED_QUANTITY));
+  }
+
+  @Test
+  public void shouldHaveSupplyingFacilityStockOnHandColumnRegistered() {
+    AvailableRequisitionColumn column = repository.findByName("supplyingFacilityStockOnHand");
+
+    assertNotNull(column);
+    assertEquals("SF", column.getIndicator());
+    assertEquals(ColumnType.NUMERIC, column.getColumnType());
+    assertFalse(column.getMandatory());
+    assertFalse(column.getSupportsTag());
+    assertEquals(1, column.getSources().size());
+    assertTrue(column.getSources().contains(SourceType.SUPPLYING_FACILITY_STOCK));
   }
 }

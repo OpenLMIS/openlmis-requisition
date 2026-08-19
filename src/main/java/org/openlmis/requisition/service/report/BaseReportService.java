@@ -13,17 +13,24 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.repository;
+package org.openlmis.requisition.service.report;
 
-import java.util.List;
-import java.util.UUID;
-import org.openlmis.requisition.domain.AvailableRequisitionColumn;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.openlmis.requisition.service.BaseCommunicationService;
+import org.springframework.beans.factory.annotation.Value;
 
-public interface AvailableRequisitionColumnRepository
-    extends PagingAndSortingRepository<AvailableRequisitionColumn, UUID> {
+public abstract class BaseReportService<T> extends BaseCommunicationService<T> {
 
-  List<AvailableRequisitionColumn> findBySupportsTag(Boolean supportsTag);
+  @Value("${report.url}")
+  private String reportUrl;
 
-  AvailableRequisitionColumn findByName(String name);
+  @Override
+  protected String getServiceName() {
+    return "Report";
+  }
+
+  @Override
+  protected String getServiceUrl() {
+    return reportUrl;
+  }
+
 }

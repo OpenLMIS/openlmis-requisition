@@ -76,6 +76,10 @@ public abstract class BaseRequisitionLineItemDto extends BaseDto
   private Integer convertedQuantityToIssue;
   private Integer dosesPerPatient;
 
+  // Read-only supplying-facility stock on hand for this orderable, computed at read time during
+  // approval (see SupplyingFacilityStockService). Not persisted; not on the line-item Importer.
+  private Integer supplyingFacilityStockOnHand;
+
   @JsonProperty
   private List<StockAdjustmentDto> stockAdjustments = new ArrayList<>();
 

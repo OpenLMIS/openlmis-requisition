@@ -45,6 +45,7 @@ import org.openlmis.requisition.dto.RequisitionV2Dto;
 import org.openlmis.requisition.dto.VersionObjectReferenceDto;
 import org.openlmis.requisition.service.PeriodService;
 import org.openlmis.requisition.service.RequisitionService;
+import org.openlmis.requisition.service.SupplyingFacilityStockService;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,6 +74,9 @@ public class RequisitionV2Controller extends BaseRequisitionController {
 
   @Autowired
   private PeriodService periodService;
+
+  @Autowired
+  private SupplyingFacilityStockService supplyingFacilityStockService;
 
   public static final String RESOURCE_URL = API_URL + "/v2/requisitions";
 
@@ -175,6 +179,10 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     checkPermission(profiler, () -> permissionService.canViewRequisition(requisition));
 
     RequisitionV2Dto dto = buildDto(requisition, profiler);
+
+    profiler.start("POPULATE_SUPPLYING_FACILITY_SOH");
+    supplyingFacilityStockService.enrich(requisition, dto);
+
     response.setHeader(HttpHeaders.ETAG, ETagResource.buildWeakETag(requisition.getVersion()));
 
     stopProfiler(profiler, dto);

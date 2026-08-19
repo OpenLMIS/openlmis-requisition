@@ -23,7 +23,9 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMI
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -95,6 +97,16 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
       BatchRequisitionController.class);
+
+  // Columns that do not map to a settable RequisitionLineItem property. They are skipped when
+  // nulling non-displayed calculated fields, otherwise the reflective setter would fail on them.
+  private static final Set<String> COLUMNS_WITHOUT_LINE_ITEM_FIELD = Collections.unmodifiableSet(
+      new HashSet<>(Arrays.asList(
+          "pricePerPack",
+          "orderable.dispensable.displayUnit",
+          "orderable.productCode",
+          "dosesPerPatient",
+          "supplyingFacilityStockOnHand")));
 
   @Autowired
   private MessageService messageService;
@@ -511,10 +523,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
   }
 
   private boolean getColumnNameConditions(RequisitionTemplateColumn column) {
-    return !("pricePerPack".equals(column.getName())
-            || "orderable.dispensable.displayUnit".equals(column.getName())
-            || "orderable.productCode".equals(column.getName())
-            || "dosesPerPatient".equals(column.getName()));
+    return !COLUMNS_WITHOUT_LINE_ITEM_FIELD.contains(column.getName());
   }
 
   private void setNullForField(RequisitionLineItem lineItem, RequisitionTemplateColumn column) {

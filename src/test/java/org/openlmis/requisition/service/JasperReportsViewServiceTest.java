@@ -32,28 +32,42 @@ import static org.openlmis.requisition.domain.requisition.RequisitionStatus.INIT
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED;
 import static org.openlmis.requisition.domain.requisition.RequisitionStatus.RELEASED_WITHOUT_ORDER;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRPrintElement;
+import net.sf.jasperreports.engine.JRPrintFrame;
+import net.sf.jasperreports.engine.JRPrintPage;
+import net.sf.jasperreports.engine.JRPrintText;
+import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRMapCollectionDataSource;
+import net.sf.jasperreports.engine.util.JRLoader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +82,7 @@ import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
+import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.GeographicLevelDto;
@@ -75,6 +90,7 @@ import org.openlmis.requisition.dto.GeographicZoneDto;
 import org.openlmis.requisition.dto.MinimalFacilityDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
+import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
@@ -84,7 +100,9 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.GeographicZoneReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.report.ReportService;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.RequisitionReportDtoDataBuilder;
 import org.openlmis.requisition.web.ReportingRateReportDtoBuilder;
 import org.openlmis.requisition.web.RequisitionReportDtoBuilder;
 import org.springframework.data.domain.Page;
@@ -103,6 +121,7 @@ public class JasperReportsViewServiceTest {
   private static final String DEFAULT_LOCALE = "en";
   private static final String CURRENCY_LOCALE = "US";
   private static final String PARAM_KEY_FORMAT = "format";
+  private static final String REQUISITION_REPORT_NAME = "requisition";
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
@@ -145,6 +164,9 @@ public class JasperReportsViewServiceTest {
   
   @Mock
   private DataSource replicationDataSource; //NOPMD
+
+  @Mock
+  private ReportService reportService;
 
   @InjectMocks
   private JasperReportsViewService service;
@@ -446,24 +468,167 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateRequisitionReportShouldSetParams() throws Exception {
+  public void generateRequisitionReportShouldDelegateToReportService() throws Exception {
     doReturn(locale).when(service).getLocaleFromService();
     reportParams.put("Requisition", requisition.getId());
 
-    RequisitionReportDto requisitionReportDto = DtoGenerator.of(RequisitionReportDto.class);
+    RequisitionReportDto requisitionReportDto = requisitionReportDto();
     when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
+    when(reportService.generate(eq(REQUISITION_REPORT_NAME), any(byte[].class), anyMap()))
+        .thenReturn(expectedReportData);
 
-    Boolean showInDoses = true;
-    byte[] reportData = service.generateRequisitionReport(requisition, showInDoses);
-    ArgumentCaptor<Map<String,Object>> paramArg = ArgumentCaptor.forClass(Map.class);
-    verify(service).fillAndExportReport(any(JasperReport.class), paramArg.capture());
+    byte[] reportData = service.generateRequisitionReport(requisition, true, "fr");
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService)
+        .generate(eq(REQUISITION_REPORT_NAME), any(byte[].class), paramArg.capture());
     Map<String, Object> outputParams = paramArg.getValue();
 
     assertEquals(expectedReportData, reportData);
     assertEquals(DATE_FORMAT, outputParams.get("dateFormat"));
-    assertEquals(createDecimalFormat(), outputParams.get("decimalFormat"));
-    assertEquals(NumberFormat.getCurrencyInstance(locale),
-        outputParams.get("currencyDecimalFormat"));
+    assertEquals("fr", outputParams.get("lang"));
+    assertEquals("pdf", outputParams.get(PARAM_KEY_FORMAT));
+    assertEquals(true, outputParams.get("showInDoses"));
+    assertEquals(requisition.getStatus().isAuthorized(),
+        outputParams.get("requisitionAuthorized"));
+    Assert.assertTrue(outputParams.get("subreport_bytes") instanceof String);
+  }
+
+  @Test
+  public void generateRequisitionReportShouldSendJsonSerializableParams() throws Exception {
+    doReturn(locale).when(service).getLocaleFromService();
+
+    RequisitionReportDto requisitionReportDto = requisitionReportDto();
+    when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto);
+
+    service.generateRequisitionReport(requisition, true, "en");
+
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService)
+        .generate(eq(REQUISITION_REPORT_NAME), any(byte[].class), paramArg.capture());
+
+    // must stay JSON serializable
+    new ObjectMapper().writeValueAsBytes(paramArg.getValue());
+  }
+
+  @Test
+  public void generateRequisitionReportShouldFillTemplateWithTranslatedColumnHeaders()
+      throws Exception {
+    JasperPrint print = fillReportAsReportServiceWould(echoBundle());
+
+    List<String> texts = renderedTexts(print);
+    Assert.assertFalse("nothing was rendered", texts.isEmpty());
+    Assert.assertTrue("line item column headers must come from the bundle, rendered: " + texts,
+        texts.contains(echo("report.column.stockOnHand"))
+            && texts.contains(echo("report.column.totalLossesAndAdjustments")));
+    Assert.assertTrue("main template labels must come from the bundle, rendered: " + texts,
+        texts.contains(echo("report.title.fullSupplyItems")));
+    Assert.assertFalse("a raw bundle key leaked into the rendered report",
+        texts.stream().anyMatch(text -> text.startsWith("report.")));
+  }
+
+  @Test
+  public void generateRequisitionReportShouldRenderBlankHeadersWhenBundleLacksColumnKeys()
+      throws Exception {
+    JasperPrint print = fillReportAsReportServiceWould(emptyBundle());
+
+    List<String> texts = renderedTexts(print);
+    Assert.assertFalse("missing bundle keys must not leak as raw keys, rendered: " + texts,
+        texts.stream().anyMatch(text -> text.contains("report.column.")));
+    Assert.assertFalse("headers render blank rather than failing, rendered: " + texts,
+        texts.contains(echo("report.column.stockOnHand")));
+  }
+
+  private JasperPrint fillReportAsReportServiceWould(ResourceBundle bundle) throws Exception {
+    doReturn(locale).when(service).getLocaleFromService();
+    when(requisitionReportDtoBuilder.build(requisition)).thenReturn(requisitionReportDto());
+
+    service.generateRequisitionReport(requisition, true, "en");
+
+    ArgumentCaptor<byte[]> templateArg = ArgumentCaptor.forClass(byte[].class);
+    ArgumentCaptor<Map<String, Object>> paramArg = ArgumentCaptor.forClass(Map.class);
+    verify(reportService)
+        .generate(eq(REQUISITION_REPORT_NAME), templateArg.capture(), paramArg.capture());
+
+    Map<String, Object> params = new HashMap<>(paramArg.getValue());
+    params.put("subreport",
+        loadReport(Base64.getDecoder().decode((String) params.remove("subreport_bytes"))));
+    Collection<Map<String, ?>> records = (Collection<Map<String, ?>>) params.get("datasource");
+    params.put(JRParameter.REPORT_RESOURCE_BUNDLE, bundle);
+    params.put(JRParameter.REPORT_LOCALE, Locale.ENGLISH);
+
+    return JasperFillManager.fillReport(loadReport(templateArg.getValue()), params,
+        new JRMapCollectionDataSource(records));
+  }
+
+  private JasperReport loadReport(byte[] data) throws JRException {
+    return (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(data));
+  }
+
+  private List<String> renderedTexts(JasperPrint print) {
+    List<String> texts = new ArrayList<>();
+    for (JRPrintPage page : print.getPages()) {
+      collectTexts(page.getElements(), texts);
+    }
+    return texts;
+  }
+
+  private void collectTexts(List<JRPrintElement> elements, List<String> texts) {
+    for (JRPrintElement element : elements) {
+      if (element instanceof JRPrintText) {
+        String text = ((JRPrintText) element).getFullText();
+        if (text != null && !text.trim().isEmpty()) {
+          texts.add(text.trim());
+        }
+      } else if (element instanceof JRPrintFrame) {
+        collectTexts(((JRPrintFrame) element).getElements(), texts);
+      }
+    }
+  }
+
+  private String echo(String key) {
+    return "[" + key + "]";
+  }
+
+  private ResourceBundle echoBundle() {
+    return new ResourceBundle() {
+      @Override
+      protected Object handleGetObject(String key) {
+        return echo(key);
+      }
+
+      @Override
+      public Enumeration<String> getKeys() {
+        return Collections.emptyEnumeration();
+      }
+
+      @Override
+      public boolean containsKey(String key) {
+        return true;
+      }
+    };
+  }
+
+  private ResourceBundle emptyBundle() {
+    return new ResourceBundle() {
+      @Override
+      protected Object handleGetObject(String key) {
+        return null;
+      }
+
+      @Override
+      public Enumeration<String> getKeys() {
+        return Collections.emptyEnumeration();
+      }
+    };
+  }
+
+  private RequisitionReportDto requisitionReportDto() {
+    RequisitionDto requisitionDto = new RequisitionDataBuilder().buildAsDto();
+    requisitionDto.setFacility(facility);
+    requisitionDto.setProgram(program);
+    requisitionDto.setProcessingPeriod(period);
+    return new RequisitionReportDtoDataBuilder().withRequisition(requisitionDto).buildAsDto();
   }
 
   private List<FacilityDto> extractFacilitiesFromOutputParams(Map<String, Object> outputParams) {
