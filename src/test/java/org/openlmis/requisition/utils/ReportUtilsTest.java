@@ -317,6 +317,46 @@ public class ReportUtilsTest {
     assertTrue(children.contains(consumption));
   }
 
+  @Test
+  public void shouldPickFontSizeByColumnCount() {
+    assertEquals(10, ReportUtils.fontSizeForColumnCount(1));
+    assertEquals(10, ReportUtils.fontSizeForColumnCount(12));
+    assertEquals(9, ReportUtils.fontSizeForColumnCount(13));
+    assertEquals(9, ReportUtils.fontSizeForColumnCount(14));
+    assertEquals(8, ReportUtils.fontSizeForColumnCount(15));
+    assertEquals(8, ReportUtils.fontSizeForColumnCount(20));
+  }
+
+  @Test
+  public void shouldApplyLargeFontAndStretchWhenFewColumns() {
+    JRDesignTextField fieldOne = getField(ADJUSTED_CONSUMPTION, FIELD_ONE_WIDTH);
+    JRDesignTextField fieldTwo = getField(AVERAGE_CONSUMPTION, FIELD_TWO_WIDTH);
+    JRBand jrBand = mock(JRBand.class);
+    when(jrBand.getChildren())
+        .thenReturn(new LinkedList<>(Arrays.asList(fieldOne, fieldTwo)));
+
+    ReportUtils.applyColumnCountFont(jrBand);
+
+    assertEquals(10f, fieldOne.getFontsize(), 0f);
+    assertEquals(10f, fieldTwo.getFontsize(), 0f);
+    assertTrue(fieldOne.isStretchWithOverflow());
+    assertTrue(fieldTwo.isStretchWithOverflow());
+  }
+
+  @Test
+  public void shouldApplySmallestFontWhenTableIsDense() {
+    LinkedList<JRChild> fields = new LinkedList<>();
+    for (int i = 0; i < 15; i++) {
+      fields.add(getField("column" + i, FIELD_ONE_WIDTH));
+    }
+    JRBand jrBand = mock(JRBand.class);
+    when(jrBand.getChildren()).thenReturn(fields);
+
+    ReportUtils.applyColumnCountFont(jrBand);
+
+    fields.forEach(field -> assertEquals(8f, ((JRDesignTextField) field).getFontsize(), 0f));
+  }
+
   private void stubDisplay(RequisitionTemplateColumn column, int displayOrder) {
     when(column.getDisplayOrder()).thenReturn(displayOrder);
     when(column.getIsDisplayed()).thenReturn(true);

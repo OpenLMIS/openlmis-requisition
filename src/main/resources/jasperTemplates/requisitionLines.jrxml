@@ -647,7 +647,7 @@
 		<band height="25" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<rectangle>
-				<reportElement x="9" y="0" width="1142" height="25" backcolor="#DEDEDE" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
+				<reportElement x="9" y="0" width="1142" height="25" backcolor="#DEDEDE" stretchType="RelativeToBandHeight" uuid="2a65185a-b9a9-41e7-92b5-f269c9622440">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
