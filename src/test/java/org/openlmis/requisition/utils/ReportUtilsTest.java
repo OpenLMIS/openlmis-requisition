@@ -18,6 +18,7 @@ package org.openlmis.requisition.utils;
 import static net.sf.jasperreports.engine.JRParameter.REPORT_LOCALE;
 import static net.sf.jasperreports.engine.JRParameter.REPORT_RESOURCE_BUNDLE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,12 @@ public class ReportUtilsTest {
   private static final int WIDTH_WITHOUT_MARGIN = 26;
   private static final int WIDTH = 30;
   private static final int MARGIN = 2;
+
+  // two of these columns sum to 40, which overflows WIDTH_WITHOUT_MARGIN (26) and forces a shrink
+  private static final int WIDE_FIELD_WIDTH = 20;
+
+  private static final String PRODUCT_NAME_KEY = "orderable.fullProductName";
+  private static final String PACK_SIZE_KEY = "packSize";
 
   private static final int DELTA = 1000;
 
@@ -229,6 +236,85 @@ public class ReportUtilsTest {
     assertEquals(FIELD_ONE_WIDTH, fieldOne.getWidth(), DELTA);
     assertEquals(FIELD_TWO_WIDTH, fieldOne.getWidth(), DELTA);
     assertEquals(FIELD_THREE_WIDTH, fieldThree.getWidth(), DELTA);
+  }
+
+  @Test
+  public void shouldKeepPackSizeColumnAfterProductNameWhenProductNameInTemplate() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField productName = getField(PRODUCT_NAME_KEY, FIELD_ONE_WIDTH);
+    JRDesignTextField packSize = getField(PACK_SIZE_KEY, FIELD_THREE_WIDTH);
+
+    LinkedList<JRChild> children = new LinkedList<>(Arrays.asList(productName, packSize));
+    when(jrBand.getChildren()).thenReturn(children);
+    when(jrBand.getElementByKey(PRODUCT_NAME_KEY)).thenReturn(productName);
+    when(jrBand.getElementByKey(PACK_SIZE_KEY)).thenReturn(packSize);
+
+    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
+    RequisitionTemplateColumn productNameColumn = mock(RequisitionTemplateColumn.class);
+    stubDisplay(productNameColumn, 1);
+    columns.put(PRODUCT_NAME_KEY, productNameColumn);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand, columns, WIDTH, MARGIN);
+
+    // then
+    assertTrue(children.contains(packSize));
+    assertEquals(MARGIN, productName.getX());
+    assertEquals(productName.getX() + productName.getWidth(), packSize.getX());
+  }
+
+  @Test
+  public void shouldRescaleProductNameAndPackSizeWidthsToFillLine() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField productName = getField(PRODUCT_NAME_KEY, WIDE_FIELD_WIDTH);
+    JRDesignTextField packSize = getField(PACK_SIZE_KEY, WIDE_FIELD_WIDTH);
+
+    LinkedList<JRChild> children = new LinkedList<>(Arrays.asList(productName, packSize));
+    when(jrBand.getChildren()).thenReturn(children);
+    when(jrBand.getElementByKey(PRODUCT_NAME_KEY)).thenReturn(productName);
+    when(jrBand.getElementByKey(PACK_SIZE_KEY)).thenReturn(packSize);
+
+    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
+    RequisitionTemplateColumn productNameColumn = mock(RequisitionTemplateColumn.class);
+    stubDisplay(productNameColumn, 1);
+    columns.put(PRODUCT_NAME_KEY, productNameColumn);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand, columns, WIDTH, MARGIN);
+
+    // then
+    assertEquals(WIDTH_WITHOUT_MARGIN, productName.getWidth() + packSize.getWidth());
+    assertTrue(productName.getWidth() < WIDE_FIELD_WIDTH);
+    assertTrue(packSize.getWidth() < WIDE_FIELD_WIDTH);
+    assertEquals(MARGIN, productName.getX());
+    assertEquals(productName.getX() + productName.getWidth(), packSize.getX());
+  }
+
+  @Test
+  public void shouldRemovePackSizeColumnWhenProductNameNotInTemplate() {
+    // given
+    JRBand jrBand = mock(JRBand.class);
+    JRDesignTextField consumption = getField(ADJUSTED_CONSUMPTION, FIELD_ONE_WIDTH);
+    JRDesignTextField packSize = getField(PACK_SIZE_KEY, FIELD_THREE_WIDTH);
+
+    LinkedList<JRChild> children = new LinkedList<>(Arrays.asList(consumption, packSize));
+    when(jrBand.getChildren()).thenReturn(children);
+    when(jrBand.getElementByKey(ADJUSTED_CONSUMPTION)).thenReturn(consumption);
+    when(jrBand.getElementByKey(PACK_SIZE_KEY)).thenReturn(packSize);
+
+    Map<String, RequisitionTemplateColumn> columns = new LinkedHashMap<>();
+    RequisitionTemplateColumn consumptionColumn = mock(RequisitionTemplateColumn.class);
+    stubDisplay(consumptionColumn, 1);
+    columns.put(ADJUSTED_CONSUMPTION, consumptionColumn);
+
+    // when
+    ReportUtils.customizeBandWithTemplateFields(jrBand, columns, WIDTH, MARGIN);
+
+    // then
+    assertFalse(children.contains(packSize));
+    assertTrue(children.contains(consumption));
   }
 
   @Test
