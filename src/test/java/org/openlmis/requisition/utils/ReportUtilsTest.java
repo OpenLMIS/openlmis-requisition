@@ -319,12 +319,12 @@ public class ReportUtilsTest {
 
   @Test
   public void shouldPickFontSizeByColumnCount() {
-    assertEquals(10, ReportUtils.fontSizeForColumnCount(1));
-    assertEquals(10, ReportUtils.fontSizeForColumnCount(12));
-    assertEquals(9, ReportUtils.fontSizeForColumnCount(13));
-    assertEquals(9, ReportUtils.fontSizeForColumnCount(14));
-    assertEquals(8, ReportUtils.fontSizeForColumnCount(15));
-    assertEquals(8, ReportUtils.fontSizeForColumnCount(20));
+    assertEquals(12, ReportUtils.fontSizeForColumnCount(1));
+    assertEquals(12, ReportUtils.fontSizeForColumnCount(12));
+    assertEquals(11, ReportUtils.fontSizeForColumnCount(13));
+    assertEquals(11, ReportUtils.fontSizeForColumnCount(14));
+    assertEquals(10, ReportUtils.fontSizeForColumnCount(15));
+    assertEquals(10, ReportUtils.fontSizeForColumnCount(20));
   }
 
   @Test
@@ -337,8 +337,8 @@ public class ReportUtilsTest {
 
     ReportUtils.applyColumnCountFont(jrBand);
 
-    assertEquals(10f, fieldOne.getFontsize(), 0f);
-    assertEquals(10f, fieldTwo.getFontsize(), 0f);
+    assertEquals(12f, fieldOne.getFontsize(), 0f);
+    assertEquals(12f, fieldTwo.getFontsize(), 0f);
     assertTrue(fieldOne.isStretchWithOverflow());
     assertTrue(fieldTwo.isStretchWithOverflow());
   }
@@ -354,7 +354,7 @@ public class ReportUtilsTest {
 
     ReportUtils.applyColumnCountFont(jrBand);
 
-    fields.forEach(field -> assertEquals(8f, ((JRDesignTextField) field).getFontsize(), 0f));
+    fields.forEach(field -> assertEquals(10f, ((JRDesignTextField) field).getFontsize(), 0f));
   }
 
   private void stubDisplay(RequisitionTemplateColumn column, int displayOrder) {

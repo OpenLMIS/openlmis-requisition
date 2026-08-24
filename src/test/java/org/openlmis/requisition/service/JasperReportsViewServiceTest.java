@@ -553,7 +553,7 @@ public class JasperReportsViewServiceTest {
     float fontSize = headers.get(0).getFontsize();
     Assert.assertTrue("font is scaled up from the old hard-coded 6pt default", fontSize > 6f);
     Assert.assertTrue("font is one of the column-count sizes: " + fontSize,
-        fontSize == 8f || fontSize == 9f || fontSize == 10f);
+        fontSize == 10f || fontSize == 11f || fontSize == 12f);
     headers.forEach(header -> Assert.assertEquals("all column headers share one size",
         fontSize, header.getFontsize(), 0f));
 
