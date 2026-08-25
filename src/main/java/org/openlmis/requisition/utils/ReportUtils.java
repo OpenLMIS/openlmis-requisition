@@ -44,9 +44,9 @@ public final class ReportUtils {
 
   // Print font size for the requisition line table, chosen by how many columns are displayed:
   // few columns print large and readable, dense tables step down so they still fit the page width.
-  private static final int READABLE_FONT_SIZE = 10;
-  private static final int MEDIUM_FONT_SIZE = 9;
-  private static final int COMPACT_FONT_SIZE = 8;
+  private static final int READABLE_FONT_SIZE = 12;
+  private static final int MEDIUM_FONT_SIZE = 11;
+  private static final int COMPACT_FONT_SIZE = 10;
   private static final int MAX_COLUMNS_FOR_READABLE_FONT = 12;
   private static final int MAX_COLUMNS_FOR_MEDIUM_FONT = 14;
 
