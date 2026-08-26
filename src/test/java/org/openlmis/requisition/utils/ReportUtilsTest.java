@@ -324,7 +324,9 @@ public class ReportUtilsTest {
     assertEquals(11, ReportUtils.fontSizeForColumnCount(13));
     assertEquals(11, ReportUtils.fontSizeForColumnCount(14));
     assertEquals(10, ReportUtils.fontSizeForColumnCount(15));
-    assertEquals(10, ReportUtils.fontSizeForColumnCount(20));
+    assertEquals(10, ReportUtils.fontSizeForColumnCount(19));
+    assertEquals(8, ReportUtils.fontSizeForColumnCount(20));
+    assertEquals(8, ReportUtils.fontSizeForColumnCount(25));
   }
 
   @Test
@@ -344,7 +346,7 @@ public class ReportUtilsTest {
   }
 
   @Test
-  public void shouldApplySmallestFontWhenTableIsDense() {
+  public void shouldApplyCompactFontWhenTableIsDense() {
     LinkedList<JRChild> fields = new LinkedList<>();
     for (int i = 0; i < 15; i++) {
       fields.add(getField("column" + i, FIELD_ONE_WIDTH));
@@ -355,6 +357,20 @@ public class ReportUtilsTest {
     ReportUtils.applyColumnCountFont(jrBand);
 
     fields.forEach(field -> assertEquals(10f, ((JRDesignTextField) field).getFontsize(), 0f));
+  }
+
+  @Test
+  public void shouldApplySmallestFontWhenTableIsVeryDense() {
+    LinkedList<JRChild> fields = new LinkedList<>();
+    for (int i = 0; i < 20; i++) {
+      fields.add(getField("column" + i, FIELD_ONE_WIDTH));
+    }
+    JRBand jrBand = mock(JRBand.class);
+    when(jrBand.getChildren()).thenReturn(fields);
+
+    ReportUtils.applyColumnCountFont(jrBand);
+
+    fields.forEach(field -> assertEquals(8f, ((JRDesignTextField) field).getFontsize(), 0f));
   }
 
   private void stubDisplay(RequisitionTemplateColumn column, int displayOrder) {
