@@ -47,8 +47,10 @@ public final class ReportUtils {
   private static final int READABLE_FONT_SIZE = 12;
   private static final int MEDIUM_FONT_SIZE = 11;
   private static final int COMPACT_FONT_SIZE = 10;
+  private static final int SMALL_FONT_SIZE = 8;
   private static final int MAX_COLUMNS_FOR_READABLE_FONT = 12;
   private static final int MAX_COLUMNS_FOR_MEDIUM_FONT = 14;
+  private static final int MAX_COLUMNS_FOR_COMPACT_FONT = 19;
 
   private ReportUtils() {
     throw new UnsupportedOperationException();
@@ -156,7 +158,10 @@ public final class ReportUtils {
     if (columnCount <= MAX_COLUMNS_FOR_MEDIUM_FONT) {
       return MEDIUM_FONT_SIZE;
     }
-    return COMPACT_FONT_SIZE;
+    if (columnCount <= MAX_COLUMNS_FOR_COMPACT_FONT) {
+      return COMPACT_FONT_SIZE;
+    }
+    return SMALL_FONT_SIZE;
   }
 
   private static List<JRDesignTextField> textFields(JRBand band) {
