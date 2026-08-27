@@ -75,132 +75,76 @@
 				<textFieldExpression><![CDATA[msg($R{report.header.reportAndRequisitionFor}, $F{programName}, $F{facilityTypeName})]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement mode="Opaque" x="10" y="125" width="1142" height="50" backcolor="#C0C0C0" uuid="65fe1d4d-8334-48d2-b383-ee533c8d5742"/>
+				<reportElement mode="Opaque" stretchType="RelativeToBandHeight" x="10" y="125" width="1142" height="50" backcolor="#C0C0C0" uuid="65fe1d4d-8334-48d2-b383-ee533c8d5742"/>
 				<graphicElement>
 					<pen lineWidth="0.0"/>
 				</graphicElement>
 			</rectangle>
+																											<textField isStretchWithOverflow="true">
+				<reportElement x="20" y="135" width="185" height="10" uuid="9ff435e1-2db7-4309-8a64-0111b0a6decb">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.facility}, "   " + $F{facilityName})]]></textFieldExpression>
+			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="480" y="135" width="130" height="10" uuid="d7a846a8-1be2-4c95-b8b6-eb97381c5fd7"/>
+				<reportElement positionType="Float" x="20" y="155" width="185" height="10" uuid="7e9768e7-2cc9-4f1b-814f-865b39566a13"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{initiatedDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.facilityCode}, "   " + $F{facilityCode})]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="495" y="155" width="115" height="10" uuid="a32b06c8-fec6-4c4e-b229-7e98a0f51657"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{reportingPeriod}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="665" y="135" width="135" height="10" uuid="dc6a243b-b839-45f3-a08d-fe49ee03f8cc"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{emergency} ? $R{report.value.emergency} : $R{report.value.regular}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="670" y="155" width="130" height="10" uuid="782089a4-e67c-455d-8f34-1218321f5085"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="235" y="155" width="150" height="10" uuid="0f2769f3-2106-4235-9230-012100b3c3de"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{zoneName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="250" y="135" width="135" height="10" uuid="7b42fd08-8189-4b19-8710-aa7571f34137"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{programName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="55" y="135" width="130" height="10" uuid="97807c17-6feb-44db-b0ec-eb1fdb21aa21"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{facilityName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement x="75" y="155" width="110" height="10" uuid="eb29697d-1d2f-42b6-9b25-2e2bcdadc080"/>
-				<textElement textAlignment="Left">
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{facilityCode}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="20" y="135" width="35" height="10" uuid="9ff435e1-2db7-4309-8a64-0111b0a6decb">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="210" y="135" width="200" height="10" uuid="bfb9d50e-e0e4-46cc-aa4a-ea1a0f52b906">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.facility})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.program}, "   " + $F{programName})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="20" y="155" width="55" height="10" uuid="7e9768e7-2cc9-4f1b-814f-865b39566a13"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.facilityCode})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="210" y="135" width="40" height="10" uuid="bfb9d50e-e0e4-46cc-aa4a-ea1a0f52b906">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="210" y="155" width="200" height="10" uuid="4b3a6dad-2836-4ee3-bc07-2a1da8e16314">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.program})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.zone}, "   " + $F{zoneName})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="210" y="155" width="25" height="10" uuid="4b3a6dad-2836-4ee3-bc07-2a1da8e16314">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="420" y="135" width="215" height="10" uuid="f01ca8e1-24ca-4e6e-8ae5-148769220580"/>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.creationDate}, "   " + $F{initiatedDate})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="420" y="155" width="215" height="10" uuid="8195bd81-f503-402c-99fd-79861348d2ec">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.zone})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.reportingPeriod}, "   " + $F{reportingPeriod})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="420" y="135" width="60" height="10" uuid="f01ca8e1-24ca-4e6e-8ae5-148769220580"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.creationDate})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="420" y="155" width="75" height="10" uuid="8195bd81-f503-402c-99fd-79861348d2ec">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="640" y="135" width="250" height="10" uuid="150c310a-e719-4dfa-a6d3-000dd5f634ac">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.reportingPeriod})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.type}, "   " + ($F{emergency} ? $R{report.value.emergency} : $R{report.value.regular}))]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="640" y="135" width="25" height="10" uuid="150c310a-e719-4dfa-a6d3-000dd5f634ac">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="640" y="155" width="250" height="10" uuid="5a51fb8c-f965-48ea-9f59-7a04b8ea4688"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.type})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="640" y="155" width="30" height="10" uuid="5a51fb8c-f965-48ea-9f59-7a04b8ea4688"/>
-				<textElement>
-					<font size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.status})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.labelledValue}, $R{report.header.status}, "   " + (str("report.value.status." + $F{status}.toLowerCase()) == null || str("report.value.status." + $F{status}.toLowerCase()).isEmpty() ? $F{status} : str("report.value.status." + $F{status}.toLowerCase())))]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
