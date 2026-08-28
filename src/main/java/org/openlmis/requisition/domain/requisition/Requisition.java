@@ -777,8 +777,14 @@ public class Requisition extends BaseTimestampedEntity {
       status = RequisitionStatus.RELEASED_WITHOUT_ORDER;
     } else {
       if (CollectionUtils.isEmpty(supplyLines) && nodeId != null) {
-        status = RequisitionStatus.IN_APPROVAL;
-        supervisoryNodeId = nodeId;
+        // [eLMIS Lesotho] DHMT is the terminal approval point. NDSO no longer
+        // approves inside eLMIS, so an approval that would previously have
+        // escalated to the parent supervisory node is finalised here instead.
+        // The NDSO report is printable from APPROVED onwards, so no order is
+        // required. Upstream behaviour was:
+        //   status = RequisitionStatus.IN_APPROVAL;
+        //   supervisoryNodeId = nodeId;
+        status = RequisitionStatus.APPROVED;
       } else {
         status = RequisitionStatus.APPROVED;
       }
