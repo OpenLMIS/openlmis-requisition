@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +37,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SupplyingFacilityResolver {
 
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(SupplyingFacilityResolver.class);
+
   private final SupplyLineReferenceDataService supplyLineReferenceDataService;
+  private final FacilityReferenceDataService facilityReferenceDataService;
 
   /**
    * Resolves the distinct supplying facilities for the requisition. Returns an empty list when the
@@ -53,10 +59,36 @@ public class SupplyingFacilityResolver {
     for (SupplyLineDto supplyLine : supplyLineReferenceDataService
         .search(requisition.getProgramId(), requisition.getSupervisoryNodeId())) {
       FacilityDto facility = supplyLine.getSupplyingFacility();
-      if (facility != null) {
+      if (facility != null && facility.getId() != null) {
         distinctById.putIfAbsent(facility.getId(), facility);
       }
     }
-    return new ArrayList<>(distinctById.values());
+
+    if (distinctById.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return withFacilityDetails(distinctById);
+  }
+
+  // The SupplyLine only carries a facility reference (id), so code and name come back empty.
+  // Fill them in with a bulk lookup. This is display-only and must not fail the read, so keep
+  // the references on a lookup failure and fall back per facility when a lookup misses one.
+  private List<FacilityDto> withFacilityDetails(Map<UUID, FacilityDto> distinctById) {
+    Map<UUID, FacilityDto> detailedById = new LinkedHashMap<>();
+    try {
+      for (FacilityDto facility : facilityReferenceDataService.search(distinctById.keySet())) {
+        detailedById.put(facility.getId(), facility);
+      }
+    } catch (RuntimeException ex) {
+      LOGGER.warn("Could not load supplying-facility details; using SupplyLine references", ex);
+      return new ArrayList<>(distinctById.values());
+    }
+
+    List<FacilityDto> resolved = new ArrayList<>(distinctById.size());
+    for (Map.Entry<UUID, FacilityDto> entry : distinctById.entrySet()) {
+      resolved.add(detailedById.getOrDefault(entry.getKey(), entry.getValue()));
+    }
+    return resolved;
   }
 }

@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,6 +46,9 @@ public class SupplyingFacilityResolverTest {
   @Mock
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
+  @Mock
+  private FacilityReferenceDataService facilityReferenceDataService;
+
   @InjectMocks
   private SupplyingFacilityResolver resolver;
 
@@ -61,26 +65,72 @@ public class SupplyingFacilityResolverTest {
   }
 
   @Test
-  public void shouldResolveDistinctSupplyingFacilities() {
-    FacilityDto facilityA = new FacilityDtoDataBuilder().buildAsDto();
-    FacilityDto facilityB = new FacilityDtoDataBuilder().buildAsDto();
+  public void shouldResolveDistinctSupplyingFacilitiesWithDetails() {
+    UUID idA = UUID.randomUUID();
+    UUID idB = UUID.randomUUID();
+    // SupplyLines only reference the facility (id, no code or name).
+    FacilityDto referenceA = new FacilityDtoDataBuilder().withId(idA)
+        .withCode(null).withName(null).buildAsDto();
+    FacilityDto referenceB = new FacilityDtoDataBuilder().withId(idB)
+        .withCode(null).withName(null).buildAsDto();
+    FacilityDto detailedA = new FacilityDtoDataBuilder().withId(idA).buildAsDto();
+    FacilityDto detailedB = new FacilityDtoDataBuilder().withId(idB).buildAsDto();
+
     when(supplyLineReferenceDataService.search(programId, supervisoryNodeId))
         .thenReturn(Arrays.asList(
-            new SupplyLineDtoDataBuilder().withSupplyingFacility(facilityA).buildAsDto(),
-            new SupplyLineDtoDataBuilder().withSupplyingFacility(facilityA).buildAsDto(),
-            new SupplyLineDtoDataBuilder().withSupplyingFacility(facilityB).buildAsDto()));
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceA).buildAsDto(),
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceA).buildAsDto(),
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceB).buildAsDto()));
+    when(facilityReferenceDataService.search(anySet()))
+        .thenReturn(Arrays.asList(detailedA, detailedB));
 
     List<FacilityDto> result = resolver.resolve(requisition);
 
-    assertThat(result, contains(facilityA, facilityB));
+    assertThat(result, contains(detailedA, detailedB));
   }
 
   @Test
-  public void shouldReturnEmptyWhenNoSupplyLines() {
+  public void shouldFallBackToSupplyLineFacilityWhenLookupMisses() {
+    UUID idA = UUID.randomUUID();
+    UUID idB = UUID.randomUUID();
+    FacilityDto referenceA = new FacilityDtoDataBuilder().withId(idA).buildAsDto();
+    FacilityDto referenceB = new FacilityDtoDataBuilder().withId(idB).buildAsDto();
+    FacilityDto detailedA = new FacilityDtoDataBuilder().withId(idA).buildAsDto();
+
+    when(supplyLineReferenceDataService.search(programId, supervisoryNodeId))
+        .thenReturn(Arrays.asList(
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceA).buildAsDto(),
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceB).buildAsDto()));
+    when(facilityReferenceDataService.search(anySet()))
+        .thenReturn(Collections.singletonList(detailedA));
+
+    List<FacilityDto> result = resolver.resolve(requisition);
+
+    assertThat(result, contains(detailedA, referenceB));
+  }
+
+  @Test
+  public void shouldKeepSupplyLineFacilitiesWhenLookupFails() {
+    FacilityDto referenceA = new FacilityDtoDataBuilder().buildAsDto();
+
+    when(supplyLineReferenceDataService.search(programId, supervisoryNodeId))
+        .thenReturn(Collections.singletonList(
+            new SupplyLineDtoDataBuilder().withSupplyingFacility(referenceA).buildAsDto()));
+    when(facilityReferenceDataService.search(anySet()))
+        .thenThrow(new IllegalStateException("reference data down"));
+
+    List<FacilityDto> result = resolver.resolve(requisition);
+
+    assertThat(result, contains(referenceA));
+  }
+
+  @Test
+  public void shouldReturnEmptyAndSkipLookupWhenNoSupplyLines() {
     when(supplyLineReferenceDataService.search(programId, supervisoryNodeId))
         .thenReturn(Collections.emptyList());
 
     assertThat(resolver.resolve(requisition), hasSize(0));
+    verify(facilityReferenceDataService, never()).search(anySet());
   }
 
   @Test
@@ -89,5 +139,6 @@ public class SupplyingFacilityResolverTest {
 
     assertThat(resolver.resolve(requisition), hasSize(0));
     verify(supplyLineReferenceDataService, never()).search(any(UUID.class), any(UUID.class));
+    verify(facilityReferenceDataService, never()).search(anySet());
   }
 }
