@@ -64,23 +64,23 @@
 	<group name="OrderableDisplayCategory">
 		<groupExpression><![CDATA[$F{categoryDisplayName}]]></groupExpression>
 		<groupHeader>
-			<band height="10">
+			<band height="20">
 				<rectangle>
-					<reportElement x="9" y="0" width="1142" height="10" backcolor="#CCCCCC" uuid="7079c950-9a76-43ee-954f-0349c39803cd">
+					<reportElement x="9" y="0" width="1142" height="20" backcolor="#CCCCCC" uuid="7079c950-9a76-43ee-954f-0349c39803cd">
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 				</rectangle>
 				<textField isBlankWhenNull="true">
-					<reportElement x="9" y="0" width="1142" height="10" uuid="29f84432-f48e-467d-b3fb-fc018b725111">
+					<reportElement x="9" y="0" width="1142" height="20" uuid="29f84432-f48e-467d-b3fb-fc018b725111">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement textAlignment="Center">
-						<font size="8"/>
+						<font size="12"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{categoryDisplayName}]]></textFieldExpression>
 				</textField>

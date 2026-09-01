@@ -3,7 +3,7 @@ Upcoming Version / WIP
 * [OLMIS-8176](https://openlmis.atlassian.net/browse/OLMIS-8176): Added a Pack Size column to the requisition printed report.
 
 Improvements:
-* [ODRC-129](https://openlmis.atlassian.net/browse/ODRC-129): Scale the printed requisition table font to the number of displayed columns (8pt for the very densest tables, scaling up to 12pt for sparse ones) so it is readable while still fitting the page.
+* [ODRC-129](https://openlmis.atlassian.net/browse/ODRC-129): Enlarge the printed requisition font — the table scales with the displayed column count (8pt at the densest up to 12pt), the header, summary and category text are 12pt, and the header fields span the full width so the reporting period stays on one line in any language.
 
 8.6.0 / 2026-08-13
 ==================
