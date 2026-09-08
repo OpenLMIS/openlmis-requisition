@@ -5,6 +5,9 @@ Upcoming Version / WIP
 Improvements:
 * [ODRC-129](https://openlmis.atlassian.net/browse/ODRC-129): Enlarge the printed requisition font — the table scales with the displayed column count (8pt at the densest up to 12pt), the header, summary and category text are 12pt, and the header fields span the full width so the reporting period stays on one line in any language.
 
+Bug fixes:
+* [OPSD-116](https://openlmis.atlassian.net/browse/OPSD-116): Populate the supplying-facility name and code in the requisition stock-on-hand metadata so the approval view can name the supplying facility instead of showing a blank header.
+
 8.6.0 / 2026-08-13
 ==================
 
