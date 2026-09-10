@@ -7,6 +7,7 @@ Improvements:
 
 Bug fixes:
 * [OPSD-116](https://openlmis.atlassian.net/browse/OPSD-116): Populate the supplying-facility name and code in the requisition stock-on-hand metadata so the approval view can name the supplying facility instead of showing a blank header.
+* [ODRC-130](https://openlmis.atlassian.net/browse/ODRC-130): Keep the printed requisition summary block (total costs and signatures) together so it is never split across a page break; when it does not fit below the table it moves in full to the next page.
 
 8.6.0 / 2026-08-13
 ==================
