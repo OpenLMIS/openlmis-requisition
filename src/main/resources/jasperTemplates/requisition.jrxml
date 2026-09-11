@@ -208,7 +208,7 @@
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="170">
+		<band height="170" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
 				<reportElement key="summaryLabel" x="10" y="10" width="930" height="20" uuid="d91c61a5-4f51-4610-ac52-e058a2957ddb"/>
