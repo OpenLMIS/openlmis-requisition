@@ -77,6 +77,18 @@ public class GlobalErrorHandlingTest {
   }
 
   @Test
+  public void shouldMapRejectionReasonConstraintsToMessageKeys() {
+    assertConstraintMappedTo("unique_rejection_reasons",
+        MessageKeys.ERROR_REJECTION_REASON_CODE_DUPLICATED);
+    assertConstraintMappedTo("name_rejection_reasons",
+        MessageKeys.ERROR_REJECTION_REASON_NAME_DUPLICATED);
+    assertConstraintMappedTo("unique_rejection_reason_categories",
+        MessageKeys.ERROR_REJECTION_REASON_CATEGORY_CODE_DUPLICATED);
+    assertConstraintMappedTo("name_rejection_reason_categories",
+        MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NAME_DUPLICATED);
+  }
+
+  @Test
   public void shouldHandleDataIntegrityViolationEvenIfMessageKeyNotExist() {
     // given
     String constraintName = "req_prod_fac_per_def";
@@ -118,6 +130,14 @@ public class GlobalErrorHandlingTest {
 
     // then
     assertMessage(message, messageKey);
+  }
+
+  private void assertConstraintMappedTo(String constraintName, String key) {
+    DataIntegrityViolationException exp = new DataIntegrityViolationException(
+        null, new ConstraintViolationException(null, null, constraintName));
+    mockMessage(key);
+
+    assertMessage(errorHandler.handleDataIntegrityViolation(exp), key);
   }
 
   private void assertMessage(LocalizedMessage localized, String key) {
