@@ -325,6 +325,14 @@ public abstract class MessageKeys {
           = "requisition.error.rejection.reason.category.not.found";
   public static final String ERROR_MISSING_MANDATORY_ITEMS =
           "validation.missing.mandatory.items";
+  public static final String ERROR_REJECTION_REASON_CODE_DUPLICATED
+          = ERROR_PREFIX + ".rejectionReason.code.duplicated";
+  public static final String ERROR_REJECTION_REASON_NAME_DUPLICATED
+          = ERROR_PREFIX + ".rejectionReason.name.duplicated";
+  public static final String ERROR_REJECTION_REASON_CATEGORY_CODE_DUPLICATED
+          = ERROR_PREFIX + ".rejectionReasonCategory.code.duplicated";
+  public static final String ERROR_REJECTION_REASON_CATEGORY_NAME_DUPLICATED
+          = ERROR_PREFIX + ".rejectionReasonCategory.name.duplicated";
 
   public static final String ERROR_MISSING_REJECTION_REASON = ERROR_PREFIX
           + ".reject.missingRejectionReason";
