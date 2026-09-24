@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.dto.RejectionReasonDto;
+import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PageDto;
 import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
 import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
@@ -183,6 +185,38 @@ public class RejectionReasonControllerIntegrationTest extends BaseWebIntegration
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
+  }
+
+  @Test
+  public void shouldReturnBadRequestWithMessageKeyWhenPostDuplicatedCode() {
+    assertPostDuplicatedFieldReturnsMessageKey("unique_rejection_reasons",
+            MessageKeys.ERROR_REJECTION_REASON_CODE_DUPLICATED);
+  }
+
+  @Test
+  public void shouldReturnBadRequestWithMessageKeyWhenPostDuplicatedName() {
+    assertPostDuplicatedFieldReturnsMessageKey("name_rejection_reasons",
+            MessageKeys.ERROR_REJECTION_REASON_NAME_DUPLICATED);
+  }
+
+  private void assertPostDuplicatedFieldReturnsMessageKey(String constraintName,
+                                                          String messageKey) {
+    when(rejectionReasonRepository.save(any(RejectionReason.class)))
+            .thenThrow(new DataIntegrityViolationException("test",
+                    new ConstraintViolationException("", null, constraintName)));
+
+    restAssured
+            .given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body(rejectionReasonDto)
+            .when()
+            .post(RESOURCE_URL)
+            .then()
+            .statusCode(400)
+            .body("messageKey", is(messageKey));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

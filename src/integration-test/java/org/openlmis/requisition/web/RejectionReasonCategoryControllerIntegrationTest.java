@@ -176,10 +176,21 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
 
   @Test
   public void shouldReturnBadRequestWithMessageKeyWhenPostDuplicatedCode() {
+    assertPostDuplicatedFieldReturnsMessageKey("unique_rejection_reason_categories",
+            MessageKeys.ERROR_REJECTION_REASON_CATEGORY_CODE_DUPLICATED);
+  }
+
+  @Test
+  public void shouldReturnBadRequestWithMessageKeyWhenPostDuplicatedName() {
+    assertPostDuplicatedFieldReturnsMessageKey("name_rejection_reason_categories",
+            MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NAME_DUPLICATED);
+  }
+
+  private void assertPostDuplicatedFieldReturnsMessageKey(String constraintName,
+                                                          String messageKey) {
     when(rejectionReasonCategoryRepository.save(any(RejectionReasonCategory.class)))
             .thenThrow(new DataIntegrityViolationException("test",
-                    new ConstraintViolationException("", null,
-                            "unique_rejection_reason_categories")));
+                    new ConstraintViolationException("", null, constraintName)));
 
     restAssured
             .given()
@@ -190,7 +201,7 @@ public class RejectionReasonCategoryControllerIntegrationTest extends BaseWebInt
             .post(RESOURCE_URL)
             .then()
             .statusCode(400)
-            .body("messageKey", is(MessageKeys.ERROR_REJECTION_REASON_CATEGORY_CODE_DUPLICATED));
+            .body("messageKey", is(messageKey));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
