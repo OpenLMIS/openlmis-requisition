@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.dto;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,7 +24,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.BooleanUtils;
+import org.openlmis.requisition.utils.Message;
 
 /**
  * Represents the results of a batch processing of requisitions.
@@ -33,6 +36,10 @@ public class RequisitionsProcessingStatusDto {
 
   private Set<ApproveRequisitionDto> requisitionDtos;
   private Set<RequisitionErrorMessage> requisitionErrors;
+
+  @JsonUnwrapped
+  @Setter
+  private Message.LocalizedMessage message;
 
   public RequisitionsProcessingStatusDto() {
     this.requisitionDtos = new HashSet<>();

@@ -92,7 +92,9 @@ schemas:
           "description": "An array of all requsitions that have been processed successfully and an array of errors.",
           "properties": {
               "requisitions": { "type": "object", "$ref": "#/schemas/approveRequisitionDtoArray" },
-              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" }
+              "errors": { "type": "object", "$ref": "#/schemas/requisitionErrorArray" },
+              "messageKey": { "type": "string", "title": "key of a message about the whole batch" },
+              "message": { "type": "string", "title": "message about the whole batch" }
           }
       }
 

@@ -20,6 +20,8 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_REQUISITIONS_TO_APPROVE;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
@@ -190,11 +192,24 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     RequisitionsProcessingStatusDto processingStatus = new RequisitionsProcessingStatusDto();
 
-    profiler.start("GET_USER");
-    UserDto user = authenticationHelper.getCurrentUser();
-
     profiler.start("FIND_REQUISITIONS");
     List<Requisition> requisitions = requisitionRepository.readDistinctByIdIn(uuids);
+
+    if (isEmpty(requisitions)) {
+      // The batch approval screen sends only the requisitions that passed its own validation, so
+      // it can end up sending none at all.
+      processingStatus.setMessage(localizeMessage(new Message(ERROR_NO_REQUISITIONS_TO_APPROVE)));
+
+      ResponseEntity<RequisitionsProcessingStatusDto> emptyBatchResponse =
+          new ResponseEntity<>(processingStatus, HttpStatus.BAD_REQUEST);
+
+      profiler.stop().log();
+      XLOGGER.exit(processingStatus);
+      return emptyBatchResponse;
+    }
+
+    profiler.start("GET_USER");
+    UserDto user = authenticationHelper.getCurrentUser();
 
     profiler.start("GET_USER_PERMISSION_STRINGS");
     List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
@@ -454,7 +469,11 @@ public class BatchRequisitionController extends BaseRequisitionController {
       }
     } finally {
       profiler.start("JOIN_RESULTS");
-      futures.forEach(CompletableFuture::join);
+      try {
+        futures.forEach(CompletableFuture::join);
+      } finally {
+        executor.shutdown();
+      }
     }
   }
 

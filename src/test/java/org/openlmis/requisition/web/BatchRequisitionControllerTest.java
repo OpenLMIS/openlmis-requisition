@@ -15,6 +15,7 @@
 
 package org.openlmis.requisition.web;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_REQUISITIONS_TO_APPROVE;
 
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
+import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
@@ -67,7 +70,10 @@ import org.openlmis.requisition.service.stockmanagement.StockEventStockManagemen
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
+import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class BatchRequisitionControllerTest {
@@ -220,6 +226,23 @@ public class BatchRequisitionControllerTest {
     verify(facilityReferenceDataService).search(anySet());
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
+  public void shouldTellWhyNothingWasApprovedWhenNoneOfGivenIdsMatchesRequisition() {
+    // the batch approval screen sends an empty id list when every requisition in the batch was
+    // filtered out by its own validation
+    ReflectionTestUtils.setField(batchRequisitionController,
+        "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Collections.emptyList());
+
+    ResponseEntity<RequisitionsProcessingStatusDto> response =
+        batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    verify(messageService).localize(new Message(ERROR_NO_REQUISITIONS_TO_APPROVE));
     verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
   }
 

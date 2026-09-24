@@ -7,6 +7,7 @@ Improvements:
 * [ODRC-129](https://openlmis.atlassian.net/browse/ODRC-129): Enlarge the printed requisition font — the table scales with the displayed column count (8pt at the densest up to 12pt), the header, summary and category text are 12pt, and the header fields span the full width so the reporting period stays on one line in any language.
 
 Bug fixes:
+* [OLMIS-8355](https://openlmis.atlassian.net/browse/OLMIS-8355): Requisition batch approval throws an error with message when batch cannot be approved.
 * [OLMIS-8353](https://openlmis.atlassian.net/browse/OLMIS-8353): Return a translated message key instead of the raw SQL error when a rejection reason or rejection reason category is saved with a duplicated code or name.
 * [OPSD-116](https://openlmis.atlassian.net/browse/OPSD-116): Populate the supplying-facility name and code in the requisition stock-on-hand metadata so the approval view can name the supplying facility instead of showing a blank header.
 * [ODRC-130](https://openlmis.atlassian.net/browse/ODRC-130): Keep the printed requisition summary block (total costs and signatures) together so it is never split across a page break; when it does not fit below the table it moves in full to the next page.
