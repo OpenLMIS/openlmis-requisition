@@ -1,6 +1,9 @@
 8.8.0-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): Stock-based requisitions request stock card range summaries only for the products that are used: full supply products on initiate, requisition line item products on save and status changes.
+
 8.7.0 / 2026-09-28
 ==================
 

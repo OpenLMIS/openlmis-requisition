@@ -36,6 +36,7 @@ public final class ApproveProductsAggregator {
 
   private List<ApprovedProductDto> fullSupplyProducts;
   private Set<UUID> fullSupplyOrderableIds;
+  private Set<VersionIdentityDto> fullSupplyOrderableIdentities;
 
   private Set<ApprovedProductReference> nonFullSupplyProductReferences;
 
@@ -49,6 +50,7 @@ public final class ApproveProductsAggregator {
 
     fullSupplyProducts = Lists.newArrayList();
     fullSupplyOrderableIds = Sets.newHashSet();
+    fullSupplyOrderableIdentities = Sets.newHashSet();
 
     nonFullSupplyProductReferences = Sets.newHashSet();
 
@@ -69,6 +71,7 @@ public final class ApproveProductsAggregator {
       if (Objects.equals(true, po.getFullSupply())) {
         fullSupplyProducts.add(approvedProduct);
         fullSupplyOrderableIds.add(orderable.getId());
+        fullSupplyOrderableIdentities.add(orderable.getIdentity());
       }
 
       if (Objects.equals(false, po.getFullSupply())) {
@@ -99,6 +102,10 @@ public final class ApproveProductsAggregator {
    */
   public Set<UUID> getFullSupplyOrderableIds() {
     return fullSupplyOrderableIds;
+  }
+
+  public Set<VersionIdentityDto> getFullSupplyOrderableIdentities() {
+    return fullSupplyOrderableIdentities;
   }
 
   public Map<VersionIdentityDto, ApprovedProductDto> getAllGroupByIdentity() {
