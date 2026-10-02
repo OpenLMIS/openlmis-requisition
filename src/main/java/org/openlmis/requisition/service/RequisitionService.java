@@ -66,6 +66,7 @@ import org.openlmis.requisition.domain.requisition.StatusChange;
 import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
 import org.openlmis.requisition.domain.requisition.StockData;
+import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.IdealStockAmountDto;
@@ -266,7 +267,7 @@ public class RequisitionService {
       stockCardRangeSummaryDtos =
               stockCardRangeSummaryStockManagementService
                       .search(program.getId(), facility.getId(),
-                              approvedProducts.getOrderableIdentities(), null,
+                              approvedProducts.getFullSupplyOrderableIdentities(), null,
                               period.getStartDate(), period.getEndDate());
 
       profiler.start("GET_PREVIOUS_PERIODS");
@@ -278,7 +279,7 @@ public class RequisitionService {
         stockCardRangeSummariesToAverage =
                 stockCardRangeSummaryStockManagementService
                         .search(program.getId(), facility.getId(),
-                                approvedProducts.getOrderableIdentities(), null,
+                                approvedProducts.getFullSupplyOrderableIdentities(), null,
                                 previousPeriods.get(previousPeriods.size() - 1).getStartDate(),
                                 period.getEndDate());
       } else {
@@ -1084,10 +1085,8 @@ public class RequisitionService {
         previousPeriods.get(previousPeriods.size() - 1).getStartDate();
 
     profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES_TO_AVERAGE");
-    return stockCardRangeSummaryStockManagementService
-        .search(requisition.getProgramId(), requisition.getFacilityId(),
-            approvedProducts.getOrderableIdentities(), null,
-            startDate, period.getEndDate());
+    return searchStockCardRangeSummaries(requisition, approvedProducts,
+        startDate, period.getEndDate());
   }
 
   /**
@@ -1105,10 +1104,32 @@ public class RequisitionService {
         .getApprovedProducts(requisition.getFacilityId(), requisition.getProgramId());
 
     profiler.start("FIND_STOCK_CARD_RANGE_SUMMARIES");
+    return searchStockCardRangeSummaries(requisition, approvedProducts,
+        period.getStartDate(), period.getEndDate());
+  }
+
+  private List<StockCardRangeSummaryDto> searchStockCardRangeSummaries(Requisition requisition,
+      ApproveProductsAggregator approvedProducts, LocalDate startDate, LocalDate endDate) {
+    Set<UUID> lineItemOrderableIds = Optional
+        .ofNullable(requisition.getRequisitionLineItems())
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(RequisitionLineItem::getOrderable)
+        .filter(Objects::nonNull)
+        .map(VersionEntityReference::getId)
+        .collect(toSet());
+    Set<VersionIdentityDto> orderableIdentities = approvedProducts.getOrderableIdentities()
+        .stream()
+        .filter(identity -> lineItemOrderableIds.contains(identity.getId()))
+        .collect(toSet());
+
+    if (orderableIdentities.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     return stockCardRangeSummaryStockManagementService
         .search(requisition.getProgramId(), requisition.getFacilityId(),
-            approvedProducts.getOrderableIdentities(), null,
-            period.getStartDate(), period.getEndDate());
+            orderableIdentities, null, startDate, endDate);
   }
 
 }

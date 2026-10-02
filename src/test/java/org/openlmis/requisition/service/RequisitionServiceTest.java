@@ -35,6 +35,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -135,6 +137,7 @@ import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.ApproveProductsAggregator;
+import org.openlmis.requisition.service.referencedata.ApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.requisition.service.referencedata.IdealStockAmountReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
@@ -259,6 +262,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private StockCardRangeSummaryStockManagementService stockCardRangeSummaryStockManagementService;
+
+  @Mock
+  private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
   @Mock
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
@@ -1172,6 +1178,68 @@ public class RequisitionServiceTest {
   }
 
   @Test
+  public void shouldSearchStockCardRangeSummariesOnlyForFullSupplyProductsOnInitiate() {
+    prepareForTestInitiate(SETTING);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    whenGetStockCardSummaries().thenReturn(emptyList());
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID, UUID.randomUUID()}, new boolean[]{true, false});
+
+    requisitionService.initiate(program, facility, processingPeriod, false,
+        stockAdjustmentReasons, requisitionTemplate, aggregator);
+
+    verify(stockCardRangeSummaryStockManagementService, atLeastOnce()).search(
+        eq(program.getId()), eq(facility.getId()),
+        eq(aggregator.getFullSupplyOrderableIdentities()), isNull(),
+        any(LocalDate.class), any(LocalDate.class));
+    verify(stockCardRangeSummaryStockManagementService, never()).search(
+        any(UUID.class), any(UUID.class), eq(aggregator.getOrderableIdentities()),
+        isNull(), any(LocalDate.class), any(LocalDate.class));
+  }
+
+  @Test
+  public void shouldSearchStockCardRangeSummariesOnlyForLineItemProducts() {
+    Requisition requisition = mockRequisitionWithLineItemForRangeSummaries();
+
+    requisitionService.getStockCardRangeSummaries(requisition, processingPeriod,
+        new Profiler("TEST"));
+
+    verify(stockCardRangeSummaryStockManagementService).search(program.getId(), facility.getId(),
+        singleton(new VersionIdentityDto(PRODUCT_ID, 1L)), null,
+        processingPeriod.getStartDate(), processingPeriod.getEndDate());
+  }
+
+  @Test
+  public void shouldSearchStockCardRangeSummariesToAverageOnlyForLineItemProducts() {
+    Requisition requisition = mockRequisitionWithLineItemForRangeSummaries();
+
+    requisitionService.getStockCardRangeSummariesToAverage(requisition, processingPeriod,
+        singletonList(processingPeriod), new Profiler("TEST"));
+
+    verify(stockCardRangeSummaryStockManagementService).search(program.getId(), facility.getId(),
+        singleton(new VersionIdentityDto(PRODUCT_ID, 1L)), null,
+        processingPeriod.getStartDate(), processingPeriod.getEndDate());
+  }
+
+  @Test
+  public void shouldNotSearchStockCardRangeSummariesWithoutLineItems() {
+    when(approvedProductReferenceDataService.getApprovedProducts(facility.getId(),
+        program.getId())).thenReturn(mockApprovedProduct(
+            new UUID[]{PRODUCT_ID}, new boolean[]{true}));
+    Requisition requisition = new RequisitionDataBuilder()
+        .withFacilityId(facility.getId())
+        .withProgramId(program.getId())
+        .withRequisitionLineItems(new ArrayList<>())
+        .build();
+
+    List<StockCardRangeSummaryDto> summaries = requisitionService.getStockCardRangeSummaries(
+        requisition, processingPeriod, new Profiler("TEST"));
+
+    assertTrue(summaries.isEmpty());
+    verifyZeroInteractions(stockCardRangeSummaryStockManagementService);
+  }
+
+  @Test
   public void shouldReleaseRequisitionsAsOrder() {
     // given
     List<ReleasableRequisitionDto> requisitions = setUpReleaseRequisitionsAsOrder(5,
@@ -1816,6 +1884,21 @@ public class RequisitionServiceTest {
     when(requisitionRepository
         .findRegularRequisition(any(), eq(facility.getId()), eq(program.getId())))
         .thenReturn(Optional.of(previousRequisition));
+  }
+
+  private Requisition mockRequisitionWithLineItemForRangeSummaries() {
+    when(approvedProductReferenceDataService.getApprovedProducts(facility.getId(),
+        program.getId())).thenReturn(mockApprovedProduct(
+            new UUID[]{PRODUCT_ID, UUID.randomUUID()}, new boolean[]{true, false}));
+    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
+        .withOrderable(PRODUCT_ID, 1L)
+        .build();
+
+    return new RequisitionDataBuilder()
+        .withFacilityId(facility.getId())
+        .withProgramId(program.getId())
+        .withRequisitionLineItems(new ArrayList<>(singletonList(lineItem)))
+        .build();
   }
 
   private ApproveProductsAggregator mockApprovedProduct(UUID[] products, boolean[] fullSupply) {
