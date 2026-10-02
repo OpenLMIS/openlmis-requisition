@@ -25,9 +25,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.javers.core.metamodel.annotation.Value;
 
 @Getter
 @Embeddable
+@Value
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode

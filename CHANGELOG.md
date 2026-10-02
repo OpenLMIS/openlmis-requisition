@@ -1,3 +1,9 @@
+8.6.0-hotfix.1 / WIP
+====================
+
+Improvements:
+* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): The requisition audit log stores available products as one value of the requisition snapshot instead of a separate snapshot per product, so saving a requisition no longer compares every available product one by one.
+
 8.6.0 / 2026-08-13
 ==================
 
