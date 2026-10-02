@@ -2,6 +2,7 @@
 ==================
 
 Improvements:
+* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): The requisition audit log stores available products as one value of the requisition snapshot instead of a separate snapshot per product, so saving a requisition no longer compares every available product one by one.
 * [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): Stock-based requisitions request stock card range summaries only for the products that are used: full supply products on initiate, requisition line item products on save and status changes.
 
 8.7.0 / 2026-09-28
