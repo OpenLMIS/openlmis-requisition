@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -246,6 +248,20 @@ public class JasperReportsViewServiceTest {
 
     //then
     assertEquals(expectedReportData, reportData);
+  }
+
+  @Test
+  public void generateReportShouldReturnXlsxWorkbook() throws Exception {
+    //given
+    reportParams.put(PARAM_KEY_FORMAT, "xlsx");
+    doReturn(new JasperPrint()).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
+
+    //when
+    byte[] reportData = service.generateReport(jasperTemplate, reportParams);
+
+    //then
+    Assert.assertTrue(zipEntryNames(reportData).contains("xl/workbook.xml"));
   }
 
   @Test
@@ -601,6 +617,16 @@ public class JasperReportsViewServiceTest {
 
   private JasperReport loadReport(byte[] data) throws JRException {
     return (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(data));
+  }
+
+  private List<String> zipEntryNames(byte[] data) throws IOException {
+    List<String> names = new ArrayList<>();
+    try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(data))) {
+      for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+        names.add(entry.getName());
+      }
+    }
+    return names;
   }
 
   private List<String> renderedTexts(JasperPrint print) {
