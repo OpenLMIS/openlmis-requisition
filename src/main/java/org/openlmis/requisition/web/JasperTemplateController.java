@@ -166,7 +166,7 @@ public class JasperTemplateController extends BaseController {
    *
    * @param request    request (to get the request parameters)
    * @param templateId report template ID
-   * @param format     report format to generate, default is PDF
+   * @param format     report format to generate: pdf, csv, xls, xlsx or html, in any case
    * @return the generated report
    */
   @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
@@ -175,6 +175,7 @@ public class JasperTemplateController extends BaseController {
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
     permissionService.canViewReports().throwExceptionIfHasErrors();
+    final ReportFormat reportFormat = ReportFormat.fromString(format);
 
     JasperTemplate template = jasperTemplateRepository.findById(templateId)
         .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
@@ -182,7 +183,7 @@ public class JasperTemplateController extends BaseController {
 
     Map<String, Object> map = jasperTemplateService
         .mapRequestParametersToTemplate(request, template);
-    map.put("format", format);
+    map.put("format", reportFormat.getExtension());
     map.put("dateTimeFormat", dateTimeFormat);
     map.put("timeZoneId", timeZoneId);
 
@@ -201,8 +202,9 @@ public class JasperTemplateController extends BaseController {
 
     return ResponseEntity
         .ok()
-        .contentType(ReportFormat.fromString(format).getMediaType())
-        .header("Content-Disposition", "inline; filename=" + fileName + "." + format)
+        .contentType(reportFormat.getMediaType())
+        .header("Content-Disposition",
+            "inline; filename=" + fileName + "." + reportFormat.getExtension())
         .body(reportData);
   }
 }

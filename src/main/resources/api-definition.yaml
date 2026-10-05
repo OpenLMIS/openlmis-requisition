@@ -1072,6 +1072,7 @@ resourceTypes:
               uriParameters:
                   format:
                       displayName: format
+                      description: One of pdf, csv, xls, xlsx or html.
                       type: string
                       required: true
                       repeat: false
@@ -1079,6 +1080,10 @@ resourceTypes:
                   is: [ secured ]
                   description: Generate report from template ID and format.
                   responses:
+                      400:
+                          body:
+                            application/json:
+                                schema: localizedMessage
                       200:
                           headers:
                             Keep-Alive:
