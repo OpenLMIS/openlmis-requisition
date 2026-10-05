@@ -310,6 +310,8 @@ public class JasperReportsViewService {
   byte[] fillAndExportReport(JasperReport compiledReport, Map<String, Object> params)
       throws JasperReportViewException {
 
+    ReportFormat format = ReportFormat.fromString((String) params.get("format"));
+
     byte[] bytes;
 
     try {
@@ -322,7 +324,7 @@ public class JasperReportsViewService {
             replicationDataSource.getConnection());
       }
 
-      switch (ReportFormat.fromString((String) params.get("format"))) {
+      switch (format) {
         case CSV:
           bytes = exportJasperReportToCsv(jasperPrint);
           break;
@@ -336,9 +338,10 @@ public class JasperReportsViewService {
           bytes = exportJasperReportToHtml(jasperPrint);
           break;
         case PDF:
-        default:
           bytes = exportJasperReportToPdf(jasperPrint);
           break;
+        default:
+          throw new IllegalStateException("No exporter for report format " + format);
       }
     } catch (Exception e) {
       throw new JasperReportViewException(e, ERROR_JASPER_FILE_FORMAT, e.getMessage());

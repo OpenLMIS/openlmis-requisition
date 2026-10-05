@@ -96,6 +96,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -201,6 +202,7 @@ public class JasperReportsViewServiceTest {
     ReflectionTestUtils.setField(service, "currencyLocale", CURRENCY_LOCALE);
 
     expectedReportData = new byte[1];
+    reportParams.put(PARAM_KEY_FORMAT, "pdf");
 
     doReturn(objectInputStream).when(service).createObjectInputStream(any(JasperTemplate.class));
     doReturn(jasperReport).when(service).readReportData(objectInputStream);
@@ -214,7 +216,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnPdfReportAsDefault() throws Exception {
+  public void generateReportShouldReturnPdfReport() throws Exception {
     //given
 
     //when
@@ -262,6 +264,32 @@ public class JasperReportsViewServiceTest {
 
     //then
     Assert.assertTrue(zipEntryNames(reportData).contains("xl/workbook.xml"));
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void generateReportShouldRejectMissingFormat() throws Exception {
+    reportParams.remove(PARAM_KEY_FORMAT);
+
+    service.generateReport(jasperTemplate, reportParams);
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void generateReportShouldRejectUnsupportedFormat() throws Exception {
+    reportParams.put(PARAM_KEY_FORMAT, "docx");
+
+    service.generateReport(jasperTemplate, reportParams);
+  }
+
+  @Test
+  public void generateReportShouldExportEveryReportFormat() throws Exception {
+    doReturn(new JasperPrint()).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
+
+    for (ReportFormat format : ReportFormat.values()) {
+      reportParams.put(PARAM_KEY_FORMAT, format.getExtension());
+
+      Assert.assertNotNull(format.name(), service.generateReport(jasperTemplate, reportParams));
+    }
   }
 
   @Test

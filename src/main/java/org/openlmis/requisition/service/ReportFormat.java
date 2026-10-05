@@ -15,7 +15,12 @@
 
 package org.openlmis.requisition.service;
 
+import static java.util.stream.Collectors.joining;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REPORTING_FORMAT_NOT_SUPPORTED;
+
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.springframework.http.MediaType;
 
 /**
@@ -38,15 +43,18 @@ public enum ReportFormat {
   }
 
   /**
-   * Returns the format with the given extension, or PDF if there is none.
+   * Returns the format with the given extension, ignoring case.
+   *
+   * @throws ValidationMessageException if no format has that extension
    */
   public static ReportFormat fromString(String value) {
     for (ReportFormat format : values()) {
-      if (format.extension.equals(value)) {
+      if (format.extension.equalsIgnoreCase(value)) {
         return format;
       }
     }
-    return PDF;
+    throw new ValidationMessageException(ERROR_REPORTING_FORMAT_NOT_SUPPORTED, value,
+        Arrays.stream(values()).map(ReportFormat::getExtension).collect(joining(", ")));
   }
 
   public String getExtension() {
