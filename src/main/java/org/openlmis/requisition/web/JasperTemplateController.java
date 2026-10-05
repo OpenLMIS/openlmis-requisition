@@ -203,6 +203,9 @@ public class JasperTemplateController extends BaseController {
       mediaType = new MediaType("text", "csv", StandardCharsets.UTF_8);
     } else if ("xls".equals(format)) {
       mediaType = new MediaType("application", "vnd.ms-excel", StandardCharsets.UTF_8);
+    } else if ("xlsx".equals(format)) {
+      mediaType = new MediaType("application",
+          "vnd.openxmlformats-officedocument.spreadsheetml.sheet", StandardCharsets.UTF_8);
     } else if ("html".equals(format)) {
       mediaType = new MediaType("text", "html", StandardCharsets.UTF_8);
     } else {

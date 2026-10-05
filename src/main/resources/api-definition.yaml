@@ -1080,10 +1080,13 @@ resourceTypes:
                   description: Generate report from template ID and format.
                   responses:
                       200:
+                          headers:
+                            Keep-Alive:
                           body:
                             application/pdf:
                             text/csv:
                             application/vnd.ms-excel:
+                            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
                             text/html:
                       403:
                           body:

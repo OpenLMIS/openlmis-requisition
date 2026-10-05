@@ -217,12 +217,18 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
   @Test
   public void shouldGenerateReportInCsvFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("application/csv", "csv");
+    testGenerateReportInGivenFormat("text/csv", "csv");
   }
 
   @Test
   public void shouldGenerateReportInXlsFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("application/xls", "xls");
+    testGenerateReportInGivenFormat("application/vnd.ms-excel", "xls");
+  }
+
+  @Test
+  public void shouldGenerateReportInXlsxFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx");
   }
 
   @Test
@@ -250,7 +256,11 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
         .when()
         .get(REPORT_URL)
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .contentType(contentType);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   private JasperTemplate generateTemplate() {
