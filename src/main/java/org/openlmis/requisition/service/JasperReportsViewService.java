@@ -322,17 +322,23 @@ public class JasperReportsViewService {
             replicationDataSource.getConnection());
       }
 
-      String format = (String) params.get("format");
-      if ("csv".equals(format)) {
-        bytes = exportJasperReportToCsv(jasperPrint);
-      } else if ("xls".equals(format)) {
-        bytes = exportJasperReportToXls(jasperPrint);
-      } else if ("xlsx".equals(format)) {
-        bytes = exportJasperReportToXlsx(jasperPrint);
-      } else if ("html".equals(format)) {
-        bytes = exportJasperReportToHtml(jasperPrint);
-      } else {
-        bytes = exportJasperReportToPdf(jasperPrint);
+      switch (ReportFormat.fromString((String) params.get("format"))) {
+        case CSV:
+          bytes = exportJasperReportToCsv(jasperPrint);
+          break;
+        case XLS:
+          bytes = exportJasperReportToXls(jasperPrint);
+          break;
+        case XLSX:
+          bytes = exportJasperReportToXlsx(jasperPrint);
+          break;
+        case HTML:
+          bytes = exportJasperReportToHtml(jasperPrint);
+          break;
+        case PDF:
+        default:
+          bytes = exportJasperReportToPdf(jasperPrint);
+          break;
       }
     } catch (Exception e) {
       throw new JasperReportViewException(e, ERROR_JASPER_FILE_FORMAT, e.getMessage());
