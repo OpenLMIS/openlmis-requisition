@@ -327,6 +327,8 @@ public class JasperReportsViewService {
         bytes = exportJasperReportToCsv(jasperPrint);
       } else if ("xls".equals(format)) {
         bytes = exportJasperReportToXls(jasperPrint);
+      } else if ("xlsx".equals(format)) {
+        bytes = exportJasperReportToXlsx(jasperPrint);
       } else if ("html".equals(format)) {
         bytes = exportJasperReportToHtml(jasperPrint);
       } else {
@@ -476,6 +478,10 @@ public class JasperReportsViewService {
 
   byte[] exportJasperReportToXls(JasperPrint jasperPrint) throws JRException {
     return new JasperXlsExporter(jasperPrint).exportReport();
+  }
+
+  byte[] exportJasperReportToXlsx(JasperPrint jasperPrint) throws JRException {
+    return new JasperXlsxExporter(jasperPrint).exportReport();
   }
 
   byte[] exportJasperReportToHtml(JasperPrint jasperPrint) throws JRException {
