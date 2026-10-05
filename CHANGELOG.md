@@ -1,6 +1,9 @@
 8.8.0-SNAPSHOT (WIP)
 ==================
 
+Bug fixes:
+* [OLMIS-8379](https://openlmis.atlassian.net/browse/OLMIS-8379): Reports generated from requisition templates (Reporting Rate, Timeliness, Sample Requisition) can be exported to XLSX. Before, choosing XLSX returned a PDF with an `.xlsx` filename.
+
 8.7.1 / 2026-10-05
 ==================
 
