@@ -1,5 +1,6 @@
 8.8.0-SNAPSHOT (WIP)
 ==================
+* [OLMIS-4412](https://openlmis.atlassian.net/browse/OLMIS-4412): Release requisitions with all zero quantities without creating an order.
 
 8.7.1 / 2026-10-05
 ==================
