@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -30,13 +29,13 @@ import org.openlmis.requisition.repository.JasperTemplateRepository;
 import org.openlmis.requisition.service.JasperReportsViewService;
 import org.openlmis.requisition.service.JasperTemplateService;
 import org.openlmis.requisition.service.PermissionService;
+import org.openlmis.requisition.service.ReportFormat;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,7 +166,7 @@ public class JasperTemplateController extends BaseController {
    *
    * @param request    request (to get the request parameters)
    * @param templateId report template ID
-   * @param format     report format to generate, default is PDF
+   * @param format     report format to generate: pdf, csv, xls, xlsx or html, in any case
    * @return the generated report
    */
   @RequestMapping(value = "/{id}/{format}", method = RequestMethod.GET)
@@ -176,6 +175,7 @@ public class JasperTemplateController extends BaseController {
       @PathVariable("id") UUID templateId,
       @PathVariable("format") String format) throws JasperReportViewException {
     permissionService.canViewReports().throwExceptionIfHasErrors();
+    final ReportFormat reportFormat = ReportFormat.fromString(format);
 
     JasperTemplate template = jasperTemplateRepository.findById(templateId)
         .orElseThrow(() -> new ContentNotFoundMessageException(new Message(
@@ -183,7 +183,7 @@ public class JasperTemplateController extends BaseController {
 
     Map<String, Object> map = jasperTemplateService
         .mapRequestParametersToTemplate(request, template);
-    map.put("format", format);
+    map.put("format", reportFormat.getExtension());
     map.put("dateTimeFormat", dateTimeFormat);
     map.put("timeZoneId", timeZoneId);
 
@@ -198,22 +198,13 @@ public class JasperTemplateController extends BaseController {
       reportData = jasperReportsViewService.generateReport(template, map);
     }
 
-    MediaType mediaType;
-    if ("csv".equals(format)) {
-      mediaType = new MediaType("text", "csv", StandardCharsets.UTF_8);
-    } else if ("xls".equals(format)) {
-      mediaType = new MediaType("application", "vnd.ms-excel", StandardCharsets.UTF_8);
-    } else if ("html".equals(format)) {
-      mediaType = new MediaType("text", "html", StandardCharsets.UTF_8);
-    } else {
-      mediaType = new MediaType("application", "pdf", StandardCharsets.UTF_8);
-    }
     String fileName = template.getName().replaceAll("\\s+", "_");
 
     return ResponseEntity
         .ok()
-        .contentType(mediaType)
-        .header("Content-Disposition", "inline; filename=" + fileName + "." + format)
+        .contentType(reportFormat.getMediaType())
+        .header("Content-Disposition",
+            "inline; filename=" + fileName + "." + reportFormat.getExtension())
         .body(reportData);
   }
 }

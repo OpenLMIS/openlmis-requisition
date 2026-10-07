@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -94,6 +96,7 @@ import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionReportDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.exception.JasperReportViewException;
+import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.repository.custom.DefaultRequisitionSearchParams;
 import org.openlmis.requisition.repository.custom.RequisitionSearchParams;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
@@ -199,6 +202,7 @@ public class JasperReportsViewServiceTest {
     ReflectionTestUtils.setField(service, "currencyLocale", CURRENCY_LOCALE);
 
     expectedReportData = new byte[1];
+    reportParams.put(PARAM_KEY_FORMAT, "pdf");
 
     doReturn(objectInputStream).when(service).createObjectInputStream(any(JasperTemplate.class));
     doReturn(jasperReport).when(service).readReportData(objectInputStream);
@@ -212,7 +216,7 @@ public class JasperReportsViewServiceTest {
   }
 
   @Test
-  public void generateReportShouldReturnPdfReportAsDefault() throws Exception {
+  public void generateReportShouldReturnPdfReport() throws Exception {
     //given
 
     //when
@@ -246,6 +250,46 @@ public class JasperReportsViewServiceTest {
 
     //then
     assertEquals(expectedReportData, reportData);
+  }
+
+  @Test
+  public void generateReportShouldReturnXlsxWorkbook() throws Exception {
+    //given
+    reportParams.put(PARAM_KEY_FORMAT, "xlsx");
+    doReturn(new JasperPrint()).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
+
+    //when
+    byte[] reportData = service.generateReport(jasperTemplate, reportParams);
+
+    //then
+    Assert.assertTrue(zipEntryNames(reportData).contains("xl/workbook.xml"));
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void generateReportShouldRejectMissingFormat() throws Exception {
+    reportParams.remove(PARAM_KEY_FORMAT);
+
+    service.generateReport(jasperTemplate, reportParams);
+  }
+
+  @Test(expected = ValidationMessageException.class)
+  public void generateReportShouldRejectUnsupportedFormat() throws Exception {
+    reportParams.put(PARAM_KEY_FORMAT, "docx");
+
+    service.generateReport(jasperTemplate, reportParams);
+  }
+
+  @Test
+  public void generateReportShouldExportEveryReportFormat() throws Exception {
+    doReturn(new JasperPrint()).when(service)
+        .fillJasperReport(any(JasperReport.class), anyMap(), nullable(Connection.class));
+
+    for (ReportFormat format : ReportFormat.values()) {
+      reportParams.put(PARAM_KEY_FORMAT, format.getExtension());
+
+      Assert.assertNotNull(format.name(), service.generateReport(jasperTemplate, reportParams));
+    }
   }
 
   @Test
@@ -601,6 +645,16 @@ public class JasperReportsViewServiceTest {
 
   private JasperReport loadReport(byte[] data) throws JRException {
     return (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(data));
+  }
+
+  private List<String> zipEntryNames(byte[] data) throws IOException {
+    List<String> names = new ArrayList<>();
+    try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(data))) {
+      for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+        names.add(entry.getName());
+      }
+    }
+    return names;
   }
 
   private List<String> renderedTexts(JasperPrint print) {
