@@ -1,6 +1,9 @@
 8.8.0-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [ODRC-130](https://openlmis.atlassian.net/browse/ODRC-130): The printed requisition summary shows the created, submitted and authorized signatures beside the three total costs, and the print skips the empty space for non-full supply products when the requisition has none, so the summary fits below the table on the first page more often.
+
 8.7.1 / 2026-10-05
 ==================
 
