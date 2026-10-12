@@ -1,6 +1,9 @@
 8.8.0-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [OLMIS-8402](https://openlmis.atlassian.net/browse/OLMIS-8402): The printed requisition summary shows the created, submitted and authorized signatures beside the three total costs, and the print skips the empty space for non-full supply products when the requisition has none, so the summary fits below the table on the first page more often.
+
 Bug fixes:
 * [OLMIS-8396](https://openlmis.atlassian.net/browse/OLMIS-8396): Releases are published to Maven Central from their own staging repository, with the POM description and javadoc jar that Central requires. Only X.Y.Z releases built on master are published; release candidates upload nothing. A Maven publishing failure marks the build unstable and does not stop the Docker image.
 
