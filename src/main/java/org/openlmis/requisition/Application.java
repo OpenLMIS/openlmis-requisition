@@ -140,8 +140,7 @@ public class Application {
    * This is particularly helpful for getting JaVers to create and use tables
    * within a particular schema (specified via the withSchema method).
    *
-   * @See <a href="https://github.com/javers/javers/blob/master/javers-spring-boot-starter-sql/src
-   * /main/java/org/javers/spring/boot/sql/JaversSqlAutoConfiguration.java">
+   * @see <a href="https://github.com/javers/javers/blob/master/javers-spring-boot-starter-sql/src/main/java/org/javers/spring/boot/sql/JaversSqlAutoConfiguration.java">
    * JaversSqlAutoConfiguration.java</a> for the default configuration upon which this code is based
    */
   @Bean

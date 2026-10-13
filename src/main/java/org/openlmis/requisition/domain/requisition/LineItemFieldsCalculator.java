@@ -243,7 +243,7 @@ public final class LineItemFieldsCalculator {
   /**
    * Calculates Maximum Stock Quantity (H) value and returns it.
    * The formula depends on selected option:
-   * default => P * MaxPeriodsOfStock
+   * default =&gt; P * MaxPeriodsOfStock
    * P = Average Consumption
    *
    * @param line     the line item to calculate the value for.
