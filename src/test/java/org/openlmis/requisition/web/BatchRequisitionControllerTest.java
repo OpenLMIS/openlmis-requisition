@@ -75,6 +75,7 @@ import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuild
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.slf4j.profiler.Profiler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -185,7 +186,7 @@ public class BatchRequisitionControllerTest {
   }
 
   @Test
-  public void approveMultipleRequisitionsWhenTransferStockDataIsEnabled() {
+  public void shouldNotSubmitStockEventForRequisitionTheBatchRefused() {
     ReflectionTestUtils.setField(batchRequisitionController,
             TRANSFER_STOCK_DATA_FLAG, true);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
@@ -206,8 +207,7 @@ public class BatchRequisitionControllerTest {
     verify(facilityReferenceDataService).search(anySet());
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
-    verify(stockEventBuilder).fromRequisition(requisition, currentUser.getId(), Maps.newHashMap());
-    verify(stockEventStockManagementService).submit(stockEventDto);
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
   }
 
   @Test
@@ -237,11 +237,7 @@ public class BatchRequisitionControllerTest {
 
   @Test
   public void shouldBuildStockEventsOnTheRequestThread() {
-    ReflectionTestUtils.setField(batchRequisitionController,
-        TRANSFER_STOCK_DATA_FLAG, true);
     Requisition otherRequisition = mock(Requisition.class);
-    when(requisitionRepository.readDistinctByIdIn(anyList()))
-        .thenReturn(Arrays.asList(requisition, otherRequisition));
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
     when(otherRequisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
 
@@ -252,23 +248,20 @@ public class BatchRequisitionControllerTest {
           return DtoGenerator.of(StockEventDto.class);
         });
 
-    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+    batchRequisitionController.submitStockEvents(new Profiler("TEST"), currentUser,
+        Arrays.asList(requisition, otherRequisition), Maps.newHashMap());
 
     assertEquals(Arrays.asList(Thread.currentThread(), Thread.currentThread()), buildThreads);
     verify(stockEventStockManagementService, times(2)).submit(any(StockEventDto.class));
   }
 
   @Test
-  public void shouldNotSubmitStockEventsWhenNoRequisitionIsApproved() {
-    ReflectionTestUtils.setField(batchRequisitionController, TRANSFER_STOCK_DATA_FLAG, true);
-    when(requisitionRepository.readDistinctByIdIn(anyList()))
-        .thenReturn(Collections.singletonList(requisition));
+  public void shouldNotSubmitStockEventsWhenNoRequisitionProducesOne() {
     when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
 
-    ResponseEntity<RequisitionsProcessingStatusDto> response =
-        batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+    batchRequisitionController.submitStockEvents(new Profiler("TEST"), currentUser,
+        Collections.singletonList(requisition), Maps.newHashMap());
 
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
   }
 
