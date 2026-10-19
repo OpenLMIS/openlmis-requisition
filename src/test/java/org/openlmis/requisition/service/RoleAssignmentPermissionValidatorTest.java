@@ -17,6 +17,7 @@ package org.openlmis.requisition.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
@@ -32,16 +33,12 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
-import org.openlmis.requisition.dto.FacilityDto;
-import org.openlmis.requisition.dto.ObjectReferenceDto;
-import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
-import org.openlmis.requisition.service.referencedata.RequisitionGroupReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
@@ -60,9 +57,6 @@ public class RoleAssignmentPermissionValidatorTest
   @Mock
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
-  @Mock
-  private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
-
   @InjectMocks
   private RoleAssignmentPermissionValidator validator;
 
@@ -73,20 +67,15 @@ public class RoleAssignmentPermissionValidatorTest
   private RightDto right = DtoGenerator.of(RightDto.class);
   private RoleDto role = DtoGenerator.of(RoleDto.class);
   private SupervisoryNodeDto supervisoryNode = DtoGenerator.of(SupervisoryNodeDto.class);
-  private RequisitionGroupDto requisitionGroup = DtoGenerator.of(RequisitionGroupDto.class);
-  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
 
   private UUID requisitionId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
-  private UUID facilityId = facility.getId();
+  private UUID facilityId = UUID.randomUUID();
   private UUID supervisoryNodeId = supervisoryNode.getId();
 
   @Before
   public void setUp() {
     super.setUp();
-
-    supervisoryNode.setRequisitionGroup(new ObjectReferenceDto(requisitionGroup.getId()));
-    requisitionGroup.setMemberFacilities(Sets.newHashSet(facility));
 
     when(requisition.getId()).thenReturn(requisitionId);
     when(requisition.getProgramId()).thenReturn(programId);
@@ -101,11 +90,8 @@ public class RoleAssignmentPermissionValidatorTest
     when(roleReferenceDataService.search(right.getId()))
         .thenReturn(Lists.newArrayList(role));
 
-    when(supervisoryNodeReferenceDataService.findByIds(Sets.newHashSet(supervisoryNodeId)))
-        .thenReturn(Lists.newArrayList(supervisoryNode));
-
-    when(requisitionGroupReferenceDataService.findAll())
-        .thenReturn(Lists.newArrayList(requisitionGroup));
+    when(supervisoryNodeReferenceDataService.findByFacility(facilityId))
+        .thenReturn(Collections.singletonList(supervisoryNode));
   }
 
   @Test
@@ -217,6 +203,35 @@ public class RoleAssignmentPermissionValidatorTest
 
     // then
     assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  public void shouldNotSearchSupervisoryNodesWhenUserHasNoSupervisoryRoleAssignments() {
+    // given
+    given(requisition.getSupervisoryNodeId()).willReturn(null);
+    user.setHomeFacilityId(facilityId);
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, null, null)));
+
+    // when
+    ValidationResult result = validator.hasPermission(getDetails());
+
+    // then
+    assertThat(result.isSuccess()).isTrue();
+    verifyZeroInteractions(supervisoryNodeReferenceDataService);
+  }
+
+  @Test
+  public void shouldNotSearchSupervisoryNodesWhenRequisitionHasSupervisoryNode() {
+    // given
+    user.setRoleAssignments(Sets.newHashSet(new RoleAssignmentDto(role.getId(),
+        programId, supervisoryNodeId, null)));
+
+    // when
+    validator.hasPermission(getDetails());
+
+    // then
+    verifyZeroInteractions(supervisoryNodeReferenceDataService);
   }
 
   @Override
