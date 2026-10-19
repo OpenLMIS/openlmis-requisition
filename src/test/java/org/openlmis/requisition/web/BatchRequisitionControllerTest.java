@@ -240,6 +240,8 @@ public class BatchRequisitionControllerTest {
     Requisition otherRequisition = mock(Requisition.class);
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
     when(otherRequisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    when(requisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
+    when(otherRequisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
 
     List<Thread> buildThreads = new CopyOnWriteArrayList<>();
     when(stockEventBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))

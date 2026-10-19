@@ -454,13 +454,16 @@ public abstract class BaseRequisitionController extends BaseController {
   }
 
   /**
-   * Builds the stock event for an approved, non-emergency requisition.
+   * Builds the stock event for an approved, non-emergency requisition whose template neither
+   * takes stock on hand from stock cards nor has the patients tab enabled.
    *
    * @return the stock event, or {@code null} when the requisition does not produce one
    */
   StockEventDto buildStockEvent(Requisition requisition, UUID currentUserId,
       Map<VersionIdentityDto, OrderableDto> orderables) {
-    if (!requisition.getStatus().isApproved() || isTrue(requisition.getEmergency())) {
+    RequisitionTemplate template = requisition.getTemplate();
+    if (!requisition.getStatus().isApproved() || isTrue(requisition.getEmergency())
+        || template.isPopulateStockOnHandFromStockCards() || template.isPatientsTabEnabled()) {
       return null;
     }
     Profiler profiler = getProfiler("BUILD_STOCK_EVENT_FROM_REQUISITION", requisition,

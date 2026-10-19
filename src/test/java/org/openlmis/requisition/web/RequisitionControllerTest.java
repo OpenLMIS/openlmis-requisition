@@ -153,6 +153,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class RequisitionControllerTest {
+
+  private static final String TRANSFER_STOCK_DATA_FLAG =
+      "isTransferStockDataFromRequisitionToStockManagementEnabled";
   @Rule
   public final ExpectedException exception = ExpectedException.none();
 
@@ -975,7 +978,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNodeWhenTransferStockDataIsEnabled() {
     ReflectionTestUtils.setField(requisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+            TRANSFER_STOCK_DATA_FLAG, true);
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(false);
     StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
@@ -1000,7 +1003,7 @@ public class RequisitionControllerTest {
   @Test
   public void shouldApproveAuthorizedRequisitionWithoutParentNodeWhenTransferStockDataIsDisabled() {
     ReflectionTestUtils.setField(requisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", false);
+            TRANSFER_STOCK_DATA_FLAG, false);
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(false);
     StockEventDto stockEventDto = DtoGenerator.of(StockEventDto.class);
@@ -1023,6 +1026,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotSendStockEventOnFinalApprovalForEmergencyRequisition() {
+    ReflectionTestUtils.setField(requisitionController, TRANSFER_STOCK_DATA_FLAG, true);
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(authorizedRequsition.getEmergency()).thenReturn(true);
 
@@ -1043,6 +1047,7 @@ public class RequisitionControllerTest {
 
   @Test
   public void shouldNotSendStockEventWhenRequisitionIsConfiguredToPullFromStockCards() {
+    ReflectionTestUtils.setField(requisitionController, TRANSFER_STOCK_DATA_FLAG, true);
     final SupplyLineDto supplyLineDto = prepareForApproveWithSupplyLine();
     when(template.isPopulateStockOnHandFromStockCards()).thenReturn(true);
 
@@ -1059,6 +1064,18 @@ public class RequisitionControllerTest {
     verify(authorizedRequsition)
         .validateCanChangeStatus(dateHelper.getCurrentDateWithSystemZone(),
             true, Maps.newHashMap(), Maps.newHashMap());
+  }
+
+  @Test
+  public void shouldNotSendStockEventWhenPatientsTabIsEnabled() {
+    ReflectionTestUtils.setField(requisitionController, TRANSFER_STOCK_DATA_FLAG, true);
+    prepareForApproveWithSupplyLine();
+    when(authorizedRequsition.getEmergency()).thenReturn(false);
+    when(template.isPatientsTabEnabled()).thenReturn(true);
+
+    requisitionController.approveRequisition(authorizedRequsition.getId(), request, response);
+
+    verifyZeroInteractions(stockEventBuilderBuilder, stockEventService);
   }
 
   @Test
