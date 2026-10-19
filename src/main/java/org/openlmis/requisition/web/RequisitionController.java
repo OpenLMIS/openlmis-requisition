@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openlmis.requisition.domain.RequisitionStatsData;
-import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.ApprovedProductDto;
@@ -477,10 +476,7 @@ public class RequisitionController extends BaseRequisitionController {
     doApprove(requisition, approveParams);
 
     BasicRequisitionDto requisitionDto = buildBasicDto(profiler, requisition);
-    RequisitionTemplate requisitionTemplate = requisition.getTemplate();
-    if (!requisitionTemplate.isPopulateStockOnHandFromStockCards()
-        && !requisitionTemplate.isPatientsTabEnabled()
-        && isTransferStockDataFromRequisitionToStockManagementEnabled) {
+    if (isTransferStockDataFromRequisitionToStockManagementEnabled) {
       submitStockEvent(requisition, user.getId(), orderables);
     }
 

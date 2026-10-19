@@ -65,6 +65,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
@@ -91,6 +93,7 @@ import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -324,6 +327,30 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
     post(APPROVE_ALL, requisitionIds);
 
     verify(stockEventStockManagementService, times(2)).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventForStockBasedTemplate() {
+    useTemplate(mockRequisitionValidatonsAndStubRepository(), templateBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .build());
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, never()).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventWhenPatientsTabIsEnabled() {
+    useTemplate(mockRequisitionValidatonsAndStubRepository(), templateBuilder()
+        .withPatientsTabEnabled()
+        .build());
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, never()).submit(any(StockEventDto.class));
   }
 
   // PUT /api/requisitions?saveAll
@@ -563,6 +590,15 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .queryParam(param, "");
+  }
+
+  private RequisitionTemplateDataBuilder templateBuilder() {
+    return new RequisitionTemplateDataBuilder()
+        .withColumns(RequisitionValidationTestUtils.initiateColumns());
+  }
+
+  private void useTemplate(List<Requisition> spies, RequisitionTemplate template) {
+    spies.forEach(requisition -> requisition.setTemplate(template));
   }
 
   private void mockFinalApproval() {
