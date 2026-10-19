@@ -4,6 +4,9 @@
 Improvements:
 * [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Approving and rejecting a requisition check the approver's supervisory roles against the supervisory nodes of the requisition's facility (GET /api/supervisoryNodes?facilityId=) instead of downloading every requisition group with its member facilities (GET /api/requisitionGroups). The role check for requisitions without a supervisory node does the same.
 
+Bug fixes:
+* [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Batch approval (POST /api/requisitions?approveAll) no longer fails intermittently with HTTP 500 "possible non-threadsafe access to the session" when stock data is sent to stock management. The stock events are now built on the request thread, and only their submission runs in parallel. Before, such a failure could come after some of the batch's stock events had been posted, so a retry posted them again.
+
 8.7.2 / 2026-10-16
 ==================
 
