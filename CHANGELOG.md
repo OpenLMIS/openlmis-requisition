@@ -6,6 +6,7 @@ Improvements:
 
 Bug fixes:
 * [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Batch approval (POST /api/requisitions?approveAll) no longer fails intermittently with HTTP 500 "possible non-threadsafe access to the session" when stock data is sent to stock management. The stock events are now built on the request thread, and only their submission runs in parallel. Before, such a failure could come after some of the batch's stock events had been posted, so a retry posted them again.
+* [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Batch approval sends stock events to stock management only for the requisitions it approved. Before, a requisition the batch refused, for example one already approved or one the user may not approve, got its stock event sent again.
 
 8.7.2 / 2026-10-16
 ==================
