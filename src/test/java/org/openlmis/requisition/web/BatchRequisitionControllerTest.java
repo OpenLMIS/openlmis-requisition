@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -34,8 +35,10 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +80,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class BatchRequisitionControllerTest {
+
+  private static final String TRANSFER_STOCK_DATA_FLAG =
+      "isTransferStockDataFromRequisitionToStockManagementEnabled";
 
   @Mock
   RequisitionService requisitionService;
@@ -181,7 +187,7 @@ public class BatchRequisitionControllerTest {
   @Test
   public void approveMultipleRequisitionsWhenTransferStockDataIsEnabled() {
     ReflectionTestUtils.setField(batchRequisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+            TRANSFER_STOCK_DATA_FLAG, true);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
         .thenReturn(Collections.singletonList(requisition));
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
@@ -207,7 +213,7 @@ public class BatchRequisitionControllerTest {
   @Test
   public void approveMultipleRequisitionsWhenTransferStockDataIsDisabled() {
     ReflectionTestUtils.setField(batchRequisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", false);
+            TRANSFER_STOCK_DATA_FLAG, false);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
             .thenReturn(Collections.singletonList(requisition));
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
@@ -230,11 +236,48 @@ public class BatchRequisitionControllerTest {
   }
 
   @Test
+  public void shouldBuildStockEventsOnTheRequestThread() {
+    ReflectionTestUtils.setField(batchRequisitionController,
+        TRANSFER_STOCK_DATA_FLAG, true);
+    Requisition otherRequisition = mock(Requisition.class);
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Arrays.asList(requisition, otherRequisition));
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    when(otherRequisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+
+    List<Thread> buildThreads = new CopyOnWriteArrayList<>();
+    when(stockEventBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
+        .thenAnswer(invocation -> {
+          buildThreads.add(Thread.currentThread());
+          return DtoGenerator.of(StockEventDto.class);
+        });
+
+    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    assertEquals(Arrays.asList(Thread.currentThread(), Thread.currentThread()), buildThreads);
+    verify(stockEventStockManagementService, times(2)).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventsWhenNoRequisitionIsApproved() {
+    ReflectionTestUtils.setField(batchRequisitionController, TRANSFER_STOCK_DATA_FLAG, true);
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Collections.singletonList(requisition));
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+
+    ResponseEntity<RequisitionsProcessingStatusDto> response =
+        batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
   public void shouldTellWhyNothingWasApprovedWhenNoneOfGivenIdsMatchesRequisition() {
     // the batch approval screen sends an empty id list when every requisition in the batch was
     // filtered out by its own validation
     ReflectionTestUtils.setField(batchRequisitionController,
-        "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+        TRANSFER_STOCK_DATA_FLAG, true);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
         .thenReturn(Collections.emptyList());
 

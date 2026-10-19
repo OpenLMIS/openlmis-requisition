@@ -6,6 +6,7 @@ Improvements:
 
 Bug fixes:
 * [OLMIS-8379](https://openlmis.atlassian.net/browse/OLMIS-8379): Reports generated from requisition templates (Reporting Rate, Timeliness, Sample Requisition) can be exported to XLSX again. Since 8.3.0, choosing XLSX returned a PDF with an `.xlsx` filename. GET /api/reports/templates/requisitions/{id}/{format} now accepts the format in any case and returns 400 for an unsupported format, instead of a PDF.
+* [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Batch approval (POST /api/requisitions?approveAll) no longer fails intermittently with HTTP 500 "possible non-threadsafe access to the session" when stock data is sent to stock management. The stock events are now built on the request thread, and only their submission runs in parallel. Before, such a failure could come after some of the batch's stock events had been posted, so a retry posted them again.
 
 8.7.2 / 2026-10-16
 ==================
