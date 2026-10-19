@@ -1,6 +1,9 @@
 8.7.3-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Approving and rejecting a requisition check the approver's supervisory roles against the supervisory nodes of the requisition's facility (GET /api/supervisoryNodes?facilityId=) instead of downloading every requisition group with its member facilities (GET /api/requisitionGroups). The role check for requisitions without a supervisory node does the same.
+
 Bug fixes:
 * [OLMIS-8379](https://openlmis.atlassian.net/browse/OLMIS-8379): Reports generated from requisition templates (Reporting Rate, Timeliness, Sample Requisition) can be exported to XLSX again. Since 8.3.0, choosing XLSX returned a PDF with an `.xlsx` filename. GET /api/reports/templates/requisitions/{id}/{format} now accepts the format in any case and returns 400 for an unsupported format, instead of a PDF.
 
