@@ -133,7 +133,8 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     Profiler profiler = getProfiler("UPDATE_REQUISITION_V2", requisitionId, requisitionDto);
 
     UpdatePreparationResult result = doUpdatePreparation(requisitionId, requisitionDto,
-        request, override,  profiler);
+        request, override, profiler,
+        toUpdate -> toUpdate.getOrderablesForUpdate(requisitionDto));
 
     Requisition requisitionToUpdate = result.getRequisitionToUpdate();
 

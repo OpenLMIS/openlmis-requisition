@@ -255,7 +255,7 @@ public abstract class BaseRequisitionController extends BaseController {
 
   UpdatePreparationResult doUpdatePreparation(UUID requisitionId,
       Requisition.Importer requisitionImporter, HttpServletRequest request, boolean override,
-      Profiler profiler) {
+      Profiler profiler, Function<Requisition, Set<VersionEntityReference>> orderableIdentities) {
     if (null != requisitionImporter.getId()
         && !Objects.equals(requisitionImporter.getId(), requisitionId)) {
       throw new ValidationMessageException(ERROR_ID_MISMATCH);
@@ -281,7 +281,7 @@ public abstract class BaseRequisitionController extends BaseController {
         .throwExceptionIfHasErrors();
 
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
-        profiler, requisitionToUpdate::getAllOrderables
+        profiler, () -> orderableIdentities.apply(requisitionToUpdate)
     );
 
     profiler.start("GET_PERIOD");
