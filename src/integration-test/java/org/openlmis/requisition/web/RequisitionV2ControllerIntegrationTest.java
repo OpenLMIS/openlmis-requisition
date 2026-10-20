@@ -458,6 +458,8 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     // given
     Requisition requisition = generateRequisitionToUpdate();
     RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition);
+    stubOrderablesByRequestedIdentities(requisition);
+    Set<VersionEntityReference> storedOrderables = lineItemOrderables(requisition);
 
     // when
     restAssured.given()
@@ -474,7 +476,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     ArgumentCaptor<Set<VersionEntityReference>> identitiesCaptor =
         ArgumentCaptor.forClass(Set.class);
     verify(orderableReferenceDataService).findByIdentities(identitiesCaptor.capture());
-    assertThat(identitiesCaptor.getValue(), is(lineItemOrderables(requisition)));
+    assertThat(identitiesCaptor.getValue(), is(storedOrderables));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -490,6 +492,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .withRequisition(requisition)
         .build();
     RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition, addedLineItem);
+    stubOrderablesByRequestedIdentities(requisition);
 
     // when
     restAssured.given()
@@ -523,6 +526,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .withRequisition(requisition)
         .build();
     RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition, foreignLineItem);
+    stubOrderablesByRequestedIdentities(requisition);
 
     // when
     restAssured.given()
@@ -726,6 +730,23 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .thenReturn(ValidationResult.success());
 
     return requisition;
+  }
+
+  private void stubOrderablesByRequestedIdentities(Requisition requisition) {
+    List<OrderableDto> orderables = generateApprovedProducts(requisition)
+        .stream()
+        .map(ApprovedProductDto::getOrderable)
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willAnswer(invocation -> {
+          Set<VersionEntityReference> identities = invocation.getArgument(0);
+          return orderables
+              .stream()
+              .filter(orderable -> identities.contains(
+                  new VersionEntityReference(orderable.getId(), orderable.getVersionNumber())))
+              .collect(Collectors.toList());
+        });
   }
 
   private Set<VersionEntityReference> lineItemOrderables(Requisition requisition) {
