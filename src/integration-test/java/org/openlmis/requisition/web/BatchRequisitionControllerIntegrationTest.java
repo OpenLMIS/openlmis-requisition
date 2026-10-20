@@ -31,10 +31,12 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
@@ -63,6 +65,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.openlmis.requisition.domain.BaseEntity;
+import org.openlmis.requisition.domain.RequisitionTemplate;
+import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
@@ -76,6 +80,7 @@ import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -88,6 +93,7 @@ import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
+import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -301,6 +307,50 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
             .get("messageKey")
             .asText(),
         "some-key");
+  }
+
+  @Test
+  public void shouldSubmitStockEventForEachApprovedRequisition() {
+    mockRequisitionValidatonsAndStubRepository();
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, times(3)).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventForRequisitionTheBatchDidNotApprove() {
+    mockRequisitionValidatonsAndStubRepository().get(0).setStatus(RequisitionStatus.APPROVED);
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, times(2)).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventForStockBasedTemplate() {
+    useTemplate(mockRequisitionValidatonsAndStubRepository(), templateBuilder()
+        .withPopulateStockOnHandFromStockCards()
+        .build());
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, never()).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventWhenPatientsTabIsEnabled() {
+    useTemplate(mockRequisitionValidatonsAndStubRepository(), templateBuilder()
+        .withPatientsTabEnabled()
+        .build());
+    mockFinalApproval();
+
+    post(APPROVE_ALL, requisitionIds);
+
+    verify(stockEventStockManagementService, never()).submit(any(StockEventDto.class));
   }
 
   // PUT /api/requisitions?saveAll
@@ -540,6 +590,23 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .queryParam(param, "");
+  }
+
+  private RequisitionTemplateDataBuilder templateBuilder() {
+    return new RequisitionTemplateDataBuilder()
+        .withColumns(RequisitionValidationTestUtils.initiateColumns());
+  }
+
+  private void useTemplate(List<Requisition> spies, RequisitionTemplate template) {
+    spies.forEach(requisition -> requisition.setTemplate(template));
+  }
+
+  private void mockFinalApproval() {
+    doAnswer(invocation -> {
+      invocation.getArgument(3, Requisition.class).setStatus(RequisitionStatus.APPROVED);
+      return null;
+    }).when(requisitionService).doApprove(any(), any(), anyMap(), any(Requisition.class),
+        anyList(), any(), any());
   }
 
   private List<Requisition> mockRequisitionValidatonsAndStubRepository() {

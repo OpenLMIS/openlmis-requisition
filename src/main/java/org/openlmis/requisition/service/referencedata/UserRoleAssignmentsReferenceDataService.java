@@ -16,12 +16,13 @@
 package org.openlmis.requisition.service.referencedata;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class UserRoleAssignmentsReferenceDataService extends
     BaseReferenceDataService<DetailedRoleAssignmentDto> {
 
   @Autowired
-  private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
+  private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
 
   @Override
   protected String getUrl() {
@@ -66,26 +67,25 @@ public class UserRoleAssignmentsReferenceDataService extends
       return false;
     }
 
-    List<UUID> facilitySupervisoryNodesIds = requisitionGroupReferenceDataService
-            .findAll()
-            .stream()
-            .filter(r -> r.hasFacility(facilityId))
-            .map(r -> r.getSupervisoryNode().getId())
-            .collect(Collectors.toList());
+    Set<UUID> facilitySupervisoryNodeIds = supervisoryNodeReferenceDataService
+        .findByFacility(facilityId)
+        .stream()
+        .map(SupervisoryNodeDto::getId)
+        .collect(Collectors.toSet());
 
     return getRoleAssignments(userId).stream()
         .filter(r -> r.getRole().getRights().contains(right))
         .anyMatch(r -> hasAnySupervisionRoleWithGivenParameters(r, programId,
-           facilitySupervisoryNodesIds, supervisoryNodeId));
+           facilitySupervisoryNodeIds, supervisoryNodeId));
   }
 
   private boolean hasAnySupervisionRoleWithGivenParameters(DetailedRoleAssignmentDto role,
                                                            UUID programId,
-                                                           List<UUID> facilitySupervisoryNodesIds,
+                                                           Set<UUID> facilitySupervisoryNodeIds,
                                                            UUID supervisoryNodeId) {
     return roleHasSupervisoryNodeIdAndProgramId(role)
         && roleHasProgramId(role, programId)
-        && roleHasSupervisoryNodeId(role, supervisoryNodeId, facilitySupervisoryNodesIds);
+        && roleHasSupervisoryNodeId(role, supervisoryNodeId, facilitySupervisoryNodeIds);
   }
 
   private boolean roleHasSupervisoryNodeIdAndProgramId(DetailedRoleAssignmentDto role) {
@@ -98,9 +98,9 @@ public class UserRoleAssignmentsReferenceDataService extends
   }
 
   private boolean roleHasSupervisoryNodeId(DetailedRoleAssignmentDto role, UUID supervisoryNodeId,
-                                           List<UUID> facilitySupervisoryNodesIds) {
+                                           Set<UUID> facilitySupervisoryNodeIds) {
     return supervisoryNodeId == null
-            || facilitySupervisoryNodesIds.contains(role.getSupervisoryNodeId())
+            || facilitySupervisoryNodeIds.contains(role.getSupervisoryNodeId())
             || supervisoryNodeId.equals(role.getSupervisoryNodeId());
   }
 }

@@ -15,22 +15,17 @@
 
 package org.openlmis.requisition.service;
 
-import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.openlmis.requisition.dto.RequisitionGroupDto;
 import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.RoleAssignmentDto;
 import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
-import org.openlmis.requisition.service.referencedata.RequisitionGroupReferenceDataService;
 import org.openlmis.requisition.service.referencedata.RoleReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.utils.AuthenticationHelper;
@@ -49,9 +44,6 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
 
   @Autowired
   private SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
-
-  @Autowired
-  private RequisitionGroupReferenceDataService requisitionGroupReferenceDataService;
 
   @Override
   boolean checkUserToken(PermissionValidationDetails details, Profiler profiler) {
@@ -100,31 +92,17 @@ class RoleAssignmentPermissionValidator extends BasePermissionValidator {
           .filter(Objects::nonNull)
           .collect(Collectors.toSet());
 
-      profiler.start("GET_SUPERVISORY_NODES");
-      List<SupervisoryNodeDto> supervisoryNodes = supervisoryNodeReferenceDataService
-          .findByIds(userSupervisoryNodeIds)
-          .stream()
-          .filter(item -> Objects.nonNull(item.getRequisitionGroupId()))
-          .collect(Collectors.toList());
-
-      profiler.start("GET_REQUISITION_GROUP");
-      Map<UUID, RequisitionGroupDto> requisitionGroups = requisitionGroupReferenceDataService
-          .findAll()
-          .stream()
-          .collect(Collectors.toMap(RequisitionGroupDto::getId, Function.identity()));
-
-      supervisoryNodeIds = Sets.newHashSet();
-
-      for (int i = 0, length = supervisoryNodes.size(); i < length; ++i) {
-        SupervisoryNodeDto supervisoryNode = supervisoryNodes.get(i);
-        RequisitionGroupDto requisitionGroup = requisitionGroups
-            .get(supervisoryNode.getRequisitionGroupId());
-
-        if (requisitionGroup.hasFacility(details.getFacilityId())) {
-          supervisoryNodeIds.add(supervisoryNode.getId());
-        }
+      if (userSupervisoryNodeIds.isEmpty()) {
+        return Collections.emptySet();
       }
 
+      profiler.start("GET_SUPERVISORY_NODES_FOR_FACILITY");
+      supervisoryNodeIds = supervisoryNodeReferenceDataService
+          .findByFacility(details.getFacilityId())
+          .stream()
+          .map(SupervisoryNodeDto::getId)
+          .filter(userSupervisoryNodeIds::contains)
+          .collect(Collectors.toSet());
     } else {
       profiler.start("GET_SUPERVISORY_NODE_FROM_PARAM");
       supervisoryNodeIds = Collections.singleton(details.getSupervisoryNodeId());

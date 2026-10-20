@@ -66,6 +66,7 @@ import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
@@ -229,6 +230,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
         () -> getLineItemApprovedProductIdentities(requisitions), profiler);
 
     profiler.start("VALIDATE_AND_APPROVE");
+    List<Requisition> approvedRequisitions = Lists.newArrayList();
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
           .get(requisition.getSupervisoryNodeId());
@@ -237,12 +239,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
       ProcessingPeriodDto period = periods.get(requisition.getProcessingPeriodId());
       ApproveParams approveParams =
           new ApproveParams(user, supervisoryNode, orderables, supplyLines, period);
-      validateAndApprove(requisition, processingStatus, permissionStrings,
-          facilities, periods, approveParams, approvedProducts);
+      if (validateAndApprove(requisition, processingStatus, permissionStrings,
+          facilities, periods, approveParams, approvedProducts)) {
+        approvedRequisitions.add(requisition);
+      }
     }
 
     if (isTransferStockDataFromRequisitionToStockManagementEnabled) {
-      submitStockEvent(profiler, user, requisitions, orderables);
+      submitStockEvents(profiler, user, approvedRequisitions, orderables);
     }
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
@@ -410,7 +414,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return supplyLinesMap;
   }
 
-  private void validateAndApprove(Requisition requisition,
+  private boolean validateAndApprove(Requisition requisition,
       RequisitionsProcessingStatusDto processingStatus, List<String> permissionStrings,
       Map<UUID, FacilityDto> facilities, Map<UUID, ProcessingPeriodDto> periods,
       ApproveParams approveParams, Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
@@ -433,9 +437,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
                     approveParams.getOrderables(), approvedProducts, period),
                 requisition.getProgramId(),
                 approveParams.getOrderables()));
+        stopProfiler(profiler);
+        return true;
       }
     }
     stopProfiler(profiler);
+    return false;
   }
 
   private ValidationResult validateCanApproveRequisition(Requisition requisition,
@@ -456,16 +463,27 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return ValidationResult.success();
   }
 
-  private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions,
+  void submitStockEvents(Profiler profiler, UserDto user, List<Requisition> requisitions,
       Map<VersionIdentityDto, OrderableDto> orderables) {
+    // The builder reads lazy JPA associations, and the request's Hibernate session must not be
+    // used from other threads, so only the HTTP submissions run in parallel.
+    profiler.start("BUILD_STOCK_EVENTS");
+    List<StockEventDto> stockEvents = requisitions
+        .stream()
+        .map(requisition -> buildStockEvent(requisition, user.getId(), orderables))
+        .filter(Objects::nonNull)
+        .collect(toList());
+
+    if (stockEvents.isEmpty()) {
+      return;
+    }
+
     profiler.start("SEND_STOCK_EVENT");
-    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
+    ExecutorService executor = Executors.newFixedThreadPool(stockEvents.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
-      for (Requisition requisition : requisitions) {
-        CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, user.getId(), orderables), executor);
-        futures.add(future);
+      for (StockEventDto stockEvent : stockEvents) {
+        futures.add(runAsync(() -> submitStockEvent(stockEvent), executor));
       }
     } finally {
       profiler.start("JOIN_RESULTS");
