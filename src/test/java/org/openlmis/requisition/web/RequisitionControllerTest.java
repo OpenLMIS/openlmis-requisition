@@ -619,6 +619,8 @@ public class RequisitionControllerTest {
     verify(requisitionVersionValidator).validateEtagVersionIfPresent(
         any(HttpServletRequest.class), eq(initiatedRequsition));
     verifySupervisoryNodeWasNotUpdated(initiatedRequsition);
+    verify(initiatedRequsition).getAllOrderables();
+    verify(initiatedRequsition, never()).getOrderablesForUpdate(any(Requisition.Importer.class));
   }
 
   @Test

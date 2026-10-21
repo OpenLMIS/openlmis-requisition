@@ -384,6 +384,34 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Returns the orderables an update from the given importer can look up: those of this
+   * requisition's line items, plus those of the importer's line items that are among the
+   * available products. A subset of {@link #getAllOrderables()}.
+   */
+  public Set<VersionEntityReference> getOrderablesForUpdate(Importer updater) {
+    Set<VersionEntityReference> allOrderables = getAllOrderables();
+
+    Set<VersionEntityReference> orderables = Optional
+        .ofNullable(requisitionLineItems)
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(RequisitionLineItem::getOrderable)
+        .collect(Collectors.toSet());
+
+    Optional
+        .ofNullable(updater.getRequisitionLineItems())
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(RequisitionLineItem.Importer::getOrderableIdentity)
+        .filter(Objects::nonNull)
+        .map(identity -> new VersionEntityReference(identity.getId(), identity.getVersionNumber()))
+        .filter(allOrderables::contains)
+        .forEach(orderables::add);
+
+    return orderables;
+  }
+
+  /**
    * Returns a set of all approved product identities in this requisition.
    */
   public Set<VersionEntityReference> getAllApprovedProductIdentities() {

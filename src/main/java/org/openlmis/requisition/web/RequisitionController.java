@@ -274,8 +274,9 @@ public class RequisitionController extends BaseRequisitionController {
       HttpServletResponse response) {
     Profiler profiler = getProfiler("UPDATE_REQUISITION", requisitionId, requisitionDto);
 
+    // The response lists every available product in full, so the save fetches them all.
     UpdatePreparationResult result = doUpdatePreparation(requisitionId, requisitionDto,
-        request, override, profiler);
+        request, override, profiler, Requisition::getAllOrderables);
 
     Requisition requisitionToUpdate = result.getRequisitionToUpdate();
 

@@ -1,6 +1,9 @@
 8.7.3-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [OLMIS-8393](https://openlmis.atlassian.net/browse/OLMIS-8393): Saving a requisition (PUT /api/v2/requisitions/{id}) loads from reference data only the products of its line items and the available products the save adds, instead of every available product of the requisition. PUT /api/requisitions/{id} still loads them all, because its response lists them.
+
 8.7.2 / 2026-10-16
 ==================
 
