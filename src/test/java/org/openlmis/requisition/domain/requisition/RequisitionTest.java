@@ -1751,7 +1751,7 @@ public class RequisitionTest {
   @Test
   public void shouldGetOrderablesForUpdateOfStoredLineItemsWhenUpdaterHasNone() {
     // given
-    Requisition requisition = new RequisitionDataBuilder()
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(requisitionLineItem, false)
         .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
         .build();
@@ -1759,8 +1759,10 @@ public class RequisitionTest {
     when(updater.getRequisitionLineItems()).thenReturn(null, emptyList());
 
     // when
-    Set<VersionEntityReference> withNullLines = requisition.getOrderablesForUpdate(updater);
-    Set<VersionEntityReference> withEmptyLines = requisition.getOrderablesForUpdate(updater);
+    Set<VersionEntityReference> withNullLines =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
+    Set<VersionEntityReference> withEmptyLines =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
 
     // then
     assertThat(withNullLines, containsInAnyOrder(requisitionLineItem.getOrderable()));
@@ -1771,7 +1773,7 @@ public class RequisitionTest {
   public void shouldGetOrderablesForUpdateIncludingAddedAvailableProducts() {
     // given
     UUID addedOrderableId = UUID.randomUUID();
-    Requisition requisition = new RequisitionDataBuilder()
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(requisitionLineItem, false)
         .addAvailableProduct(UUID.randomUUID(), 1L, addedOrderableId, 1L)
         .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
@@ -1781,10 +1783,11 @@ public class RequisitionTest {
         new VersionIdentityDto(addedOrderableId, 1L));
 
     // when
-    Set<VersionEntityReference> orderables = requisition.getOrderablesForUpdate(updater);
+    Set<VersionEntityReference> orderablesForUpdate =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
 
     // then
-    assertThat(orderables, containsInAnyOrder(
+    assertThat(orderablesForUpdate, containsInAnyOrder(
         requisitionLineItem.getOrderable(), new VersionEntityReference(addedOrderableId, 1L)));
   }
 
@@ -1792,7 +1795,7 @@ public class RequisitionTest {
   public void shouldGetOrderablesForUpdateWithoutProductsThatAreNotAvailable() {
     // given
     UUID availableOrderableId = UUID.randomUUID();
-    Requisition requisition = new RequisitionDataBuilder()
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
         .addLineItem(requisitionLineItem, false)
         .addAvailableProduct(UUID.randomUUID(), 1L, availableOrderableId, 1L)
         .build();
@@ -1802,17 +1805,18 @@ public class RequisitionTest {
         null);
 
     // when
-    Set<VersionEntityReference> orderables = requisition.getOrderablesForUpdate(updater);
+    Set<VersionEntityReference> orderablesForUpdate =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
 
     // then
-    assertThat(orderables, containsInAnyOrder(requisitionLineItem.getOrderable()));
+    assertThat(orderablesForUpdate, containsInAnyOrder(requisitionLineItem.getOrderable()));
   }
 
-  private Requisition.Importer updaterWithLineItems(VersionIdentityDto... orderables) {
+  private Requisition.Importer updaterWithLineItems(VersionIdentityDto... identities) {
     List<RequisitionLineItem.Importer> lineItems = new ArrayList<>();
-    for (VersionIdentityDto orderable : orderables) {
+    for (VersionIdentityDto orderableIdentity : identities) {
       RequisitionLineItem.Importer lineItem = mock(RequisitionLineItem.Importer.class);
-      when(lineItem.getOrderableIdentity()).thenReturn(orderable);
+      when(lineItem.getOrderableIdentity()).thenReturn(orderableIdentity);
       lineItems.add(lineItem);
     }
 
