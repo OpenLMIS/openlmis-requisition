@@ -343,10 +343,13 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkResponseBody(response);
+    verify(supervisoryNodeReferenceDataService, times(1)).findByFacility(any(UUID.class));
+    verify(supervisoryNodeReferenceDataService)
+        .findByFacility(requisitions.get(0).getFacilityId());
   }
 
   @Test
-  public void shouldFetchApproverRightsOncePerBatchAndNodesOncePerFacility()
+  public void shouldFetchApproverRightsOncePerBatchAndNoNodesForRolesAtRequisitionNodes()
       throws IOException {
     mockRequisitionValidatonsAndStubRepository();
 
@@ -355,8 +358,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     verify(rightReferenceDataService).findRight(REQUISITION_APPROVE);
     verify(userRoleAssignmentsReferenceDataService).getRoleAssignments(user.getId());
-    requisitions.forEach(r -> verify(supervisoryNodeReferenceDataService)
-        .findByFacility(r.getFacilityId()));
+    verify(supervisoryNodeReferenceDataService, never()).findByFacility(any(UUID.class));
     verifyNoMoreInteractions(rightReferenceDataService, userRoleAssignmentsReferenceDataService);
   }
 

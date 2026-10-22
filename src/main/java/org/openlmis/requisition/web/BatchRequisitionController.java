@@ -225,7 +225,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("GET_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
-    ApproverRights approverRights = findApproverRights(user, requisitions, profiler);
+    ApproverRights approverRights = findApproverRights(user, profiler);
 
     Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions, profiler);
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
@@ -474,19 +474,36 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
     // Referencedata grants the permission string for roles that single approval refuses: a
     // role at a node above the facility's node, or a home-facility role.
-    if (!UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
-        approverRights.getApproveRight(), approverRights.getRoleAssignments(),
-        requisition.getProgramId(),
-        approverRights.getFacilitySupervisoryNodeIds().get(requisition.getFacilityId()),
-        requisition.getSupervisoryNodeId())) {
+    if (!hasSupervisionRight(requisition, approverRights)) {
       return ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
     }
 
     return ValidationResult.success();
   }
 
-  private ApproverRights findApproverRights(UserDto user, List<Requisition> requisitions,
-      Profiler profiler) {
+  private boolean hasSupervisionRight(Requisition requisition, ApproverRights approverRights) {
+    // A role at the requisition's own node passes without the facility's nodes, which is the
+    // case for everything on the approver's list, so the facility search runs only when needed.
+    if (UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approverRights.getApproveRight(), approverRights.getRoleAssignments(),
+        requisition.getProgramId(), Collections.emptySet(), requisition.getSupervisoryNodeId())) {
+      return true;
+    }
+
+    Set<UUID> facilitySupervisoryNodeIds = approverRights.getFacilitySupervisoryNodeIds()
+        .computeIfAbsent(requisition.getFacilityId(), facilityId -> supervisoryNodeService
+            .findByFacility(facilityId)
+            .stream()
+            .map(SupervisoryNodeDto::getId)
+            .collect(Collectors.toSet()));
+
+    return UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approverRights.getApproveRight(), approverRights.getRoleAssignments(),
+        requisition.getProgramId(), facilitySupervisoryNodeIds,
+        requisition.getSupervisoryNodeId());
+  }
+
+  private ApproverRights findApproverRights(UserDto user, Profiler profiler) {
     profiler.start("GET_USER_PERMISSION_STRINGS");
     final List<String> permissionStrings =
         userReferenceDataService.getPermissionStrings(user.getId());
@@ -499,19 +516,8 @@ public class BatchRequisitionController extends BaseRequisitionController {
     final Collection<DetailedRoleAssignmentDto> roleAssignments =
         userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId());
 
-    profiler.start("FIND_SUPERVISORY_NODES_BY_FACILITY");
-    Map<UUID, Set<UUID>> facilitySupervisoryNodeIds = new HashMap<>();
-    for (Requisition requisition : requisitions) {
-      facilitySupervisoryNodeIds.computeIfAbsent(requisition.getFacilityId(),
-          facilityId -> supervisoryNodeService
-              .findByFacility(facilityId)
-              .stream()
-              .map(SupervisoryNodeDto::getId)
-              .collect(Collectors.toSet()));
-    }
-
     return new ApproverRights(permissionStrings, approveRight, roleAssignments,
-        facilitySupervisoryNodeIds);
+        new HashMap<>());
   }
 
   void submitStockEvents(Profiler profiler, UserDto user, List<Requisition> requisitions,
