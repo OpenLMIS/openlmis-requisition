@@ -38,9 +38,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_VIEW;
 
@@ -49,6 +51,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -56,6 +59,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -72,12 +76,16 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
 import org.openlmis.requisition.dto.ApproveRequisitionDto;
 import org.openlmis.requisition.dto.ApprovedProductDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
 import org.openlmis.requisition.dto.ProgramDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.ReleasableRequisitionDto;
+import org.openlmis.requisition.dto.RightDto;
+import org.openlmis.requisition.dto.RoleDto;
+import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
 import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
@@ -86,12 +94,16 @@ import org.openlmis.requisition.exception.ValidationMessageException;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.testutils.ApprovedProductDtoDataBuilder;
+import org.openlmis.requisition.testutils.DetailedRoleAssignmentDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.FacilityDtoDataBuilder;
 import org.openlmis.requisition.testutils.OrderableDtoDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.testutils.ReleasableRequisitionDtoDataBuilder;
+import org.openlmis.requisition.testutils.RightDtoDataBuilder;
+import org.openlmis.requisition.testutils.RoleDtoDataBuilder;
+import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.validate.RequisitionValidationTestUtils;
 import org.springframework.http.HttpHeaders;
@@ -115,6 +127,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
   private Map<VersionIdentityDto, ApprovedProductDto> ftaps;
   private List<String> permissionStrings;
   private UserDto user;
+  private RightDto approveRight = new RightDtoDataBuilder().buildAsDto();
 
   @Before
   public void setUp() {
@@ -135,6 +148,7 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
         generateRequisition(RequisitionStatus.AUTHORIZED),
         generateRequisition(RequisitionStatus.AUTHORIZED)
     );
+    requisitions.forEach(r -> r.setSupervisoryNodeId(UUID.randomUUID()));
 
     doReturn(requisitions)
         .when(requisitionRepository)
@@ -173,6 +187,12 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     doReturn(permissionStrings)
         .when(userReferenceDataService).getPermissionStrings(user.getId());
+
+    doReturn(approveRight).when(rightReferenceDataService).findRight(REQUISITION_APPROVE);
+    doReturn(roleAssignmentsAtRequisitionNodes()).when(userRoleAssignmentsReferenceDataService)
+        .getRoleAssignments(user.getId());
+    doReturn(Collections.emptyList()).when(supervisoryNodeReferenceDataService)
+        .findByFacility(any(UUID.class));
 
     requisitionIds = requisitions
         .stream()
@@ -289,6 +309,55 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
 
     Response response = post(APPROVE_ALL, requisitionIds);
     checkPermissionErrorResponseBody(response, 400);
+  }
+
+  @Test
+  public void shouldHaveErrorIfUserHasNoApproveRoleAtRequisitionSupervisoryNode()
+      throws IOException {
+    List<DetailedRoleAssignmentDto> assignments = roleAssignmentsAtRequisitionNodes();
+    assignments.get(0).setSupervisoryNodeId(UUID.randomUUID());
+    doReturn(assignments).when(userRoleAssignmentsReferenceDataService)
+        .getRoleAssignments(user.getId());
+    mockRequisitionValidatonsAndStubRepository();
+
+    Response response = post(APPROVE_ALL, requisitionIds);
+    checkValidationErrorResponseBody(response, 400,
+        requisitionErrors -> requisitionErrors.get(0)
+            .get("errorMessage")
+            .get("messageKey")
+            .asText(),
+        ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
+  }
+
+  @Test
+  public void shouldApproveWhenUserHasApproveRoleAtNodeSupervisingTheFacility()
+      throws IOException {
+    SupervisoryNodeDto facilityNode = new SupervisoryNodeDtoDataBuilder().buildAsDto();
+    List<DetailedRoleAssignmentDto> assignments = roleAssignmentsAtRequisitionNodes();
+    assignments.get(0).setSupervisoryNodeId(facilityNode.getId());
+    doReturn(assignments).when(userRoleAssignmentsReferenceDataService)
+        .getRoleAssignments(user.getId());
+    doReturn(singletonList(facilityNode)).when(supervisoryNodeReferenceDataService)
+        .findByFacility(requisitions.get(0).getFacilityId());
+    mockRequisitionValidatonsAndStubRepository();
+
+    Response response = post(APPROVE_ALL, requisitionIds);
+    checkResponseBody(response);
+  }
+
+  @Test
+  public void shouldFetchApproverRightsOncePerBatchAndNodesOncePerFacility()
+      throws IOException {
+    mockRequisitionValidatonsAndStubRepository();
+
+    Response response = post(APPROVE_ALL, requisitionIds);
+    checkResponseBody(response);
+
+    verify(rightReferenceDataService).findRight(REQUISITION_APPROVE);
+    verify(userRoleAssignmentsReferenceDataService).getRoleAssignments(user.getId());
+    requisitions.forEach(r -> verify(supervisoryNodeReferenceDataService)
+        .findByFacility(r.getFacilityId()));
+    verifyNoMoreInteractions(rightReferenceDataService, userRoleAssignmentsReferenceDataService);
   }
 
   @Test
@@ -607,6 +676,22 @@ public class BatchRequisitionControllerIntegrationTest extends BaseRequisitionWe
       return null;
     }).when(requisitionService).doApprove(any(), any(), anyMap(), any(Requisition.class),
         anyList(), any(), any());
+  }
+
+  private List<DetailedRoleAssignmentDto> roleAssignmentsAtRequisitionNodes() {
+    return requisitions
+        .stream()
+        .map(r -> {
+          RoleDto role = new RoleDtoDataBuilder().buildAsDto();
+          role.setRights(Sets.newHashSet(approveRight));
+          DetailedRoleAssignmentDto assignment =
+              new DetailedRoleAssignmentDtoDataBuilder().buildAsDto();
+          assignment.setRole(role);
+          assignment.setProgramId(r.getProgramId());
+          assignment.setSupervisoryNodeId(r.getSupervisoryNodeId());
+          return assignment;
+        })
+        .collect(Collectors.toList());
   }
 
   private List<Requisition> mockRequisitionValidatonsAndStubRepository() {
