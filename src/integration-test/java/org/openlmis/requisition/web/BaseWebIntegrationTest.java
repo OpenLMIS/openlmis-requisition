@@ -85,11 +85,13 @@ import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProduc
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.service.stockmanagement.ValidReasonStockmanagementService;
 import org.openlmis.requisition.settings.service.ConfigurationSettingService;
@@ -159,6 +161,12 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected SupervisoryNodeReferenceDataService supervisoryNodeReferenceDataService;
+
+  @MockBean
+  protected RightReferenceDataService rightReferenceDataService;
+
+  @MockBean
+  protected UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @MockBean
   protected SupplyLineReferenceDataService supplyLineReferenceDataService;

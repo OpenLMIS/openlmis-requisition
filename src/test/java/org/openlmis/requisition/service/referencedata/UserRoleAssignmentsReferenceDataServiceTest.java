@@ -15,11 +15,14 @@
 
 package org.openlmis.requisition.service.referencedata;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +31,7 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,9 +42,11 @@ import org.openlmis.requisition.dto.RoleDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.testutils.DetailedRoleAssignmentDtoDataBuilder;
 import org.openlmis.requisition.testutils.DtoGenerator;
+import org.openlmis.requisition.testutils.RoleDtoDataBuilder;
 import org.openlmis.requisition.testutils.SupervisoryNodeDtoDataBuilder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserRoleAssignmentsReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<DetailedRoleAssignmentDto> {
 
@@ -156,6 +162,86 @@ public class UserRoleAssignmentsReferenceDataServiceTest
     assertTrue(service.hasSupervisionRight(approveRequisitionRight, userId,
         programId, facilityId, supervisoryNodeId));
     verify(supervisoryNodeReferenceDataService).findByFacility(facilityId);
+  }
+
+  @Test
+  public void shouldAcceptPrefetchedRoleAtRequisitionNode() {
+    disableAuthCheck();
+    assertTrue(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, supervisoryNodeId, approveRequisitionRight)),
+        programId, Collections.emptySet(), supervisoryNodeId));
+    verify(supervisoryNodeReferenceDataService, never()).findByFacility(any(UUID.class));
+  }
+
+  @Test
+  public void shouldAcceptPrefetchedRoleAtNodeSupervisingTheFacility() {
+    disableAuthCheck();
+    UUID facilityNodeId = UUID.randomUUID();
+    assertTrue(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, facilityNodeId, approveRequisitionRight)),
+        programId, Sets.newHashSet(facilityNodeId), supervisoryNodeId));
+  }
+
+  @Test
+  public void shouldAcceptPrefetchedRoleWhenRequisitionHasNoSupervisoryNode() {
+    disableAuthCheck();
+    assertTrue(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, UUID.randomUUID(), approveRequisitionRight)),
+        programId, Collections.emptySet(), null));
+  }
+
+  @Test
+  public void shouldRefusePrefetchedRoleAtUnrelatedNode() {
+    disableAuthCheck();
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, UUID.randomUUID(), approveRequisitionRight)),
+        programId, Sets.newHashSet(UUID.randomUUID()), supervisoryNodeId));
+  }
+
+  @Test
+  public void shouldRefusePrefetchedHomeFacilityRole() {
+    disableAuthCheck();
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, null, approveRequisitionRight)),
+        programId, Sets.newHashSet(supervisoryNodeId), supervisoryNodeId));
+  }
+
+  @Test
+  public void shouldRefusePrefetchedRoleWithoutTheRightOrProgram() {
+    disableAuthCheck();
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(programId, supervisoryNodeId, convertToOrderRight)),
+        programId, Collections.emptySet(), supervisoryNodeId));
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(approveRequisitionRight,
+        singletonList(roleAssignment(UUID.randomUUID(), supervisoryNodeId,
+            approveRequisitionRight)),
+        programId, Collections.emptySet(), supervisoryNodeId));
+  }
+
+  @Test
+  public void shouldRefusePrefetchedWhenInputsAreMissing() {
+    disableAuthCheck();
+    List<DetailedRoleAssignmentDto> assignments =
+        singletonList(roleAssignment(programId, supervisoryNodeId, approveRequisitionRight));
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(null, assignments,
+        programId, Collections.emptySet(), supervisoryNodeId));
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approveRequisitionRight, null, programId, Collections.emptySet(), supervisoryNodeId));
+    assertFalse(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approveRequisitionRight, Collections.emptyList(), programId, Collections.emptySet(),
+        supervisoryNodeId));
+    assertTrue(UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approveRequisitionRight, assignments, programId, null, supervisoryNodeId));
+  }
+
+  private DetailedRoleAssignmentDto roleAssignment(UUID program, UUID node, RightDto right) {
+    RoleDto assignedRole = new RoleDtoDataBuilder().buildAsDto();
+    assignedRole.setRights(Sets.newHashSet(right));
+    DetailedRoleAssignmentDto assignment = new DetailedRoleAssignmentDtoDataBuilder().buildAsDto();
+    assignment.setRole(assignedRole);
+    assignment.setProgramId(program);
+    assignment.setSupervisoryNodeId(node);
+    return assignment;
   }
 
   private void mockSupervisionRoleAssignment(UUID program, UUID node, RightDto right) {
