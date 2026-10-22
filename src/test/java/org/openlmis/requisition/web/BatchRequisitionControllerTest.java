@@ -218,6 +218,7 @@ public class BatchRequisitionControllerTest {
     verify(facilityReferenceDataService).search(anySet());
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
+    verify(supervisoryNodeReferenceDataService, never()).findByFacility(any());
     verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
   }
 
@@ -225,9 +226,16 @@ public class BatchRequisitionControllerTest {
   public void shouldSearchSupervisoryNodesOncePerFacility() {
     ReflectionTestUtils.setField(batchRequisitionController, TRANSFER_STOCK_DATA_FLAG, false);
     UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
     Requisition otherRequisition = mock(Requisition.class);
-    when(requisition.getFacilityId()).thenReturn(facilityId);
-    when(otherRequisition.getFacilityId()).thenReturn(facilityId);
+    for (Requisition approvable : Arrays.asList(requisition, otherRequisition)) {
+      when(approvable.getFacilityId()).thenReturn(facilityId);
+      when(approvable.getProgramId()).thenReturn(programId);
+      when(approvable.getSupervisoryNodeId()).thenReturn(UUID.randomUUID());
+      when(approvable.isApprovable()).thenReturn(true);
+    }
+    when(userReferenceDataService.getPermissionStrings(currentUser.getId())).thenReturn(
+        Collections.singletonList(REQUISITION_APPROVE + "|" + facilityId + "|" + programId));
     when(requisitionRepository.readDistinctByIdIn(anyList()))
         .thenReturn(Arrays.asList(requisition, otherRequisition));
 
