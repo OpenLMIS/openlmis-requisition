@@ -254,8 +254,17 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @DeleteMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    deleteRequisitionById(requisitionId);
+  public void deleteRequisition(@PathVariable("id") UUID requisitionId,
+      HttpServletRequest request) {
+    Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
+    Requisition requisition = findRequisition(requisitionId, profiler);
+    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
+
+    profiler.start("VALIDATE_VERSION");
+    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisition)
+        .throwExceptionIfHasErrors();
+
+    doDeleteRequisition(requisition, profiler);
   }
 
   /**
@@ -722,6 +731,10 @@ public class RequisitionController extends BaseRequisitionController {
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
 
+    doDeleteRequisition(requisition, profiler);
+  }
+
+  private void doDeleteRequisition(Requisition requisition, Profiler profiler) {
     profiler.start("DELETE");
     requisitionService.delete(requisition);
 
