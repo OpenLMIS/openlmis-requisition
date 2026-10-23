@@ -70,7 +70,7 @@ public class StatusChange extends BaseTimestampedEntity {
   @Setter
   private RequisitionStatus status;
 
-  @OneToMany(mappedBy = "statusChange")
+  @OneToMany(mappedBy = "statusChange", cascade = CascadeType.REMOVE)
   @Getter
   @Setter
   private List<Rejection> rejections = new ArrayList<>();
