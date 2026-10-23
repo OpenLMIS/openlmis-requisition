@@ -57,6 +57,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.requisition.domain.Rejection;
+import org.openlmis.requisition.domain.RejectionReason;
+import org.openlmis.requisition.domain.RejectionReasonCategory;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
@@ -68,6 +71,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilde
 import org.openlmis.requisition.domain.requisition.RequisitionPeriod;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.StatusChange;
+import org.openlmis.requisition.domain.requisition.StatusMessage;
 import org.openlmis.requisition.domain.requisition.StockAdjustment;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentDataBuilder;
 import org.openlmis.requisition.dto.OrderableDto;
@@ -80,6 +84,8 @@ import org.openlmis.requisition.service.RequisitionService;
 import org.openlmis.requisition.testutils.AvailableRequisitionColumnDataBuilder;
 import org.openlmis.requisition.testutils.DefaultRequisitionSearchParamsDataBuilder;
 import org.openlmis.requisition.testutils.ProcessingPeriodDtoDataBuilder;
+import org.openlmis.requisition.testutils.RejectionReasonCategoryDataBuilder;
+import org.openlmis.requisition.testutils.RejectionReasonDataBuilder;
 import org.openlmis.requisition.testutils.StatusChangeDataBuilder;
 import org.openlmis.requisition.utils.Pagination;
 import org.slf4j.profiler.Profiler;
@@ -109,6 +115,21 @@ public class RequisitionRepositoryIntegrationTest
 
   @Autowired
   private PeriodService periodService;
+
+  @Autowired
+  private StatusChangeRepository statusChangeRepository;
+
+  @Autowired
+  private StatusMessageRepository statusMessageRepository;
+
+  @Autowired
+  private RejectionRepository rejectionRepository;
+
+  @Autowired
+  private RejectionReasonRepository rejectionReasonRepository;
+
+  @Autowired
+  private RejectionReasonCategoryRepository rejectionReasonCategoryRepository;
 
 
   @Before
@@ -1352,6 +1373,77 @@ public class RequisitionRepositoryIntegrationTest
 
     // then
     assertEquals(2L, result);
+  }
+
+  @Test
+  public void shouldDeleteRejectionsAndStatusChangesWithRequisition() {
+    // given
+    Requisition requisition = requisitions.get(0);
+    final UUID initiatedChangeId = requisition.getStatusChanges().get(0).getId();
+    StatusChange rejectedChange = statusChangeRepository.save(new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withStatus(RequisitionStatus.REJECTED)
+        .buildAsNew());
+    final Rejection rejection = saveRejection(rejectedChange);
+
+    entityManager.flush();
+    entityManager.clear();
+
+    // when
+    repository.delete(repository.findById(requisition.getId()).orElseThrow(AssertionError::new));
+    entityManager.flush();
+
+    // then
+    assertFalse(rejectionRepository.existsById(rejection.getId()));
+    assertFalse(statusChangeRepository.existsById(rejectedChange.getId()));
+    assertFalse(statusChangeRepository.existsById(initiatedChangeId));
+    assertFalse(repository.existsById(requisition.getId()));
+    assertTrue(rejectionReasonRepository.existsById(rejection.getRejectionReason().getId()));
+  }
+
+  @Test
+  public void shouldDeleteRequisitionRejectedWithReasonAndStatusMessage() {
+    // given
+    Requisition requisition = requisitions.get(0);
+    requisition.setEmergency(true);
+    repository.save(requisition);
+    StatusChange rejectedChange = statusChangeRepository.save(new StatusChangeDataBuilder()
+        .withRequisition(requisition)
+        .withStatus(RequisitionStatus.REJECTED)
+        .buildAsNew());
+    final StatusMessage statusMessage = statusMessageRepository.save(
+        StatusMessage.newStatusMessage(requisition, rejectedChange, UUID.randomUUID(),
+            "FirstName", "LastName", "rejection comment"));
+    final Rejection rejection = saveRejection(rejectedChange);
+
+    entityManager.flush();
+    entityManager.clear();
+
+    // when
+    requisitionService.delete(
+        repository.findById(requisition.getId()).orElseThrow(AssertionError::new));
+    entityManager.flush();
+
+    // then
+    assertFalse(statusMessageRepository.existsById(statusMessage.getId()));
+    assertFalse(rejectionRepository.existsById(rejection.getId()));
+    assertFalse(statusChangeRepository.existsById(rejectedChange.getId()));
+    assertFalse(repository.existsById(requisition.getId()));
+  }
+
+  private Rejection saveRejection(StatusChange statusChange) {
+    RejectionReasonCategory category = rejectionReasonCategoryRepository.save(
+        new RejectionReasonCategoryDataBuilder()
+            .withName("category name")
+            .withCode("RRC1")
+            .buildAsNew());
+    RejectionReason reason = rejectionReasonRepository.save(new RejectionReasonDataBuilder()
+        .withCategory(category)
+        .withName("reason name")
+        .withCode("RR1")
+        .withActive(true)
+        .buildAsNew());
+    return rejectionRepository.save(Rejection.newRejection(reason, statusChange));
   }
 
   private RequisitionLineItem generateLineItem(Requisition requisition) {
