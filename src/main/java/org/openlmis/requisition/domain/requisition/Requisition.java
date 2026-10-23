@@ -817,6 +817,17 @@ public class Requisition extends BaseTimestampedEntity {
   }
 
   /**
+   * Returns true if at least one non-skipped line item has a positive packsToShip value.
+   * Returns false when all non-skipped line items have zero or null packsToShip,
+   * meaning the requisition results in a blank order with nothing to ship.
+   */
+  public boolean hasNonZeroPacksToShip() {
+    return getNonSkippedRequisitionLineItems()
+        .stream()
+        .anyMatch(line -> line.getPacksToShip() != null && line.getPacksToShip() > 0L);
+  }
+
+  /**
    * Release the requisition.
    */
   public void release(UUID releaser) {

@@ -935,6 +935,70 @@ public class RequisitionTest {
   }
 
   @Test
+  public void shouldHaveNonZeroPacksToShipWhenAnyNonSkippedLineIsPositive() {
+    RequisitionLineItem zeroLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(0L).build();
+    RequisitionLineItem positiveLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(5L).build();
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(zeroLine, false)
+        .addLineItem(positiveLine, false)
+        .build();
+
+    assertTrue(requisition.hasNonZeroPacksToShip());
+  }
+
+  @Test
+  public void shouldNotHaveNonZeroPacksToShipWhenAllNonSkippedLinesAreZero() {
+    RequisitionLineItem firstZeroLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(0L).build();
+    RequisitionLineItem secondZeroLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(0L).build();
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(firstZeroLine, false)
+        .addLineItem(secondZeroLine, false)
+        .build();
+
+    assertFalse(requisition.hasNonZeroPacksToShip());
+  }
+
+  @Test
+  public void shouldNotHaveNonZeroPacksToShipWhenAllNonSkippedLinesAreNull() {
+    RequisitionLineItem nullLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(null).build();
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(nullLine, false)
+        .build();
+
+    assertFalse(requisition.hasNonZeroPacksToShip());
+  }
+
+  @Test
+  public void shouldIgnoreSkippedLinesWhenCheckingPacksToShip() {
+    RequisitionLineItem zeroNonSkippedLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(false).withPacksToShip(0L).build();
+    RequisitionLineItem positiveSkippedLine = new RequisitionLineItemDataBuilder()
+        .withSkippedFlag(true).withPacksToShip(5L).build();
+
+    Requisition requisition = new RequisitionDataBuilder()
+        .addLineItem(zeroNonSkippedLine, false)
+        .addLineItem(positiveSkippedLine, false)
+        .build();
+
+    assertFalse(requisition.hasNonZeroPacksToShip());
+  }
+
+  @Test
+  public void shouldNotHaveNonZeroPacksToShipWhenThereAreNoLineItems() {
+    Requisition requisition = new RequisitionDataBuilder().build();
+
+    assertFalse(requisition.hasNonZeroPacksToShip());
+  }
+
+  @Test
   public void shouldUpdatePacksToShipOnSubmit() {
     // given
     long packsToShip = 5L;
