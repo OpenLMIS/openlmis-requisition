@@ -326,11 +326,15 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Requisition requisition = generateRequisition();
     doReturn(ValidationResult.success())
         .when(permissionService).canDeleteRequisition(requisition);
+    when(requisitionVersionValidator
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
     doNothing().when(requisitionService).delete(requisition);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(HttpHeaders.IF_MATCH, "W/1")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", requisition.getId())
         .when()
@@ -340,6 +344,33 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
 
     // then
     verify(requisitionService, atLeastOnce()).delete(requisition);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeleteRequisitionWhenVersionDoesNotMatch() {
+    // given
+    Requisition requisition = generateRequisition();
+    doReturn(ValidationResult.success())
+        .when(permissionService).canDeleteRequisition(requisition);
+    when(requisitionVersionValidator
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.conflict(MessageKeys.VERSION_MISMATCH));
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .header(HttpHeaders.IF_MATCH, "W/2")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisition.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(409)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.VERSION_MISMATCH)));
+
+    // then
+    verify(requisitionService, never()).delete(any(Requisition.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -392,6 +423,9 @@ public class RequisitionControllerIntegrationTest extends BaseRequisitionWebInte
     Requisition requisition = generateRequisition(RequisitionStatus.AUTHORIZED);
     doReturn(ValidationResult.success())
         .when(permissionService).canDeleteRequisition(requisition);
+    when(requisitionVersionValidator
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
 
     String errorKey = MessageKeys.ERROR_DELETE_FAILED_WRONG_STATUS;
     ValidationMessageException exception = mockValidationException(errorKey);

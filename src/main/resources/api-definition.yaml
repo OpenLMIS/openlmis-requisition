@@ -454,6 +454,13 @@ resourceTypes:
           delete:
               is: [ secured ]
               description: Delete chosen requisition.
+              headers:
+                  If-Match:
+                      displayName: If-Match
+                      description: ETag of the requisition version the client has seen, as returned by GET. When set and the stored version differs, the request is refused with 409.
+                      type: string
+                      required: false
+                      repeat: false
               responses:
                   "204":
                       headers:
@@ -469,6 +476,11 @@ resourceTypes:
                         application/json:
                           schema: localizedMessage
                   "409":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   "403":
                       headers:
                         Keep-Alive:
@@ -499,6 +511,13 @@ resourceTypes:
           put:
               is: [ secured ]
               description: Update existing requisition. Do not change invariants – id, createdDate, facility, program, supplyingFacility, status, emergency, supervisoryNode, orderableId of line item, such attempts will be ignored.
+              headers:
+                  If-Match:
+                      displayName: If-Match
+                      description: ETag of the requisition version the client has seen, as returned by GET. When set and the stored version differs, the request is refused with 409.
+                      type: string
+                      required: false
+                      repeat: false
               body:
                   application/json:
                     schema: requisitionDto
@@ -519,6 +538,12 @@ resourceTypes:
                       body:
                         application/json:
                             schema: localizedMessage
+                  "409":
+                      headers:
+                        Keep-Alive:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /{id}/skip:
           uriParameters:
               id:
