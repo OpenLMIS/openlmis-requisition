@@ -2,7 +2,7 @@
 ==================
 
 Bug fixes:
-* [OLMIS-8382](https://openlmis.atlassian.net/browse/OLMIS-8382): A requisition that was rejected with a rejection reason can be deleted again. Since 8.3.2 the rejection rows pointed at the requisition's status changes and were not removed with them, so DELETE /api/requisitions/{id} (and the delete of a proceeding requisition on GET /api/requisitions/periodsForInitiate) failed with HTTP 400 "violates foreign key constraint fk_status_changes". The rejections are now deleted with their status change. Requisitions stuck this way on existing environments delete without any data change.
+* [OLMIS-8382](https://openlmis.atlassian.net/browse/OLMIS-8382): A requisition that was rejected with a rejection reason can be deleted. Since 8.3.2 the rejection rows pointed at the requisition's status changes and were not removed with them, so DELETE /api/requisitions/{id} (and the delete of a proceeding requisition on GET /api/requisitions/periodsForInitiate) failed with HTTP 400 on the foreign key constraint fk_status_changes. The rejections are now deleted with their status change. Requisitions stuck this way on existing environments delete without any data change.
 
 8.7.2 / 2026-10-16
 ==================
