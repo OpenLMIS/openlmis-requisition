@@ -2,7 +2,7 @@
 ==================
 
 Bug fixes:
-* [OLMIS-8385](https://openlmis.atlassian.net/browse/OLMIS-8385): DELETE /api/requisitions/{id} honours the If-Match header the way PUT does. When the header carries the ETag of the version the client has seen and the requisition has changed since, the delete is refused with HTTP 409 (requisition.error.validation.versionMismatch) instead of deleting the newer version. Without the header the delete behaves as before. The If-Match header and the 409 response are now declared in the API definition for DELETE and PUT.
+* [OLMIS-8385](https://openlmis.atlassian.net/browse/OLMIS-8385): DELETE /api/requisitions/{id} honours the If-Match header the way PUT does. When the header carries the ETag of the version the client has seen and the requisition has changed since, the delete is refused with HTTP 409 (requisition.error.validation.versionMismatch) instead of deleting the newer version. Without the header the delete behaves as before. POST /api/v2/requisitions/initiate now returns the ETag of the new requisition, as GET and PUT do, so a client can send it before its first GET. The If-Match header and the 409 response are now declared in the API definition for DELETE and PUT.
 
 8.7.2 / 2026-10-16
 ==================
