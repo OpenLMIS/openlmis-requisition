@@ -159,6 +159,7 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
         .post(INITIATE_URL)
         .then()
         .statusCode(HttpStatus.CREATED.value())
+        .header(HttpHeaders.ETAG, "W/1")
         .extract()
         .as(RequisitionV2Dto.class);
 
