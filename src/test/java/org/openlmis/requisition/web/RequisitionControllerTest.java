@@ -1476,6 +1476,31 @@ public class RequisitionControllerTest {
     assertEquals(1, result.size());
   }
 
+  @Test
+  public void shouldDeleteProceedingRequisitionWithoutVersionCheck() {
+    when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
+        .thenReturn(ValidationResult.success());
+    when(permissionService.canDeleteRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    RequisitionPeriodDto pastPeriod = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid6)
+        .buildAsDto();
+    pastPeriod.setStartDate(LocalDate.now().minusYears(1));
+    pastPeriod.setRequisitionId(uuid1);
+    pastPeriod.setRequisitionStatus(RequisitionStatus.INITIATED);
+    when(periodService.getPeriods(programUuid, facilityUuid, false))
+        .thenReturn(Collections.singletonList(pastPeriod));
+    when(facilitySupportsProgramHelper.getSupportedProgram(facilityUuid, programUuid))
+        .thenReturn(new SupportedProgramDtoDataBuilder()
+            .withSupportStartDate(LocalDate.now())
+            .buildAsDto());
+
+    requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true);
+
+    verify(requisitionService).delete(initiatedRequsition);
+    verifyZeroInteractions(requisitionVersionValidator);
+  }
+
   private void setStatusesToSkipped(List<RequisitionPeriodDto> periods) {
     periods.forEach(p -> p.setRequisitionStatus(RequisitionStatus.SKIPPED));
   }
