@@ -288,6 +288,13 @@ public class Requisition extends BaseTimestampedEntity {
   private String patientsData;
 
   /**
+   * Human readable, unique code generated when the requisition is initiated.
+   */
+  @Getter
+  @Setter
+  private String code;
+
+  /**
    * Constructor.
    *
    * @param facilityId         id of the Facility
@@ -319,7 +326,7 @@ public class Requisition extends BaseTimestampedEntity {
         original.reportOnly, original.numberOfMonthsInPeriod, original.supervisoryNodeId,
         original.previousRequisitions, original.availableProducts,
         original.datePhysicalStockCountCompleted, null,
-        null, new ExtraDataEntity(), original.patientsData);
+        null, new ExtraDataEntity(), original.patientsData, original.code);
 
     setId(original.getId());
 
@@ -1024,6 +1031,7 @@ public class Requisition extends BaseTimestampedEntity {
     exporter.setSupervisoryNode(supervisoryNodeId);
     exporter.setDraftStatusMessage(draftStatusMessage);
     exporter.setPatientsData(patientsData);
+    exporter.setCode(code);
     if (datePhysicalStockCountCompleted != null) {
       exporter.setDatePhysicalStockCountCompleted(
           datePhysicalStockCountCompleted.getLocalDate());
@@ -1356,6 +1364,8 @@ public class Requisition extends BaseTimestampedEntity {
     void addStatusChange(StatusChange.Exporter providedExporter);
 
     void setPatientsData(String patientsData);
+
+    void setCode(String code);
   }
 
   public interface Importer extends ExtraDataImporter {

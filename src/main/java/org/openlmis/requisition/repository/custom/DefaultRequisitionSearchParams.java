@@ -47,4 +47,18 @@ public final class DefaultRequisitionSearchParams implements RequisitionSearchPa
   private ZonedDateTime modifiedDateTo;
 
   private Set<RequisitionStatus> requisitionStatuses;
+
+  private String code;
+
+  /**
+   * Creates search params without a requisition code filter.
+   */
+  public DefaultRequisitionSearchParams(UUID facility, UUID program, UUID processingPeriod,
+      UUID supervisoryNode, UUID supplyingFacility, Boolean emergency,
+      LocalDate initiatedDateFrom, LocalDate initiatedDateTo, ZonedDateTime modifiedDateFrom,
+      ZonedDateTime modifiedDateTo, Set<RequisitionStatus> requisitionStatuses) {
+    this(facility, program, processingPeriod, supervisoryNode, supplyingFacility, emergency,
+        initiatedDateFrom, initiatedDateTo, modifiedDateFrom, modifiedDateTo,
+        requisitionStatuses, null);
+  }
 }

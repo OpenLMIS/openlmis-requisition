@@ -264,6 +264,21 @@ public class QueryRequisitionSearchParamsTest
     new QueryRequisitionSearchParams(queryMap);
   }
 
+  @Test
+  public void getCodeShouldReturnValueForKeyCode() {
+    queryMap.add("code", "REQ-HC01-202610-0001");
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
+
+    assertEquals("REQ-HC01-202610-0001", params.getCode());
+  }
+
+  @Test
+  public void getCodeShouldReturnNullIfMapHasNoCodeProperty() {
+    QueryRequisitionSearchParams params = new QueryRequisitionSearchParams(queryMap);
+
+    assertNull(params.getCode());
+  }
+
   @Override
   protected Class<QueryRequisitionSearchParams> getTestClass() {
     return QueryRequisitionSearchParams.class;
@@ -279,6 +294,6 @@ public class QueryRequisitionSearchParamsTest
     verifier.ignore("FACILITY", "PROGRAM", "INITIATED_DATE_FROM", "INITIATED_DATE_TO",
         "MODIFIED_DATE_FROM", "MODIFIED_DATE_TO", "PROCESSING_PERIOD",
         "SUPERVISORY_NODE", "SUPPLYING_FACILITY", "REQUISITION_STATUS", "EMERGENCY",
-        "ALL_PARAMETERS");
+        "CODE", "ALL_PARAMETERS");
   }
 }

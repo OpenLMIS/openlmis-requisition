@@ -50,10 +50,11 @@ final class QueryRequisitionSearchParams implements RequisitionSearchParams {
   private static final String EMERGENCY = "emergency";
   private static final String MODIFIED_DATE_FROM = "modifiedDateFrom";
   private static final String MODIFIED_DATE_TO = "modifiedDateTo";
+  private static final String CODE = "code";
 
   private static final List<String> ALL_PARAMETERS = asList(FACILITY, PROGRAM, INITIATED_DATE_FROM,
       INITIATED_DATE_TO, MODIFIED_DATE_FROM, MODIFIED_DATE_TO, PROCESSING_PERIOD,
-      SUPERVISORY_NODE, SUPPLYING_FACILITY, REQUISITION_STATUS, EMERGENCY);
+      SUPERVISORY_NODE, SUPPLYING_FACILITY, REQUISITION_STATUS, EMERGENCY, CODE);
 
   private SearchParams queryParams;
 
@@ -230,5 +231,18 @@ final class QueryRequisitionSearchParams implements RequisitionSearchParams {
       return null;
     }
     return queryParams.getZonedDateTime(MODIFIED_DATE_TO);
+  }
+
+  /**
+   * Gets value for "code" key from params.
+   *
+   * @return requisition code or null if params doesn't contain "code" key.
+   */
+  @Override
+  public String getCode() {
+    if (!queryParams.containsKey(CODE)) {
+      return null;
+    }
+    return queryParams.getFirst(CODE);
   }
 }

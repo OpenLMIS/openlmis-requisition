@@ -8,6 +8,11 @@
       "type": "string",
       "title": "id"
     },
+    "code": {
+      "type": ["string", "null"],
+      "title": "code",
+      "description": "Human readable unique code generated when the requisition is initiated. Read only."
+    },
     "emergency": {
       "type": "boolean",
       "title": "emergency"

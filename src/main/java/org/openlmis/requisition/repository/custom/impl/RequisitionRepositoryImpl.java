@@ -102,6 +102,7 @@ public class RequisitionRepositoryImpl
   private static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   private static final String AUTHORIZED_DATE = "authorizedDate";
   private static final String MODIFIED_DATE = "modifiedDate";
+  private static final String CODE = "code";
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -481,6 +482,7 @@ public class RequisitionRepositoryImpl
         SUPPLYING_FACILITY_ID, params.getSupplyingFacility());
     predicate = addInFilter(predicate, builder, root, STATUS, params.getRequisitionStatuses());
     predicate = addEqualFilter(predicate, builder, root, EMERGENCY, params.getEmergency());
+    predicate = addEqualFilter(predicate, builder, root, CODE, params.getCode());
 
     ZonedDateTime fromInitiatedDate = setStartDateParam(params.getInitiatedDateFrom());
     ZonedDateTime toInitiatedDate = setEndDateParam(params.getInitiatedDateTo());

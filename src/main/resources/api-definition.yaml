@@ -760,6 +760,12 @@ resourceTypes:
                       type: boolean
                       required: false
                       repeat: false
+                  code:
+                      displayName: code
+                      description: Exact requisition code.
+                      type: string
+                      required: false
+                      repeat: false
               responses:
                   "200":
                       headers:

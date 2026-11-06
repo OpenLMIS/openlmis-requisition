@@ -1,6 +1,9 @@
 8.7.3-SNAPSHOT (WIP)
 ==================
 
+New functionality:
+* [OLMIS-8447](https://openlmis.atlassian.net/browse/OLMIS-8447): Unique code on Requisition entry with code format being configurable.
+
 8.7.2 / 2026-10-16
 ==================
 

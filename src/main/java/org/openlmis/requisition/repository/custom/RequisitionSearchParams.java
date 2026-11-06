@@ -45,4 +45,6 @@ public interface RequisitionSearchParams {
 
   Set<RequisitionStatus> getRequisitionStatuses();
 
+  String getCode();
+
 }

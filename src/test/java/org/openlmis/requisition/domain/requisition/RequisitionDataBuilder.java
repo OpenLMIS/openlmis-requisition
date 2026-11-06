@@ -70,6 +70,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
   private ZonedDateTime modifiedDate = ZonedDateTime.now();
 
   private String patientsData;
+  private String code;
 
   /**
    * Creates new instance of {@link Requisition}.
@@ -102,6 +103,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
     requisition.setDatePhysicalStockCountCompleted(datePhysicalStockCountCompleted);
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
     requisition.setExtraData(extraData);
+    requisition.setCode(code);
     return requisition;
   }
 
@@ -132,7 +134,7 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
         processingPeriodId, supplyingFacilityId, status, statusChanges, emergency, reportOnly,
         numberOfMonthsInPeriod, supervisoryNodeId, previousRequisitions, availableProducts,
         datePhysicalStockCountCompleted, stockAdjustmentReasons, permissionStrings,
-        new ExtraDataEntity(extraData), patientsData
+        new ExtraDataEntity(extraData), patientsData, code
     );
     requisition.setId(id);
     requisition.setCreatedDate(createdDate);
@@ -337,6 +339,11 @@ public class RequisitionDataBuilder implements DataBuilder<Requisition>,
 
   public RequisitionDataBuilder withSupplyingFacilityId(UUID supplyingFacilityId) {
     this.supplyingFacilityId = supplyingFacilityId;
+    return this;
+  }
+
+  public RequisitionDataBuilder withCode(String code) {
+    this.code = code;
     return this;
   }
 

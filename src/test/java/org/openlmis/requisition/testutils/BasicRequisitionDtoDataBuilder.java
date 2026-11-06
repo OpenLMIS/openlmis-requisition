@@ -39,6 +39,7 @@ public class BasicRequisitionDtoDataBuilder implements DtoDataBuilder<BasicRequi
   private BasicProgramDto program;
   private Map<String, Object> extraData;
   private String patientsData;
+  private String code;
 
   /**
    * Builder for {@link BasicRequisitionDto}.
@@ -69,7 +70,8 @@ public class BasicRequisitionDtoDataBuilder implements DtoDataBuilder<BasicRequi
         facility,
         program,
         extraData,
-        patientsData
+        patientsData,
+        code
     );
   }
 }

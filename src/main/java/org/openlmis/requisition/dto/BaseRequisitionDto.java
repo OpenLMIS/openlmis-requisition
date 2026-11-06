@@ -61,6 +61,10 @@ public abstract class BaseRequisitionDto
 
   @Getter
   @Setter
+  private String code;
+
+  @Getter
+  @Setter
   private RequisitionStatus status;
 
   @Getter
