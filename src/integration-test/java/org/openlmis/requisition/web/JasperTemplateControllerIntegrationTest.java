@@ -15,15 +15,19 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -37,6 +41,10 @@ import org.openlmis.requisition.domain.JasperTemplate;
 import org.openlmis.requisition.dto.JasperTemplateDto;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.exception.JasperReportViewException;
+import org.openlmis.requisition.i18n.MessageKeys;
+import org.openlmis.requisition.i18n.MessageService;
+import org.openlmis.requisition.utils.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,6 +56,10 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String FORMAT_PARAM = "format";
   private static final String REPORT_URL = ID_URL + "/{" + FORMAT_PARAM + "}";
+  private static final String MESSAGE = "message";
+
+  @Autowired
+  private MessageService messageService;
 
   @Before
   public void setUp() {
@@ -212,28 +224,64 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
 
   @Test
   public void shouldGenerateReportInPdfFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("application/pdf", "pdf");
+    testGenerateReportInGivenFormat("application/pdf", "pdf", "pdf");
   }
 
   @Test
   public void shouldGenerateReportInCsvFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("application/csv", "csv");
+    testGenerateReportInGivenFormat("text/csv", "csv", "csv");
   }
 
   @Test
   public void shouldGenerateReportInXlsFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("application/xls", "xls");
+    testGenerateReportInGivenFormat("application/vnd.ms-excel", "xls", "xls");
+  }
+
+  @Test
+  public void shouldGenerateReportInXlsxFormat() throws JasperReportViewException {
+    testGenerateReportInGivenFormat(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx", "xlsx");
   }
 
   @Test
   public void shouldGenerateReportInHtmlFormat() throws JasperReportViewException {
-    testGenerateReportInGivenFormat("text/html", "html");
+    testGenerateReportInGivenFormat("text/html", "html", "html");
+  }
+
+  @Test
+  public void shouldGenerateReportForFormatInAnyCase() throws JasperReportViewException {
+    testGenerateReportInGivenFormat(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "XLSX", "xlsx");
+  }
+
+  @Test
+  public void shouldReturnBadRequestForUnsupportedFormat() throws JasperReportViewException {
+    // given
+    JasperTemplate template = generateTemplate();
+
+    given(jasperTemplateRepository.findById(template.getId())).willReturn(Optional.of(template));
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", template.getId())
+        .pathParam(FORMAT_PARAM, "docx")
+        .when()
+        .get(REPORT_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE, equalTo(getMessage(MessageKeys.ERROR_REPORTING_FORMAT_NOT_SUPPORTED,
+            "docx", "pdf, csv, xls, xlsx, html")));
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(jasperReportsViewService, never()).generateReport(any(JasperTemplate.class), anyMap());
   }
 
   // Helper methods
 
-  private void testGenerateReportInGivenFormat(String contentType, String formatParam)
-      throws JasperReportViewException {
+  private void testGenerateReportInGivenFormat(String contentType, String formatParam,
+      String extension) throws JasperReportViewException {
     // given
     JasperTemplate template = generateTemplate();
 
@@ -250,7 +298,14 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
         .when()
         .get(REPORT_URL)
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .contentType(contentType)
+        .header("Content-Disposition", endsWith("." + extension));
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(jasperReportsViewService).generateReport(any(JasperTemplate.class),
+        argThat(params -> extension.equals(params.get("format"))));
   }
 
   private JasperTemplate generateTemplate() {
@@ -268,5 +323,9 @@ public class JasperTemplateControllerIntegrationTest extends BaseWebIntegrationT
     }
 
     return template;
+  }
+
+  private String getMessage(String messageKey, Object... messageParams) {
+    return messageService.localize(new Message(messageKey, messageParams)).asMessage();
   }
 }
