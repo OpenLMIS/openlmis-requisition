@@ -1154,6 +1154,22 @@ public class RequisitionRepositoryIntegrationTest
   }
 
   @Test
+  public void shouldReturnCodeOfApprovedRequisitions() {
+    Requisition requisition = generateInstance();
+    requisition.setStatus(RequisitionStatus.APPROVED);
+    requisition.setCode("REQ-0001");
+    requisition.setStatusChanges(singletonList(
+        StatusChange.newStatusChange(requisition, UUID.randomUUID())));
+    repository.save(requisition);
+
+    Page<Requisition> requisitions = repository.searchApprovedRequisitions(
+        null, emptySet(), createPageable(10, 0));
+
+    assertEquals(1, requisitions.getTotalElements());
+    assertEquals("REQ-0001", requisitions.getContent().get(0).getCode());
+  }
+
+  @Test
   public void shouldFilterApprovedRequisitionsByFacilityId() {
     Requisition requisition1 = generateRequisition(RequisitionStatus.APPROVED);
     generateRequisition(RequisitionStatus.APPROVED);

@@ -27,6 +27,7 @@ import org.openlmis.requisition.testutils.api.DtoDataBuilder;
 public class ApproveRequisitionDtoDataBuilder implements DtoDataBuilder<ApproveRequisitionDto> {
 
   private UUID id;
+  private String code;
   private Boolean emergency;
   private RequisitionStatus status;
   private ZonedDateTime modifiedDate;
@@ -39,6 +40,7 @@ public class ApproveRequisitionDtoDataBuilder implements DtoDataBuilder<ApproveR
    */
   public ApproveRequisitionDtoDataBuilder() {
     id = UUID.randomUUID();
+    code = "REQ-0001";
     emergency = false;
     status = RequisitionStatus.INITIATED;
     modifiedDate = ZonedDateTime.now();
@@ -51,6 +53,7 @@ public class ApproveRequisitionDtoDataBuilder implements DtoDataBuilder<ApproveR
   @Override
   public ApproveRequisitionDto buildAsDto() {
     return new ApproveRequisitionDto(id,
+        code,
         emergency,
         status,
         modifiedDate,

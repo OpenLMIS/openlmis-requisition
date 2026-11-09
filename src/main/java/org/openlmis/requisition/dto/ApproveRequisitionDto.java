@@ -33,6 +33,7 @@ import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 @NoArgsConstructor
 public class ApproveRequisitionDto {
   private UUID id;
+  private String code;
   private Boolean emergency;
   private RequisitionStatus status;
   private ZonedDateTime modifiedDate;
@@ -47,6 +48,7 @@ public class ApproveRequisitionDto {
   public ApproveRequisitionDto(RequisitionDto requisition, UUID programId,
       Map<VersionIdentityDto, OrderableDto> orderables) {
     this.id = requisition.getId();
+    this.code = requisition.getCode();
     this.emergency = requisition.getEmergency();
     this.status = requisition.getStatus();
     this.modifiedDate = requisition.getModifiedDate();
@@ -72,6 +74,7 @@ public class ApproveRequisitionDto {
    */
   public ApproveRequisitionDto(Requisition requisition) {
     this.id = requisition.getId();
+    this.code = requisition.getCode();
     this.emergency = requisition.getEmergency();
     this.status = requisition.getStatus();
   }

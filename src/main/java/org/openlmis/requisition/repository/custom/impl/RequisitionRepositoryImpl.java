@@ -49,6 +49,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.LongType;
 import org.hibernate.type.PostgresUUIDType;
+import org.hibernate.type.StringType;
 import org.hibernate.type.ZonedDateTimeType;
 import org.openlmis.requisition.domain.BaseEntity;
 import org.openlmis.requisition.domain.requisition.Requisition;
@@ -86,7 +87,7 @@ public class RequisitionRepositoryImpl
       + " r.id AS req_id, r.emergency AS req_emergency,"
       + " r.facilityid AS facility_id, r.programid AS program_id,"
       + " r.processingperiodid as period_id, r.supervisorynodeid as node_id,"
-      + " s.createdDate as approved_date"
+      + " s.createdDate as approved_date, r.code AS req_code"
       + FROM;
 
   private static final String SELECT_COUNT_APPROVED_SQL = "SELECT DISTINCT COUNT(*)"
@@ -685,6 +686,7 @@ public class RequisitionRepositoryImpl
     sql.addScalar("period_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("node_id", PostgresUUIDType.INSTANCE);
     sql.addScalar("approved_date", ZonedDateTimeType.INSTANCE);
+    sql.addScalar("req_code", StringType.INSTANCE);
   }
 
   private void addScalarsForCount(Query query) {
@@ -701,6 +703,7 @@ public class RequisitionRepositoryImpl
     requisition.setProgramId((UUID) values[3]);
     requisition.setProcessingPeriodId((UUID) values[4]);
     requisition.setSupervisoryNodeId((UUID) values[5]);
+    requisition.setCode((String) values[7]);
 
     StatusChange statusChange = new StatusChange();
     statusChange.setCreatedDate((ZonedDateTime) values[6]);
