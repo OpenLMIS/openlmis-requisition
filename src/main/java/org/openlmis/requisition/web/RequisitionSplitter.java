@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.openlmis.requisition.code.CodeGenerator;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
 import org.openlmis.requisition.domain.requisition.VersionEntityReference;
@@ -61,6 +62,9 @@ class RequisitionSplitter {
 
   @Autowired
   private MessageService messageService;
+
+  @Autowired
+  private CodeGenerator<Requisition> requisitionCodeGenerator;
 
   /**
    * Splits the given requisition into parts based on associations from supply partners. After the
@@ -203,6 +207,7 @@ class RequisitionSplitter {
 
     partnerRequisition.setExtraData(requisition.getExtraData());
     partnerRequisition.setOriginalRequisitionId(requisition.getId());
+    partnerRequisition.setCode(requisitionCodeGenerator.generate(partnerRequisition));
 
     partnerLineItems.forEach(lineItem -> lineItem.setRequisition(partnerRequisition));
 

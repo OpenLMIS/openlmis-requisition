@@ -89,6 +89,12 @@ public class GlobalErrorHandlingTest {
   }
 
   @Test
+  public void shouldMapRequisitionCodeConstraintToMessageKey() {
+    assertConstraintMappedTo("req_code_unique_idx",
+        MessageKeys.ERROR_REQUISITION_CODE_DUPLICATED);
+  }
+
+  @Test
   public void shouldHandleDataIntegrityViolationEvenIfMessageKeyNotExist() {
     // given
     String constraintName = "req_prod_fac_per_def";

@@ -278,6 +278,8 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".duplication";
   public static final String ERROR_REQUISITION_DUPLICATION_WITH_NODE =
       ERROR_PREFIX + ".duplicationWithNode";
+  public static final String ERROR_REQUISITION_CODE_DUPLICATED =
+      ERROR_PREFIX + ".code.duplicated";
 
   public static final String REQUISITION_EMAIL_CONVERT_TO_ORDER_SUBJECT
       = "requisition.email.convertToOrder.subject";

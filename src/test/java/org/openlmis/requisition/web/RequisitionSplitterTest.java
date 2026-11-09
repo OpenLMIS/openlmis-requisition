@@ -16,6 +16,7 @@
 package org.openlmis.requisition.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.openlmis.requisition.i18n.MessageKeys.LINE_ITEM_SUPPLIED_BY_OTHER_PARTNER;
 
@@ -35,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.requisition.code.CodeGenerator;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
@@ -83,6 +85,9 @@ public class RequisitionSplitterTest {
 
   @Mock
   private MessageService messageService;
+
+  @Mock
+  private CodeGenerator<Requisition> requisitionCodeGenerator;
 
   @InjectMocks
   private RequisitionSplitter splitter;
@@ -313,6 +318,9 @@ public class RequisitionSplitterTest {
 
   @Test
   public void shouldSplitRequisition() {
+    // given
+    given(requisitionCodeGenerator.generate(any(Requisition.class))).willReturn("PARTNER-0001");
+
     // when
     RequisitionSplitResult result = splitter.split(requisition, supervisoryNodeId);
 
@@ -329,7 +337,8 @@ public class RequisitionSplitterTest {
             originalRequisition,
             "id", "requisitionLineItems", "version", "draftStatusMessage", "statusChanges",
             "supervisoryNodeId", "previousRequisitions", "availableProducts", "permissionStrings",
-            "extraData")
+            "extraData", "code")
+        .hasFieldOrPropertyWithValue("code", "PARTNER-0001")
         .hasFieldOrPropertyWithValue("id", null)
         .hasFieldOrPropertyWithValue("version", 1L)
         .hasFieldOrPropertyWithValue("draftStatusMessage", "")

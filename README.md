@@ -159,3 +159,58 @@ Environment variables common to all services are listed here: https://github.com
 * **CONSUMED_REASON_ID** - the ID of the reason that will be used to make consumption entries in Stock Management physical inventory
 
 * **RECEIPTS_REASON_ID** - the ID of the reason that will be used to make receipts entries in Stock Management physical inventory
+
+* **REQUISITION_CODE_PATTERN** - pattern of the human-readable code assigned to every new
+requisition. Default: `REQ-{facilityCode}-{programCode}-{date:yyyyMM}-{seq:4}`. See
+[Requisition code](#requisition-code).
+
+* **REQUISITION_CODE_SEQUENCE_SCOPE** - comma separated dimensions the `{seq}` counter is kept
+for. A new counter starting at 1 is used for every distinct combination. Default:
+`facility,program,year,month`. An empty value means one counter for all requisitions.
+
+## Requisition code
+
+Every initiated requisition, including requisitions created by supply partner splits, gets a
+unique code built from `REQUISITION_CODE_PATTERN`. Text outside braces is copied as is. Tokens:
+
+| Token | Renders |
+|---|---|
+| `{facilityCode}` | code of the requesting facility |
+| `{facilityTypeCode}` | code of the requesting facility type |
+| `{zoneCode:level}` | code of the facility's geographic zone at the given level number, or the facility's own zone without a level |
+| `{programCode}` | program code |
+| `{periodName}` | processing period name |
+| `{periodStart:format}`, `{periodEnd:format}` | processing period start or end date |
+| `{date:format}` | current date in `TIME_ZONE_ID` |
+| `{emergency:E\|R}` | first value for emergency requisitions, second for regular ones |
+| `{random:length}` | random upper case letters and digits, 8 by default |
+| `{seq:width}` | next counter value, zero padded to the width |
+
+Date formats use [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
+letters, for example `ddMMyyyy` or `yyyy-MM-dd`, and default to `yyyyMMdd`.
+
+Supported sequence scope dimensions are `facility`, `program`, `period`, `emergency`, `year` and
+`month`. The pattern must contain `{seq}` or `{random}`. Every dimension in the scope should also
+be visible in the pattern, otherwise two requisitions can get the same code and the second one
+fails to initiate.
+
+The configuration is validated at startup, so an unknown token or an invalid date format stops
+the service with an explanatory error.
+
+Examples:
+
+```
+REQUISITION_CODE_PATTERN=REQ-{date:ddMMyyyy}-{facilityCode}-{programCode}-{seq:4}
+REQUISITION_CODE_SEQUENCE_SCOPE=facility,program,year,month
+
+REQUISITION_CODE_PATTERN={date:yyyy}/{facilityCode}/{seq:4}
+REQUISITION_CODE_SEQUENCE_SCOPE=facility,year
+```
+
+Counters are stored in the `requisition.code_sequences` table. To continue numbering from an
+existing value, insert the row before the first requisition is initiated, for example:
+
+```sql
+INSERT INTO requisition.code_sequences (scopekey, lastvalue)
+VALUES ('requisition|facility=<facility id>;year=2026', 120);
+```

@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.openlmis.requisition.code.CodeGenerator;
 import org.openlmis.requisition.domain.Rejection;
 import org.openlmis.requisition.domain.RejectionReason;
 import org.openlmis.requisition.domain.RequisitionStatsData;
@@ -192,6 +193,9 @@ public class RequisitionService {
   @Autowired
   private ApprovedProductReferenceDataService approvedProductReferenceDataService;
 
+  @Autowired
+  private CodeGenerator<Requisition> requisitionCodeGenerator;
+
   /**
    * Initiated given requisition if possible.
    *
@@ -313,6 +317,9 @@ public class RequisitionService {
 
     profiler.start("SET_STOCK_ADJ_REASONS");
     requisition.setStockAdjustmentReasons(stockAdjustmentReasons);
+
+    profiler.start("GENERATE_CODE");
+    requisition.setCode(requisitionCodeGenerator.generate(requisition));
 
     profiler.start("SAVE");
     requisitionRepository.save(requisition);

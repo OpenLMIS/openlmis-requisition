@@ -21,6 +21,7 @@ import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REJECTION_REASON_C
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REJECTION_REASON_CATEGORY_NAME_DUPLICATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REJECTION_REASON_CODE_DUPLICATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REJECTION_REASON_NAME_DUPLICATED;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_CODE_DUPLICATED;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_DUPLICATION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_DUPLICATION_WITH_NODE;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_TEMPLATE_ASSIGNMENT;
@@ -70,6 +71,7 @@ public class GlobalErrorHandling extends AbstractErrorHandling {
     );
     CONSTRAINT_MAP.put("req_prod_fac_per", ERROR_REQUISITION_DUPLICATION);
     CONSTRAINT_MAP.put("req_prod_fac_per_node", ERROR_REQUISITION_DUPLICATION_WITH_NODE);
+    CONSTRAINT_MAP.put("req_code_unique_idx", ERROR_REQUISITION_CODE_DUPLICATED);
     CONSTRAINT_MAP.put("unique_rejection_reasons", ERROR_REJECTION_REASON_CODE_DUPLICATED);
     CONSTRAINT_MAP.put("name_rejection_reasons", ERROR_REJECTION_REASON_NAME_DUPLICATED);
     CONSTRAINT_MAP.put(

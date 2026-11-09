@@ -90,6 +90,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.OngoingStubbing;
+import org.openlmis.requisition.code.CodeGenerator;
 import org.openlmis.requisition.domain.RequisitionStatsData;
 import org.openlmis.requisition.domain.RequisitionTemplate;
 import org.openlmis.requisition.domain.RequisitionTemplateDataBuilder;
@@ -268,6 +269,9 @@ public class RequisitionServiceTest {
 
   @Mock
   private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Mock
+  private CodeGenerator<Requisition> requisitionCodeGenerator;
 
   @InjectMocks
   private RequisitionService requisitionService;
@@ -877,6 +881,7 @@ public class RequisitionServiceTest {
         new UUID[]{PRODUCT_ID}, new boolean[]{true});
 
     when(requisitionTemplate.getNumberOfPeriodsToAverage()).thenReturn(2);
+    when(requisitionCodeGenerator.generate(any(Requisition.class))).thenReturn("REQ-0001");
 
     ProcessingPeriodDto periodDto = new ProcessingPeriodDto();
     periodDto.setStartDate(LocalDate.of(2016, 11, 1));
@@ -889,6 +894,7 @@ public class RequisitionServiceTest {
 
     assertEquals(INITIATED, initiatedRequisition.getStatus());
     assertEquals(1, initiatedRequisition.getNumberOfMonthsInPeriod().longValue());
+    assertEquals("REQ-0001", initiatedRequisition.getCode());
   }
 
   @Test
