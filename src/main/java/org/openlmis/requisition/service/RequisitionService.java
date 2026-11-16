@@ -227,33 +227,38 @@ public class RequisitionService {
       numberOfPreviousPeriodsToAverage--;
     }
 
-    profiler.start("FIND_STOCK_ON_HANDS");
-    Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
-            .getInstance(requisitionTemplate, RequisitionLineItem.STOCK_ON_HAND)
-            .forProgram(program.getId())
-            .forFacility(facility.getId())
-            .forProducts(approvedProducts)
-            .asOfDate(period.getEndDate())
-            .build()
-            .get();
+    StockData stockData = new StockData();
+    Map<UUID, Integer> idealStockAmounts = Collections.emptyMap();
+    if (!emergency) {
+      profiler.start("FIND_STOCK_ON_HANDS");
+      Map<UUID, Integer> orderableSoh = stockOnHandRetrieverBuilderFactory
+              .getInstance(requisitionTemplate, RequisitionLineItem.STOCK_ON_HAND)
+              .forProgram(program.getId())
+              .forFacility(facility.getId())
+              .forProducts(approvedProducts)
+              .asOfDate(period.getEndDate())
+              .build()
+              .get();
 
-    profiler.start("FIND_BEGINNING_BALANCES");
-    Map<UUID, Integer> orderableBeginning = stockOnHandRetrieverBuilderFactory
-            .getInstance(requisitionTemplate, RequisitionLineItem.BEGINNING_BALANCE)
-            .forProgram(program.getId())
-            .forFacility(facility.getId())
-            .forProducts(approvedProducts)
-            .asOfDate(period.getStartDate().minusDays(1))
-            .build()
-            .get();
+      profiler.start("FIND_BEGINNING_BALANCES");
+      Map<UUID, Integer> orderableBeginning = stockOnHandRetrieverBuilderFactory
+              .getInstance(requisitionTemplate, RequisitionLineItem.BEGINNING_BALANCE)
+              .forProgram(program.getId())
+              .forFacility(facility.getId())
+              .forProducts(approvedProducts)
+              .asOfDate(period.getStartDate().minusDays(1))
+              .build()
+              .get();
 
-    final StockData stockData = new StockData(orderableSoh, orderableBeginning);
+      stockData = new StockData(orderableSoh, orderableBeginning);
 
-    profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
-    final Map<UUID, Integer> idealStockAmounts = idealStockAmountReferenceDataService
-            .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
-            .stream()
-            .collect(toMap(isa -> isa.getCommodityType().getId(), IdealStockAmountDto::getAmount));
+      profiler.start("FIND_IDEAL_STOCK_AMOUNTS");
+      idealStockAmounts = idealStockAmountReferenceDataService
+              .search(requisition.getFacilityId(), requisition.getProcessingPeriodId())
+              .stream()
+              .collect(toMap(isa -> isa.getCommodityType().getId(),
+                      IdealStockAmountDto::getAmount));
+    }
 
     profiler.start("GET_PREV_REQUISITIONS_FOR_AVERAGING");
     List<Requisition> previousRequisitions =
@@ -263,7 +268,7 @@ public class RequisitionService {
     List<StockCardRangeSummaryDto> stockCardRangeSummaryDtos = null;
     List<StockCardRangeSummaryDto> stockCardRangeSummariesToAverage = null;
     List<ProcessingPeriodDto> previousPeriods = null;
-    if (requisitionTemplate.isPopulateStockOnHandFromStockCards()) {
+    if (requisitionTemplate.isPopulateStockOnHandFromStockCards() && !emergency) {
       stockCardRangeSummaryDtos =
               stockCardRangeSummaryStockManagementService
                       .search(program.getId(), facility.getId(),
