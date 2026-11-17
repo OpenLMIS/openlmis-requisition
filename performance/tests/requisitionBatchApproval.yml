@@ -1,6 +1,8 @@
 execution:
-  - concurrency: 1
-    iterations: 1
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: batch-workflow
 
 scenarios:
