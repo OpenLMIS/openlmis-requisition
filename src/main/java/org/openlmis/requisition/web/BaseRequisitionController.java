@@ -15,7 +15,6 @@
 
 package org.openlmis.requisition.web;
 
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_APPROVAL_IN_PROGRESS;
@@ -442,16 +441,37 @@ public abstract class BaseRequisitionController extends BaseController {
 
   void submitStockEvent(Requisition requisition, UUID currentUserId,
       Map<VersionIdentityDto, OrderableDto> orderables) {
-    Profiler profiler = getProfiler("SUBMIT_STOCK_EVENT", requisition, currentUserId);
-    if (requisition.getStatus().isApproved() && isNotTrue(requisition.getEmergency())) {
-      profiler.start("BUILD_STOCK_EVENT_FROM_REQUISITION");
-      StockEventDto stockEventDto = stockEventBuilder
-          .fromRequisition(requisition, currentUserId, orderables);
-
-      profiler.start("SUBMIT_STOCK_EVENT");
-      stockEventStockManagementService.submit(stockEventDto);
-      stopProfiler(profiler, stockEventDto);
+    StockEventDto stockEventDto = buildStockEvent(requisition, currentUserId, orderables);
+    if (stockEventDto != null) {
+      submitStockEvent(stockEventDto);
     }
+  }
+
+  void submitStockEvent(StockEventDto stockEventDto) {
+    Profiler profiler = getProfiler("SUBMIT_STOCK_EVENT", stockEventDto);
+    stockEventStockManagementService.submit(stockEventDto);
+    stopProfiler(profiler);
+  }
+
+  /**
+   * Builds the stock event for an approved, non-emergency requisition whose template neither
+   * takes stock on hand from stock cards nor has the patients tab enabled.
+   *
+   * @return the stock event, or {@code null} when the requisition does not produce one
+   */
+  StockEventDto buildStockEvent(Requisition requisition, UUID currentUserId,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    RequisitionTemplate template = requisition.getTemplate();
+    if (!requisition.getStatus().isApproved() || isTrue(requisition.getEmergency())
+        || template.isPopulateStockOnHandFromStockCards() || template.isPatientsTabEnabled()) {
+      return null;
+    }
+    Profiler profiler = getProfiler("BUILD_STOCK_EVENT_FROM_REQUISITION", requisition,
+        currentUserId);
+    StockEventDto stockEventDto = stockEventBuilder
+        .fromRequisition(requisition, currentUserId, orderables);
+    stopProfiler(profiler, stockEventDto);
+    return stockEventDto;
   }
 
   Set<VersionEntityReference> getLineItemOrderableIdentities(Requisition requisition) {
