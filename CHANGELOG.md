@@ -145,6 +145,9 @@ Bug fixes:
 8.3.6 / 2023-06-26
 ==================
 
+Improvements:
+* [OLMIS-8387](https://openlmis.atlassian.net/browse/OLMIS-8387): Initiating an emergency requisition no longer fetches stock on hand, beginning balances, stock card range summaries, previous periods and ideal stock amounts. Emergency requisitions start without line items, so this data was never used.
+
 Bug fixes:
 * [OLMIS-7723](https://openlmis.atlassian.net/browse/OLMIS-7723): Fix error related to 'Approve buttons not visible when trying to approve requisition'
 * [OLMIS-7772](https://openlmis.atlassian.net/browse/OLMIS-7772): Fix issues with new Chrome popover functionality
