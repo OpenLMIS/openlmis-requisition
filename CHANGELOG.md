@@ -1,5 +1,6 @@
 8.7.3-SNAPSHOT (WIP)
 ==================
+* [OLMIS-4412](https://openlmis.atlassian.net/browse/OLMIS-4412): Release requisitions with all zero quantities without creating an order.
 
 Improvements:
 * [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Approving and rejecting a requisition check the approver's supervisory roles against the supervisory nodes of the requisition's facility (GET /api/supervisoryNodes?facilityId=) instead of downloading every requisition group with its member facilities (GET /api/requisitionGroups). The role check for requisitions without a supervisory node does the same.

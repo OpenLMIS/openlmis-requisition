@@ -45,6 +45,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -64,6 +65,8 @@ import org.openlmis.requisition.domain.RequisitionTemplateColumn;
 import org.openlmis.requisition.domain.RequisitionTemplateColumnDataBuilder;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionBuilder;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderDto;
@@ -78,6 +81,7 @@ import org.openlmis.requisition.repository.RequisitionRepository;
 import org.openlmis.requisition.repository.RequisitionTemplateRepository;
 import org.openlmis.requisition.service.fulfillment.OrderFulfillmentService;
 import org.openlmis.requisition.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserFulfillmentFacilitiesReferenceDataService;
 import org.openlmis.requisition.testutils.DtoGenerator;
@@ -136,6 +140,9 @@ public class RequisitionServiceIntegrationTest {
 
   @MockBean
   private OrderFulfillmentService orderFulfillmentService;
+
+  @MockBean
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private AvailableRequisitionColumnRepository availableColumnRepository;
@@ -202,6 +209,9 @@ public class RequisitionServiceIntegrationTest {
         any(UUID.class), eq(right.getId()))).willReturn(managedFacilities);
 
     doNothing().when(orderFulfillmentService).create(ordersCaptor.capture());
+
+    given(orderableReferenceDataService.findByIdentities(any()))
+        .willReturn(new ArrayList<>());
   }
 
   @Test
@@ -279,6 +289,30 @@ public class RequisitionServiceIntegrationTest {
     verify(orderFulfillmentService, times(0)).create(anyList());
   }
 
+  @Test
+  public void shouldReleaseWithoutOrderWhenAllPacksToShipAreZero() {
+    final long reqsCountBefore = requisitionRepository.count();
+    Requisition requisition = mockAndSaveRequisition(generateRequisition(0L));
+    ReleasableRequisitionBatchDto releaseDto = generateReleaseRequisitionDto(
+        Collections.singletonList(
+            getReleasableRequisitionDto(requisition)
+        ));
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(releaseDto)
+        .when()
+        .post(BATCH_RELEASES_URL)
+        .then()
+        .statusCode(HttpStatus.CREATED.value());
+
+    Requisition released = requisitionRepository.findById(requisition.getId()).orElse(null);
+    assertEquals(RequisitionStatus.RELEASED_WITHOUT_ORDER, released.getStatus());
+    verify(orderFulfillmentService, times(0)).create(anyList());
+    assertEquals(reqsCountBefore + 1, requisitionRepository.count());
+  }
+
   /**
    * https://openlmis.atlassian.net/browse/OLMIS-6876 indicates that there is some exception
    * after saving the requisitions and before the return statement of
@@ -318,6 +352,10 @@ public class RequisitionServiceIntegrationTest {
   }
 
   private Requisition generateRequisition() {
+    return generateRequisition(5L);
+  }
+
+  private Requisition generateRequisition(Long packsToShip) {
     Requisition requisition = RequisitionBuilder.newRequisition(UUID.randomUUID(),
         UUID.randomUUID(), false);
     requisition.setTemplate(template);
@@ -325,6 +363,13 @@ public class RequisitionServiceIntegrationTest {
     requisition.setProcessingPeriodId(UUID.randomUUID());
     requisition.setStatus(RequisitionStatus.APPROVED);
     requisition.setSupervisoryNodeId(supervisoryNodeId);
+
+    RequisitionLineItem lineItem = new RequisitionLineItemDataBuilder()
+        .withRequisition(requisition)
+        .withPacksToShip(packsToShip)
+        .withSkippedFlag(false)
+        .buildAsNew();
+    requisition.setRequisitionLineItems(new ArrayList<>(Collections.singletonList(lineItem)));
 
     return requisition;
   }
