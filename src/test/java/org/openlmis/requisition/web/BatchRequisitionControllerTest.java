@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_REQUISITIONS_TO_APPROVE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
@@ -66,9 +67,11 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
@@ -126,6 +129,12 @@ public class BatchRequisitionControllerTest {
 
   @Mock
   StockEventStockManagementService stockEventStockManagementService;
+
+  @Mock
+  RightReferenceDataService rightReferenceDataService;
+
+  @Mock
+  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Mock
   Requisition requisition;
@@ -202,12 +211,37 @@ public class BatchRequisitionControllerTest {
     verify(authenticationHelper).getCurrentUser();
     verify(requisitionRepository).readDistinctByIdIn(anyCollection());
     verify(userReferenceDataService).getPermissionStrings(currentUser.getId());
+    verify(rightReferenceDataService).findRight(REQUISITION_APPROVE);
+    verify(userRoleAssignmentsReferenceDataService).getRoleAssignments(currentUser.getId());
     verify(supervisoryNodeReferenceDataService).findByIds(anyList());
     verify(orderableReferenceDataService).findByIdentities(anySet());
     verify(facilityReferenceDataService).search(anySet());
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
+    verify(supervisoryNodeReferenceDataService, never()).findByFacility(any());
     verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
+  public void shouldSearchSupervisoryNodesOncePerFacility() {
+    ReflectionTestUtils.setField(batchRequisitionController, TRANSFER_STOCK_DATA_FLAG, false);
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    Requisition otherRequisition = mock(Requisition.class);
+    for (Requisition approvable : Arrays.asList(requisition, otherRequisition)) {
+      when(approvable.getFacilityId()).thenReturn(facilityId);
+      when(approvable.getProgramId()).thenReturn(programId);
+      when(approvable.getSupervisoryNodeId()).thenReturn(UUID.randomUUID());
+      when(approvable.isApprovable()).thenReturn(true);
+    }
+    when(userReferenceDataService.getPermissionStrings(currentUser.getId())).thenReturn(
+        Collections.singletonList(REQUISITION_APPROVE + "|" + facilityId + "|" + programId));
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Arrays.asList(requisition, otherRequisition));
+
+    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    verify(supervisoryNodeReferenceDataService, times(1)).findByFacility(facilityId);
   }
 
   @Test
