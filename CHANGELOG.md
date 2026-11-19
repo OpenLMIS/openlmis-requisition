@@ -1,4 +1,4 @@
-8.7.3-SNAPSHOT (WIP)
+8.7.3-OLMIS-8447 (preview version for testing) / 2026-11-19
 ==================
 
 New functionality:
