@@ -554,6 +554,13 @@ resourceTypes:
           put:
               is: [ secured, idempotent ]
               description: Skip chosen requisition period.
+              headers:
+                  If-Match:
+                      displayName: If-Match
+                      description: ETag of the requisition version the client has seen, as returned by GET. When set and the stored version differs, the request is refused with 409.
+                      type: string
+                      required: false
+                      repeat: false
               responses:
                   "200":
                       headers:

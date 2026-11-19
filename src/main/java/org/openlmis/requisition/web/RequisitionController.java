@@ -368,6 +368,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
 
+    // before the idempotency key is recorded, so that a refused skip does not use it up
+    validateVersion(request, requisition, profiler);
     validateIdempotencyKey(request, profiler);
 
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);

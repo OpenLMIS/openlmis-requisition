@@ -707,6 +707,37 @@ public class RequisitionControllerTest {
   }
 
   @Test
+  public void shouldSkipRequisitionWhenVersionMatches() {
+    when(permissionService.canUpdateRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(programReferenceDataService.findOne(any(UUID.class)))
+        .thenReturn(new ProgramDtoDataBuilder().buildAsDto());
+
+    requisitionController.skipRequisition(uuid1, request, response);
+
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(request, initiatedRequsition);
+    verify(requisitionRepository).save(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionWhenVersionDoesNotMatch() {
+    when(permissionService.canUpdateRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.conflict(VERSION_MISMATCH));
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+
+    assertThatThrownBy(() -> requisitionController.skipRequisition(uuid1, request, response))
+        .isInstanceOf(VersionMismatchException.class);
+
+    verify(initiatedRequsition, never()).skip(anyBoolean(), any(UUID.class));
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    verify(processedRequestsRedisRepository, never()).addOrUpdate(any(UUID.class), any());
+  }
+
+  @Test
   public void shouldNotDeleteRequisitionWhenVersionDoesNotMatch() {
     when(permissionService.canDeleteRequisition(initiatedRequsition))
         .thenReturn(ValidationResult.success());
