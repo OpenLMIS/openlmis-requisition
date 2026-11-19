@@ -52,6 +52,7 @@ import static org.openlmis.requisition.domain.RequisitionTemplate.ORDER_RELATED_
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_PERIODS_FOR_INITIATE_MISSING_PARAMETERS;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_WRONG_FORMAT;
+import static org.openlmis.requisition.i18n.MessageKeys.VERSION_MISMATCH;
 import static org.openlmis.requisition.web.BaseController.API_URL;
 import static org.openlmis.requisition.web.BaseRequisitionController.IDEMPOTENCY_KEY_HEADER;
 import static org.openlmis.requisition.web.BaseRequisitionController.RESOURCE_URL;
@@ -690,6 +691,63 @@ public class RequisitionControllerTest {
 
     verify(requisitionService).validateCanSaveRequisition(initiatedRequsition);
     verifyNoSubmitOrUpdate(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldDeleteRequisitionWhenVersionMatches() {
+    when(permissionService.canDeleteRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+
+    requisitionController.deleteRequisition(uuid1, request);
+
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(request, initiatedRequsition);
+    verify(requisitionService).delete(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldSkipRequisitionWhenVersionMatches() {
+    when(permissionService.canUpdateRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(programReferenceDataService.findOne(any(UUID.class)))
+        .thenReturn(new ProgramDtoDataBuilder().buildAsDto());
+
+    requisitionController.skipRequisition(uuid1, request, response);
+
+    verify(requisitionVersionValidator).validateEtagVersionIfPresent(request, initiatedRequsition);
+    verify(requisitionRepository).save(initiatedRequsition);
+  }
+
+  @Test
+  public void shouldNotSkipRequisitionWhenVersionDoesNotMatch() {
+    when(permissionService.canUpdateRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.conflict(VERSION_MISMATCH));
+    when(request.getHeader(IDEMPOTENCY_KEY_HEADER)).thenReturn(key.toString());
+
+    assertThatThrownBy(() -> requisitionController.skipRequisition(uuid1, request, response))
+        .isInstanceOf(VersionMismatchException.class);
+
+    verify(initiatedRequsition, never()).skip(anyBoolean(), any(UUID.class));
+    verify(requisitionRepository, never()).save(any(Requisition.class));
+    verify(processedRequestsRedisRepository, never()).addOrUpdate(any(UUID.class), any());
+  }
+
+  @Test
+  public void shouldNotDeleteRequisitionWhenVersionDoesNotMatch() {
+    when(permissionService.canDeleteRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator.validateEtagVersionIfPresent(request, initiatedRequsition))
+        .thenReturn(ValidationResult.conflict(VERSION_MISMATCH));
+
+    assertThatThrownBy(() -> requisitionController.deleteRequisition(uuid1, request))
+        .isInstanceOf(VersionMismatchException.class);
+
+    verify(requisitionService, never()).delete(any(Requisition.class));
   }
 
   @Test
@@ -1464,6 +1522,31 @@ public class RequisitionControllerTest {
 
     verify(periodService).getPeriods(programUuid, facilityUuid, false);
     assertEquals(1, result.size());
+  }
+
+  @Test
+  public void shouldDeleteProceedingRequisitionWithoutVersionCheck() {
+    when(permissionService.canInitOrAuthorizeRequisition(programUuid, facilityUuid))
+        .thenReturn(ValidationResult.success());
+    when(permissionService.canDeleteRequisition(initiatedRequsition))
+        .thenReturn(ValidationResult.success());
+    RequisitionPeriodDto pastPeriod = new RequisitionPeriodDtoDataBuilder()
+        .withId(uuid6)
+        .buildAsDto();
+    pastPeriod.setStartDate(LocalDate.now().minusYears(1));
+    pastPeriod.setRequisitionId(uuid1);
+    pastPeriod.setRequisitionStatus(RequisitionStatus.INITIATED);
+    when(periodService.getPeriods(programUuid, facilityUuid, false))
+        .thenReturn(Collections.singletonList(pastPeriod));
+    when(facilitySupportsProgramHelper.getSupportedProgram(facilityUuid, programUuid))
+        .thenReturn(new SupportedProgramDtoDataBuilder()
+            .withSupportStartDate(LocalDate.now())
+            .buildAsDto());
+
+    requisitionController.getProcessingPeriodIds(programUuid, facilityUuid, false, true);
+
+    verify(requisitionService).delete(initiatedRequsition);
+    verifyZeroInteractions(requisitionVersionValidator);
   }
 
   private void setStatusesToSkipped(List<RequisitionPeriodDto> periods) {
