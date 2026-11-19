@@ -1,5 +1,9 @@
 # Demo Data for OpenLMIS Requisition Service
 
+This folder holds the `demo-data` layer of this service's test data: requisitions with their line
+items, status changes and messages, stock adjustments and adjustment reasons. Setup that every layer
+needs is in `../base-data/`.
+
 See the project README for how to load this data.
 
 The directory `schemas/` holds copies of the Mockaroo schemas used for generating
@@ -119,24 +123,24 @@ to log in and approve these to clear them out before beginning your demo.
 
 |Program        |Facility                |Period |Status    |Emergency|
 |---------------|------------------------|-------|----------|---------|
-|Essential Meds |Balaka District Hospital|2017Q1 |APPROVED  | false   |
-|Essential Meds |Balaka District Hospital|2017Q2 |RELEASED  | false   |
-|Essential Meds |Balaka District Hospital|2017Q3 |RELEASED  | false   |
-|Essential Meds |Kankao Health Facility  |2017Q1 |APPROVED  | false   |
-|Family Planning|Balaka District Hospital|2017Q1 |APPROVED  | false   |
-|Family Planning|Balaka District Hospital|2017Q2 |AUTHORIZED| false   |
-|Family Planning|Comfort Health Clinic   |Jan2017|AUTHORIZED| false   |
-|Family Planning|Comfort Health Clinic   |Feb2017|AUTHORIZED| false   |
-|Family Planning|Comfort Health Clinic   |Mar2017|AUTHORIZED| false   |
-|Family Planning|Comfort Health Clinic   |Apr2017|INITIATED | false   |
-|Family Planning|Kankao Health Facility  |2017Q1 |RELEASED  | true    |
-|Family Planning|Kankao Health Facility  |2017Q1 |RELEASED  | false   |
-|Family Planning|Kankao Health Facility  |2017Q2 |SKIPPED   | false   |
-|Family Planning|Kankao Health Facility  |2017Q3 |APPROVED  | false   |
-|EPI            |Cuamba, Cuamba          |Jan2017|APPROVED  | false   |
-|EPI            |Lurio, Cuamba           |Jan2017|APPROVED  | false   |
-|CHAZ           |Roma, Lusaka            |Jan2017|APPROVED  | false   |
-|CHAZ           |Roma, Lusaka            |Feb2017|AUTHORIZED| false   |
+|Essential Meds |Balaka District Hospital|2024Q1 |APPROVED  | false   |
+|Essential Meds |Balaka District Hospital|2024Q2 |RELEASED  | false   |
+|Essential Meds |Balaka District Hospital|2024Q3 |RELEASED  | false   |
+|Essential Meds |Kankao Health Facility  |2024Q1 |APPROVED  | false   |
+|Family Planning|Balaka District Hospital|2024Q1 |APPROVED  | false   |
+|Family Planning|Balaka District Hospital|2024Q2 |AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Jan2024|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Feb2024|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Mar2024|AUTHORIZED| false   |
+|Family Planning|Comfort Health Clinic   |Apr2024|INITIATED | false   |
+|Family Planning|Kankao Health Facility  |2024Q1 |RELEASED  | true    |
+|Family Planning|Kankao Health Facility  |2024Q1 |RELEASED  | false   |
+|Family Planning|Kankao Health Facility  |2024Q2 |SKIPPED   | false   |
+|Family Planning|Kankao Health Facility  |2024Q3 |APPROVED  | false   |
+|EPI            |Cuamba, Cuamba          |Jan2024|APPROVED  | false   |
+|EPI            |Lurio, Cuamba           |Jan2024|APPROVED  | false   |
+|CHAZ           |Roma, Lusaka            |Jan2024|APPROVED  | false   |
+|CHAZ           |Roma, Lusaka            |Feb2024|AUTHORIZED| false   |
 
 Facilities, Programs, Products, Requisition Groups and User Roles & Rights come from the
 [Reference Data service's demo data](https://github.com/OpenLMIS/openlmis-referencedata/tree/master/src/main/resources/db/demo-data).
