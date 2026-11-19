@@ -259,9 +259,7 @@ public class RequisitionController extends BaseRequisitionController {
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
 
-    profiler.start("VALIDATE_VERSION");
-    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisition)
-        .throwExceptionIfHasErrors();
+    validateVersion(request, requisition, profiler);
 
     doDeleteRequisition(requisition, profiler);
   }
