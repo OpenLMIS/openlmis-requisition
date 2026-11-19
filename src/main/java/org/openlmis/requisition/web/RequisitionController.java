@@ -255,13 +255,7 @@ public class RequisitionController extends BaseRequisitionController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteRequisition(@PathVariable("id") UUID requisitionId,
       HttpServletRequest request) {
-    Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
-    Requisition requisition = findRequisition(requisitionId, profiler);
-    checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
-
-    validateVersion(request, requisition, profiler);
-
-    doDeleteRequisition(requisition, profiler);
+    deleteRequisitionById(requisitionId, request);
   }
 
   /**
@@ -716,19 +710,23 @@ public class RequisitionController extends BaseRequisitionController {
     if (req.getRequisitionStatus() == RequisitionStatus.INITIATED
             || req.getRequisitionStatus() == RequisitionStatus.SUBMITTED
             || req.getRequisitionStatus() == RequisitionStatus.REJECTED) {
-      deleteRequisitionById(req.getRequisitionId());
+      deleteRequisitionById(req.getRequisitionId(), null);
     }
   }
 
-  private void deleteRequisitionById(UUID requisitionId) {
+  /**
+   * Deletes the requisition. The If-Match header of {@code versionRequest} is checked against
+   * the requisition's version; a null {@code versionRequest} skips that check.
+   */
+  private void deleteRequisitionById(UUID requisitionId, HttpServletRequest versionRequest) {
     Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
 
-    doDeleteRequisition(requisition, profiler);
-  }
+    if (versionRequest != null) {
+      validateVersion(versionRequest, requisition, profiler);
+    }
 
-  private void doDeleteRequisition(Requisition requisition, Profiler profiler) {
     profiler.start("DELETE");
     requisitionService.delete(requisition);
 
