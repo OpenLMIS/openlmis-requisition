@@ -310,6 +310,8 @@ public class JasperReportsViewService {
   byte[] fillAndExportReport(JasperReport compiledReport, Map<String, Object> params)
       throws JasperReportViewException {
 
+    ReportFormat format = ReportFormat.fromString((String) params.get("format"));
+
     byte[] bytes;
 
     try {
@@ -322,15 +324,24 @@ public class JasperReportsViewService {
             replicationDataSource.getConnection());
       }
 
-      String format = (String) params.get("format");
-      if ("csv".equals(format)) {
-        bytes = exportJasperReportToCsv(jasperPrint);
-      } else if ("xls".equals(format)) {
-        bytes = exportJasperReportToXls(jasperPrint);
-      } else if ("html".equals(format)) {
-        bytes = exportJasperReportToHtml(jasperPrint);
-      } else {
-        bytes = exportJasperReportToPdf(jasperPrint);
+      switch (format) {
+        case CSV:
+          bytes = exportJasperReportToCsv(jasperPrint);
+          break;
+        case XLS:
+          bytes = exportJasperReportToXls(jasperPrint);
+          break;
+        case XLSX:
+          bytes = exportJasperReportToXlsx(jasperPrint);
+          break;
+        case HTML:
+          bytes = exportJasperReportToHtml(jasperPrint);
+          break;
+        case PDF:
+          bytes = exportJasperReportToPdf(jasperPrint);
+          break;
+        default:
+          throw new IllegalStateException("No exporter for report format " + format);
       }
     } catch (Exception e) {
       throw new JasperReportViewException(e, ERROR_JASPER_FILE_FORMAT, e.getMessage());
@@ -476,6 +487,10 @@ public class JasperReportsViewService {
 
   byte[] exportJasperReportToXls(JasperPrint jasperPrint) throws JRException {
     return new JasperXlsExporter(jasperPrint).exportReport();
+  }
+
+  byte[] exportJasperReportToXlsx(JasperPrint jasperPrint) throws JRException {
+    return new JasperXlsxExporter(jasperPrint).exportReport();
   }
 
   byte[] exportJasperReportToHtml(JasperPrint jasperPrint) throws JRException {

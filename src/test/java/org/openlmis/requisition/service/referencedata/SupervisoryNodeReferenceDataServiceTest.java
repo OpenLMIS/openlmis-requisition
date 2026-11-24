@@ -126,4 +126,33 @@ public class SupervisoryNodeReferenceDataServiceTest
     assertThat(service.findByIds(emptyList()), hasSize(0));
   }
 
+  @Test
+  public void shouldFindByFacility() {
+    // given
+    UUID facility = UUID.randomUUID();
+
+    // when
+    SupervisoryNodeDto dto = mockPageResponseEntityAndGetDto();
+    List<SupervisoryNodeDto> result = service.findByFacility(facility);
+
+    // then
+    assertThat(result, hasSize(1));
+    assertTrue(result.contains(dto));
+
+    verifyPageRequest()
+        .isGetRequest()
+        .hasAuthHeader()
+        .hasEmptyBody()
+        .hasQueryParameter("facilityId", facility);
+  }
+
+  @Test
+  public void shouldReturnEmptyListForFindByFacilityIfFacilityIsNull() {
+    // given
+    disableAuthCheck();
+
+    // when & then
+    assertThat(service.findByFacility(null), hasSize(0));
+  }
+
 }

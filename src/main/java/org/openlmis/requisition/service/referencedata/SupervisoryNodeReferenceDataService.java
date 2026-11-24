@@ -55,6 +55,16 @@ public class SupervisoryNodeReferenceDataService
   }
 
   /**
+   * Finds the supervisory nodes whose requisition group contains the given facility.
+   */
+  public List<SupervisoryNodeDto> findByFacility(UUID facilityId) {
+    if (null == facilityId) {
+      return Collections.emptyList();
+    }
+    return getPage(RequestParameters.init().set("facilityId", facilityId)).getContent();
+  }
+
+  /**
    * Finds supervisory nodes by their ids.
    *
    * @param ids ids to look for.

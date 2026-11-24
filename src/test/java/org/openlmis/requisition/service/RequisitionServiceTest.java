@@ -33,6 +33,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -1175,6 +1176,22 @@ public class RequisitionServiceTest {
         requisitionTemplate, aggregator);
 
     assertTrue(initiatedRequisition.getRequisitionLineItems().isEmpty());
+  }
+
+  @Test
+  public void shouldNotFetchStockDataOnInitiateForEmergencyRequisition() {
+    prepareForTestInitiate(SETTING);
+    when(requisitionTemplate.isPopulateStockOnHandFromStockCards()).thenReturn(true);
+    ApproveProductsAggregator aggregator = mockApprovedProduct(
+        new UUID[]{PRODUCT_ID}, new boolean[]{true});
+
+    Requisition initiatedRequisition = requisitionService.initiate(program, facility,
+        processingPeriod, true, stockAdjustmentReasons, requisitionTemplate, aggregator);
+
+    assertTrue(initiatedRequisition.getRequisitionLineItems().isEmpty());
+    verify(periodService, never()).findPreviousPeriods(any(ProcessingPeriodDto.class), anyInt());
+    verifyZeroInteractions(stockCardSummariesStockManagementService,
+        stockCardRangeSummaryStockManagementService, idealStockAmountReferenceDataService);
   }
 
   @Test

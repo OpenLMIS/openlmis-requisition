@@ -32,6 +32,8 @@ public abstract class MessageKeys {
   public static final String ERROR_REPORTING_FILE_EMPTY = ERROR_PREFIX + ".reporting.file.empty";
   public static final String ERROR_REPORTING_TEMPLATE_PARAMETER_INVALID = ERROR_PREFIX
       + ".reporting.template.parameter.invalid";
+  public static final String ERROR_REPORTING_FORMAT_NOT_SUPPORTED = ERROR_PREFIX
+      + ".reporting.format.notSupported";
   public static final String ERROR_REPORTING_FILE_INCORRECT_TYPE = ERROR_PREFIX
       + ".reporting.file.incorrectType";
   public static final String ERROR_REPORTING_FILE_INVALID = ERROR_PREFIX

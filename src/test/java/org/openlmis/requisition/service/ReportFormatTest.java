@@ -13,22 +13,31 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.requisition.service.referencedata;
+package org.openlmis.requisition.service;
 
-import org.openlmis.requisition.dto.RequisitionGroupDto;
-import org.openlmis.requisition.service.BaseCommunicationService;
-import org.openlmis.requisition.testutils.RequisitionGroupDtoDataBuilder;
+import static org.junit.Assert.assertEquals;
 
-public class RequisitionGroupReferenceDataServiceTest
-    extends BaseReferenceDataServiceTest<RequisitionGroupDto> {
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.openlmis.requisition.exception.ValidationMessageException;
+import org.openlmis.requisition.i18n.MessageKeys;
 
-  @Override
-  protected RequisitionGroupDto generateInstance() {
-    return new RequisitionGroupDtoDataBuilder().buildAsDto();
+public class ReportFormatTest {
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void fromStringShouldIgnoreCase() {
+    assertEquals(ReportFormat.XLSX, ReportFormat.fromString("XLSX"));
   }
 
-  @Override
-  protected BaseCommunicationService<RequisitionGroupDto> getService() {
-    return new RequisitionGroupReferenceDataService();
+  @Test
+  public void fromStringShouldRejectUnsupportedFormat() {
+    exception.expect(ValidationMessageException.class);
+    exception.expectMessage(MessageKeys.ERROR_REPORTING_FORMAT_NOT_SUPPORTED);
+
+    ReportFormat.fromString("docx");
   }
 }
