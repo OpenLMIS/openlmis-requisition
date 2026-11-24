@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_FOLLOWING_PERMISSION;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_REQUISITIONS_TO_APPROVE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -40,6 +41,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openlmis.requisition.domain.BaseEntity;
@@ -55,6 +58,7 @@ import org.openlmis.requisition.dto.ApproveRequisitionLineItemDto;
 import org.openlmis.requisition.dto.ApprovedProductDto;
 import org.openlmis.requisition.dto.BaseDto;
 import org.openlmis.requisition.dto.BasicOrderableDto;
+import org.openlmis.requisition.dto.DetailedRoleAssignmentDto;
 import org.openlmis.requisition.dto.FacilityDto;
 import org.openlmis.requisition.dto.OrderableDto;
 import org.openlmis.requisition.dto.ProcessingPeriodDto;
@@ -62,18 +66,22 @@ import org.openlmis.requisition.dto.ReleasableRequisitionBatchDto;
 import org.openlmis.requisition.dto.RequisitionDto;
 import org.openlmis.requisition.dto.RequisitionErrorMessage;
 import org.openlmis.requisition.dto.RequisitionsProcessingStatusDto;
+import org.openlmis.requisition.dto.RightDto;
 import org.openlmis.requisition.dto.SupervisoryNodeDto;
 import org.openlmis.requisition.dto.SupplyLineDto;
 import org.openlmis.requisition.dto.UserDto;
 import org.openlmis.requisition.dto.VersionIdentityDto;
+import org.openlmis.requisition.dto.stockmanagement.StockEventDto;
 import org.openlmis.requisition.errorhandling.ValidationFailure;
 import org.openlmis.requisition.errorhandling.ValidationResult;
 import org.openlmis.requisition.i18n.MessageKeys;
 import org.openlmis.requisition.i18n.MessageService;
 import org.openlmis.requisition.service.PermissionService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.utils.Message;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -121,6 +129,12 @@ public class BatchRequisitionController extends BaseRequisitionController {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private RightReferenceDataService rightReferenceDataService;
+
+  @Autowired
+  private UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Value("${transferDataToStockManagement.enabled}")
   private boolean isTransferStockDataFromRequisitionToStockManagementEnabled;
@@ -211,8 +225,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
     profiler.start("GET_USER");
     UserDto user = authenticationHelper.getCurrentUser();
 
-    profiler.start("GET_USER_PERMISSION_STRINGS");
-    List<String> permissionStrings = userReferenceDataService.getPermissionStrings(user.getId());
+    ApproverRights approverRights = findApproverRights(user, profiler);
 
     Map<UUID, SupervisoryNodeDto> supervisoryNodeMap = findSupervisoryNodes(requisitions, profiler);
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
@@ -229,6 +242,7 @@ public class BatchRequisitionController extends BaseRequisitionController {
         () -> getLineItemApprovedProductIdentities(requisitions), profiler);
 
     profiler.start("VALIDATE_AND_APPROVE");
+    List<Requisition> approvedRequisitions = Lists.newArrayList();
     for (Requisition requisition : requisitions) {
       SupervisoryNodeDto supervisoryNode = supervisoryNodeMap
           .get(requisition.getSupervisoryNodeId());
@@ -237,12 +251,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
       ProcessingPeriodDto period = periods.get(requisition.getProcessingPeriodId());
       ApproveParams approveParams =
           new ApproveParams(user, supervisoryNode, orderables, supplyLines, period);
-      validateAndApprove(requisition, processingStatus, permissionStrings,
-          facilities, periods, approveParams, approvedProducts);
+      if (validateAndApprove(requisition, processingStatus, approverRights,
+          facilities, periods, approveParams, approvedProducts)) {
+        approvedRequisitions.add(requisition);
+      }
     }
 
     if (isTransferStockDataFromRequisitionToStockManagementEnabled) {
-      submitStockEvent(profiler, user, requisitions, orderables);
+      submitStockEvents(profiler, user, approvedRequisitions, orderables);
     }
 
     ResponseEntity<RequisitionsProcessingStatusDto> response =
@@ -410,14 +426,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
     return supplyLinesMap;
   }
 
-  private void validateAndApprove(Requisition requisition,
-      RequisitionsProcessingStatusDto processingStatus, List<String> permissionStrings,
+  private boolean validateAndApprove(Requisition requisition,
+      RequisitionsProcessingStatusDto processingStatus, ApproverRights approverRights,
       Map<UUID, FacilityDto> facilities, Map<UUID, ProcessingPeriodDto> periods,
       ApproveParams approveParams, Map<VersionIdentityDto, ApprovedProductDto> approvedProducts) {
     Profiler profiler = getProfiler("VALIDATE_AND_APPROVE_REQUISITION");
     profiler.start("VALIDATE_CAN_APPROVE");
     ValidationResult validationResult = validateCanApproveRequisition(
-        requisition, permissionStrings);
+        requisition, approverRights);
     if (!addValidationErrors(processingStatus, validationResult, requisition.getId())) {
       profiler.start("VALIDATE_FOR_STATUS_CHANGE");
       validationResult = getValidationResultForStatusChange(requisition,
@@ -433,17 +449,20 @@ public class BatchRequisitionController extends BaseRequisitionController {
                     approveParams.getOrderables(), approvedProducts, period),
                 requisition.getProgramId(),
                 approveParams.getOrderables()));
+        stopProfiler(profiler);
+        return true;
       }
     }
     stopProfiler(profiler);
+    return false;
   }
 
   private ValidationResult validateCanApproveRequisition(Requisition requisition,
-      List<String> permissionStrings) {
+      ApproverRights approverRights) {
     String permission = String.format("%s|%s|%s", PermissionService.REQUISITION_APPROVE,
         requisition.getFacilityId(), requisition.getProgramId());
 
-    if (!permissionStrings.contains(permission)) {
+    if (!approverRights.getPermissionStrings().contains(permission)) {
       return ValidationResult
           .noPermission(ERROR_NO_FOLLOWING_PERMISSION, PermissionService.REQUISITION_APPROVE);
     }
@@ -453,19 +472,75 @@ public class BatchRequisitionController extends BaseRequisitionController {
           .ERROR_REQUISITION_MUST_BE_AUTHORIZED, requisition.getId());
     }
 
+    // Referencedata grants the permission string for roles that single approval refuses: a
+    // role at a node above the facility's node, or a home-facility role.
+    if (!hasSupervisionRight(requisition, approverRights)) {
+      return ValidationResult.noPermission(ERROR_NO_PERMISSION_TO_APPROVE_REQUISITION);
+    }
+
     return ValidationResult.success();
   }
 
-  private void submitStockEvent(Profiler profiler, UserDto user, List<Requisition> requisitions,
+  private boolean hasSupervisionRight(Requisition requisition, ApproverRights approverRights) {
+    // A role at the requisition's own node passes without the facility's nodes, which is the
+    // case for everything on the approver's list, so the facility search runs only when needed.
+    if (UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approverRights.getApproveRight(), approverRights.getRoleAssignments(),
+        requisition.getProgramId(), Collections.emptySet(), requisition.getSupervisoryNodeId())) {
+      return true;
+    }
+
+    Set<UUID> facilitySupervisoryNodeIds = approverRights.getFacilitySupervisoryNodeIds()
+        .computeIfAbsent(requisition.getFacilityId(), facilityId -> supervisoryNodeService
+            .findByFacility(facilityId)
+            .stream()
+            .map(SupervisoryNodeDto::getId)
+            .collect(Collectors.toSet()));
+
+    return UserRoleAssignmentsReferenceDataService.hasSupervisionRight(
+        approverRights.getApproveRight(), approverRights.getRoleAssignments(),
+        requisition.getProgramId(), facilitySupervisoryNodeIds,
+        requisition.getSupervisoryNodeId());
+  }
+
+  private ApproverRights findApproverRights(UserDto user, Profiler profiler) {
+    profiler.start("GET_USER_PERMISSION_STRINGS");
+    final List<String> permissionStrings =
+        userReferenceDataService.getPermissionStrings(user.getId());
+
+    profiler.start("GET_APPROVE_RIGHT");
+    final RightDto approveRight = rightReferenceDataService
+        .findRight(PermissionService.REQUISITION_APPROVE);
+
+    profiler.start("GET_USER_ROLE_ASSIGNMENTS");
+    final Collection<DetailedRoleAssignmentDto> roleAssignments =
+        userRoleAssignmentsReferenceDataService.getRoleAssignments(user.getId());
+
+    return new ApproverRights(permissionStrings, approveRight, roleAssignments,
+        new HashMap<>());
+  }
+
+  void submitStockEvents(Profiler profiler, UserDto user, List<Requisition> requisitions,
       Map<VersionIdentityDto, OrderableDto> orderables) {
+    // The builder reads lazy JPA associations, and the request's Hibernate session must not be
+    // used from other threads, so only the HTTP submissions run in parallel.
+    profiler.start("BUILD_STOCK_EVENTS");
+    List<StockEventDto> stockEvents = requisitions
+        .stream()
+        .map(requisition -> buildStockEvent(requisition, user.getId(), orderables))
+        .filter(Objects::nonNull)
+        .collect(toList());
+
+    if (stockEvents.isEmpty()) {
+      return;
+    }
+
     profiler.start("SEND_STOCK_EVENT");
-    ExecutorService executor = Executors.newFixedThreadPool(requisitions.size());
+    ExecutorService executor = Executors.newFixedThreadPool(stockEvents.size());
     List<CompletableFuture<Void>> futures = Lists.newArrayList();
     try {
-      for (Requisition requisition : requisitions) {
-        CompletableFuture<Void> future = runAsync(
-            () -> submitStockEvent(requisition, user.getId(), orderables), executor);
-        futures.add(future);
+      for (StockEventDto stockEvent : stockEvents) {
+        futures.add(runAsync(() -> submitStockEvent(stockEvent), executor));
       }
     } finally {
       profiler.start("JOIN_RESULTS");
@@ -624,5 +699,14 @@ public class BatchRequisitionController extends BaseRequisitionController {
         .findByIdentities(approvedProductIds)
         .stream()
         .collect(toMap(ApprovedProductDto::getIdentity, Function.identity()));
+  }
+
+  @Getter
+  @AllArgsConstructor
+  private static class ApproverRights {
+    private List<String> permissionStrings;
+    private RightDto approveRight;
+    private Collection<DetailedRoleAssignmentDto> roleAssignments;
+    private Map<UUID, Set<UUID>> facilitySupervisoryNodeIds;
   }
 }

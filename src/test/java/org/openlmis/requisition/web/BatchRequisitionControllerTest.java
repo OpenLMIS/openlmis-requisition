@@ -24,18 +24,22 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_NO_REQUISITIONS_TO_APPROVE;
+import static org.openlmis.requisition.service.PermissionService.REQUISITION_APPROVE;
 
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -63,20 +67,26 @@ import org.openlmis.requisition.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.requisition.service.referencedata.FacilityTypeApprovedProductReferenceDataService;
 import org.openlmis.requisition.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.requisition.service.referencedata.RightReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupervisoryNodeReferenceDataService;
 import org.openlmis.requisition.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.requisition.service.referencedata.UserReferenceDataService;
+import org.openlmis.requisition.service.referencedata.UserRoleAssignmentsReferenceDataService;
 import org.openlmis.requisition.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.requisition.testutils.DtoGenerator;
 import org.openlmis.requisition.testutils.ReleasableRequisitionBatchDtoDataBuilder;
 import org.openlmis.requisition.utils.AuthenticationHelper;
 import org.openlmis.requisition.utils.Message;
 import org.openlmis.requisition.utils.StockEventBuilder;
+import org.slf4j.profiler.Profiler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class BatchRequisitionControllerTest {
+
+  private static final String TRANSFER_STOCK_DATA_FLAG =
+      "isTransferStockDataFromRequisitionToStockManagementEnabled";
 
   @Mock
   RequisitionService requisitionService;
@@ -119,6 +129,12 @@ public class BatchRequisitionControllerTest {
 
   @Mock
   StockEventStockManagementService stockEventStockManagementService;
+
+  @Mock
+  RightReferenceDataService rightReferenceDataService;
+
+  @Mock
+  UserRoleAssignmentsReferenceDataService userRoleAssignmentsReferenceDataService;
 
   @Mock
   Requisition requisition;
@@ -179,9 +195,9 @@ public class BatchRequisitionControllerTest {
   }
 
   @Test
-  public void approveMultipleRequisitionsWhenTransferStockDataIsEnabled() {
+  public void shouldNotSubmitStockEventForRequisitionTheBatchRefused() {
     ReflectionTestUtils.setField(batchRequisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+            TRANSFER_STOCK_DATA_FLAG, true);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
         .thenReturn(Collections.singletonList(requisition));
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
@@ -195,19 +211,43 @@ public class BatchRequisitionControllerTest {
     verify(authenticationHelper).getCurrentUser();
     verify(requisitionRepository).readDistinctByIdIn(anyCollection());
     verify(userReferenceDataService).getPermissionStrings(currentUser.getId());
+    verify(rightReferenceDataService).findRight(REQUISITION_APPROVE);
+    verify(userRoleAssignmentsReferenceDataService).getRoleAssignments(currentUser.getId());
     verify(supervisoryNodeReferenceDataService).findByIds(anyList());
     verify(orderableReferenceDataService).findByIdentities(anySet());
     verify(facilityReferenceDataService).search(anySet());
     verify(periodReferenceDataService).search(anySet());
     verify(facilityTypeApprovedService).findByIdentities(anySet());
-    verify(stockEventBuilder).fromRequisition(requisition, currentUser.getId(), Maps.newHashMap());
-    verify(stockEventStockManagementService).submit(stockEventDto);
+    verify(supervisoryNodeReferenceDataService, never()).findByFacility(any());
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
+  public void shouldSearchSupervisoryNodesOncePerFacility() {
+    ReflectionTestUtils.setField(batchRequisitionController, TRANSFER_STOCK_DATA_FLAG, false);
+    UUID facilityId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+    Requisition otherRequisition = mock(Requisition.class);
+    for (Requisition approvable : Arrays.asList(requisition, otherRequisition)) {
+      when(approvable.getFacilityId()).thenReturn(facilityId);
+      when(approvable.getProgramId()).thenReturn(programId);
+      when(approvable.getSupervisoryNodeId()).thenReturn(UUID.randomUUID());
+      when(approvable.isApprovable()).thenReturn(true);
+    }
+    when(userReferenceDataService.getPermissionStrings(currentUser.getId())).thenReturn(
+        Collections.singletonList(REQUISITION_APPROVE + "|" + facilityId + "|" + programId));
+    when(requisitionRepository.readDistinctByIdIn(anyList()))
+        .thenReturn(Arrays.asList(requisition, otherRequisition));
+
+    batchRequisitionController.approve(Arrays.asList(uuid1, uuid2));
+
+    verify(supervisoryNodeReferenceDataService, times(1)).findByFacility(facilityId);
   }
 
   @Test
   public void approveMultipleRequisitionsWhenTransferStockDataIsDisabled() {
     ReflectionTestUtils.setField(batchRequisitionController,
-            "isTransferStockDataFromRequisitionToStockManagementEnabled", false);
+            TRANSFER_STOCK_DATA_FLAG, false);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
             .thenReturn(Collections.singletonList(requisition));
     when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
@@ -230,11 +270,43 @@ public class BatchRequisitionControllerTest {
   }
 
   @Test
+  public void shouldBuildStockEventsOnTheRequestThread() {
+    Requisition otherRequisition = mock(Requisition.class);
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    when(otherRequisition.getStatus()).thenReturn(RequisitionStatus.APPROVED);
+    when(requisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
+    when(otherRequisition.getTemplate()).thenReturn(mock(RequisitionTemplate.class));
+
+    List<Thread> buildThreads = new CopyOnWriteArrayList<>();
+    when(stockEventBuilder.fromRequisition(any(Requisition.class), any(), anyMap()))
+        .thenAnswer(invocation -> {
+          buildThreads.add(Thread.currentThread());
+          return DtoGenerator.of(StockEventDto.class);
+        });
+
+    batchRequisitionController.submitStockEvents(new Profiler("TEST"), currentUser,
+        Arrays.asList(requisition, otherRequisition), Maps.newHashMap());
+
+    assertEquals(Arrays.asList(Thread.currentThread(), Thread.currentThread()), buildThreads);
+    verify(stockEventStockManagementService, times(2)).submit(any(StockEventDto.class));
+  }
+
+  @Test
+  public void shouldNotSubmitStockEventsWhenNoRequisitionProducesOne() {
+    when(requisition.getStatus()).thenReturn(RequisitionStatus.AUTHORIZED);
+
+    batchRequisitionController.submitStockEvents(new Profiler("TEST"), currentUser,
+        Collections.singletonList(requisition), Maps.newHashMap());
+
+    verifyNoInteractions(stockEventBuilder, stockEventStockManagementService);
+  }
+
+  @Test
   public void shouldTellWhyNothingWasApprovedWhenNoneOfGivenIdsMatchesRequisition() {
     // the batch approval screen sends an empty id list when every requisition in the batch was
     // filtered out by its own validation
     ReflectionTestUtils.setField(batchRequisitionController,
-        "isTransferStockDataFromRequisitionToStockManagementEnabled", true);
+        TRANSFER_STOCK_DATA_FLAG, true);
     when(requisitionRepository.readDistinctByIdIn(anyList()))
         .thenReturn(Collections.emptyList());
 
