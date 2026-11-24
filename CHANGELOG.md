@@ -1,6 +1,9 @@
 8.7.3-SNAPSHOT (WIP)
 ==================
 
+Improvements:
+* [OLMIS-8387](https://openlmis.atlassian.net/browse/OLMIS-8387): Initiating an emergency requisition no longer fetches stock on hand, beginning balances, stock card range summaries, previous periods and ideal stock amounts. Emergency requisitions start without line items, so this data was never used.
+
 Bug fixes:
 * [OLMIS-8379](https://openlmis.atlassian.net/browse/OLMIS-8379): Reports generated from requisition templates (Reporting Rate, Timeliness, Sample Requisition) can be exported to XLSX again. Since 8.3.0, choosing XLSX returned a PDF with an `.xlsx` filename. GET /api/reports/templates/requisitions/{id}/{format} now accepts the format in any case and returns 400 for an unsupported format, instead of a PDF.
 
@@ -138,9 +141,6 @@ Bug fixes:
 
 8.3.6 / 2023-06-26
 ==================
-
-Improvements:
-* [OLMIS-8387](https://openlmis.atlassian.net/browse/OLMIS-8387): Initiating an emergency requisition no longer fetches stock on hand, beginning balances, stock card range summaries, previous periods and ideal stock amounts. Emergency requisitions start without line items, so this data was never used.
 
 Bug fixes:
 * [OLMIS-7723](https://openlmis.atlassian.net/browse/OLMIS-7723): Fix error related to 'Approve buttons not visible when trying to approve requisition'
