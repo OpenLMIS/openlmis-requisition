@@ -112,6 +112,7 @@ public class RequisitionV2Controller extends BaseRequisitionController {
     RequisitionV2Dto dto = buildDto(requisition, profiler);
 
     addLocationHeader(request, response, dto.getId(), profiler);
+    response.setHeader(HttpHeaders.ETAG, ETagResource.buildWeakETag(requisition.getVersion()));
 
     stopProfiler(profiler, dto);
 

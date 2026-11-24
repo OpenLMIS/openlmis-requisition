@@ -253,8 +253,9 @@ public class RequisitionController extends BaseRequisitionController {
    */
   @DeleteMapping(RESOURCE_URL + "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteRequisition(@PathVariable("id") UUID requisitionId) {
-    deleteRequisitionById(requisitionId);
+  public void deleteRequisition(@PathVariable("id") UUID requisitionId,
+      HttpServletRequest request) {
+    deleteRequisitionById(requisitionId, request);
   }
 
   /**
@@ -367,6 +368,8 @@ public class RequisitionController extends BaseRequisitionController {
 
     checkPermission(profiler, () -> permissionService.canUpdateRequisition(requisition));
 
+    // before the idempotency key is recorded, so that a refused skip does not use it up
+    validateVersion(request, requisition, profiler);
     validateIdempotencyKey(request, profiler);
 
     ProgramDto program = findProgram(requisition.getProgramId(), profiler);
@@ -709,14 +712,22 @@ public class RequisitionController extends BaseRequisitionController {
     if (req.getRequisitionStatus() == RequisitionStatus.INITIATED
             || req.getRequisitionStatus() == RequisitionStatus.SUBMITTED
             || req.getRequisitionStatus() == RequisitionStatus.REJECTED) {
-      deleteRequisitionById(req.getRequisitionId());
+      deleteRequisitionById(req.getRequisitionId(), null);
     }
   }
 
-  private void deleteRequisitionById(UUID requisitionId) {
+  /**
+   * Deletes the requisition. The If-Match header of {@code versionRequest} is checked against
+   * the requisition's version; a null {@code versionRequest} skips that check.
+   */
+  private void deleteRequisitionById(UUID requisitionId, HttpServletRequest versionRequest) {
     Profiler profiler = getProfiler("DELETE_REQUISITION", requisitionId);
     Requisition requisition = findRequisition(requisitionId, profiler);
     checkPermission(profiler, () -> permissionService.canDeleteRequisition(requisition));
+
+    if (versionRequest != null) {
+      validateVersion(versionRequest, requisition, profiler);
+    }
 
     profiler.start("DELETE");
     requisitionService.delete(requisition);

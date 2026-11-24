@@ -275,9 +275,7 @@ public abstract class BaseRequisitionController extends BaseController {
         () -> requisitionService.validateCanSaveRequisition(requisitionToUpdate)
     );
 
-    profiler.start("VALIDATE_VERSION");
-    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisitionToUpdate)
-        .throwExceptionIfHasErrors();
+    validateVersion(request, requisitionToUpdate, profiler);
 
     Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
         profiler, requisitionToUpdate::getAllOrderables
@@ -649,6 +647,12 @@ public abstract class BaseRequisitionController extends BaseController {
           requisition.getProgramId(), requisition.getFacilityId()).getId();
       requisition.setSupervisoryNodeId(supervisoryNode);
     }
+  }
+
+  void validateVersion(HttpServletRequest request, Requisition requisition, Profiler profiler) {
+    profiler.start("VALIDATE_VERSION");
+    requisitionVersionValidator.validateEtagVersionIfPresent(request, requisition)
+        .throwExceptionIfHasErrors();
   }
 
   void validateIdempotencyKey(HttpServletRequest request, Profiler profiler) {
