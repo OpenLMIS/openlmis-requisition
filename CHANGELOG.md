@@ -2,6 +2,7 @@
 ==================
 
 Improvements:
+* [OLMIS-8387](https://openlmis.atlassian.net/browse/OLMIS-8387): Initiating an emergency requisition no longer fetches stock on hand, beginning balances, stock card range summaries, previous periods and ideal stock amounts. Emergency requisitions start without line items, so this data was never used.
 * [OLMIS-8394](https://openlmis.atlassian.net/browse/OLMIS-8394): Approving and rejecting a requisition check the approver's supervisory roles against the supervisory nodes of the requisition's facility (GET /api/supervisoryNodes?facilityId=) instead of downloading every requisition group with its member facilities (GET /api/requisitionGroups). The role check for requisitions without a supervisory node does the same.
 
 Bug fixes:
