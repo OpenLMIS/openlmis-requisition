@@ -15,7 +15,10 @@
 
 package org.openlmis.requisition.web;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -33,6 +36,7 @@ import static org.openlmis.requisition.domain.requisition.Requisition.REQUISITIO
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_DATE_MODIFIED_MISMATCH;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_FACILITY_DOES_NOT_SUPPORT_PROGRAM;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_INCORRECT_VALUE;
+import static org.openlmis.requisition.i18n.MessageKeys.ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST;
 import static org.openlmis.requisition.i18n.MessageKeys.ERROR_REQUISITION_NOT_FOUND;
 import static org.openlmis.requisition.i18n.MessageKeys.IDEMPOTENCY_KEY_ALREADY_USED;
 import static org.openlmis.requisition.service.PermissionService.REQUISITION_AUTHORIZE;
@@ -44,17 +48,22 @@ import static org.openlmis.requisition.web.ResourceNames.PROGRAMS;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.openlmis.requisition.domain.requisition.ApprovedProductReference;
 import org.openlmis.requisition.domain.requisition.Requisition;
 import org.openlmis.requisition.domain.requisition.RequisitionLineItem;
+import org.openlmis.requisition.domain.requisition.RequisitionLineItemDataBuilder;
 import org.openlmis.requisition.domain.requisition.RequisitionStatus;
 import org.openlmis.requisition.domain.requisition.RequisitionValidationService;
 import org.openlmis.requisition.domain.requisition.StockAdjustmentReason;
@@ -445,6 +454,101 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
   }
 
   @Test
+  public void shouldRequestOnlyLineItemOrderablesOnUpdate() {
+    // given
+    Requisition requisition = generateRequisitionToUpdate();
+    RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition);
+    stubOrderablesByRequestedIdentities(requisition);
+    Set<VersionEntityReference> storedOrderables = lineItemOrderables(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionDto.getId())
+        .when()
+        .body(requisitionDto)
+        .put(ID_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    // then
+    ArgumentCaptor<Set<VersionEntityReference>> identitiesCaptor =
+        ArgumentCaptor.forClass(Set.class);
+    verify(orderableReferenceDataService).findByIdentities(identitiesCaptor.capture());
+    assertThat(identitiesCaptor.getValue(), is(storedOrderables));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldUpdateRequisitionWithAnAddedAvailableProduct() {
+    // given
+    Requisition requisition = generateRequisitionToUpdate();
+    ApprovedProductDto addedProduct = nonFullSupplyAvailableProduct(requisition);
+    RequisitionLineItem addedLineItem = new RequisitionLineItemDataBuilder()
+        .withOrderable(addedProduct.getOrderable().getId(),
+            addedProduct.getOrderable().getVersionNumber())
+        .withFacilityTypeApprovedProduct(addedProduct.getId(), addedProduct.getVersionNumber())
+        .withRequisition(requisition)
+        .build();
+    RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition, addedLineItem);
+    stubOrderablesByRequestedIdentities(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionDto.getId())
+        .when()
+        .body(requisitionDto)
+        .put(ID_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    // then
+    ArgumentCaptor<Set<VersionEntityReference>> identitiesCaptor =
+        ArgumentCaptor.forClass(Set.class);
+    verify(orderableReferenceDataService).findByIdentities(identitiesCaptor.capture());
+    assertThat(identitiesCaptor.getValue(), hasItem(addedLineItem.getOrderable()));
+    assertThat(requisition.getRequisitionLineItems(), hasSize(3));
+    assertThat(lineItemOrderables(requisition), hasItem(addedLineItem.getOrderable()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectAnAddedProductThatIsNotAvailable() {
+    // given
+    Requisition requisition = generateRequisitionToUpdate();
+    RequisitionLineItem foreignLineItem = new RequisitionLineItemDataBuilder()
+        .withOrderable(UUID.randomUUID(), 1L)
+        .withFacilityTypeApprovedProduct(UUID.randomUUID(), 1L)
+        .withSkippedFlag(null)
+        .withRequisition(requisition)
+        .build();
+    RequisitionV2Dto requisitionDto = generateRequisitionDto(requisition, foreignLineItem);
+    stubOrderablesByRequestedIdentities(requisition);
+
+    // when
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", requisitionDto.getId())
+        .when()
+        .body(requisitionDto)
+        .put(ID_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, is(ERROR_ORDERABLE_NOT_IN_AVAILABLE_LIST));
+
+    // then
+    ArgumentCaptor<Set<VersionEntityReference>> identitiesCaptor =
+        ArgumentCaptor.forClass(Set.class);
+    verify(orderableReferenceDataService).findByIdentities(identitiesCaptor.capture());
+    assertThat(identitiesCaptor.getValue(), not(hasItem(foreignLineItem.getOrderable())));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldNotUpdateRequisitionIfRequestIsInvalid() {
     // given
     mockPeriod();
@@ -604,7 +708,68 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private RequisitionV2Dto generateRequisitionDto(Requisition requisition) {
+  private Requisition generateRequisitionToUpdate() {
+    ProcessingPeriodDto period = mockPeriod();
+    Requisition requisition = generateRequisition();
+    requisition.setProcessingPeriodId(period.getId());
+    requisition.setNumberOfMonthsInPeriod(period.getDurationInMonths());
+
+    mockValidationSuccess();
+
+    doReturn(ValidationResult.success())
+        .when(permissionService)
+        .canUpdateRequisition(any(Requisition.class));
+    when(requisitionService
+        .validateCanSaveRequisition(requisition))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator
+        .validateEtagVersionIfPresent(any(HttpServletRequest.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+    when(requisitionVersionValidator
+        .validateRequisitionTimestamps(any(ZonedDateTime.class), any(Requisition.class)))
+        .thenReturn(ValidationResult.success());
+
+    return requisition;
+  }
+
+  private void stubOrderablesByRequestedIdentities(Requisition requisition) {
+    List<OrderableDto> orderables = generateApprovedProducts(requisition)
+        .stream()
+        .map(ApprovedProductDto::getOrderable)
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willAnswer(invocation -> {
+          Set<VersionEntityReference> identities = invocation.getArgument(0);
+          return orderables
+              .stream()
+              .filter(orderable -> identities.contains(
+                  new VersionEntityReference(orderable.getId(), orderable.getVersionNumber())))
+              .collect(Collectors.toList());
+        });
+  }
+
+  private Set<VersionEntityReference> lineItemOrderables(Requisition requisition) {
+    return requisition
+        .getRequisitionLineItems()
+        .stream()
+        .map(RequisitionLineItem::getOrderable)
+        .collect(Collectors.toSet());
+  }
+
+  private ApprovedProductDto nonFullSupplyAvailableProduct(Requisition requisition) {
+    return generateApprovedProducts(requisition)
+        .stream()
+        .filter(product -> !product
+            .getOrderable()
+            .getProgramOrderable(requisition.getProgramId())
+            .getFullSupply())
+        .findFirst()
+        .orElseThrow(IllegalStateException::new);
+  }
+
+  private RequisitionV2Dto generateRequisitionDto(Requisition requisition,
+      RequisitionLineItem... addedLineItems) {
     RequisitionV2Dto requisitionDto = new RequisitionV2Dto();
     requisition.export(requisitionDto);
 
@@ -618,12 +783,21 @@ public class RequisitionV2ControllerIntegrationTest extends BaseRequisitionWebIn
 
     List<ApprovedProductDto> approvedProducts = generateApprovedProducts(requisition);
 
-    requisitionDto.setRequisitionLineItems(requisition
-        .getRequisitionLineItems()
-        .stream()
+    requisitionDto.setRequisitionLineItems(Stream
+        .concat(requisition.getRequisitionLineItems().stream(), Arrays.stream(addedLineItems))
         .map(line -> {
-          OrderableDto orderableDto = findOrderable(approvedProducts, line);
-          ApprovedProductDto approvedProductDto = findApprovedProduct(approvedProducts, line);
+          OrderableDto orderableDto = Optional
+              .ofNullable(findOrderable(approvedProducts, line))
+              .orElseGet(() -> new OrderableDtoDataBuilder()
+                  .withId(line.getOrderable().getId())
+                  .withVersionNumber(line.getOrderable().getVersionNumber())
+                  .buildAsDto());
+          ApprovedProductDto approvedProductDto = Optional
+              .ofNullable(findApprovedProduct(approvedProducts, line))
+              .orElseGet(() -> new ApprovedProductDtoDataBuilder()
+                  .withId(line.getFacilityTypeApprovedProduct().getId())
+                  .withVersionNumber(line.getFacilityTypeApprovedProduct().getVersionNumber())
+                  .buildAsDto());
 
           RequisitionLineItemV2Dto lineDto = new RequisitionLineItemV2Dto();
           line.export(lineDto, orderableDto, approvedProductDto);

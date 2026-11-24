@@ -20,6 +20,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
@@ -66,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.hamcrest.Matcher;
 import org.joda.money.CurrencyUnit;
@@ -1744,6 +1746,83 @@ public class RequisitionTest {
         requisitionLineItem.getCalculatedOrderQuantityIsa(),
         requisitionLineItem.getApprovedQuantity()
     );
+  }
+
+  @Test
+  public void shouldGetOrderablesForUpdateOfStoredLineItemsWhenUpdaterHasNone() {
+    // given
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
+        .addLineItem(requisitionLineItem, false)
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
+        .build();
+    Requisition.Importer updater = mock(Requisition.Importer.class);
+    when(updater.getRequisitionLineItems()).thenReturn(null, emptyList());
+
+    // when
+    Set<VersionEntityReference> withNullLines =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
+    Set<VersionEntityReference> withEmptyLines =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
+
+    // then
+    assertThat(withNullLines, containsInAnyOrder(requisitionLineItem.getOrderable()));
+    assertThat(withEmptyLines, containsInAnyOrder(requisitionLineItem.getOrderable()));
+  }
+
+  @Test
+  public void shouldGetOrderablesForUpdateIncludingAddedAvailableProducts() {
+    // given
+    UUID addedOrderableId = UUID.randomUUID();
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
+        .addLineItem(requisitionLineItem, false)
+        .addAvailableProduct(UUID.randomUUID(), 1L, addedOrderableId, 1L)
+        .addAvailableProduct(UUID.randomUUID(), 1L, UUID.randomUUID(), 1L)
+        .build();
+    Requisition.Importer updater = updaterWithLineItems(
+        new VersionIdentityDto(requisitionLineItem.getOrderable()),
+        new VersionIdentityDto(addedOrderableId, 1L));
+
+    // when
+    Set<VersionEntityReference> orderablesForUpdate =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
+
+    // then
+    assertThat(orderablesForUpdate, containsInAnyOrder(
+        requisitionLineItem.getOrderable(), new VersionEntityReference(addedOrderableId, 1L)));
+  }
+
+  @Test
+  public void shouldGetOrderablesForUpdateWithoutProductsThatAreNotAvailable() {
+    // given
+    UUID availableOrderableId = UUID.randomUUID();
+    Requisition requisitionToUpdate = new RequisitionDataBuilder()
+        .addLineItem(requisitionLineItem, false)
+        .addAvailableProduct(UUID.randomUUID(), 1L, availableOrderableId, 1L)
+        .build();
+    Requisition.Importer updater = updaterWithLineItems(
+        new VersionIdentityDto(UUID.randomUUID(), 1L),
+        new VersionIdentityDto(availableOrderableId, 2L),
+        null);
+
+    // when
+    Set<VersionEntityReference> orderablesForUpdate =
+        requisitionToUpdate.getOrderablesForUpdate(updater);
+
+    // then
+    assertThat(orderablesForUpdate, containsInAnyOrder(requisitionLineItem.getOrderable()));
+  }
+
+  private Requisition.Importer updaterWithLineItems(VersionIdentityDto... identities) {
+    List<RequisitionLineItem.Importer> lineItems = new ArrayList<>();
+    for (VersionIdentityDto orderableIdentity : identities) {
+      RequisitionLineItem.Importer lineItem = mock(RequisitionLineItem.Importer.class);
+      when(lineItem.getOrderableIdentity()).thenReturn(orderableIdentity);
+      lineItems.add(lineItem);
+    }
+
+    Requisition.Importer updater = mock(Requisition.Importer.class);
+    when(updater.getRequisitionLineItems()).thenReturn(lineItems);
+    return updater;
   }
 
   private Requisition updateWithDatePhysicalCountCompleted(boolean updateStockDate) {
