@@ -49,8 +49,11 @@ import org.springframework.stereotype.Component;
  * {@code date:format}, {@code emergency:valueIfTrue|valueIfFalse}, {@code random:length} and
  * {@code seq:width}.
  *
- * <p>Supported sequence scope dimensions: {@code facility}, {@code program}, {@code period},
- * {@code emergency}, {@code year} and {@code month}.
+ * <p>Supported sequence scope dimensions and the tokens that render them: {@code facility}
+ * ({@code facilityCode}), {@code program} ({@code programCode}), {@code period}
+ * ({@code periodName}, or {@code periodStart} / {@code periodEnd} with year and month),
+ * {@code emergency} ({@code emergency} with two different values), {@code year} ({@code date}
+ * with a year) and {@code month} ({@code date} with a month).
  *
  * <p>The supplying facility is not known when a requisition is initiated, so it is deliberately
  * not offered as a token.
@@ -59,6 +62,9 @@ import org.springframework.stereotype.Component;
 public class RequisitionCodeGenerator extends AbstractPatternCodeGenerator<Requisition> {
 
   static final String SEQUENCE_NAME = "requisition";
+  private static final String DATE_TOKEN = "date";
+  private static final String YEAR_LETTERS = "yu";
+  private static final String MONTH_LETTERS = "ML";
 
   private final DateHelper dateHelper;
 
@@ -97,16 +103,27 @@ public class RequisitionCodeGenerator extends AbstractPatternCodeGenerator<Requi
         .apply(r.getProcessingPeriodId()).map(ProcessingPeriodDto::getStartDate).orElse(null)));
     token("periodEnd", new DateToken<>("period end date", r -> period
         .apply(r.getProcessingPeriodId()).map(ProcessingPeriodDto::getEndDate).orElse(null)));
-    token("date", new DateToken<>("current date", r -> today()));
+    token(DATE_TOKEN, new DateToken<>("current date", r -> today()));
     token("emergency", new ConditionalToken<>("emergency flag", Requisition::getEmergency));
     token("random", new RandomToken<>());
 
-    dimension("facility", Requisition::getFacilityId);
-    dimension("program", Requisition::getProgramId);
-    dimension("period", Requisition::getProcessingPeriodId);
-    dimension("emergency", Requisition::getEmergency);
-    dimension("year", r -> today().getYear());
-    dimension("month", r -> today().getMonthValue());
+    dimension("facility", Requisition::getFacilityId, renderedBy("facilityCode"));
+    dimension("program", Requisition::getProgramId, renderedBy("programCode"));
+    dimension("period", Requisition::getProcessingPeriodId, (token, argument) ->
+        "periodName".equals(token)
+            || ("periodStart".equals(token) || "periodEnd".equals(token))
+            && hasYearAndMonth(argument));
+    dimension("emergency", Requisition::getEmergency, (token, argument) ->
+        "emergency".equals(token) && ConditionalToken.distinguishes(argument));
+    dimension("year", r -> today().getYear(), (token, argument) ->
+        DATE_TOKEN.equals(token) && DateToken.containsField(argument, YEAR_LETTERS));
+    dimension("month", r -> today().getMonthValue(), (token, argument) ->
+        DATE_TOKEN.equals(token) && DateToken.containsField(argument, MONTH_LETTERS));
+  }
+
+  private static boolean hasYearAndMonth(String format) {
+    return DateToken.containsField(format, YEAR_LETTERS)
+        && DateToken.containsField(format, MONTH_LETTERS);
   }
 
   private LocalDate today() {

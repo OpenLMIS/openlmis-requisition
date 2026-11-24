@@ -34,6 +34,7 @@ public class AbstractPatternCodeGeneratorTest {
   private static final String FACILITY = "facility";
 
   private static final UUID FACILITY_ID = UUID.randomUUID();
+  private static final UUID OTHER_FACILITY_ID = UUID.randomUUID();
   private static final LocalDate DATE = LocalDate.of(2026, 3, 7);
 
   private final FakeSequences sequences = new FakeSequences();
@@ -66,17 +67,17 @@ public class AbstractPatternCodeGeneratorTest {
 
   @Test
   public void shouldIncrementSequencePerScopeKey() {
-    AbstractPatternCodeGenerator<Item> generator = generator("{seq:3}", FACILITY);
-    Item other = new Item(UUID.randomUUID(), DATE, false);
+    AbstractPatternCodeGenerator<Item> generator = generator("{facilityCode}-{seq:3}", FACILITY);
+    Item other = new Item(OTHER_FACILITY_ID, DATE, false);
 
-    assertThat(generator.generate(item)).isEqualTo("001");
-    assertThat(generator.generate(item)).isEqualTo("002");
-    assertThat(generator.generate(other)).isEqualTo("001");
+    assertThat(generator.generate(item)).isEqualTo("HC01-001");
+    assertThat(generator.generate(item)).isEqualTo("HC01-002");
+    assertThat(generator.generate(other)).isEqualTo("HC02-001");
   }
 
   @Test
   public void shouldBuildScopeKeyFromSequenceNameAndDimensionsInConfiguredOrder() {
-    generator(SEQ, "year,facility").generate(item);
+    generator("{date:yyyy}{facilityCode}{seq}", "year,facility").generate(item);
 
     assertThat(sequences.lastKey).isEqualTo("test|year=2026;facility=" + FACILITY_ID);
   }
@@ -112,7 +113,7 @@ public class AbstractPatternCodeGeneratorTest {
 
   @Test
   public void shouldFailOnUnknownScopeDimension() {
-    assertThatThrownBy(() -> generator(SEQ, "facility,program"))
+    assertThatThrownBy(() -> generator("{facilityCode}{seq}", "facility,program"))
         .isInstanceOf(CodeGenerationException.class)
         .hasMessageContaining("Unknown sequence scope dimension 'program'");
   }
@@ -168,8 +169,42 @@ public class AbstractPatternCodeGeneratorTest {
   }
 
   @Test
+  public void shouldFailWhenScopeDimensionIsNotRenderedByPattern() {
+    assertThatThrownBy(() -> generator("{date:MMyyyy}-{seq}", FACILITY))
+        .isInstanceOf(CodeGenerationException.class)
+        .hasMessageContaining("Sequence scope dimension 'facility' of test is not rendered");
+  }
+
+  @Test
+  public void shouldFailWhenScopeDimensionIsRenderedOnlyInQuotedText() {
+    assertThatThrownBy(() -> generator("{date:'year'MM}-{seq}", "year"))
+        .isInstanceOf(CodeGenerationException.class)
+        .hasMessageContaining("dimension 'year'");
+  }
+
+  @Test
+  public void shouldNotRequireScopeWhenPatternHasNoSequence() {
+    assertThat(generator("{random:4}", FACILITY).generate(item)).hasSize(4);
+  }
+
+  @Test
+  public void shouldTellWhetherDateFormatContainsField() {
+    assertThat(DateToken.containsField("ddMMyyyy", "y")).isTrue();
+    assertThat(DateToken.containsField(null, "M")).isTrue();
+    assertThat(DateToken.containsField("'yy'MM", "y")).isFalse();
+  }
+
+  @Test
+  public void shouldTellWhetherConditionalArgumentDistinguishesValues() {
+    assertThat(ConditionalToken.distinguishes("E|R")).isTrue();
+    assertThat(ConditionalToken.distinguishes("E|E")).isFalse();
+    assertThat(ConditionalToken.distinguishes("E")).isFalse();
+    assertThat(ConditionalToken.distinguishes(null)).isFalse();
+  }
+
+  @Test
   public void shouldFailWhenScopeDimensionHasNoValue() {
-    AbstractPatternCodeGenerator<Item> generator = generator(SEQ, FACILITY);
+    AbstractPatternCodeGenerator<Item> generator = generator("{seq}{facilityCode}", FACILITY);
     Item withoutFacility = new Item(null, DATE, false);
 
     assertThatThrownBy(() -> generator.generate(withoutFacility))
@@ -210,8 +245,9 @@ public class AbstractPatternCodeGeneratorTest {
       token("date", new DateToken<>("date", i -> i.date));
       token("emergency", new ConditionalToken<>("emergency flag", i -> i.emergency));
       token("random", new RandomToken<>());
-      dimension(FACILITY, i -> i.facilityId);
-      dimension("year", i -> i.date.getYear());
+      dimension(FACILITY, i -> i.facilityId, renderedBy("facilityCode"));
+      dimension("year", i -> i.date.getYear(),
+          (token, argument) -> "date".equals(token) && DateToken.containsField(argument, "y"));
     }
 
     void lateToken() {
@@ -221,6 +257,7 @@ public class AbstractPatternCodeGeneratorTest {
     private static Map<UUID, String> codes() {
       Map<UUID, String> codes = new HashMap<>();
       codes.put(FACILITY_ID, "HC01");
+      codes.put(OTHER_FACILITY_ID, "HC02");
       return codes;
     }
   }

@@ -29,6 +29,7 @@ import java.util.function.Function;
 public final class DateToken<T> implements PatternToken<T> {
 
   static final String DEFAULT_FORMAT = "yyyyMMdd";
+  private static final String QUOTED_TEXT = "'[^']*'";
 
   private final String description;
   private final Function<T, LocalDate> dateOf;
@@ -40,7 +41,7 @@ public final class DateToken<T> implements PatternToken<T> {
 
   @Override
   public Function<T, String> bind(String argument) {
-    String format = argument == null || argument.isEmpty() ? DEFAULT_FORMAT : argument;
+    String format = formatOf(argument);
     DateTimeFormatter formatter;
     try {
       formatter = DateTimeFormatter.ofPattern(format);
@@ -50,6 +51,19 @@ public final class DateToken<T> implements PatternToken<T> {
           "Invalid date format '" + format + "' for " + description, ex);
     }
     return entity -> render(entity, formatter);
+  }
+
+  /**
+   * Tells whether a date format given as a token argument contains any of the given pattern
+   * letters, ignoring quoted text. A missing argument stands for the default format.
+   */
+  public static boolean containsField(String argument, String letters) {
+    String fields = formatOf(argument).replaceAll(QUOTED_TEXT, "");
+    return fields.chars().anyMatch(letter -> letters.indexOf(letter) >= 0);
+  }
+
+  private static String formatOf(String argument) {
+    return argument == null || argument.isEmpty() ? DEFAULT_FORMAT : argument;
   }
 
   @Override

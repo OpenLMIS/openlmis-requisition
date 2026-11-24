@@ -44,12 +44,15 @@ import org.openlmis.requisition.service.referencedata.PeriodReferenceDataService
 import org.openlmis.requisition.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.requisition.utils.DateHelper;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class RequisitionCodeGeneratorTest {
 
   private static final String DEFAULT_PATTERN =
       "REQ-{facilityCode}-{programCode}-{date:yyyyMM}-{seq:4}";
   private static final String DEFAULT_SCOPE = "facility,program,year,month";
+  private static final String PERIOD_PATTERN =
+      "REQ-{periodStart:MMyyyy}-{facilityCode}-{programCode}-{emergency:E|R}-{seq:4}";
 
   @Mock
   private CodeSequenceRepository sequences;
@@ -117,11 +120,57 @@ public class RequisitionCodeGeneratorTest {
 
   @Test
   public void shouldGenerateCodeWithAllTokens() {
-    String code = generator("{facilityTypeCode}/{zoneCode:2}/{zoneCode}/{programCode}/"
-        + "{periodName}/{periodStart:ddMM}-{periodEnd:ddMM}/{emergency:E|R}/{seq:3}",
+    String code = generator("{facilityCode}/{facilityTypeCode}/{zoneCode:2}/{zoneCode}/"
+        + "{programCode}/{periodName}/{periodStart:ddMM}-{periodEnd:ddMM}/{emergency:E|R}/{seq:3}",
         "facility,program,period,emergency").generate(requisition);
 
-    assertThat(code).isEqualTo("HC/MW-S/MW-S-BL/PRG001/Jan2026/0101-3101/E/007");
+    assertThat(code).isEqualTo("HC01/HC/MW-S/MW-S-BL/PRG001/Jan2026/0101-3101/E/007");
+  }
+
+  @Test
+  public void shouldAcceptPeriodPatternWithMatchingScope() {
+    String code = generator(PERIOD_PATTERN, "facility,program,period,emergency")
+        .generate(requisition);
+
+    assertThat(code).isEqualTo("REQ-012026-HC01-PRG001-E-0007");
+  }
+
+  @Test
+  public void shouldRejectPeriodPatternWithDefaultScope() {
+    assertThatThrownBy(() -> generator(PERIOD_PATTERN, DEFAULT_SCOPE))
+        .isInstanceOf(CodeGenerationException.class)
+        .hasMessageContaining("dimension 'year' of requisition is not rendered");
+  }
+
+  @Test
+  public void shouldRejectScopeDimensionsNotRenderedByPattern() {
+    assertNotRendered("REQ-{facilityTypeCode}-{programCode}-{seq}", "facility");
+    assertNotRendered("REQ-{facilityCode}-{seq}", "program");
+    assertNotRendered("REQ-{periodStart:yyyy}-{seq}", "period");
+    assertNotRendered("REQ-{emergency:E|E}-{seq}", "emergency");
+    assertNotRendered("REQ-{periodStart:yyyyMM}-{seq}", "year");
+    assertNotRendered("REQ-{date:yyyy}-{seq}", "month");
+  }
+
+  @Test
+  public void shouldAcceptEveryWayOfRenderingScopeDimensions() {
+    generator("{periodName}{seq}", "period");
+    generator("{periodEnd:MMMuuuu}{seq}", "period");
+    generator("{date:uu}{seq}", "year");
+    generator("{date:LLL}{seq}", "month");
+  }
+
+  @Test
+  public void shouldRenderFrenchDayMonthYear() {
+    assertThat(generator("REQ-{periodStart:ddMMyyyy}-{seq:4}", "")
+        .generate(requisition)).isEqualTo("REQ-01012026-0007");
+  }
+
+  private void assertNotRendered(String pattern, String dimension) {
+    assertThatThrownBy(() -> generator(pattern, dimension))
+        .as(pattern)
+        .isInstanceOf(CodeGenerationException.class)
+        .hasMessageContaining("dimension '" + dimension + "'");
   }
 
   @Test

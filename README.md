@@ -189,13 +189,23 @@ unique code built from `REQUISITION_CODE_PATTERN`. Text outside braces is copied
 Date formats use [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
 letters, for example `ddMMyyyy` or `yyyy-MM-dd`, and default to `yyyyMMdd`.
 
-Supported sequence scope dimensions are `facility`, `program`, `period`, `emergency`, `year` and
-`month`. The pattern must contain `{seq}` or `{random}`. Every dimension in the scope should also
-be visible in the pattern, otherwise two requisitions can get the same code and the second one
-fails to initiate.
+The pattern must contain `{seq}` or `{random}`. Every dimension of the sequence scope must be
+rendered by the pattern, otherwise different counters would produce the same code:
 
-The configuration is validated at startup, so an unknown token or an invalid date format stops
-the service with an explanatory error.
+| Dimension | Rendered by |
+|---|---|
+| `facility` | `{facilityCode}` |
+| `program` | `{programCode}` |
+| `period` | `{periodName}`, or `{periodStart}` / `{periodEnd}` with year and month |
+| `emergency` | `{emergency}` with two different values |
+| `year` | `{date}` with a year |
+| `month` | `{date}` with a month |
+
+A token in the pattern that is not in the scope only shares the counter, for example regular and
+emergency requisitions numbered together.
+
+The configuration is validated at startup, so an unknown token, an invalid date format or a scope
+dimension missing from the pattern stops the service with an explanatory error.
 
 Examples:
 
@@ -205,6 +215,9 @@ REQUISITION_CODE_SEQUENCE_SCOPE=facility,program,year,month
 
 REQUISITION_CODE_PATTERN={date:yyyy}/{facilityCode}/{seq:4}
 REQUISITION_CODE_SEQUENCE_SCOPE=facility,year
+
+REQUISITION_CODE_PATTERN=REQ-{periodStart:MMyyyy}-{facilityCode}-{programCode}-{emergency:E|R}-{seq:4}
+REQUISITION_CODE_SEQUENCE_SCOPE=facility,program,period,emergency
 ```
 
 Counters are stored in the `requisition.code_sequences` table. To continue numbering from an

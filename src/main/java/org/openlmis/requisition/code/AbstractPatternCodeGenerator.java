@@ -16,10 +16,12 @@
 package org.openlmis.requisition.code;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,7 +39,9 @@ import org.slf4j.LoggerFactory;
  * <p>The {@code {seq}} token is built in. It claims the next value of a counter whose key is
  * built from the configured sequence scope, for example
  * {@code <sequenceName>|facility=...;year=2026;month=10}, and zero pads it to the width given as
- * the argument. An empty scope means one counter for the whole sequence name.
+ * the argument. An empty scope means one counter for the whole sequence name. Every dimension of
+ * the scope must be rendered by a token of the pattern, otherwise two counters would hand out the
+ * same code; compilation fails when one is not.
  *
  * @param <T> type of entity the code is generated for
  */
@@ -55,6 +59,7 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
 
   private final Map<String, PatternToken<T>> tokens = new LinkedHashMap<>();
   private final Map<String, Function<T, Object>> dimensions = new LinkedHashMap<>();
+  private final Map<String, BiPredicate<String, String>> renderers = new LinkedHashMap<>();
 
   private List<Function<T, String>> segments;
 
@@ -111,15 +116,29 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
   }
 
   /**
-   * Registers a dimension the sequence may be scoped by. The accessor must return a stable raw
-   * value, such as an id or a number, never formatted text.
+   * Registers a dimension the sequence may be scoped by.
+   *
+   * @param name name used in the configured sequence scope
+   * @param accessor returns a stable raw value, such as an id or a number, never formatted text
+   * @param renderedBy tells whether a token of the pattern, given its name and argument, renders
+   *                   the dimension so that different values give different text
    */
-  protected final void dimension(String name, Function<T, Object> accessor) {
+  protected final void dimension(String name, Function<T, Object> accessor,
+      BiPredicate<String, String> renderedBy) {
     assertNotCompiled();
     if (dimensions.containsKey(name)) {
       throw new CodeGenerationException("Dimension '" + name + "' is already registered");
     }
     dimensions.put(name, accessor);
+    renderers.put(name, renderedBy);
+  }
+
+  /**
+   * Returns a check that is met by any of the given tokens, whatever their argument.
+   */
+  protected static BiPredicate<String, String> renderedBy(String... tokenNames) {
+    List<String> names = Arrays.asList(tokenNames);
+    return (token, argument) -> names.contains(token);
   }
 
   /**
@@ -137,6 +156,7 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
     }
 
     List<Function<T, String>> compiled = new ArrayList<>();
+    Map<String, List<String>> usedTokens = new LinkedHashMap<>();
     boolean hasSequence = false;
     boolean hasRandom = false;
     Matcher matcher = TOKEN.matcher(pattern);
@@ -156,6 +176,7 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
               + pattern + "'. Supported: " + tokens.keySet() + " and " + SEQUENCE_TOKEN);
         }
         compiled.add(token.bind(argument));
+        usedTokens.computeIfAbsent(name, key -> new ArrayList<>()).add(argument);
         hasRandom |= token instanceof RandomToken;
       }
       position = matcher.end();
@@ -166,7 +187,9 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
       throw new CodeGenerationException("Code pattern '" + pattern
           + "' must contain {seq} or {random} to produce unique codes");
     }
-    if (!hasSequence && !sequenceScope.isEmpty()) {
+    if (hasSequence) {
+      assertScopeRendered(usedTokens);
+    } else if (!sequenceScope.isEmpty()) {
       LOGGER.warn("Sequence scope {} is configured for {} but pattern '{}' has no {seq} token",
           sequenceScope, sequenceName, pattern);
     }
@@ -185,6 +208,21 @@ public abstract class AbstractPatternCodeGenerator<T> implements CodeGenerator<T
       code.append(segment.apply(entity));
     }
     return code.toString();
+  }
+
+  private void assertScopeRendered(Map<String, List<String>> usedTokens) {
+    for (String name : sequenceScope) {
+      BiPredicate<String, String> renderer = renderers.get(name);
+      boolean rendered = usedTokens.entrySet().stream()
+          .anyMatch(used -> used.getValue().stream()
+              .anyMatch(argument -> renderer.test(used.getKey(), argument)));
+      if (!rendered) {
+        throw new CodeGenerationException("Sequence scope dimension '" + name + "' of "
+            + sequenceName + " is not rendered by code pattern '" + pattern + "', so different "
+            + "counters would produce the same codes. Add it to the pattern or remove it from "
+            + "the sequence scope");
+      }
+    }
   }
 
   private void addLiteral(List<Function<T, String>> compiled, String literal) {

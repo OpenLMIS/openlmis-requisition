@@ -48,6 +48,15 @@ public final class ConditionalToken<T> implements PatternToken<T> {
     return entity -> Boolean.TRUE.equals(flagOf.apply(entity)) ? whenTrue : whenFalse;
   }
 
+  /**
+   * Tells whether the argument renders different values for {@code true} and {@code false}.
+   */
+  public static boolean distinguishes(String argument) {
+    int separator = argument == null ? -1 : argument.indexOf(SEPARATOR);
+    return separator >= 0
+        && !argument.substring(0, separator).equals(argument.substring(separator + 1));
+  }
+
   @Override
   public String apply(T entity, String argument) {
     return bind(argument).apply(entity);
